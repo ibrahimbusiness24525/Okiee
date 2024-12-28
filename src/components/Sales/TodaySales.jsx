@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios'; import { FaPrint } from 'react-icons/fa';
 import { BASE_URL } from 'config/constant';
+import { useNavigate } from 'react-router-dom';
 
 const TodaySales = () => {
   // Static data for today's sales
   const [todayInvoices, setTodayInvoices] = useState([]);
+  const navigate = useNavigate();
 
   // Inline styles for the table
   const styles = {
@@ -71,10 +73,22 @@ const TodaySales = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       const response = await axios.get(`${BASE_URL}api/invoice/invoices/getAll/${user._id}`);
-      setTodayInvoices(response.data.invoices); // Assuming `phones` array matches the structure
+      const currentDate = new Date().toISOString().split('T')[0];
+
+      // Filter invoices for today
+      const filteredInvoices = response.data.invoices.filter((invoice) => {
+        const invoiceDate = new Date(invoice.invoiceDate).toISOString().split('T')[0];
+        return invoiceDate === currentDate;
+      });
+
+      setTodayInvoices(filteredInvoices); // Assuming `phones` array matches the structure
     } catch (error) {
       console.error('Error fetching mobiles:', error);
     }
+  };
+
+  const handlePrintClick = (invoice) => {
+    navigate('/invoice/shop', { state: { invoice } }); // Pass invoice data to the route
   };
 
   return (
@@ -121,7 +135,7 @@ const TodaySales = () => {
                 <td style={styles.cell}>
                   <FaPrint
                     style={styles.printIcon}
-                    onClick={() => window.print()}
+                    onClick={() => handlePrintClick(invoice)}
                   />
                 </td>
               </tr>

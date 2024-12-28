@@ -40,6 +40,11 @@ const NavLeft = () => {
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <NavSearch windowWidth={windowSize.width} />
         </ListGroup.Item>
+        <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
+        <button className="btn btn-primary" style={style.addNewPhoneBtn}>
+        Contact Us: 03057903867
+          </button>
+        </ListGroup.Item>
       </ListGroup>
       <AddPhone modal={showModal} handleModalClose={handleClose}/>
     </React.Fragment>

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; import { FaPrint } from 'react-icons/fa';
+import axios from 'axios';
+import { FaPrint } from 'react-icons/fa';
 import { BASE_URL } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
 
 const SaleInvoices = () => {
-  const [filter, setFilter] = useState('All');
-  const [allIvoices, setAllInvoices] = useState([]);
+  const [search, setSearch] = useState('');
+  const [allInvoices, setAllInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const navigate = useNavigate();
 
@@ -17,50 +18,24 @@ const SaleInvoices = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       const response = await axios.get(`${BASE_URL}api/invoice/invoices/getAll/${user._id}`);
-      setAllInvoices(response.data.invoices); // Assuming `phones` array matches the structure
-      setFilteredInvoices(response.data.invoices); // Assuming `phones` array matches the structure
+      setAllInvoices(response.data.invoices);
+      setFilteredInvoices(response.data.invoices);
     } catch (error) {
-      console.error('Error fetching mobiles:', error);
+      console.error('Error fetching invoices:', error);
     }
   };
 
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
-    filterOutInvoices()
-  };
+  const handleSearchChange = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearch(query);
 
-  // Filtering invoices based on date range
-  const filterOutInvoices = () => {
-    if (filter == 'All') {
-      setFilteredInvoices(allIvoices);
-      return
-    }
-    const now = new Date();
-    const filtered = allIvoices.filter((invoice) => {
-      const invoiceDate = new Date(invoice.invoiceDate);
-      switch (filter) {
-        case 'Yesterday':
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          return invoiceDate.toDateString() === yesterday.toDateString();
-        case 'This Week':
-          const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // Start of the week (Sunday)
-          return invoiceDate >= startOfWeek;
-        case 'This Month':
-          return (
-            invoiceDate.getMonth() === now.getMonth() &&
-            invoiceDate.getFullYear() === now.getFullYear()
-          );
-        case 'Last Three Months':
-          const threeMonthsAgo = new Date();
-          threeMonthsAgo.setMonth(now.getMonth() - 3);
-          return invoiceDate >= threeMonthsAgo;
-        case 'This Year':
-          return invoiceDate.getFullYear() === now.getFullYear();
-        default:
-          return true;
-      }
+    const filtered = allInvoices.filter((invoice) => {
+      return (
+        invoice.invoiceNumber.toLowerCase().includes(query) ||
+        invoice.items[0]?.mobileName.toLowerCase().includes(query)
+      );
     });
+
     setFilteredInvoices(filtered);
   };
 
@@ -68,16 +43,23 @@ const SaleInvoices = () => {
     navigate('/invoice/shop', { state: { invoice } }); // Pass invoice data to the route
   };
 
-  // Inline styles for the table
   const styles = {
     container: {
       padding: '20px',
       backgroundColor: 'rgb(249, 250, 251)',
       borderRadius: '8px',
     },
+    searchBar: {
+      padding: '10px',
+      marginBottom: '20px',
+      borderRadius: '4px',
+      border: '1px solid #ccc',
+      width: '100%',
+      boxSizing: 'border-box',
+    },
     tableWrapper: {
-      maxHeight: '400px', // Set maximum height for scroll
-      overflowY: 'auto', // Enable vertical scrolling
+      maxHeight: '400px',
+      overflowY: 'auto',
       borderRadius: '8px',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     },
@@ -90,10 +72,10 @@ const SaleInvoices = () => {
       color: '#333',
       textAlign: 'center',
       padding: '10px',
-      borderBottom: '2px solid #ddd', // Divider in the header
-      position: 'sticky', // Make header sticky
-      top: 0, // Stick to the top
-      zIndex: 1, // Ensure it appears above other content
+      borderBottom: '2px solid #ddd',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1,
     },
     headerCell: {
       padding: '8px',
@@ -121,25 +103,20 @@ const SaleInvoices = () => {
       backgroundColor: 'rgb(249, 250, 251)',
     },
     rowHover: {
-      backgroundColor: 'rgba(0, 0, 0, 0.1)', // Light gray on row hover
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
     },
   };
 
   return (
     <div style={styles.container}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-        <h2>Sale Invoices</h2>
-        <div>
-          <select value={filter} onChange={handleFilterChange} style={{ padding: '5px' }}>
-            <option value="All">All</option>
-            <option value="Yesterday">Yesterday</option>
-            <option value="This Week">This Week</option>
-            <option value="This Month">This Month</option>
-            <option value="Last Three Months">Last Three Months</option>
-            <option value="This Year">This Year</option>
-          </select>
-        </div>
-      </div>
+      <h2 style={{width:'100%'}}>Sale Invoices</h2>
+      <input
+        type="text"
+        value={search}
+        onChange={handleSearchChange}
+        placeholder="Search by Invoice Number or Mobile Name"
+        style={styles.searchBar}
+      />
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
@@ -161,12 +138,10 @@ const SaleInvoices = () => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor;
-                  e.currentTarget.querySelector('svg').style.color = styles.printIconHover.color;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor =
                     index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor;
-                  e.currentTarget.querySelector('svg').style.color = styles.printIcon.color;
                 }}
               >
                 <td style={styles.cell}>{invoice.invoiceNumber}</td>
@@ -176,8 +151,7 @@ const SaleInvoices = () => {
                   year: 'numeric',
                   month: 'short',
                   day: '2-digit',
-                }).format(new Date(invoice.invoiceDate))}
-                </td>
+                }).format(new Date(invoice.invoiceDate))}</td>
                 <td style={styles.cell}>
                   <FaPrint
                     style={styles.printIcon}

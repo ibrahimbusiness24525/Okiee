@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button, Row, Col, Image } from 'react-bootstrap';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { BASE_URL } from 'config/constant';
 
 const AddPhone = ({ modal, editMobile, handleModalClose }) => {
   const [showModal, setShowModal] = useState(false);
@@ -93,13 +94,13 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
       let response;
       if (editMobile) {
         // Edit mode - Update existing phone
-        response = await axios.put(`http://localhost:8080/api/phone/updatePhone/${editMobile._id}`, formData, {
+        response = await axios.put(`${BASE_URL}api/phone/updatePhone/${editMobile._id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         toast('Mobile Phone Record Updated Successfully');
       } else {
         // Add mode - Add new phone
-        response = await axios.post('http://localhost:8080/api/phone/addPhone', formData, {
+        response = await axios.post(BASE_URL+'api/phone/addPhone', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         toast('Mobile Phone Record Added Successfully');

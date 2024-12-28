@@ -8,19 +8,15 @@ const SoldInvoice = () => {
   const styles = {
     container: {
       width: '210mm',
-      minHeight: '297mm',
-      margin: '0 auto',
-      padding: '25px',
-      background: 'linear-gradient(to bottom right, #ffffff, #a9b7d0)',
-      borderRadius: '12px',
-      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
-      fontFamily: 'Arial, sans-serif',
+      minHeight: 'auto',
+      margin: '30px auto',
+      padding: '30px',
+      background: '#f9f9f9',
+      borderRadius: '15px',
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+      fontFamily: "'Poppins', sans-serif",
       color: '#333',
       boxSizing: 'border-box',
-    },
-
-    OkieeText: {
-   color: '#a9b7d0'
     },
     header: {
       display: 'flex',
@@ -28,16 +24,57 @@ const SoldInvoice = () => {
       alignItems: 'center',
       marginBottom: '30px',
       paddingBottom: '15px',
-      borderBottom: '2px solid #3f4d67',
+      borderBottom: '3px solid #004B87',
+      color: '#004B87',
     },
-    title: {
-      color: '#3f4d67',
-      fontSize: '24px',
+    logo: {
+      fontSize: '28px',
+      fontWeight: 'bold',
+      color: '#004B87',
+      letterSpacing: '1px',
+    },
+    infoSection: {
+      marginBottom: '30px',
+      padding: '20px',
+      background: '#fff',
+      borderRadius: '10px',
+      boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
+    },
+    table: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      marginBottom: '30px',
+    },
+    th: {
+      padding: '15px',
+      backgroundColor: '#004B87',
+      color: '#fff',
+      textAlign: 'center',
       fontWeight: 'bold',
     },
+    td: {
+      padding: '12px',
+      textAlign: 'center',
+      backgroundColor: '#fafafa',
+      borderBottom: '1px solid #eee',
+      color: '#333',
+    },
+    stripedRow: {
+      backgroundColor: '#f4f4f4',
+    },
+    totalSection: {
+      padding: '20px',
+      background: '#fff',
+      borderRadius: '10px',
+      boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
+      textAlign: 'right',
+      fontSize: '20px',
+      fontWeight: 'bold',
+      color: '#004B87',
+    },
     button: {
-      margin: '10px 5px',
-      padding: '12px 24px',
+      margin: '10px',
+      padding: '12px 30px',
       cursor: 'pointer',
       border: 'none',
       borderRadius: '8px',
@@ -46,96 +83,47 @@ const SoldInvoice = () => {
       transition: 'all 0.3s ease',
     },
     printBtn: {
-      backgroundColor: '#6c757d',
-      color: '#fff',
-    },
-    downloadBtn: {
       backgroundColor: '#28a745',
       color: '#fff',
     },
+    downloadBtn: {
+      backgroundColor: '#007bff',
+      color: '#fff',
+    },
     submitBtn: {
-      backgroundColor: '#3f4d67',
+      backgroundColor: '#ffc107',
       color: '#fff',
     },
     buttonHover: {
       transform: 'translateY(-2px)',
-      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      marginBottom: '20px',
-      borderRadius: '8px',
-      overflow: 'hidden',
-      marginTop:'80px'
-    },
-    info: {
-      marginTop: '80px',
-      padding: '20px', // Add padding for better spacing inside the border
-      border: '2px solid #3f4d67', // Border color matching the theme
-      borderRadius: '12px', // Rounded corners
-      backgroundColor: 'linear-gradient(to bottom right, #ffffff, #a9b7d0)', // Light background for contrast
-    },
-    
-    th: {
-      padding: '12px',
-      backgroundColor: '#3f4d67',
-      color: '#a9b7d0',
-      textAlign: 'center',
-      fontWeight: 'bold',
-    },
-    td: {
-      padding: '12px',
-      textAlign: 'center',
-      color: '#3f4d67',
-    },
-    stripedRow: {
-      backgroundColor: '#f9f9f9',
-    },
-    totalSection: {
-      padding: '8px', // Add padding for better spacing inside the border
-      border: '2px solid #3f4d67', // Border color matching the theme
-      borderRadius: '12px', // Rounded corners
-      backgroundColor: 'linear-gradient(to bottom right, #ffffff, #a9b7d0)',
-      textAlign: 'left',
-      marginTop: '40px',
-      fontSize: '20px',
-      fontWeight: 'bold',
-      color: '#333',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
     },
     footer: {
+      marginTop: '40px',
+      paddingTop: '20px',
+      borderTop: '3px solid #004B87',
       textAlign: 'center',
+      fontSize: '14px',
+      color: '#666',
+    },
+    termsSection: {
       marginTop: '30px',
-      paddingTop: '15px',
-      borderTop: '2px solid #a9b7d0',
-      color: 'black',
-      fontSize: '14px',
+      padding: '20px',
+      background: '#fff',
+      borderRadius: '10px',
+      boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
+      color: '#333',
     },
-    input: {
-      width: '100px',
-      padding: '8px',
-      textAlign: 'center',
-      border: '1px solid #ddd',
-      borderRadius: '4px',
-    },
-    regulationsSection: {
-      marginTop: '50px',
-      marginBottom:'80px',
-      padding: '15px',
-      backgroundColor: '#3f4d67',
-      borderRadius: '8px',
-      fontSize: '16px',
-      color: '#a9b7d0',
-    },
-    regulationTitle: {
-      fontSize: '18px',
+    termsHeading: {
+      fontSize: '20px',
       fontWeight: 'bold',
-      color: '#a9b7d0',
+      marginBottom: '15px',
+      color: '#004B87',
     },
-    regulationText: {
-      marginTop: '10px',
+    termsText: {
       fontSize: '14px',
-      color: '#a9b7d0',
+      lineHeight: '1.6',
+      marginBottom: '10px',
     },
   };
 
@@ -169,6 +157,8 @@ const SoldInvoice = () => {
             mobileId: dataReceived._id,
             mobileName: dataReceived.modelSpecifications,
             mobileCompany: dataReceived.companyName,
+            imei: dataReceived.imei,
+            imei2: dataReceived.imei2 ?? '',
             warranty: '1 year',
             quantity: 1,
             invoiceNumber: invoiceData.invoiceNumber,
@@ -214,7 +204,7 @@ const SoldInvoice = () => {
 
   return (
     <div>
-      <div style={{ textAlign: 'right', marginRight: '225px', marginBottom:'10px' }}>
+      <div style={{ textAlign: 'right', marginBottom: '20px' }}>
         <button
           style={{ ...styles.button, ...styles.printBtn }}
           onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
@@ -242,20 +232,20 @@ const SoldInvoice = () => {
           </button>
         )}
       </div>
+
       <div id="invoice" style={styles.container}>
         <header style={styles.header}>
-          <h2 style={{color:'#3f4d67'}}>{shop?.shopName ?? 'Shop Name'}</h2>
-          <p style={{color:'#3f4d67'}}><strong>Contact Number:</strong> {shop?.contactNumber[1] ? '1:-'+ shop?.contactNumber[0] +'   ' +'2:-'+ shop?.contactNumber[1] : shop?.contactNumber[0]}</p>
-
-           <h2 style={styles.OkieeText}>Okiee</h2>
+          <div>
+            <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+            <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
+          </div>
+          <h2 style={{ color: '#004B87' }}>Okiee</h2>
         </header>
 
-        <section style={styles.info}>
-          <p style={{color:'#3f4d67'}}><strong>Shop Adress:</strong> {shop?.address ?? 'Address not available'}</p>
-          <div>
-            <p style={{color:'#3f4d67'}}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
-            <p style={{color:'#3f4d67'}}><strong>Date of Sale:</strong> {invoiceData.invoiceDate}</p>
-          </div>
+        <section style={styles.infoSection}>
+          <p><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
+          <p><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
+          <p><strong>Date of Sale:</strong> {invoiceData.invoiceDate}</p>
         </section>
 
         <table style={styles.table}>
@@ -263,64 +253,44 @@ const SoldInvoice = () => {
             <tr>
               <th style={styles.th}>Company</th>
               <th style={styles.th}>Model</th>
-              <th style={styles.th}>{dataReceived?.imei2 ? 'IMEI 1' : 'IMEI'}</th>
+              <th style={styles.th}>IMEI</th>
               {dataReceived?.imei2 && <th style={styles.th}>IMEI 2</th>}
               <th style={styles.th}>Price</th>
-              <th style={styles.th}>Company Warranty</th>
+              <th style={styles.th}>Warranty</th>
             </tr>
           </thead>
           <tbody>
             <tr style={styles.stripedRow}>
-              <td style={styles.td}>{dataReceived.invoice ? dataReceived.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived.invoice ? dataReceived.invoice?.items[0]?.mobileName : dataReceived?.modelSpecifications ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.companyName ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.modelSpecifications ?? 'N/A'}</td>
               <td style={styles.td}>{dataReceived?.imei ?? 'N/A'}</td>
               {dataReceived?.imei2 && <td style={styles.td}>{dataReceived.imei2 ?? 'N/A'}</td>}
-              <td style={styles.td}>
-                {dataReceived.invoice ? dataReceived.invoice?.totalAmount : dataReceived?.finalPrice ?? 'N/A'}
-              </td>
-              <td style={styles.td}>
-              {dataReceived.warranty ?? 'N/A'}
-
-              </td>
+              <td style={styles.td}>{dataReceived?.finalPrice ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.warranty ?? 'N/A'}</td>
             </tr>
           </tbody>
         </table>
 
         <div style={styles.totalSection}>
-          <h3 style={{color:'#3f4d67'}}>Total: {price}</h3>
+          <h3>Total: ${price}</h3>
         </div>
 
-        {/* Rules and Regulations Section */}
-        <div style={styles.regulationsSection}>
-  <div style={styles.regulationTitle}>Terms and Conditions</div>
-  <div style={styles.regulationText}>
-    {shop?.termsCondition.map((item, index) => (
-      <p key={index}><strong>{index + 1}.</strong> {item}</p>
-    ))}
-  </div>
-</div>
-
-
+        {/* Terms & Conditions Section */}
+        <div style={styles.termsSection}>
+          <h3 style={styles.termsHeading}>Terms & Conditions</h3>
+          <p style={styles.termsText}>1. All sales are final once the invoice is generated.</p>
+          <p style={styles.termsText}>2. Warranty is valid only for products with a valid invoice.</p>
+          <p style={styles.termsText}>3. The company is not responsible for any damages caused by misuse of the product.</p>
+          <p style={styles.termsText}>4. Payment must be made in full before the invoice is considered complete.</p>
+          <p style={styles.termsText}>5. Terms and conditions are subject to change without prior notice.</p>
+        </div>
 
         <footer style={styles.footer}>
-          <p style={{color:'#3f4d67'}}>
-            Contact Numbers:{' '}
-            {shop?.contactNumber?.length
-              ? shop.contactNumber.map((number, index) => (
-                <span key={index}>
-                  {number}
-                  {index < shop.contactNumber.length - 1 && ', '}
-                </span>
-              ))
-              : 'N/A'}
-          </p>
-          <p style={{color:'#3f4d67'}}>
+          <p>
             {shop?.shopName ?? 'Shop Name'} | Email: example@mobile.com | Website: example.com
           </p>
         </footer>
       </div>
-
-      
     </div>
   );
 };
