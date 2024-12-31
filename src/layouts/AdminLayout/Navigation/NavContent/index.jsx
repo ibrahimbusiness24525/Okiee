@@ -6,7 +6,22 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import NavGroup from './NavGroup';
 
 const NavContent = ({ navigation }) => {
-  const navItems = navigation.map((item) => {
+
+  const user = JSON.parse(localStorage.getItem('user')) || {};
+  const userRole = user.role; // Assume 'role' is the property in the user object
+  // Filter navigation based on role
+  const filteredNavigation = navigation.filter((item) => {
+    if (['adduser', 'shop'].includes(item.id) && userRole === 'employee') {
+      return false; // Do not show "Add User" and "Shop" for employees
+    } else if (['adduser', 'shop'].includes(item.id) && userRole === 'admin') {
+      return false
+    }
+    return true;
+  });
+  
+
+
+  const navItems = filteredNavigation.map((item) => {
     switch (item.type) {
       case 'group':
         return <NavGroup key={'nav-group-' + item.id} group={item} />;

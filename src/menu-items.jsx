@@ -91,7 +91,7 @@ const menuItems = {
       children: [
         {
           id: 'forms',
-          title: 'Shop Setup',
+          title: 'My Shop',
           type: 'item',
           icon: 'feather icon-file-text',
           url: '/setup/shop'

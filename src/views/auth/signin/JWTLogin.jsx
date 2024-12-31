@@ -57,8 +57,8 @@ const JWTLogin = () => {
   return (
     <div style={styles.container}>
       <div className="login-leftSection" style={styles.leftSection}>
-        <img src="src/assets/images/logo.png" alt="Okiee Logo" style={styles.logo} />
-        <h1 style={{ color: 'black', textAlign: 'left' }}>Okiee</h1>
+        <img src="src/assets/images/logo.png" alt="Okiiee Logo" style={styles.logo} />
+        <h1 style={{ color: 'black', textAlign: 'left' }}>Okiiee</h1>
         <h2 style={{ color: 'black', textAlign: 'left', fontSize: '28px', marginTop: '30px' }}>
           Contact Us:
         </h2>

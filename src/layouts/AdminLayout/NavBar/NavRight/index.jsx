@@ -50,7 +50,7 @@ useEffect(() => {
     <React.Fragment>
       <ListGroup as="ul" bsPrefix=" " className="navbar-nav ml-auto" id="navbar-right">
         <ListGroup.Item as="li" bsPrefix=" ">
-          <Dropdown align="end">
+          {/* <Dropdown align="end">
             <Dropdown.Toggle as={Link} variant="link" to="#" id="dropdown-basic">
               <i className="feather icon-bell icon" />
             </Dropdown.Toggle>
@@ -118,14 +118,19 @@ useEffect(() => {
                 <Link to="#">show all</Link>
               </div>
             </Dropdown.Menu>
-          </Dropdown>
+          </Dropdown> */}
         </ListGroup.Item>
-        <ListGroup.Item as="li" bsPrefix=" ">
+        {/* <ListGroup.Item as="li" bsPrefix=" ">
           <Dropdown>
             <Dropdown.Toggle as={Link} variant="link" to="#" className="displayChatbox" onClick={() => setListOpen(true)}>
               <i className="icon feather icon-mail" />
             </Dropdown.Toggle>
           </Dropdown>
+        </ListGroup.Item> */}
+        <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
+        <button className="btn btn-primary" style={style.addNewPhoneBtn}>
+        Contact Us: 03057903867
+          </button>
         </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" ">
           <Dropdown align={'end'} className="drp-user">
@@ -134,7 +139,7 @@ useEffect(() => {
             </Dropdown.Toggle>
             <Dropdown.Menu align="end" className="profile-notification">
               <div className="pro-head">
-                <img src={avatar1} className="img-radius" alt="User Profile" />
+                <img src={avatar2} className="img-radius" alt="User Profile" />
                 <span>{LoginUser.username}</span>
                 <Link to="#" className="dud-logout" title="Logout" onClick={logout}>
                   <i className="feather icon-log-out" />
@@ -142,13 +147,13 @@ useEffect(() => {
               </div>
               <ListGroup as="ul" bsPrefix=" " variant="flush" className="pro-body">
                 <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-settings" /> Settings
+                  <Link to="/setup/shop" className="dropdown-item">
+                    <i className="feather icon-settings" /> My Shop
                   </Link>
                 </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-user" /> Profile
+                  <Link to="/help/forsupport" className="dropdown-item">
+                    <i className="feather icon-user" /> For Support
                   </Link>
                 </ListGroup.Item>
                
@@ -160,6 +165,17 @@ useEffect(() => {
       <ChatList listOpen={listOpen} closed={() => setListOpen(false)} />
     </React.Fragment>
   );
+};
+
+const style = {
+  addNewPhoneBtn: {
+    background: 'linear-gradient(to right, #50b5f4, #b8bee2)',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '25px',
+    padding: '10px 20px',
+    cursor: 'pointer'
+  }
 };
 
 export default NavRight;

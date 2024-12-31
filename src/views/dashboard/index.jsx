@@ -245,17 +245,17 @@ const DashDefault = () => {
             <Card.Body>
               <div className="row align-items-center justify-content-center">
                 <div className="col">
-                  <h5 className="m-0">Upcoming Event</h5>
+                  <h5 className="-m-16" style={{fontSize:30}}>Upcoming Updates</h5>
                 </div>
-                <div className="col-auto">
+                {/* <div className="col-auto">
                   <label className="label theme-bg2 text-white f-14 f-w-400 float-end">34%</label>
-                </div>
+                </div> */}
               </div>
-              <h2 className="mt-2 f-w-300">
+              {/* <h2 className="mt-2 f-w-300">
                 45<sub className="text-muted f-14">Competitors</sub>
               </h2>
               <h6 className="text-muted mt-3 mb-0">You can participate in event </h6>
-              <i className="fab fa-angellist text-c-purple f-50" />
+              <i className="fab fa-angellist text-c-purple f-50" /> */}
             </Card.Body>
           </Card>
           <Card>
@@ -265,22 +265,34 @@ const DashDefault = () => {
                   <i className="feather icon-zap f-30 text-c-green" />
                 </div>
                 <div className="col">
-                  <h3 className="f-w-300">235</h3>
+                  {/* <h3 className="f-w-300">235</h3> */}
                   <span className="d-block text-uppercase">total ideas</span>
                 </div>
               </div>
             </Card.Body>
-            <Card.Body>
+            <Card.Body className="border-bottom">
               <div className="row d-flex align-items-center">
                 <div className="col-auto">
-                  <i className="feather icon-map-pin f-30 text-c-blue" />
+                  <i className="feather icon-zap f-30 text-c-green" />
                 </div>
                 <div className="col">
-                  <h3 className="f-w-300">26</h3>
-                  <span className="d-block text-uppercase">total locations</span>
+                  {/* <h3 className="f-w-300">235</h3> */}
+                  <span className="d-block text-uppercase">total ideas</span>
                 </div>
               </div>
             </Card.Body>
+            <Card.Body className="border-bottom">
+              <div className="row d-flex align-items-center">
+                <div className="col-auto">
+                  <i className="feather icon-zap f-30 text-c-green" />
+                </div>
+                <div className="col">
+                  {/* <h3 className="f-w-300">235</h3> */}
+                  <span className="d-block text-uppercase">total ideas</span>
+                </div>
+              </div>
+            </Card.Body>
+         
           </Card>
         </Col>
         {/* <Col md={6} xl={4}>
@@ -559,7 +571,7 @@ const DashDefault = () => {
           </Card>
         </Col>
         <Col md={6} xl={12} className="about-us-section">
-  <Card style={{ marginTop: 25, backgroundColor: "#3f4d67", padding: 20, textAlign: "center" }}>
+  {/* <Card style={{ marginTop: 25, backgroundColor: "#3f4d67", padding: 20, textAlign: "center" }}>
     <h3 style={{ textAlign: "center", marginBottom: 20 }}>About Us</h3>
     <p>
       Welcome to <strong>MobileSoft Solutions</strong>! We specialize in delivering
@@ -595,7 +607,7 @@ const DashDefault = () => {
         </a>
       </li>
     </ul>
-  </Card>
+  </Card> */}
 </Col>
 
 

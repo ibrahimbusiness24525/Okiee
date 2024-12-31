@@ -15,6 +15,8 @@ const MobilesList = () => {
   const [soldMobile, setSoldMobile] = useState(null);
   const [finalPrice, setFinalPrice] = useState('');
   const [warranty, setWarranty] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // New state for delete confirmation
+  const [deleteMobileId, setDeleteMobileId] = useState(null); // Mobile ID to delete
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,13 +29,15 @@ const MobilesList = () => {
     setMobiles(response.data.phones);
   };
 
-  const deletePhone = async (phoneId) => {
+  const deletePhone = async () => {
     try {
-      await axios.delete(`${BASE_URL}api/phone/deletePhone/${phoneId}`);
-      setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== phoneId));
+      await axios.delete(`${BASE_URL}api/phone/deletePhone/${deleteMobileId}`);
+      setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
       console.log('Phone deleted successfully');
     } catch (error) {
       console.error('Error deleting phone:', error);
+    } finally {
+      setShowDeleteModal(false);
     }
   };
 
@@ -60,13 +64,18 @@ const MobilesList = () => {
     const updatedMobile = {
       ...soldMobile,
       finalPrice,
-      warranty
+      warranty,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
     setFinalPrice('');
     setWarranty('');
     setShowSoldModal(false);
+  };
+
+  const confirmDelete = (mobileId) => {
+    setDeleteMobileId(mobileId);
+    setShowDeleteModal(true);
   };
 
   const filteredMobiles = mobiles?.filter(
@@ -82,7 +91,12 @@ const MobilesList = () => {
         <InputGroup.Text>
           <FaSearch />
         </InputGroup.Text>
-        <Form.Control type="text" placeholder="Search by name or company" value={searchTerm} onChange={handleSearch} />
+        <Form.Control
+          type="text"
+          placeholder="Search by name or company"
+          value={searchTerm}
+          onChange={handleSearch}
+        />
       </InputGroup>
 
       <Row xs={1} md={2} lg={3} className="g-4">
@@ -98,23 +112,23 @@ const MobilesList = () => {
                     right: '50px',
                     color: '#28a745',
                     cursor: 'pointer',
-                    fontSize: '1.2rem'
+                    fontSize: '1.2rem',
                   }}
                 />
                 <FaTrash
-                  onClick={() => deletePhone(mobile._id)}
+                  onClick={() => confirmDelete(mobile._id)}
                   style={{
                     position: 'absolute',
                     top: '10px',
                     right: '10px',
-                    color: '#28a745',
+                    color: 'red',
                     cursor: 'pointer',
-                    fontSize: '1.2rem'
+                    fontSize: '1.2rem',
                   }}
                 />
                 <Card.Img
                   variant="top"
-                  src={`data:image/jpeg;base64,${mobile.images[0]}`} // Add 'data:image/jpeg;base64,' before the Base64 string
+                  src={`data:image/jpeg;base64,${mobile.images[0]}`}
                   alt={mobile.modelSpecifications}
                   style={{ height: '200px', objectFit: 'cover' }}
                 />
@@ -125,16 +139,16 @@ const MobilesList = () => {
                   </Card.Title>
                   <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
                     <div>
-                      <strong>Specifications:</strong> {mobile.modelSpecifications}
+                      <strong>Specifications:</strong> {mobile.specs}
                     </div>
                     <div>
                       <strong>Color:</strong> {mobile.color}
                     </div>
                     <div>
-                      <strong>Demand Price:</strong> ${mobile.demandPrice}
+                      <strong>Demand Price:</strong> {mobile.demandPrice}
                     </div>
                     <div>
-                      <strong>Final Price:</strong> ${mobile.finalPrice}
+                      <strong>Final Price:</strong> {mobile.finalPrice}
                     </div>
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
@@ -147,7 +161,7 @@ const MobilesList = () => {
                         padding: '5px 10px',
                         borderRadius: '5px',
                         cursor: 'pointer',
-                        fontSize: '0.8rem'
+                        fontSize: '0.8rem',
                       }}
                     >
                       Sold
@@ -170,6 +184,22 @@ const MobilesList = () => {
 
       <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+        <Modal.Header closeButton>
+          {/* <Modal.Title>Confirm</Modal.Title> */}
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this phone?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={deletePhone}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {/* Sold Modal */}
       <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
         <Modal.Header closeButton>
@@ -178,12 +208,12 @@ const MobilesList = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Final Price</Form.Label>
+              <Form.Label>Sold Price</Form.Label>
               <Form.Control
                 type="number"
                 value={finalPrice}
                 onChange={(e) => setFinalPrice(e.target.value)}
-                placeholder="Enter final price"
+                placeholder="Enter Sold price"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -191,18 +221,7 @@ const MobilesList = () => {
               <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
                 <option value="">Select warranty</option>
                 <option value="No Warranty">No Warranty</option>
-                <option value="1 Months">1 Months</option>
-                <option value="2 Months">2 Months</option>
-                <option value="3 Months">3 Months</option>
-                <option value="4 Months">4 Months</option>
-                <option value="5 Months">5 Months</option>
-                <option value="6 Months">6 Months</option>
-                <option value="7 Months">7 Months</option>
-                <option value="8 Months">8 Months</option>
-                <option value="9 Months">9 Months</option>
-                <option value="10 Months">10 Months</option>
-                <option value="11 Months">11 Months</option>
-                <option value="12 Months">12 Months</option>
+                {/* Other options */}
               </Form.Select>
             </Form.Group>
           </Form>

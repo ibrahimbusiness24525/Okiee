@@ -239,7 +239,7 @@ const SoldInvoice = () => {
             <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
             <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
           </div>
-          <h2 style={{ color: '#004B87' }}>Okiee</h2>
+          <h2 style={{ color: '#004B87' }}>Okiiee</h2>
         </header>
 
         <section style={styles.infoSection}>
@@ -272,7 +272,7 @@ const SoldInvoice = () => {
         </table>
 
         <div style={styles.totalSection}>
-          <h3>Total: ${price}</h3>
+          <h3>Total:{price}Rs</h3>
         </div>
 
         {/* Terms & Conditions Section */}

@@ -1,82 +1,80 @@
 import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, Button, Grid, Chip, ThemeProvider, createTheme } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Grid, Modal } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import JazzcashImg from '../../assets/images/user/Jazzcash.png';
-import EasypaisaImg from '../../assets/images/user/easy paisa.png';
-import BankImg from '../../assets/images/user/Bank.png';
-import PaymentModal from '../../Modals/PaymentModal';  
+import SadaPayImg from '../../assets/images/user/SadaPay.png';
+import NayaPayImg from '../../assets/images/user/NayaPay.jpg';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',  
+      main: '#1976d2',
     },
   },
   typography: {
     fontFamily: 'Roboto, sans-serif',
     h6: {
-      fontWeight: 600, // Bold font for card titles
+      fontWeight: 600,
     },
     body2: {
-      color: '#555', // Lighter text color for descriptions
+      color: '#555',
     }
   },
-  shadows: ["none", "0px 4px 20px rgba(0, 0, 0, 0.1)"] // Softer shadow for the card
+  shadows: ["none", "0px 4px 20px rgba(0, 0, 0, 0.1)"]
 });
 
 const InternetPricingComponent = () => {
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    phoneNumber: '',
-    description: '',
-    paymentDetails: ''
-  });
-
-  const handleShow = () => setShowModal(true);
-  const handleClose = () => setShowModal(false);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = () => {
-    console.log('Form Data Submitted:', formData);
-    setShowModal(false);
-  };
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   const plans = [
     {
       title: "Jazz Cash",
       description: "Follow instructions according to payment method",
       buttonText: "Pay now",
-      imageUrl: JazzcashImg
+      imageUrl: JazzcashImg,
+      phoneNumber: "03296181822", // JazzCash-specific phone number
+      AccountTitle:"Jazz Cash"
     },
     {
-      title: "Easy Paisa",
+      title: "Sada Pay",
       description: "Follow instructions according to payment method",
       buttonText: "Pay now",
-      imageUrl: EasypaisaImg
+      imageUrl: SadaPayImg,
+      phoneNumber: "03296181822", // SadaPay-specific phone number
+      AccountTitle:"Ibrahim Faisal"
+
     },
     {
-      title: "Bank Account",
+      title: "Naya Pay",
       description: "Follow instructions according to payment method",
       buttonText: "Pay now",
-      imageUrl: BankImg
+      imageUrl: NayaPayImg,
+      phoneNumber: "03296181822", // NayaPay-specific phone number
+      AccountTitle:"Okiiee"
+
     }
   ];
+
+  const handleShow = (plan) => {
+    setSelectedPlan(plan);
+    setShowModal(true);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+    setSelectedPlan(null);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ p: 4, bgcolor: '#f7f7f7', minHeight: '100vh' }}>
         <Typography variant="h4" component="h1" gutterBottom fontWeight="bold" align="center">
-          Mostly Used Payment Options
+         Note:- Send screenshot on WhatsApp "03296181822"
         </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph align="center">
+        {/* <Typography variant="body1" color="text.secondary" paragraph align="center">
           Authorized payment options to ensure safe transactions
-        </Typography>
+        </Typography> */}
         <Grid container spacing={4} justifyContent="center">
           {plans.map((plan, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
@@ -85,7 +83,7 @@ const InternetPricingComponent = () => {
                   <img
                     src={plan.imageUrl}
                     alt={plan.title}
-                    style={{ width: '100%', height: 'auto', marginBottom: '16px', borderRadius: '8px' }}
+                    style={{ width: '100%', height: '200px',objectFit: 'contain', marginBottom: '16px', borderRadius: '8px' }}
                   />
                   <Typography variant="h6" component="h2" gutterBottom align="center">
                     {plan.title}
@@ -93,11 +91,11 @@ const InternetPricingComponent = () => {
                   <Typography variant="body2" align="center" paragraph>
                     {plan.description}
                   </Typography>
-                  <Button 
-                    onClick={handleShow} 
-                    variant="contained" 
-                    color="primary" 
-                    fullWidth 
+                  <Button
+                    onClick={() => handleShow(plan)}
+                    variant="contained"
+                    color="primary"
+                    fullWidth
                     sx={{ fontWeight: 'bold', padding: '10px 0' }}
                   >
                     {plan.buttonText}
@@ -110,13 +108,39 @@ const InternetPricingComponent = () => {
       </Box>
 
       {/* Payment Modal */}
-      <PaymentModal
-        showModal={showModal}
-        data={formData}
-        handleChange={handleChange}
-        handleClose={handleClose}
-        handleSubmit={handleSubmit}
-      />
+      <Modal open={showModal} onClose={handleClose}>
+        <Box
+          sx={{
+            p: 4,
+            bgcolor: 'white',
+            borderRadius: 2,
+            width: 400,
+            mx: 'auto',
+            mt: '20vh',
+            boxShadow: 24,
+          }}
+        >
+          {selectedPlan && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                {selectedPlan.title} Payment Details
+              </Typography>
+              <Typography variant="body1" paragraph>
+              <span style={{ fontWeight: 'bold' }}>ACCOUNT TITLE : </span>  {selectedPlan.AccountTitle}
+              </Typography>
+              <Typography variant="body1" paragraph>
+              <span style={{ fontWeight: 'bold' }}>PAY UPON :  </span>  {selectedPlan.phoneNumber}
+              </Typography>
+              <Typography variant="body1" paragraph>
+              <span style={{ fontWeight: 'bold' }}>NOTE :  </span>  Don't forget to share the screenshot on the same phone no. mentioned above.
+              </Typography>
+              <Button onClick={handleClose} variant="contained" color="primary" fullWidth>
+                Close
+              </Button>
+            </>
+          )}
+        </Box>
+      </Modal>
     </ThemeProvider>
   );
 };

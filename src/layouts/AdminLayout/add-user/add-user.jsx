@@ -10,7 +10,7 @@ const UserTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(false);
-  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: 'User' });
+  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: 'employee' });
 
    useEffect(() => {
     fetchUsers();
@@ -48,7 +48,7 @@ const UserTable = () => {
   const handleClose = () => {
     setShowModal(false);
     setEditUser(false);
-    setNewUser({ username: '', email: '', password: '', role: 'User' });
+    setNewUser({ username: '', email: '', password: '', role: 'employee' });
   };
 
   const handleInputChange = (e) => {
@@ -115,10 +115,10 @@ const UserTable = () => {
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button style={editButtonStyle} onClick={() => handleEditUser(user)}>Edit</button>
                     <button
-                      style={user.active ? deactivateButtonStyle : activateButtonStyle}
+                      style={!user.active ? deactivateButtonStyle : activateButtonStyle}
                       onClick={() => toggleUserStatus(user)}
                     >
-                      {user.active ? 'Deactivate' : 'Activate'}
+                      {!user.active ? 'Deactivate' : 'Activate'}
                     </button>
                   </div>
                 </td>
@@ -277,7 +277,7 @@ const cellStyle = {
 
 const addButtonStyle = {
   padding: '5px 20px',
-  backgroundColor: '#4CAF50',
+  backgroundColor: '#ffc107',
   color: '#fff',
   fontSize: '16px',
   border: 'none',
