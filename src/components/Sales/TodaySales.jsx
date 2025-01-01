@@ -87,10 +87,9 @@ const TodaySales = () => {
     }
   };
 
-  const handlePrintClick = (invoice) => {
+const handlePrintClick = (invoice) => {
     navigate('/invoice/shop', { state: { invoice } }); // Pass invoice data to the route
   };
-  
 console.log(todayInvoices,'todayInvoice')
   return (
     <div style={styles.container}>

@@ -32,15 +32,14 @@ const NavLeft = () => {
   return (
     <React.Fragment>
       <ListGroup as="ul" bsPrefix=" " className="navbar-nav mr-auto">
+        <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
+          <NavSearch windowWidth={windowSize.width} />
+        </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" " className={navItemClass.join(' ')}>
           <button className="btn btn-primary" style={style.addNewPhoneBtn} onClick={handleShow}>
             Add New Phone
           </button>
         </ListGroup.Item>
-        <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
-          <NavSearch windowWidth={windowSize.width} />
-        </ListGroup.Item>
-        
       </ListGroup>
       <AddPhone modal={showModal} handleModalClose={handleClose}/>
     </React.Fragment>

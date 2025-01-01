@@ -120,9 +120,12 @@ const SaleInvoices = () => {
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
-            <tr>
+          <tr>
               <th style={{ ...styles.header, ...styles.headerCell }}>Invoice ID</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Mobile</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>imei</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>imei2</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>Purchase Amount</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Sold Amount</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Date</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Print</th>
@@ -130,35 +133,41 @@ const SaleInvoices = () => {
           </thead>
           <tbody>
             {filteredInvoices.map((invoice, index) => (
-              <tr
-                key={invoice.id}
-                style={{
-                  ...styles.row,
-                  ...(index % 2 === 0 ? styles.evenRow : styles.oddRow),
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor;
-                }}
-              >
-                <td style={styles.cell}>{invoice.invoiceNumber}</td>
-                <td style={styles.cell}>{invoice.items[0]?.mobileName}</td>
-                <td style={styles.cell}>${invoice.totalAmount}</td>
-                <td style={styles.cell}>{new Intl.DateTimeFormat('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: '2-digit',
-                }).format(new Date(invoice.invoiceDate))}</td>
-                <td style={styles.cell}>
-                  <FaPrint
-                    style={styles.printIcon}
-                    onClick={() => handlePrintClick(invoice)}
-                  />
-                </td>
-              </tr>
+            <tr
+                            key={invoice.id}
+                            style={{
+                              ...styles.row,
+                              ...(index % 2 === 0 ? styles.evenRow : styles.oddRow),
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor;
+                              e.currentTarget.querySelector('svg').style.color = styles.printIconHover.color;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor =
+                                index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor;
+                              e.currentTarget.querySelector('svg').style.color = styles.printIcon.color;
+                            }}
+                           >
+                            <td style={styles.cell}>{invoice.invoiceNumber}</td>
+                            <td style={styles.cell}>{invoice.items[0]?.mobileName}</td>
+                            <td style={styles.cell}>{invoice.items[0]?.imei}</td>
+                            <td style={styles.cell}>{invoice.items[0]?.imei2}</td>
+                            <td style={styles.cell}>Rs{invoice.items[0]?.purchaseAmount}</td>
+                            <td style={styles.cell}>Rs{invoice.totalAmount}</td>
+                            <td style={styles.cell}>{new Intl.DateTimeFormat('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: '2-digit',
+                            }).format(new Date(invoice.invoiceDate))}
+                            </td>
+                            <td style={styles.cell}>
+                              <FaPrint
+                                style={styles.printIcon}
+                                onClick={() => handlePrintClick(invoice)}
+                              />
+                            </td>
+                          </tr>
             ))}
           </tbody>
         </table>

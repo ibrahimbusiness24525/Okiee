@@ -134,7 +134,7 @@ const SoldInvoice = () => {
   const [price, setPrice] = useState(dataReceived.invoice?.totalAmount ?? dataReceived?.finalPrice ?? dataReceived?.demandPrice ?? 0);
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
-    invoiceNumber: dataReceived.invoice ? dataReceived.invoice?.invoiceNumber : `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    invoiceNumber:  dataReceived?.invoice?.invoiceNumber?? dataReceived.invoice ? dataReceived.invoice?.invoiceNumber : `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     invoiceDate: dataReceived.invoice 
     ? new Date(dataReceived.invoice?.invoiceDate).toISOString().split('T')[0] 
     : new Date().toISOString().split('T')[0],
@@ -144,9 +144,9 @@ const SoldInvoice = () => {
     imei2: dataReceived.imei2 ?? '',
   });
 
-  console.log(dataReceived, 'datarecieved')
-
+  
   useEffect(() => {
+    console.log(dataReceived, 'datarecieved')
     const shopData = localStorage.getItem('shop');
     if (shopData) {
       const parsedShop = JSON.parse(shopData);
@@ -259,19 +259,19 @@ const SoldInvoice = () => {
               <th style={styles.th}>Company</th>
               <th style={styles.th}>Model</th>
               <th style={styles.th}>IMEI</th>
-              {dataReceived?.imei2 && <th style={styles.th}>IMEI 2</th>}
+              {dataReceived?.invoice?.items[0]?.imei2   && <th style={styles.th}>IMEI 2</th>}
               <th style={styles.th}>Price</th>
               <th style={styles.th}>Warranty</th>
             </tr>
           </thead>
           <tbody>
             <tr style={styles.stripedRow}>
-              <td style={styles.td}>{dataReceived?.companyName ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.modelSpecifications ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.imei ?? 'N/A'}</td>
-              {dataReceived?.imei2 && <td style={styles.td}>{dataReceived.imei2 ?? 'N/A'}</td>}
-              <td style={styles.td}>{dataReceived?.finalPrice ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.warranty ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileName :dataReceived?.modelSpecifications ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei :dataReceived?.imei ?? 'N/A'}</td>
+             {dataReceived?.invoice?.items[0]?.imei2 && <td>{dataReceived?.invoice?.items[0]?.imei2 || dataReceived?.imei2 && <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei2 :dataReceived.imei2 ?? 'N/A'}</td>}</td> }
+              <td style={styles.td}>{dataReceived?.invoice? dataReceived?.invoice?.totalAmount :dataReceived?.finalPrice ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty :dataReceived?.warranty ?? 'N/A'}</td>
             </tr>
           </tbody>
         </table>
