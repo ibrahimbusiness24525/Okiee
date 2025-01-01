@@ -4,6 +4,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import JazzcashImg from '../../assets/images/user/Jazzcash.png';
 import SadaPayImg from '../../assets/images/user/SadaPay.png';
 import NayaPayImg from '../../assets/images/user/NayaPay.jpg';
+import AlfalahImg from '../../assets/images/user/Alfalah.png';
+
 
 const theme = createTheme({
   palette: {
@@ -33,8 +35,8 @@ const InternetPricingComponent = () => {
       description: "Follow instructions according to payment method",
       buttonText: "Pay now",
       imageUrl: JazzcashImg,
-      phoneNumber: "03296181822", // JazzCash-specific phone number
-      AccountTitle:"Jazz Cash"
+      phoneNumber: "03039882318", // JazzCash-specific phone number
+      AccountTitle:"Fatima Faisal"
     },
     {
       title: "Sada Pay",
@@ -42,16 +44,25 @@ const InternetPricingComponent = () => {
       buttonText: "Pay now",
       imageUrl: SadaPayImg,
       phoneNumber: "03296181822", // SadaPay-specific phone number
-      AccountTitle:"Ibrahim Faisal"
+      AccountTitle:"Muhammad Ibrahim"
 
     },
+    // {
+    //   title: "Naya Pay",
+    //   description: "Follow instructions according to payment method",
+    //   buttonText: "Pay now",
+    //   imageUrl: NayaPayImg,
+    //   phoneNumber: "03296181822", // NayaPay-specific phone number
+    //   AccountTitle:"Okiiee"
+
+    // },
     {
-      title: "Naya Pay",
+      title: "Bank Alfalah",
       description: "Follow instructions according to payment method",
       buttonText: "Pay now",
-      imageUrl: NayaPayImg,
-      phoneNumber: "03296181822", // NayaPay-specific phone number
-      AccountTitle:"Okiiee"
+      imageUrl: AlfalahImg,
+      AccountNumber: "07361008925143", 
+      AccountTitle:"Muhammad Ibrahim"
 
     }
   ];
@@ -126,13 +137,32 @@ const InternetPricingComponent = () => {
                 {selectedPlan.title} Payment Details
               </Typography>
               <Typography variant="body1" paragraph>
-              <span style={{ fontWeight: 'bold' }}>ACCOUNT TITLE : </span>  {selectedPlan.AccountTitle}
+              <span  style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>ACCOUNT TITLE : </span>  {selectedPlan.AccountTitle}
               </Typography>
+
+              {selectedPlan.title === 'Bank Alfalah' &&
               <Typography variant="body1" paragraph>
-              <span style={{ fontWeight: 'bold' }}>PAY UPON :  </span>  {selectedPlan.phoneNumber}
-              </Typography>
+              <span  style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>AccountNumber :  </span>  {selectedPlan.AccountNumber}
+              </Typography>}
+
+                {selectedPlan.title === 'Naya Pay' && 
+                <Typography variant="body1" paragraph>
+                <span  style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>PAY UPON :  </span>  {selectedPlan.phoneNumber}
+                </Typography>
+}
+{selectedPlan.title === 'Sada Pay' && 
+                <Typography variant="body1" paragraph>
+                <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>PAY UPON :  </span>  {selectedPlan.phoneNumber}
+                </Typography>
+}
+{selectedPlan.title === 'Jazz Cash' && 
+                <Typography variant="body1" paragraph>
+                <span  style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>PAY UPON :  </span>  {selectedPlan.phoneNumber}
+                </Typography>
+}
+              
               <Typography variant="body1" paragraph>
-              <span style={{ fontWeight: 'bold' }}>NOTE :  </span>  Don't forget to share the screenshot on the same phone no. mentioned above.
+              <span  style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>NOTE :  </span>  Don't forget to share the screenshot on the same phone no. mentioned above.
               </Typography>
               <Button onClick={handleClose} variant="contained" color="primary" fullWidth>
                 Close

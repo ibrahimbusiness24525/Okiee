@@ -90,7 +90,8 @@ const TodaySales = () => {
   const handlePrintClick = (invoice) => {
     navigate('/invoice/shop', { state: { invoice } }); // Pass invoice data to the route
   };
-
+  
+console.log(todayInvoices,'todayInvoice')
   return (
     <div style={styles.container}>
       <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Today Mobile Sales</h2>
@@ -100,6 +101,9 @@ const TodaySales = () => {
             <tr>
               <th style={{ ...styles.header, ...styles.headerCell }}>Invoice ID</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Mobile</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>imei</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>imei2</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>Purchase Amount</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Sold Amount</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Date</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Print</th>
@@ -125,7 +129,10 @@ const TodaySales = () => {
               >
                 <td style={styles.cell}>{invoice.invoiceNumber}</td>
                 <td style={styles.cell}>{invoice.items[0]?.mobileName}</td>
-                <td style={styles.cell}>${invoice.totalAmount}</td>
+                <td style={styles.cell}>{invoice.items[0]?.imei}</td>
+                <td style={styles.cell}>{invoice.items[0]?.imei2}</td>
+                <td style={styles.cell}>Rs{invoice.items[0]?.purchaseAmount}</td>
+                <td style={styles.cell}>Rs{invoice.totalAmount}</td>
                 <td style={styles.cell}>{new Intl.DateTimeFormat('en-US', {
                   year: 'numeric',
                   month: 'short',

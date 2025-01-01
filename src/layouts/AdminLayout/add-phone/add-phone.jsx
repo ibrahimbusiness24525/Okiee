@@ -82,7 +82,7 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
     formData.append('specs', newPhone.specs);
     formData.append('imei', newPhone.imei);
     formData.append('demandPrice', Number(newPhone.demandPrice));
-    formData.append('purchasePrice', Number(newPhone.purchasePrice));
+    formData.append('purchasePrice', newPhone.purchasePrice);
     formData.append('imei2', newPhone.imei2);
     formData.append('finalPrice', Number(newPhone.finalPrice));
     formData.append('shopid', user._id);
@@ -155,7 +155,7 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
             <Row className="mb-3">
               <Col xs={12}>
                 <Form.Group controlId="formFileMultiple" className="mb-3">
-                  <Form.Label>Upload Images (Max 5)</Form.Label>
+                  <Form.Label>Upload Image</Form.Label>
                   <Form.Control type="file" multiple onChange={handleImageChange} />
                   <div className="mt-3 d-flex flex-wrap">
                     {newPhone?.images?.map((image, index) => (
@@ -263,8 +263,8 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
                 <Form.Group controlId="formpurchasePrice" className="mb-3">
                   <Form.Label>Purchase Price</Form.Label>
                   <Form.Control
-                    type="number"
-                    placeholder="Enter Demand Price"
+                    type="text"
+                    placeholder="Enter Purchase Price"
                     name="purchasePrice"
                     value={newPhone.purchasePrice}
                     onChange={handleChange}

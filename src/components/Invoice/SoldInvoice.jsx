@@ -22,8 +22,8 @@ const SoldInvoice = () => {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: '30px',
-      paddingBottom: '15px',
+      marginBottom: '40px',
+      paddingBottom: '1px',
       borderBottom: '3px solid #004B87',
       color: '#004B87',
     },
@@ -140,7 +140,11 @@ const SoldInvoice = () => {
     : new Date().toISOString().split('T')[0],
     items: dataReceived.invoice ? dataReceived.invoice?.items : [],
     totalAmount: dataReceived.invoice ? dataReceived.invoice?.totalAmount : 0,
+    imei: dataReceived.imei,
+    imei2: dataReceived.imei2 ?? '',
   });
+
+  console.log(dataReceived, 'datarecieved')
 
   useEffect(() => {
     const shopData = localStorage.getItem('shop');
@@ -162,6 +166,7 @@ const SoldInvoice = () => {
             warranty: '1 year',
             quantity: 1,
             invoiceNumber: invoiceData.invoiceNumber,
+            purchaseAmount: dataReceived.purchasePrice,
           },
         ],
       }));
@@ -276,18 +281,26 @@ const SoldInvoice = () => {
         </div>
 
         {/* Terms & Conditions Section */}
-        <div style={styles.termsSection}>
+        {/* <div style={styles.termsSection}>
           <h3 style={styles.termsHeading}>Terms & Conditions</h3>
           <p style={styles.termsText}>1. All sales are final once the invoice is generated.</p>
           <p style={styles.termsText}>2. Warranty is valid only for products with a valid invoice.</p>
           <p style={styles.termsText}>3. The company is not responsible for any damages caused by misuse of the product.</p>
           <p style={styles.termsText}>4. Payment must be made in full before the invoice is considered complete.</p>
           <p style={styles.termsText}>5. Terms and conditions are subject to change without prior notice.</p>
-        </div>
+        </div> */}
 
+        <div style={styles.termsSection}>
+  <div style={styles.termsHeading}>Terms and Conditions</div>
+  <div style={styles.termsText}>
+    {shop?.termsCondition.map((item, index) => (
+      <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
+    ))}
+  </div>
+</div>
         <footer style={styles.footer}>
           <p>
-            {shop?.shopName ?? 'Shop Name'} | Email: example@mobile.com | Website: example.com
+            {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}
           </p>
         </footer>
       </div>

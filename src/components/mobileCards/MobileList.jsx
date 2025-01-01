@@ -41,6 +41,8 @@ const MobilesList = () => {
     }
   };
 
+  console.log(soldMobile,'mobile')
+
   const handleEdit = (mobile) => {
     setEditMobile(mobile);
     setShowModal(true);
@@ -130,26 +132,39 @@ const MobilesList = () => {
                   variant="top"
                   src={`data:image/jpeg;base64,${mobile.images[0]}`}
                   alt={mobile.modelSpecifications}
-                  style={{ height: '200px', objectFit: 'cover' }}
+                  style={{ height: '400px', objectFit: 'cover' }}
                 />
 
                 <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
-                  <Card.Title style={{ fontSize: '1.2rem', fontWeight: '600', color: '#333', width: '100%' }}>
+                  <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
                     {mobile.companyName} {mobile.modelSpecifications}
                   </Card.Title>
+
+
                   <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
                     <div>
-                      <strong>Specifications:</strong> {mobile.specs}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Specifications:</strong> {mobile.specs}
                     </div>
                     <div>
-                      <strong>Color:</strong> {mobile.color}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Color:</strong> {mobile.color}
                     </div>
                     <div>
-                      <strong>Demand Price:</strong> {mobile.demandPrice}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>{mobile.imei2 ? "imei1" : "imei"}:</strong> {mobile.imei}
+                    </div>
+                    {mobile.imei2 && <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>imei2:</strong> {mobile.imei2}
+                    </div>}
+                    <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong> {mobile.purchasePrice}
                     </div>
                     <div>
-                      <strong>Final Price:</strong> {mobile.finalPrice}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong> {mobile.demandPrice}
                     </div>
+                    <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong> {mobile.finalPrice}
+                    </div>
+                    
+                   
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
                     <Button
@@ -187,9 +202,9 @@ const MobilesList = () => {
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
-          {/* <Modal.Title>Confirm</Modal.Title> */}
+          <Modal.Title>Confirm</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this phone?</Modal.Body>
+        <Modal.Body>Are you sure to delete this phone?</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
@@ -221,6 +236,18 @@ const MobilesList = () => {
               <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
                 <option value="">Select warranty</option>
                 <option value="No Warranty">No Warranty</option>
+                <option value="1 Month ">1 Month</option>
+                <option value="2 Months">2 Months</option>
+                <option value="3 Months">3 Months</option>
+                <option value="4 Months">4 Months</option>
+                <option value="5 Months">5 Months</option>
+                <option value="6 Months">6 Months</option>
+                <option value="7 Months">7 Months</option>
+                <option value="8 Months">8 Months</option>
+                <option value="9 Months">9 Months</option>
+                <option value="10 Months">10 Months</option>
+                <option value="11 Months">11 Months</option>
+                <option value="12 Months">12 Months</option>
                 {/* Other options */}
               </Form.Select>
             </Form.Group>

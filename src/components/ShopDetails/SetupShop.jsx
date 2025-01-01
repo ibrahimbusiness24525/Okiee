@@ -174,10 +174,21 @@ const SetupShop = () => {
           {formData?.contactNumbers?.map((_, index) =>
             renderField('contactNumbers', index, 'Contact')
           )}
-          {
-            <Button variant="secondary" onClick={() => addField('contactNumbers')}>
+          {isEditing || !hasShop ?
+         ( <>
+          {formData?.contactNumbers?.map((_, index) =>
+            renderField('contactNumbers', index, 'Contact')
+          )}
+            <Button style={{ display: 'block' }} variant="secondary" onClick={() => addField('contactNumbers')}>
               + Add Contact
             </Button>
+            </>
+         ):
+           ( <ul>
+             {formData?.contactNumbers?.map((contactNumbers, index) => (
+                <li key={index}>{contactNumbers}</li>
+              ))}
+          </ul>)
           }
         </Form.Group>
 

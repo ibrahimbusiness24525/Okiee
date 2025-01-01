@@ -166,7 +166,7 @@ const UserTable = () => {
                 name="password"
                 value={newUser.password}
                 onChange={handleInputChange}
-                disabled={editUser}
+                // disabled={editUser}
                 required
               />
             </Form.Group>
