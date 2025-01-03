@@ -60,29 +60,6 @@ const menuItems = {
         },
       ]
     },
-
-    {
-      id: 'ui-forms',
-      title: 'Sales',
-      type: 'group',
-      icon: 'icon-group',
-      children: [
-        {
-          id: 'forms',
-          title: 'Today Sale',
-          type: 'item',
-          icon: 'feather icon-file-text',
-          url: '/sales/todaySales'
-        },
-        {
-          id: 'tabel',
-          title: 'Sale Invoices',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/sales/saleInvoices'
-        }
-      ]
-    },
     {
       id: 'ui-forms',
       title: 'Shop Details',
@@ -98,10 +75,32 @@ const menuItems = {
         },
         {
           id: 'tabel',
-          title: 'Invoice',
+          title: 'Shop Invoice',
           type: 'item',
           icon: 'feather icon-server',
           url: '/invoice/shop'
+        }
+      ]
+    },
+    {
+      id: 'ui-forms',
+      title: 'Sales',
+      type: 'group',
+      icon: 'icon-group',
+      children: [
+        {
+          id: 'forms',
+          title: 'Daily Sale',
+          type: 'item',
+          icon: 'feather icon-file-text',
+          url: '/sales/todaySales'
+        },
+        {
+          id: 'tabel',
+          title: 'Sale Invoices',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/sales/saleInvoices'
         }
       ]
     },

@@ -8,6 +8,9 @@ const SaleInvoices = () => {
   const [search, setSearch] = useState('');
   const [allInvoices, setAllInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +40,19 @@ const SaleInvoices = () => {
     });
 
     setFilteredInvoices(filtered);
+  };
+
+  const handleDateFilter = () => {
+    const fromDate = new Date(dateFrom);
+    const toDate = new Date(dateTo);
+
+    const filtered = allInvoices.filter((invoice) => {
+      const invoiceDate = new Date(invoice.invoiceDate);
+      return invoiceDate >= fromDate && invoiceDate <= toDate;
+    });
+
+    setFilteredInvoices(filtered);
+    setIsPopupOpen(false);
   };
 
   const handlePrintClick = (invoice) => {
@@ -83,6 +99,7 @@ const SaleInvoices = () => {
       fontSize: '1.1em',
     },
     row: {
+      backgroundColor: '#fff', // Uniform row background color
       transition: 'background-color 0.3s',
     },
     cell: {
@@ -96,20 +113,43 @@ const SaleInvoices = () => {
       color: '#000',
       transition: 'color 0.3s',
     },
-    oddRow: {
+    popup: {
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
       backgroundColor: '#fff',
+      padding: '20px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+      zIndex: 1000,
     },
-    evenRow: {
-      backgroundColor: 'rgb(249, 250, 251)',
+    overlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 999,
     },
-    rowHover: {
-      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    button: {
+      padding: '10px 20px',
+      backgroundColor: '#007bff',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      marginBottom: '10px',
     },
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={{width:'100%'}}>Sale Invoices</h2>
+      <h2 style={{ width: '100%' }}>Sale Invoices</h2>
+      <button onClick={() => setIsPopupOpen(true)} style={styles.button}>
+        Filter by Date
+      </button>
       <input
         type="text"
         value={search}
@@ -117,14 +157,49 @@ const SaleInvoices = () => {
         placeholder="Search by Invoice Number or Mobile Name"
         style={styles.searchBar}
       />
+     
+      {isPopupOpen && (
+        <>
+          <div style={styles.overlay} onClick={() => setIsPopupOpen(false)}></div>
+          <div style={styles.popup}>
+            <h3>Filter by Date</h3>
+            <label>
+              From:
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                style={styles.searchBar}
+              />
+            </label>
+            <label>
+              To:
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                style={styles.searchBar}
+              />
+            </label>
+            <div>
+              <button onClick={handleDateFilter} style={styles.button}>
+                Apply Filter
+              </button>
+              <button onClick={() => setIsPopupOpen(false)} style={styles.button}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </>
+      )}
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
-          <tr>
+            <tr>
               <th style={{ ...styles.header, ...styles.headerCell }}>Invoice ID</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Mobile</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>imei</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>imei2</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>IMEI</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>IMEI2</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Purchase Amount</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Sold Amount</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Date</th>
@@ -132,42 +207,28 @@ const SaleInvoices = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredInvoices.map((invoice, index) => (
-            <tr
-                            key={invoice.id}
-                            style={{
-                              ...styles.row,
-                              ...(index % 2 === 0 ? styles.evenRow : styles.oddRow),
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor;
-                              e.currentTarget.querySelector('svg').style.color = styles.printIconHover.color;
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor;
-                              e.currentTarget.querySelector('svg').style.color = styles.printIcon.color;
-                            }}
-                           >
-                            <td style={styles.cell}>{invoice.invoiceNumber}</td>
-                            <td style={styles.cell}>{invoice.items[0]?.mobileName}</td>
-                            <td style={styles.cell}>{invoice.items[0]?.imei}</td>
-                            <td style={styles.cell}>{invoice.items[0]?.imei2}</td>
-                            <td style={styles.cell}>Rs{invoice.items[0]?.purchaseAmount}</td>
-                            <td style={styles.cell}>Rs{invoice.totalAmount}</td>
-                            <td style={styles.cell}>{new Intl.DateTimeFormat('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: '2-digit',
-                            }).format(new Date(invoice.invoiceDate))}
-                            </td>
-                            <td style={styles.cell}>
-                              <FaPrint
-                                style={styles.printIcon}
-                                onClick={() => handlePrintClick(invoice)}
-                              />
-                            </td>
-                          </tr>
+            {filteredInvoices.map((invoice) => (
+              <tr key={invoice.id} style={styles.row}>
+                <td style={styles.cell}>{invoice.invoiceNumber}</td>
+                <td style={styles.cell}>{invoice.items[0]?.mobileName}</td>
+                <td style={styles.cell}>{invoice.items[0]?.imei}</td>
+                <td style={styles.cell}>{invoice.items[0]?.imei2}</td>
+                <td style={styles.cell}>Rs{invoice.items[0]?.purchaseAmount}</td>
+                <td style={styles.cell}>Rs{invoice.totalAmount}</td>
+                <td style={styles.cell}>
+                  {new Intl.DateTimeFormat('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                  }).format(new Date(invoice.invoiceDate))}
+                </td>
+                <td style={styles.cell}>
+                  <FaPrint
+                    style={styles.printIcon}
+                    onClick={() => handlePrintClick(invoice)}
+                  />
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>

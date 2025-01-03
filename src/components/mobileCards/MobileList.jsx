@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Form, InputGroup, Modal, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
 import axios from 'axios';
 import { BASE_URL } from 'config/constant';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
@@ -15,8 +16,8 @@ const MobilesList = () => {
   const [soldMobile, setSoldMobile] = useState(null);
   const [finalPrice, setFinalPrice] = useState('');
   const [warranty, setWarranty] = useState('');
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // New state for delete confirmation
-  const [deleteMobileId, setDeleteMobileId] = useState(null); // Mobile ID to delete
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteMobileId, setDeleteMobileId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,8 +41,6 @@ const MobilesList = () => {
       setShowDeleteModal(false);
     }
   };
-
-  console.log(soldMobile,'mobile')
 
   const handleEdit = (mobile) => {
     setEditMobile(mobile);
@@ -80,6 +79,29 @@ const MobilesList = () => {
     setShowDeleteModal(true);
   };
 
+  const handleShareInventory = () => {
+    const doc = new jsPDF();
+    doc.text('Mobile Inventory', 10, 10);
+
+    mobiles.forEach((mobile, index) => {
+      const { images, companyName, modelSpecifications, color, purchasePrice, demandPrice, finalPrice } = mobile;
+      const imgData = `data:image/jpeg;base64,${images[0]}`;
+      const y = 20 + index * 50;
+
+      if (imgData) {
+        doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
+      }
+      doc.text(`Company: ${companyName}`, 50, y + 10);
+      doc.text(`Model: ${modelSpecifications}`, 50, y + 20);
+      doc.text(`Color: ${color}`, 50, y + 30);
+      doc.text(`Purchase Price: ${purchasePrice}`, 50, y + 40);
+      doc.text(`Demand Price: ${demandPrice}`, 50, y + 50);
+      doc.text(`Final Price: ${finalPrice}`, 50, y + 60);
+    });
+
+    doc.save('Mobile_Inventory.pdf');
+  };
+
   const filteredMobiles = mobiles?.filter(
     (mobile) =>
       mobile.companyName?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
@@ -100,6 +122,16 @@ const MobilesList = () => {
           onChange={handleSearch}
         />
       </InputGroup>
+
+      <div className="d-flex justify-content-end mb-3">
+        <Button
+          variant="primary"
+          onClick={handleShareInventory}
+          style={{ backgroundColor: '#007bff', border: 'none' }}
+        >
+          Share Inventory
+        </Button>
+      </div>
 
       <Row xs={1} md={2} lg={3} className="g-4">
         {filteredMobiles.length > 0 ? (
@@ -139,32 +171,29 @@ const MobilesList = () => {
                   <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
                     {mobile.companyName} {mobile.modelSpecifications}
                   </Card.Title>
-
-
                   <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
                     <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Specifications:</strong> {mobile.specs}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>
+                        Specifications:
+                      </strong>{' '}
+                      {mobile.specs}
                     </div>
                     <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Color:</strong> {mobile.color}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Color:</strong>{' '}
+                      {mobile.color}
                     </div>
                     <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>{mobile.imei2 ? "imei1" : "imei"}:</strong> {mobile.imei}
-                    </div>
-                    {mobile.imei2 && <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>imei2:</strong> {mobile.imei2}
-                    </div>}
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong> {mobile.purchasePrice}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
+                      {mobile.purchasePrice}
                     </div>
                     <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong> {mobile.demandPrice}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
+                      {mobile.demandPrice}
                     </div>
                     <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong> {mobile.finalPrice}
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
+                      {mobile.finalPrice || 'Not Sold'}
                     </div>
-                    
-                   
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
                     <Button
@@ -236,7 +265,7 @@ const MobilesList = () => {
               <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
                 <option value="">Select warranty</option>
                 <option value="No Warranty">No Warranty</option>
-                <option value="1 Month ">1 Month</option>
+                <option value="1 Month">1 Month</option>
                 <option value="2 Months">2 Months</option>
                 <option value="3 Months">3 Months</option>
                 <option value="4 Months">4 Months</option>
@@ -248,7 +277,6 @@ const MobilesList = () => {
                 <option value="10 Months">10 Months</option>
                 <option value="11 Months">11 Months</option>
                 <option value="12 Months">12 Months</option>
-                {/* Other options */}
               </Form.Select>
             </Form.Group>
           </Form>

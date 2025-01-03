@@ -5,11 +5,12 @@ import { Link } from 'react-router-dom';
 import avatar1 from '../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../assets/images/user/avatar-3.jpg';
+import { color } from 'd3';
 
 const dashSalesData = [
-  { title: 'Daily Sales', amount: '$249.95', icon: 'icon-arrow-up text-c-green', value: 50, class: 'progress-c-theme' },
-  { title: 'Monthly Sales', amount: '$2.942.32', icon: 'icon-arrow-down text-c-red', value: 36, class: 'progress-c-theme2' },
-  { title: 'Yearly Sales', amount: '$8.638.32', icon: 'icon-arrow-up text-c-green', value: 70, color: 'progress-c-theme' }
+  { title: 'Daily Sales', amount: 'Rs249.95'},
+  { title: 'Monthly Sales', amount: 'Rs2.942.32'},
+  { title: 'Yearly Sales', amount: 'Rs8.638.32'}
 ];
 
 const DashDefault = () => {
@@ -109,19 +110,19 @@ const DashDefault = () => {
             <Col key={index} xl={6} xxl={4} style={{marginBottom:25}}> 
               <Card >
                 <Card.Body>
-                  <h6 className="mb-4">{data.title}</h6>
+                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>{data.title}</h6>
                   <div className="row d-flex align-items-center">
                     <div className="col-9">
                       <h3 className="f-w-300 d-flex align-items-center m-b-0">
-                        <i className={`feather ${data.icon} f-30 m-r-5`} /> $249.95
+                        <i className={`feather ${data.icon} f-30 m-r-20`} /> Rs50000
                       </h3>
                     </div>
-                    <div className="col-3 text-end">
+                    {/* <div className="col-3 text-end">
                       <p className="m-b-0">{data.value}%</p>
-                    </div>
+                    </div> */}
                   </div>
-                  <div className="progress m-t-30" style={{ height: '7px' }}>
-                    <div
+                  {/* <div className="progress m-t-30" style={{ height: '7px' }}>
+                     <div
                       className={`progress-bar ${data.class}`}
                       role="progressbar"
                       style={{ width: `${data.value}%` }}
@@ -129,7 +130,7 @@ const DashDefault = () => {
                       aria-valuemin="0"
                       aria-valuemax="100"
                     />
-                  </div>
+                  </div> */}
                 </Card.Body>
               </Card>
             </Col>

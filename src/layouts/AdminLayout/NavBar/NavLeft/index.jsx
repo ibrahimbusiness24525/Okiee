@@ -37,7 +37,7 @@ const NavLeft = () => {
         </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" " className={navItemClass.join(' ')}>
           <button className="btn btn-primary" style={style.addNewPhoneBtn} onClick={handleShow}>
-            Add New Phone
+            Add Phone
           </button>
         </ListGroup.Item>
       </ListGroup>
