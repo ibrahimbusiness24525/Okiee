@@ -3,8 +3,6 @@ import { Modal, Form, Button, Row, Col, Image } from 'react-bootstrap';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { BASE_URL } from 'config/constant';
-import { FaQrcode } from 'react-icons/fa'; // Import QR Code scanner icon
-import ReactQrScanner from 'react-qr-scanner'; // Import the QR scanner library
 
 const AddPhone = ({ modal, editMobile, handleModalClose }) => {
   const [showModal, setShowModal] = useState(false);
@@ -23,7 +21,6 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
     color: ''
   });
   const [isDualSim, setIsDualSim] = useState(false);
-  const [isScanning, setIsScanning] = useState(false); // Track if QR scanner is active
 
   useEffect(() => {
     setShowModal(modal);
@@ -85,7 +82,7 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
     formData.append('specs', newPhone.specs);
     formData.append('imei', newPhone.imei);
     formData.append('demandPrice', Number(newPhone.demandPrice));
-    formData.append('purchasePrice', newPhone.purchasePrice);
+    formData.append('purchasePrice', Number(newPhone.purchasePrice));
     formData.append('imei2', newPhone.imei2);
     formData.append('finalPrice', Number(newPhone.finalPrice));
     formData.append('shopid', user._id);
@@ -147,32 +144,18 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
     });
   };
 
-  const handleScan = (data) => {
-    if (data) {
-      setNewPhone((prevState) => ({
-        ...prevState,
-        imei: data
-      }));
-      setIsScanning(false); // Close QR scanner after scanning
-    }
-  };
-
-  const handleError = (err) => {
-    console.error(err);
-  };
-
   return (
     <>
       <Modal show={showModal} onHide={handleClose} centered size="lg" className="custom-modal">
         <Modal.Header closeButton className="border-0">
-          <Modal.Title className="w-100 text-center">{editMobile ? 'Edit Phone' : 'Add Phone'}</Modal.Title>
+          <Modal.Title className="w-100 text-center">{editMobile ? 'Edit Phone' : 'Add New Phone'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Row className="mb-3">
               <Col xs={12}>
                 <Form.Group controlId="formFileMultiple" className="mb-3">
-                  <Form.Label>Upload Image</Form.Label>
+                  <Form.Label>Upload Images (Max 5)</Form.Label>
                   <Form.Control type="file" multiple onChange={handleImageChange} />
                   <div className="mt-3 d-flex flex-wrap">
                     {newPhone?.images?.map((image, index) => (
@@ -253,23 +236,14 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
               <Col md={6}>
                 <Form.Group controlId="formIMEI" className="mb-3">
                   <Form.Label>IMEI 1</Form.Label>
-                  <div className="d-flex align-items-center">
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter IMEI 1"
-                      name="imei"
-                      value={newPhone.imei}
-                      onChange={handleChange}
-                      required
-                    />
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => setIsScanning(true)}
-                      style={{ marginLeft: '10px' }}
-                    >
-                      <FaQrcode />
-                    </Button>
-                  </div>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter IMEI 1"
+                    name="imei"
+                    value={newPhone.imei}
+                    onChange={handleChange}
+                    required
+                  />
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -289,8 +263,8 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
                 <Form.Group controlId="formpurchasePrice" className="mb-3">
                   <Form.Label>Purchase Price</Form.Label>
                   <Form.Control
-                    type="text"
-                    placeholder="Enter Purchase Price"
+                    type="number"
+                    placeholder="Enter Demand Price"
                     name="purchasePrice"
                     value={newPhone.purchasePrice}
                     onChange={handleChange}
@@ -338,16 +312,6 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
                 />
               </Col>
             </Row>
-
-            {isScanning && (
-              <ReactQrScanner
-                delay={300}
-                style={{ width: '100%' }}
-                onScan={handleScan}
-                onError={handleError}
-              />
-            )}
-
             <Button variant="primary" type="submit" disabled={loading}>
               {loading ? (editMobile ? 'Updating...' : 'Adding...') : editMobile ? 'Update Phone' : 'Add Phone'}
             </Button>

@@ -84,19 +84,17 @@ const MobilesList = () => {
     doc.text('Mobile Inventory', 10, 10);
 
     mobiles.forEach((mobile, index) => {
-      const { images, companyName, modelSpecifications, color, purchasePrice, demandPrice, finalPrice } = mobile;
+      const { images, companyName, modelSpecifications , specs, color } = mobile;
       const imgData = `data:image/jpeg;base64,${images[0]}`;
       const y = 20 + index * 50;
 
       if (imgData) {
         doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
       }
-      doc.text(`Company: ${companyName}`, 50, y + 10);
-      doc.text(`Model: ${modelSpecifications}`, 50, y + 20);
-      doc.text(`Color: ${color}`, 50, y + 30);
-      doc.text(`Purchase Price: ${purchasePrice}`, 50, y + 40);
-      doc.text(`Demand Price: ${demandPrice}`, 50, y + 50);
-      doc.text(`Final Price: ${finalPrice}`, 50, y + 60);
+      doc.text(`Company: ${companyName}`, 50, y + 5);
+      doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
+      doc.text(`Specification: ${specs}`, 50, y + 25);
+      doc.text(`Color: ${color}`, 50, y + 35);
     });
 
     doc.save('Mobile_Inventory.pdf');

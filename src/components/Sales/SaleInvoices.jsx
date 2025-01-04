@@ -35,7 +35,9 @@ const SaleInvoices = () => {
     const filtered = allInvoices.filter((invoice) => {
       return (
         invoice.invoiceNumber.toLowerCase().includes(query) ||
-        invoice.items[0]?.mobileName.toLowerCase().includes(query)
+        invoice.items[0]?.mobileName.toLowerCase().includes(query) ||
+        invoice.items[0]?.imei.toLowerCase().includes(query) ||
+        invoice.items[0]?.imei2.toLowerCase().includes(query) 
       );
     });
 
@@ -133,7 +135,7 @@ const SaleInvoices = () => {
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       zIndex: 999,
     },
-    button: {
+    button1: {
       padding: '10px 20px',
       backgroundColor: '#007bff',
       color: '#fff',
@@ -142,19 +144,38 @@ const SaleInvoices = () => {
       cursor: 'pointer',
       marginBottom: '10px',
     },
+    button2: {
+      padding: '10px 20px',
+      backgroundColor: '#007bff',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      marginBottom: '10px',
+    },
+    button3: {
+      padding: '10px 20px',
+      backgroundColor: '#007bff',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      marginBottom: '10px',
+      marginLeft: '20px'
+    },
   };
 
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Sale Invoices</h2>
-      <button onClick={() => setIsPopupOpen(true)} style={styles.button}>
+      <button onClick={() => setIsPopupOpen(true)} style={styles.button1}>
         Filter by Date
       </button>
       <input
         type="text"
         value={search}
         onChange={handleSearchChange}
-        placeholder="Search by Invoice Number or Mobile Name"
+        placeholder="Search by Imei or Mobile Name"
         style={styles.searchBar}
       />
      
@@ -182,10 +203,10 @@ const SaleInvoices = () => {
               />
             </label>
             <div>
-              <button onClick={handleDateFilter} style={styles.button}>
+              <button onClick={handleDateFilter} style={styles.button2}>
                 Apply Filter
               </button>
-              <button onClick={() => setIsPopupOpen(false)} style={styles.button}>
+              <button onClick={() => setIsPopupOpen(false)} style={styles.button3}>
                 Cancel
               </button>
             </div>
