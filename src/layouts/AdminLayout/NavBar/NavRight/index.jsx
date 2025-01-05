@@ -13,7 +13,8 @@ const NavRight = () => {
   const [LoginUser, setLoginUser] = useState({});
 
   const logout = () => {
-    localStorage.clear(); // Clears all items from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user') // Clears all items from localStorage
     navigate('/login');   
 };
 

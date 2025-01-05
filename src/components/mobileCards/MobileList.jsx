@@ -160,7 +160,7 @@ const MobilesList = () => {
                 />
                 <Card.Img
                   variant="top"
-                  src={`data:image/jpeg;base64,${mobile.images[0]}`}
+                  src={`${mobile.images[0]}`}
                   alt={mobile.modelSpecifications}
                   style={{ height: '400px', objectFit: 'cover' }}
                 />
