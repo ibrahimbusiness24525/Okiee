@@ -47,16 +47,31 @@ const menuItems = {
     },
     {
       id: 'mobile',
-      title: 'Mobile Phone',
+      title: 'Mobile Stocks',
       type: 'group',
       icon: 'icon-navigation',
       children: [
         {
           id: 'mobile',
-          title: 'Mobile Phone List',
+          title: 'Available Phone',
           type: 'item',
           icon: 'feather icon-home',
           url: '/app/dashboard/mobileList'
+        },
+      ]
+    },
+    {
+      id: 'mobile',
+      title: 'Ledger',
+      type: 'group',
+      icon: 'icon-navigation',
+      children: [
+        {
+          id: 'mobile',
+          title: 'Add Ledger',
+          type: 'item',
+          icon: 'feather icon-home',
+          url: '/app/dashboard/addLedger'
         },
       ]
     },

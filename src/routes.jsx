@@ -66,6 +66,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/addLedger',
+        element: lazy(() => import('./components/Ledger/AddLedger')) // Ledger
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/addUser',
         element: lazy(() => import('./layouts/AdminLayout/add-user/add-user')) // Mobile List
       },
