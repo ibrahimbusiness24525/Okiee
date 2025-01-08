@@ -121,15 +121,27 @@ const MobilesList = () => {
         />
       </InputGroup>
 
-      <div className="d-flex justify-content-end mb-3">
-        <Button
-          variant="primary"
-          onClick={handleShareInventory}
-          style={{ backgroundColor: '#007bff', border: 'none' }}
-        >
-          Share Inventory
-        </Button>
-      </div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+  {/* Total Stock Amount */}
+  <div>
+    <h5 style={{fontSize: 30}}>
+      Total Stock Amount: 
+      <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
+        {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)}
+      </span>
+    </h5>
+  </div>
+
+  {/* Share Inventory Button */}
+  <Button
+    variant="primary"
+    onClick={handleShareInventory}
+    style={{ backgroundColor: '#007bff', border: 'none' }}
+  >
+    Share Inventory
+  </Button>
+</div>
+
 
       <Row xs={1} md={2} lg={3} className="g-4">
         {filteredMobiles.length > 0 ? (
