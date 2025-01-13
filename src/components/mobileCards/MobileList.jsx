@@ -18,6 +18,12 @@ const MobilesList = () => {
   const [warranty, setWarranty] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteMobileId, setDeleteMobileId] = useState(null);
+  const [showDispatchModal, setShowDispatchModal] = useState(false);
+  const [dispatchMobile, setDispatchMobile] = useState(null);
+  const [shopName, setShopName] = useState('');
+  const [personName, setPersonName] = useState('');
+  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +47,32 @@ const MobilesList = () => {
       setShowDeleteModal(false);
     }
   };
+
+  const handleDispatchClick = (mobile) => {
+    setDispatchMobile(mobile);
+    setShowDispatchModal(true);
+  };
+  
+  const handleDispatchSubmit = () => {
+    if (!shopName || !personName) {
+      alert('Please fill all fields');
+      return;
+    }
+  
+    const dispatchDetails = {
+      ...dispatchMobile,
+      shopName,
+      personName,
+    };
+  
+    // You can navigate or perform any API call here with dispatchDetails
+    console.log('Dispatch Details:', dispatchDetails);
+  
+    setShopName('');
+    setPersonName('');
+    setShowDispatchModal(false);
+  };
+  
 
   const handleEdit = (mobile) => {
     setEditMobile(mobile);
@@ -99,12 +131,21 @@ const MobilesList = () => {
 
     doc.save('Mobile_Inventory.pdf');
   };
+  const filteredMobiles = mobiles?.filter((mobile) => {
+    // Split the search term into words
+    const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
+  
+    return searchWords.every((word) =>
+      // Check if each word exists in any of the searchable fields
+      mobile.companyName?.toLowerCase()?.includes(word) ||
+      mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
+      mobile.specs?.toLowerCase()?.includes(word) ||
+      mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
+      String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
+    );
+  });
+  
 
-  const filteredMobiles = mobiles?.filter(
-    (mobile) =>
-      mobile.companyName?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-      mobile.modelSpecifications?.toLowerCase()?.includes(searchTerm?.toLowerCase())
-  );
 
   return (
     <>
@@ -169,13 +210,14 @@ const MobilesList = () => {
                     cursor: 'pointer',
                     fontSize: '1.2rem',
                   }}
+
                 />
-                <Card.Img
+             {mobile.images[0] &&  <Card.Img
                   variant="top"
                   src={`${mobile.images[0]}`}
                   alt={mobile.modelSpecifications}
                   style={{ height: '400px', objectFit: 'cover' }}
-                />
+                />}
 
                 <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
                   <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
@@ -193,6 +235,14 @@ const MobilesList = () => {
                       {mobile.color}
                     </div>
                     <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>{mobile.imei2 ? "imei 1" : "imei"}</strong>{' '}
+                      {mobile.imei}
+                    </div>
+                    {mobile.imei2 && <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>imei 2</strong>{' '}
+                      {mobile.imei2}
+                    </div>}
+                    <div>
                       <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
                       {mobile.purchasePrice}
                     </div>
@@ -206,6 +256,21 @@ const MobilesList = () => {
                     </div>
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
+                  <Button
+                 onClick={() => handleDispatchClick(mobile)}
+               style={{
+                backgroundColor: '#FFD000',
+                color: '#fff',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                 marginRight: '5px',
+               }}
+              >
+             Dispatch
+                 </Button>
                     <Button
                       onClick={() => handleSoldClick(mobile)}
                       style={{
@@ -253,6 +318,43 @@ const MobilesList = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Modal show={showDispatchModal} onHide={() => setShowDispatchModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>Dispatch Mobile</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form>
+      <Form.Group className="mb-3">
+        <Form.Label>Shop Name</Form.Label>
+        <Form.Control
+          type="text"
+          value={shopName}
+          onChange={(e) => setShopName(e.target.value)}
+          placeholder="Enter Shop Name"
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Receiver Person Name</Form.Label>
+        <Form.Control
+          type="text"
+          value={personName}
+          onChange={(e) => setPersonName(e.target.value)}
+          placeholder="Receiver Person Name"
+        />
+      </Form.Group>
+    </Form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowDispatchModal(false)}>
+      Cancel
+    </Button>
+    <Button variant="primary" onClick={handleDispatchSubmit}>
+      Dispach
+    </Button>
+  </Modal.Footer>
+</Modal>
+
 
       {/* Sold Modal */}
       <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
