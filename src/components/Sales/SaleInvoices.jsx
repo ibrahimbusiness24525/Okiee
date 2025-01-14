@@ -37,7 +37,7 @@ const SaleInvoices = () => {
         invoice.invoiceNumber.toLowerCase().includes(query) ||
         invoice.items[0]?.mobileName.toLowerCase().includes(query) ||
         invoice.items[0]?.imei.toLowerCase().includes(query) ||
-        invoice.items[0]?.imei2.toLowerCase().includes(query) 
+        invoice.items[0]?.imei2.toLowerCase().includes(query)
       );
     });
 
@@ -101,7 +101,7 @@ const SaleInvoices = () => {
       fontSize: '1.1em',
     },
     row: {
-      backgroundColor: '#fff', // Uniform row background color
+      backgroundColor: '#fff',
       transition: 'background-color 0.3s',
     },
     cell: {
@@ -115,60 +115,12 @@ const SaleInvoices = () => {
       color: '#000',
       transition: 'color 0.3s',
     },
-    popup: {
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      backgroundColor: '#fff',
-      padding: '20px',
-      borderRadius: '8px',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-      zIndex: 1000,
-    },
-    overlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 999,
-    },
-    button1: {
-      padding: '10px 20px',
-      backgroundColor: '#007bff',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      marginBottom: '10px',
-    },
-    button2: {
-      padding: '10px 20px',
-      backgroundColor: '#007bff',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      marginBottom: '10px',
-    },
-    button3: {
-      padding: '10px 20px',
-      backgroundColor: '#007bff',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      marginBottom: '10px',
-      marginLeft: '20px'
-    },
   };
 
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Sale Invoices</h2>
-      <button onClick={() => setIsPopupOpen(true)} style={styles.button1}>
+      <button onClick={() => setIsPopupOpen(true)} style={{ padding: '10px 20px', marginBottom: '10px' }}>
         Filter by Date
       </button>
       <input
@@ -178,11 +130,10 @@ const SaleInvoices = () => {
         placeholder="Search by Imei or Mobile Name"
         style={styles.searchBar}
       />
-     
       {isPopupOpen && (
         <>
-          <div style={styles.overlay} onClick={() => setIsPopupOpen(false)}></div>
-          <div style={styles.popup}>
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 999 }} onClick={() => setIsPopupOpen(false)}></div>
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#fff', padding: '20px', borderRadius: '8px', zIndex: 1000 }}>
             <h3>Filter by Date</h3>
             <label>
               From:
@@ -203,12 +154,8 @@ const SaleInvoices = () => {
               />
             </label>
             <div>
-              <button onClick={handleDateFilter} style={styles.button2}>
-                Apply Filter
-              </button>
-              <button onClick={() => setIsPopupOpen(false)} style={styles.button3}>
-                Cancel
-              </button>
+              <button onClick={handleDateFilter} style={{ padding: '10px 20px', marginRight: '10px' }}>Apply Filter</button>
+              <button onClick={() => setIsPopupOpen(false)} style={{ padding: '10px 20px' }}>Cancel</button>
             </div>
           </div>
         </>
@@ -223,6 +170,7 @@ const SaleInvoices = () => {
               <th style={{ ...styles.header, ...styles.headerCell }}>IMEI2</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Purchase Amount</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Sold Amount</th>
+              <th style={{ ...styles.header, ...styles.headerCell }}>Profit</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Date</th>
               <th style={{ ...styles.header, ...styles.headerCell }}>Print</th>
             </tr>
@@ -236,6 +184,9 @@ const SaleInvoices = () => {
                 <td style={styles.cell}>{invoice.items[0]?.imei2}</td>
                 <td style={styles.cell}>Rs{invoice.items[0]?.purchaseAmount}</td>
                 <td style={styles.cell}>Rs{invoice.totalAmount}</td>
+                <td style={styles.cell}>
+                  Rs{(invoice.totalAmount - (invoice.items[0]?.purchaseAmount || 0)).toFixed(2)}
+                </td>
                 <td style={styles.cell}>
                   {new Intl.DateTimeFormat('en-US', {
                     year: 'numeric',

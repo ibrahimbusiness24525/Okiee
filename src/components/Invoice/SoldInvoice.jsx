@@ -34,7 +34,7 @@ const SoldInvoice = () => {
       letterSpacing: '1px',
     },
     infoSection: {
-      marginBottom: '30px',
+      marginBottom: '25px',
       padding: '20px',
       background: '#fff',
       borderRadius: '10px',
@@ -129,7 +129,7 @@ const SoldInvoice = () => {
 
   const location = useLocation();
   const dataReceived = location?.state ?? {};
-
+console.log("dataReceived" , dataReceived)
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(dataReceived.invoice?.totalAmount ?? dataReceived?.finalPrice ?? dataReceived?.demandPrice ?? 0);
   const [invoiceData, setInvoiceData] = useState({
@@ -247,19 +247,30 @@ const SoldInvoice = () => {
           <h2 style={{ color: '#004B87' }}>Okiiee</h2>
         </header>
 
-        <section style={styles.infoSection}>
-          <p><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
-          <p><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
-          <p><strong>Date of Sale:</strong> {invoiceData.invoiceDate}</p>
-        </section>
+        <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+  {/* Left Side */}
+  <div>
+    <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
+    <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
+    <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Date of Sale:</strong> {invoiceData.invoiceDate}</p>
+  </div>
+
+  {/* Right Side */}
+  <div style={{ textAlign: 'right' }}>
+    <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerName : dataReceived?.customerName ?? 'N/A'}</p>
+    <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p>
+   { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'N/A'}</p>}
+  </div>
+</section>
+
 
         <table style={styles.table}>
           <thead>
             <tr>
               <th style={styles.th}>Company</th>
               <th style={styles.th}>Model</th>
-              <th style={styles.th}>IMEI</th>
-              {dataReceived?.invoice?.items[0]?.imei2   && <th style={styles.th}>IMEI 2</th>}
+              <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
+              {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>}
               <th style={styles.th}>Price</th>
               <th style={styles.th}>Warranty</th>
             </tr>
@@ -269,7 +280,7 @@ const SoldInvoice = () => {
               <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'N/A'}</td>
               <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileName :dataReceived?.modelSpecifications ?? 'N/A'}</td>
               <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei :dataReceived?.imei ?? 'N/A'}</td>
-             {dataReceived?.invoice?.items[0]?.imei2 && <td>{dataReceived?.invoice?.items[0]?.imei2 || dataReceived?.imei2 && <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei2 :dataReceived.imei2 ?? 'N/A'}</td>}</td> }
+             {dataReceived.imei2 && <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei2 : dataReceived.imei2 ?? 'N/A'}</td> }
               <td style={styles.td}>{dataReceived?.invoice? dataReceived?.invoice?.totalAmount :dataReceived?.finalPrice ?? 'N/A'}</td>
               <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty :dataReceived?.warranty ?? 'N/A'}</td>
             </tr>

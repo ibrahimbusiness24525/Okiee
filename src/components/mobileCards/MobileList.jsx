@@ -22,6 +22,11 @@ const MobilesList = () => {
   const [dispatchMobile, setDispatchMobile] = useState(null);
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerNumber, setCustomerNumber] = useState('');
+  const [customerCNIC, setCustomerCNIC] = useState('');
+
+
   
 
   const navigate = useNavigate();
@@ -89,7 +94,7 @@ const MobilesList = () => {
   };
 
   const handleSoldSubmit = async () => {
-    if (!finalPrice || !warranty) {
+    if (!finalPrice || !warranty || !customerName || !customerNumber) {
       alert('Please fill all fields');
       return;
     }
@@ -98,11 +103,17 @@ const MobilesList = () => {
       ...soldMobile,
       finalPrice,
       warranty,
+      customerNumber,
+      customerName,
+      customerCNIC,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
     setFinalPrice('');
     setWarranty('');
+    setCustomerNumber('');
+    setCustomerName('');
+    setCustomerCNIC('');
     setShowSoldModal(false);
   };
 
@@ -358,50 +369,78 @@ const MobilesList = () => {
 
       {/* Sold Modal */}
       <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Sell Mobile</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Sold Price</Form.Label>
-              <Form.Control
-                type="number"
-                value={finalPrice}
-                onChange={(e) => setFinalPrice(e.target.value)}
-                placeholder="Enter Sold price"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Company Warranty</Form.Label>
-              <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
-                <option value="">Select warranty</option>
-                <option value="No Warranty">No Warranty</option>
-                <option value="1 Month">1 Month</option>
-                <option value="2 Months">2 Months</option>
-                <option value="3 Months">3 Months</option>
-                <option value="4 Months">4 Months</option>
-                <option value="5 Months">5 Months</option>
-                <option value="6 Months">6 Months</option>
-                <option value="7 Months">7 Months</option>
-                <option value="8 Months">8 Months</option>
-                <option value="9 Months">9 Months</option>
-                <option value="10 Months">10 Months</option>
-                <option value="11 Months">11 Months</option>
-                <option value="12 Months">12 Months</option>
-              </Form.Select>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowSoldModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSoldSubmit}>
-            Submit
-          </Button>
-        </Modal.Footer>
-      </Modal>
+  <Modal.Header closeButton>
+    <Modal.Title>Sell Mobile</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form>
+      <Form.Group className="mb-3">
+        <Form.Label>Customer Name</Form.Label>
+        <Form.Control
+          type="text"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          placeholder="Enter Customer Name"
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Customer Number</Form.Label>
+        <Form.Control
+          type="tel"
+          value={customerNumber}
+          onChange={(e) => setCustomerNumber(e.target.value)}
+          placeholder="Enter Customer Number"
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Customer CNIC</Form.Label>
+        <Form.Control
+          type="tel"
+          value={customerCNIC}
+          onChange={(e) => setCustomerCNIC(e.target.value)}
+          placeholder="Enter Customer CNIC"
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Sold Price</Form.Label>
+        <Form.Control
+          type="number"
+          value={finalPrice}
+          onChange={(e) => setFinalPrice(e.target.value)}
+          placeholder="Enter Sold Price"
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Company Warranty</Form.Label>
+        <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
+          <option value="">Select Warranty</option>
+          <option value="No Warranty">No Warranty</option>
+          <option value="1 Month">1 Month</option>
+          <option value="2 Months">2 Months</option>
+          <option value="3 Months">3 Months</option>
+          <option value="4 Months">4 Months</option>
+          <option value="5 Months">5 Months</option>
+          <option value="6 Months">6 Months</option>
+          <option value="7 Months">7 Months</option>
+          <option value="8 Months">8 Months</option>
+          <option value="9 Months">9 Months</option>
+          <option value="10 Months">10 Months</option>
+          <option value="11 Months">11 Months</option>
+          <option value="12 Months">12 Months</option>
+        </Form.Select>
+      </Form.Group>
+    </Form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowSoldModal(false)}>
+      Cancel
+    </Button>
+    <Button variant="primary" onClick={handleSoldSubmit}>
+      Sold
+    </Button>
+  </Modal.Footer>
+</Modal>
+
     </>
   );
 };
