@@ -2,7 +2,7 @@ const menuItems = {
   items: [
     {
       id: 'navigation',
-      title: 'Navigation',
+      title: 'Okiiee',
       type: 'group',
       icon: 'icon-navigation',
       children: [
@@ -17,28 +17,20 @@ const menuItems = {
     },
     {
       id: 'adduser',
-      title: 'Add User',
+      title: 'Okiiee Corner',
       type: 'group',
       icon: 'icon-navigation',
       children: [
         {
           id: 'adduser',
-          title: 'Add User',
+          title: 'Add New Shop',
           type: 'item',
           icon: 'feather icon-user',
           url: '/app/dashboard/addUser'
-        }
-      ]
-    },
-    {
-      id: 'shop',
-      title: 'Shop',
-      type: 'group',
-      icon: 'icon-navigation',
-      children: [
+        },
         {
           id: 'shop',
-          title: 'Shops',
+          title: 'Shop Records',
           type: 'item',
           icon: 'feather icon-user',
           url: '/app/dashboard/addShop'
@@ -53,10 +45,24 @@ const menuItems = {
       children: [
         {
           id: 'mobile',
-          title: 'Available Phone',
+          title: 'New Phones',
           type: 'item',
-          icon: 'feather icon-home',
-          url: '/app/dashboard/mobileList'
+          icon: 'feather icon-server',
+          url: '/app/dashboard/newMobileList'
+        },
+        {
+          id: 'mobile',
+          title: 'Used Phones',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/usedMobileList'
+        },
+        {
+          id: 'mobile',
+          title: 'Dispach Phones',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/DispachmobileList'
         },
       ]
     },
@@ -70,8 +76,15 @@ const menuItems = {
           id: 'mobile',
           title: 'Add Ledger',
           type: 'item',
-          icon: 'feather icon-home',
+          icon: 'feather icon-user',
           url: '/app/dashboard/addLedger'
+        },
+        {
+          id: 'mobile',
+          title: 'Ledger Records',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/ledgerRecords'
         },
       ]
     },
@@ -85,15 +98,37 @@ const menuItems = {
           id: 'forms',
           title: 'My Shop',
           type: 'item',
-          icon: 'feather icon-file-text',
+          icon: 'feather icon-server',
           url: '/setup/shop'
         },
         {
           id: 'tabel',
           title: 'Shop Invoice',
           type: 'item',
-          icon: 'feather icon-server',
+          icon: 'feather icon-file-text',
           url: '/invoice/shop'
+        }
+      ]
+    },
+    {
+      id: 'ui-forms',
+      title: 'Purchase',
+      type: 'group',
+      icon: 'icon-group',
+      children: [
+        {
+          id: 'forms',
+          title: 'Today Purchase',
+          type: 'item',
+          icon: 'feather icon-file-text',
+          url: '/purchase/todayPurchase'
+        },
+        {
+          id: 'tabel',
+          title: 'Purchase Records',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/purchase/purchaseRecords'
         }
       ]
     },
@@ -105,14 +140,14 @@ const menuItems = {
       children: [
         {
           id: 'forms',
-          title: 'Daily Sale',
+          title: 'Today Sale',
           type: 'item',
           icon: 'feather icon-file-text',
           url: '/sales/todaySales'
         },
         {
           id: 'tabel',
-          title: 'Sale Invoices',
+          title: 'Sale Records',
           type: 'item',
           icon: 'feather icon-server',
           url: '/sales/saleInvoices'

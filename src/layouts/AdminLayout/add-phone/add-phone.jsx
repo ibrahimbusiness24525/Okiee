@@ -155,7 +155,7 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
             <Row className="mb-3">
               <Col xs={12}>
                 <Form.Group controlId="formFileMultiple" className="mb-3">
-                  <Form.Label>Upload Images (Max 5)</Form.Label>
+                  <Form.Label>Upload Images(Only 1)</Form.Label>
                   <Form.Control type="file" multiple onChange={handleImageChange} />
                   <div className="mt-3 d-flex flex-wrap">
                     {newPhone?.images?.map((image, index) => (

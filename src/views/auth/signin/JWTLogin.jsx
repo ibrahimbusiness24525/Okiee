@@ -26,8 +26,10 @@ const JWTLogin = () => {
         setSubmitting(false);
       }
     } catch (error) {
-      setErrors({ submit: error.message });
+      
+      setErrors({ submit: error.response.data.message });
       setSubmitting(false);
+      
     }
   };
 

@@ -129,7 +129,7 @@ const SoldInvoice = () => {
 
   const location = useLocation();
   const dataReceived = location?.state ?? {};
-console.log("dataReceived" , dataReceived)
+
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(dataReceived.invoice?.totalAmount ?? dataReceived?.finalPrice ?? dataReceived?.demandPrice ?? 0);
   const [invoiceData, setInvoiceData] = useState({
@@ -195,17 +195,42 @@ console.log("dataReceived" , dataReceived)
       totalAmount: newPrice,
     });
   };
-
-  const handleSubmit = async () => {
-    try {
-      const response = await axios.post(BASE_URL + `api/invoice/invoices`, invoiceData);
-      if (response) {
-        alert('Invoice submitted successfully');
+  const [imeis, setImeis] = useState(dataReceived?.ramSimDetails || []);
+  const handleSubmit = async (type) => {
+    if(dataReceived?.prices?.buyingPrice){
+      const payload = {
+        shopId: invoiceData?.shopId,
+        bulkPurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId, // Getting from first object
+        selectedImeis: imeis.flatMap((item) => 
+          item.imeiNumbers.map((imei) => imei.imei1) // Extracting IMEIs correctly
+        ),
+        
+      };
+      console.log("bulk payload",payload);
+      try {
+        const response = await axios.post(BASE_URL + `api/invoice/bulk-invoices`, payload,{
+          "headers": {"Content-Type": "application/json"}
+        });
+        if (response) {
+          alert('Bulk invoice submitted successfully');
+        }
+      } catch (error) {
+        alert('Error in submitting bulk invoice: ' + error.message);
       }
-    } catch (error) {
-      alert('Error submitting invoice: ' + error.message);
+
+
+    }else{
+      try {
+        const response = await axios.post(BASE_URL + `api/invoice/invoices`, invoiceData);
+        if (response) {
+          alert('Invoice submitted successfully');
+        }
+      } catch (error) {
+        alert('Error submitting invoice: ' + error.message);
+      }
     }
   };
+console.log("this is the type",dataReceived?.type);
 
   return (
     <div>
@@ -238,7 +263,142 @@ console.log("dataReceived" , dataReceived)
         )}
       </div>
 
-      <div id="invoice" style={styles.container}>
+     {dataReceived?.prices?.buyingPrice ? 
+       <>
+          <div id="invoice" style={styles.container}>
+            <h1>Bulk Mobile Invoice</h1>
+        <header style={styles.header}>
+          <div>
+            <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+            <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
+          </div>
+          <h2 style={{ color: '#004B87' }}>Okiiee</h2>
+        </header>
+
+        <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+  {/* Left Side */}
+         <div>
+         <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
+         <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
+          <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Date of Sale:</strong> {invoiceData.invoiceDate}</p>
+        </div>
+
+  {/* Right Side */}
+      <div style={{ textAlign: 'right' }}>
+        <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.partyName}</p>
+        <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.modelName}</p>
+        { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'N/A'}</p>}
+      </div>
+      </section>
+
+
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Company</th>
+              <th style={styles.th}>Model</th>
+              <th style={styles.th}>RAM/ROM</th>
+              <th style={styles.th}>SIM</th>
+              <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
+              {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>}
+              <th style={styles.th}>Price</th>
+              <th style={styles.th}>Warranty</th>
+            </tr>
+          </thead>
+          <tbody>
+          {dataReceived?.ramSimDetails?.length > 0 ? (
+  dataReceived.ramSimDetails.map((detail, index) => (
+    <tr key={index} style={styles.stripedRow}>
+      {/* Mobile Company */}
+      <td style={styles.td}>
+        {dataReceived?.invoice?.items
+          ? dataReceived?.invoice?.items[0]?.mobileCompany
+          : dataReceived?.companyName ?? 'N/A'}
+      </td>
+
+      {/* Model Name */}
+      <td style={styles.td}>{dataReceived?.modelName ?? 'N/A'}</td>
+
+      {/* RAM Memory */}
+      <td style={styles.td}>{detail?.ramMemory ?? 'N/A'}</td>
+
+      {/* SIM Option */}
+      <td style={styles.td}>{detail?.simOption ?? 'N/A'}</td>
+
+      {/* IMEI Numbers */}
+      <td style={styles.td}>
+        {detail?.imeiNumbers?.length
+          ? detail.imeiNumbers.map((imei, i) => (
+              <div key={i}>
+                {imei?.imei1} {imei?.imei2 && `/ ${imei.imei2}`}
+              </div>
+            ))
+          : 'N/A'}
+      </td>
+
+      {/* Final Price */}
+      <td style={styles.td}>
+        {dataReceived?.invoice
+          ? dataReceived?.invoice?.totalAmount
+          : dataReceived?.finalPrice ?? 'N/A'}
+      </td>
+
+      {/* Warranty */}
+      <td style={styles.td}>
+        {dataReceived?.invoice?.items
+          ? dataReceived?.invoice?.items[0]?.warranty
+          : dataReceived?.warranty ?? 'N/A'}
+      </td>
+    </tr>
+  ))
+) : (
+  <tr>
+    <td colSpan={7} style={styles.td}>No Data Available</td>
+  </tr>
+)}
+
+            {/* <tr style={styles.stripedRow}>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.modelName}</td>
+              <td style={styles.td}>{dataReceived?.ramSimDetails[0]?.imeiNumbers?.imei1}</td>
+              <td style={styles.td}>{dataReceived?.invoice? dataReceived?.invoice?.totalAmount :dataReceived?.finalPrice ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty :dataReceived?.warranty ?? 'N/A'}</td>
+            </tr> */}
+          </tbody>
+        </table>
+
+        <div style={styles.totalSection}>
+          <h3>Total:{price}Rs</h3>
+        </div>
+
+        {/* Terms & Conditions Section */}
+        {/* <div style={styles.termsSection}>
+          <h3 style={styles.termsHeading}>Terms & Conditions</h3>
+          <p style={styles.termsText}>1. All sales are final once the invoice is generated.</p>
+          <p style={styles.termsText}>2. Warranty is valid only for products with a valid invoice.</p>
+          <p style={styles.termsText}>3. The company is not responsible for any damages caused by misuse of the product.</p>
+          <p style={styles.termsText}>4. Payment must be made in full before the invoice is considered complete.</p>
+          <p style={styles.termsText}>5. Terms and conditions are subject to change without prior notice.</p>
+        </div> */}
+
+        <div style={styles.termsSection}>
+  <div style={styles.termsHeading}>Terms and Conditions</div>
+  <div style={styles.termsText}>
+    {shop?.termsCondition.map((item, index) => (
+      <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
+    ))}
+  </div>
+</div>
+        <footer style={styles.footer}>
+          <p>
+            {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}
+          </p>
+        </footer>
+      </div>
+       </>
+        :
+       <>
+        <div id="invoice" style={styles.container}>
         <header style={styles.header}>
           <div>
             <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
@@ -315,6 +475,8 @@ console.log("dataReceived" , dataReceived)
           </p>
         </footer>
       </div>
+       </> 
+    }
     </div>
   );
 };

@@ -2,15 +2,20 @@ import React from 'react';
 import { ListGroup } from 'react-bootstrap';
 import useWindowSize from '../../../../hooks/useWindowSize';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
+import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 
 const NavLeft = () => {
   const windowSize = useWindowSize();
-  const [showModal, setShowModal] = React.useState(false);
+  const [showAddPhoneModal, setShowAddPhoneModal] = React.useState(false);
+  const [showPurchasePhoneModal, setShowPurchasePhoneModal] = React.useState(false);
 
-  const handleShow = () => setShowModal(true);
-  const handleClose = () => setShowModal(false);
+  const handleAddPhoneShow = () => setShowAddPhoneModal(true);
+  const handleAddPhoneClose = () => setShowAddPhoneModal(false);
 
-  // Determine button styles dynamically based on screen size
+  const handlePurchasePhoneShow = () => setShowPurchasePhoneModal(true);
+  const handlePurchasePhoneClose = () => setShowPurchasePhoneModal(false);
+
+  // Button styles dynamically based on screen size
   const buttonStyles = {
     base: {
       background: 'linear-gradient(to right, #50b5f4, #b8bee2)',
@@ -72,13 +77,31 @@ const NavLeft = () => {
             onMouseLeave={(e) => {
               e.target.style.background = buttonStyles.base.background;
             }}
-            onClick={handleShow}
+            onClick={handleAddPhoneShow}
           >
             Add New Phone
           </button>
         </ListGroup.Item>
+        <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
+          <button
+            style={{
+              ...buttonStyles.base,
+              ...dynamicStyles,
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = hoverStyle.background;
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = buttonStyles.base.background;
+            }}
+            onClick={handlePurchasePhoneShow}
+          >
+            Purchase Phone
+          </button>
+        </ListGroup.Item>
       </ListGroup>
-      <AddPhone modal={showModal} handleModalClose={handleClose} />
+      <AddPhone modal={showAddPhoneModal} handleModalClose={handleAddPhoneClose} />
+      <PurchasePhone modal={showPurchasePhoneModal} handleModalClose={handlePurchasePhoneClose} />
     </React.Fragment>
   );
 };

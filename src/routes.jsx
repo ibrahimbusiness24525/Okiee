@@ -61,13 +61,28 @@ const routes = [
       },
       {
         exact: 'true',
-        path: '/app/dashboard/mobileList',
-        element: lazy(() => import('./components/mobileCards/MobileList')) // Mobile List
+        path: '/app/dashboard/newMobileList',
+        element: lazy(() => import('./components/mobileCards/NewMobileList')) // Mobile List
+      },
+      {
+        exact: 'true',
+        path: '/app/dashboard/usedMobileList',
+        element: lazy(() => import('./components/mobileCards/UsedMobileList')) // Mobile List
+      },
+      {
+        exact: 'true',
+        path: '/app/dashboard/DispachmobileList',
+        element: lazy(() => import('./components/mobileCards/DispachMobileList')) // Dispach Mobile List
       },
       {
         exact: 'true',
         path: '/app/dashboard/addLedger',
         element: lazy(() => import('./components/Ledger/AddLedger')) // Ledger
+      },
+      {
+        exact: 'true',
+        path: '/app/dashboard/ledgerRecords',
+        element: lazy(() => import('./components/Ledger/LedgerRecords')) // Ledger Records
       },
       {
         exact: 'true',
@@ -117,7 +132,22 @@ const routes = [
       {
         exact: 'true',
         path: '/forms/form-basic',
-        element: lazy(() => import('./components/mobileCards/MobileList'))
+        element: lazy(() => import('./components/mobileCards/NewMobileList'))
+      },
+      {
+        exact: 'true',
+        path: '/purchase/todayPurchase',
+        element: lazy(() => import('./components/Purchase/TodayPurchase'))
+      },
+      {
+        exact: 'true',
+        path: '/purchase/purchaseRecords',
+        element: lazy(() => import('./components/Purchase/PurchaseRecords'))
+      },
+      {
+        exact: 'true',
+        path: '/purchase/todayPurchase/:id',
+        element: lazy(() => import('./components/Purchase/PurchaseDetail'))
       },
       {
         exact: 'true',
