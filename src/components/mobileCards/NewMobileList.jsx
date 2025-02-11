@@ -9,10 +9,10 @@ import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import bulkMobileImage from "../../assets/images/phoneBoxes.jpg"
 import BarcodeScannerComponent from 'react-webcam-barcode-scanner';
 import useScanDetection from 'use-scan-detection';
-import BarcodeScanner from 'components/BarcodeScanner/BarcodeScanner';
+import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 const NewMobilesList = () => {
-  const[imei,setImei] = useState("")
   const [mobiles, setMobiles] = useState([]);
+  const [type, setType] = useState("");
   const [bulkMobile, setBulkMobiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -27,8 +27,22 @@ const NewMobilesList = () => {
   const [dispatchMobile, setDispatchMobile] = useState(null);
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
+  const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
+  const [addedImeis, setAddedImeis] = useState([]);
 
   const navigate = useNavigate();
+ 
+
+  const handleAddImei = () => {
+    if (imeiInput.trim() !== "" && !imeis.includes(imeiInput)) {
+      setAddedImeis([...addedImeis, imeiInput]);
+      setImeiInput(""); // Clear input after adding
+    }
+  };
+
+  const handleRemoveImei = (imeiToRemove) => {
+    setAddedImeis(imeis.filter(imei => imei !== imeiToRemove));
+  };
 
   useEffect(() => {
     getMobiles();
@@ -116,7 +130,16 @@ const NewMobilesList = () => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSoldClick = (mobile) => {
+  const handleSoldClick = (mobile,type) => {
+    console.log("this is type", type);
+    
+    if(type==="bulk"){
+      setType("bulk")
+    }
+    if(type==="single"){
+      setType("single")
+    }
+ 
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
@@ -131,6 +154,7 @@ const NewMobilesList = () => {
       ...soldMobile,
       finalPrice,
       warranty,
+      addedImeis,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -209,6 +233,8 @@ useScanDetection({
     setShowPrices(false);
     setSelectedMobile(null);
   };
+  console.log("bulk Mobile",bulkMobile);
+  
   return (
     <>
       {/* Search bar */}
@@ -325,7 +351,7 @@ useScanDetection({
              Dispatch
              </Button>
                     <Button
-                      onClick={() => handleSoldClick(mobile)}
+                      onClick={() => handleSoldClick(mobile,"single")}
                       style={{
                         backgroundColor: '#28a745',
                         color: '#fff',
@@ -473,7 +499,7 @@ useScanDetection({
                 {/* Action Buttons */}
               </Card.Body>
                 <div style={{ textAlign: 'right', width: '100%',padding: '1.5rem' }}>
-                  <Button
+                  {/* <Button
                  onClick={() => handleDispatchClick(mobile)}
                style={{
                 backgroundColor: '#FFD000',
@@ -487,9 +513,9 @@ useScanDetection({
                }}
               >
              Dispatch
-             </Button>
+             </Button> */}
                     <Button
-                      onClick={() => handleSoldClick(mobile)}
+                      onClick={() => handleSoldClick(mobile,"bulk")}
                       style={{
                         backgroundColor: '#28a745',
                         color: '#fff',
@@ -637,11 +663,43 @@ useScanDetection({
           </div>
        
         </Form.Group>
-           {/* <p>
-            Barcode : {barcodeScan}
-           </p> */}
-           <BarcodeScanner onScan={setImei}/>
-           <p>{imei}</p>
+        {type === "bulk" && (
+            <>
+                <BarcodeReader/>
+              <Form.Group className="mb-3">
+                <Form.Label>IMEI Number</Form.Label>
+
+                <div className="d-flex">
+                  <Form.Control
+                    type="text"
+                    value={imeiInput}
+                    onChange={(e) => setImeiInput(e.target.value)}
+                    placeholder="Enter IMEI number"
+                  />
+                  <Button variant="success" onClick={handleAddImei} backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)" className="ms-2">
+                    Add
+                  </Button>
+                </div>
+              </Form.Group>
+
+              {/* Display added IMEIs */}
+              {addedImeis.length > 0 && (
+                <div className="mt-3">
+                  <h6>Added IMEIs:</h6>
+                  <ul className="list-group">
+                    {addedImeis.map((imei, index) => (
+                      <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                        {imei}
+                        <Button variant="danger" size="sm" onClick={() => handleRemoveImei(imei)}>
+                          Remove
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
    
           </Form>
         </Modal.Body>

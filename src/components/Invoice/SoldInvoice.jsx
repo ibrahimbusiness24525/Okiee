@@ -195,22 +195,27 @@ const SoldInvoice = () => {
       totalAmount: newPrice,
     });
   };
-  const [imeis, setImeis] = useState(dataReceived?.ramSimDetails || []);
+  const [imeis, setImeis] = useState(
+    dataReceived?.ramSimDetails?.flatMap(item => item.imeiNumbers) || []
+  );
+  
   const handleSubmit = async (type) => {
     if(dataReceived?.prices?.buyingPrice){
       const payload = {
-        shopId: invoiceData?.shopId,
-        bulkPurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId, // Getting from first object
-        selectedImeis: imeis.flatMap((item) => 
-          item.imeiNumbers.map((imei) => imei.imei1) // Extracting IMEIs correctly
-        ),
-        
+        bulkPhonePurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId, // Get from first object
+        imeiNumbers: dataReceived?.addedImeis.length === 0 
+        ? imeis.map(item => item?.imei1)  // Extract imei1 properly
+        : dataReceived?.addedImeis, 
+        salePrice: dataReceived?.finalPrice,
+        warranty: dataReceived?.warranty, 
       };
       console.log("bulk payload",payload);
       try {
-        const response = await axios.post(BASE_URL + `api/invoice/bulk-invoices`, payload,{
+        const response = await axios.post(BASE_URL + `api/Purchase/sell-phone`, payload,{
           "headers": {"Content-Type": "application/json"}
         });
+        console.log("response of bulk invoice",response);
+        
         if (response) {
           alert('Bulk invoice submitted successfully');
         }
@@ -306,7 +311,7 @@ console.log("this is the type",dataReceived?.type);
             </tr>
           </thead>
           <tbody>
-          {dataReceived?.ramSimDetails?.length > 0 ? (
+          {dataReceived?.ramSimDetails ? (
   dataReceived.ramSimDetails.map((detail, index) => (
     <tr key={index} style={styles.stripedRow}>
       {/* Mobile Company */}

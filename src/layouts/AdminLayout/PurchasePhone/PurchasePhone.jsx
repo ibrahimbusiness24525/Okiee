@@ -345,17 +345,20 @@ console.log("this is the data",singlePurchase);
       {
         ramMemory: "",
         simOption: "",
-        imeis: []
+        imeiNumbers: []
       },
       {
         ramMemory: "",
         simOption: "",
-        imeis: [],
+        imeiNumbers: [],
       }
      
     ]
   });
   const handleBulkRecordSubmit = async() =>{
+    console.log('====================================');
+    console.log("bulk data",bulkData);
+    console.log('====================================');
     
     try {
       const payload = {
@@ -372,8 +375,8 @@ console.log("this is the data",singlePurchase);
           activation: bulkData.activation
         },
         ramSimDetails:
-  bulkData.ramSimDetails.filter((item) => item.imeis.length > 0).length > 0
-    ? bulkData.ramSimDetails.filter((item) => item.imeis.length > 0)
+  bulkData.ramSimDetails.filter((item) => item.imeiNumbers.length > 0).length > 0
+    ? bulkData.ramSimDetails.filter((item) => item.imeiNumbers.length > 0)
     : [bulkData.ramSimDetails[0]],    
       }
      console.log("bulk purchase payload",payload);

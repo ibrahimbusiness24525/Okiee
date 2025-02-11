@@ -305,7 +305,7 @@ return(
                       ...prev,
                       quantity,
                       ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                        idx === 1 ? { ...item, imeis: imeiFields } : item
+                        idx === 1 ? { ...item, imeiNumbers: imeiFields } : item
                       ),
                     }));
                   }}
@@ -326,7 +326,7 @@ return(
               </tr>
             </thead>
             <tbody>
-              {bulkData.ramSimDetails[1]?.imeis?.map((phone, index) => (
+              {bulkData.ramSimDetails[1]?.imeiNumbers?.map((phone, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>
@@ -341,7 +341,7 @@ return(
                             idx === 1
                               ? {
                                   ...item,
-                                  imeis: item.imeis.map((imei, i) =>
+                                  imeiNumbers: item.imeiNumbers.map((imei, i) =>
                                     i === index ? { ...imei, imei1: e.target.value } : imei
                                   ),
                                 }
@@ -365,7 +365,7 @@ return(
                               idx === 1
                                 ? {
                                     ...item,
-                                    imeis: item.imeis.map((imei, i) =>
+                                    imeiNumbers: item.imeiNumbers.map((imei, i) =>
                                       i === index ? { ...imei, imei2: e.target.value } : imei
                                     ),
                                   }
@@ -389,7 +389,7 @@ return(
                             idx === 1
                               ? {
                                   ...item,
-                                  imeis: item.imeis.map((imei, i) =>
+                                  imeiNumbers: item.imeiNumbers.map((imei, i) =>
                                     i === index ? { ...imei, color: e.target.value } : imei
                                   ),
                                 }

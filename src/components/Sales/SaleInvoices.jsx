@@ -10,7 +10,7 @@ import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 const SaleInvoices = () => {
   const [search, setSearch] = useState('');
   const [allInvoices, setAllInvoices] = useState([]);
-  const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const[allbulkSales,setAllBulkSales] = useState([])
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -18,6 +18,7 @@ const SaleInvoices = () => {
 
   useEffect(() => {
     getInvoices();
+    getAllBulkSales()
   }, []);
 
   const getInvoices = async () => {
@@ -31,7 +32,20 @@ const SaleInvoices = () => {
       console.error('Error fetching invoices:', error);
     }
   };
+  const getAllBulkSales = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}api/Purchase/all-sales`);
+     console.log("These are bulk sales",response);
 
+      setAllBulkSales(response?.data?.data);
+    } catch (error) {
+      console.error('Error fetching bulk sales:', error);
+    }
+  };
+  console.log('====================================');
+  console.log("all bulk sales",allbulkSales);
+  console.log('====================================');
+  
   // const handleSearchChange = (e) => {
   //   const query = e.target.value.toLowerCase();
   //   setSearch(query);
@@ -132,6 +146,7 @@ const handleScan = (value) => {
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Sale Invoices</h2>
+      
       {/* <button onClick={() => setIsPopupOpen(true)} style={{ padding: '10px 20px', marginBottom: '10px' }}>
         Filter by Date
       </button> */}
@@ -219,6 +234,9 @@ const handleScan = (value) => {
     <div>
       <BarcodeReader onScan={handleScan} />
     </div>
+    <div>
+        <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Single Invoice</h3>
+      </div>
         <Table
   array={allInvoices}
   search={"imei1"}
@@ -269,6 +287,38 @@ const handleScan = (value) => {
             />
 
       </div>
+      <div>
+        <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Bulk Invoices</h3>
+      </div>
+      <Table
+  array={allbulkSales}
+  search={"imei1"}
+  keysToDisplay={[
+    "modelName",
+    "companyName",
+    "partyName",
+    "salePrice",
+    "warranty",
+    "dateSold",
+    
+  ]}
+  label={[
+    "Model Name",
+    "Company",
+    "Party Name",
+    "Price",
+    "Warranty",
+    "Invoice Date",
+  ]}
+  customBlocks={[
+         {
+            index: 5,
+            component: (date) => {
+            return dateFormatter(date)
+           }
+         }
+        ]}
+      />
     </div>
   );
 };
