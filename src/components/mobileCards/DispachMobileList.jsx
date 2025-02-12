@@ -231,7 +231,7 @@ const DispachMobilesList = () => {
                     </div>
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
-                  <Button
+                  {/* <Button
                  onClick={() => handleDispatchClick(mobile)}
                style={{
                 backgroundColor: 'red',
@@ -245,7 +245,7 @@ const DispachMobilesList = () => {
                }}
               >
              Return
-                 </Button>
+                 </Button> */}
                     <Button
                       onClick={() => handleSoldClick(mobile)}
                       style={{

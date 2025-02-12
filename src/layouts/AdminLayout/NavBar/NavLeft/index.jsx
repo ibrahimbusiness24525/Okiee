@@ -66,7 +66,7 @@ const NavLeft = () => {
     <React.Fragment>
       <ListGroup as="ul" bsPrefix=" " className="navbar-nav mr-auto">
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
-          <button
+          {/* <button
             style={{
               ...buttonStyles.base,
               ...dynamicStyles,
@@ -80,7 +80,7 @@ const NavLeft = () => {
             onClick={handleAddPhoneShow}
           >
             Add New Phone
-          </button>
+          </button> */}
         </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <button

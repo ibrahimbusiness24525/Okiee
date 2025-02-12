@@ -112,6 +112,7 @@ console.log(todayInvoices,'todayInvoice')
     <div style={styles.container}>
       <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Ledger Records</h2>
       <Table
+                        routes={["/app/dashboard/ledgerRecords"]}
                         array={ledgerRecords}
                         search={"openingCash"}
                         keysToDisplay={["openingCash", "cashPaid", "cashReceived", "expense", "closingCash","createdAt"]}

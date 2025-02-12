@@ -71,7 +71,8 @@ const routes = [
       },
       {
         exact: 'true',
-        path: '/app/dashboard/DispachmobileList',
+        path: '/app/dashboard/availablePhones',
+        // path: '/app/dashboard/DispachmobileList',
         element: lazy(() => import('./components/mobileCards/DispachMobileList')) // Dispach Mobile List
       },
       {
@@ -83,6 +84,11 @@ const routes = [
         exact: 'true',
         path: '/app/dashboard/ledgerRecords',
         element: lazy(() => import('./components/Ledger/LedgerRecords')) // Ledger Records
+      },
+      {
+        exact: 'true',
+        path: '/app/dashboard/ledgerRecords/:id',
+        element: lazy(() => import('./components/Ledger/LedgerDetail')) // Ledger Records
       },
       {
         exact: 'true',

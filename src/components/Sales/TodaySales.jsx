@@ -37,7 +37,7 @@ const TodaySales = () => {
      console.log("These are bulk sales",response);
 
       setAllBulkSales(response.data.data.filter((item) => {
-        return new Date(item.invoiceDate).toDateString() === new Date().toDateString();
+        return new Date(item.dateSold).toDateString() === new Date().toDateString();
     }));
     } catch (error) {
       console.error('Error fetching bulk sales:', error);
@@ -167,25 +167,27 @@ console.log('====================================');
   array={allbulkSales}
   search={"imei1"}
   keysToDisplay={[
-    "modelName",
-    "companyName",
-    "partyName",
+    "type",
+    // "modelName",
+    // "companyName",
+    // "partyName",
     "salePrice",
     "warranty",
     "dateSold",
     
   ]}
   label={[
-    "Model Name",
-    "Company",
-    "Party Name",
+    // "Model Name",
+    // "Company",
+    // "Party Name",
+    "Type of Sale",
     "Price",
     "Warranty",
     "Invoice Date",
   ]}
   customBlocks={[
          {
-            index: 5,
+            index: 3,
             component: (date) => {
             return dateFormatter(date)
            }

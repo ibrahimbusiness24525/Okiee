@@ -20,7 +20,7 @@ const NewMobilesList = () => {
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [soldMobile, setSoldMobile] = useState(null);
   const [finalPrice, setFinalPrice] = useState('');
-  const [warranty, setWarranty] = useState('');
+  const [warranty, setWarranty] = useState('12 months');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteMobileId, setDeleteMobileId] = useState(null);
   const [showDispatchModal, setShowDispatchModal] = useState(false);
@@ -54,23 +54,24 @@ const NewMobilesList = () => {
     console.log(response);
     setMobiles(response.data.phones);
   };
-
   const getActualPrice = (prices) => {
     if (!prices || !prices.buyingPrice) return 0;
   
     const { buyingPrice, dealerPrice, lp, lifting, promo, activation } = prices;
   
-
-    const actualPrice = 
-      Number(buyingPrice) - 
-      (Number(dealerPrice) || 0) - 
-      (Number(lp) || 0) - 
-      (Number(lifting) || 0) - 
-      (Number(promo) || 0) - 
+    const dealerDiscount = buyingPrice * (Number(dealerPrice) / 100 || 0);
+  
+    const actualPrice =
+      Number(buyingPrice) -
+      dealerDiscount -
+      (Number(lp) || 0) -
+      (Number(lifting) || 0) -
+      (Number(promo) || 0) -
       (Number(activation) || 0);
   
-    return  Math.abs(actualPrice)
+    return parseInt(Math.abs(actualPrice));
   };
+  
   
 
 
@@ -635,7 +636,7 @@ useScanDetection({
                 placeholder="Enter Sold price"
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>Company Warranty</Form.Label>
               <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
                 <option value="">Select warranty</option>
@@ -653,7 +654,7 @@ useScanDetection({
                 <option value="11 Months">11 Months</option>
                 <option value="12 Months">12 Months</option>
               </Form.Select>
-            </Form.Group>
+            </Form.Group> */}
             <Form.Group className="mb-3">
           {/* <Form.Label>IMEI Numbers</Form.Label> */}
           <div>
@@ -665,7 +666,10 @@ useScanDetection({
         </Form.Group>
         {type === "bulk" && (
             <>
-                <BarcodeReader/>
+               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
+                <BarcodeReader />
+              </div>
+
               <Form.Group className="mb-3">
                 <Form.Label>IMEI Number</Form.Label>
 

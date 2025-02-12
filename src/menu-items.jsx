@@ -59,10 +59,11 @@ const menuItems = {
         },
         {
           id: 'mobile',
-          title: 'Dispach Phones',
+          title: 'Available Phones',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/DispachmobileList'
+          url: '/app/dashboard/availablePhones'
+          // url: '/app/dashboard/DispachmobileList'
         },
       ]
     },
