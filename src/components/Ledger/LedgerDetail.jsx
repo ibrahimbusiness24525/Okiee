@@ -1,50 +1,120 @@
-import React from "react";
+import { StyledHeading } from "components/StyledHeading/StyledHeading";
+import { BASE_URL } from "config/constant";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const LedgerDetail = () => {
-  // Dummy data for ledger details and transactions
-  const ledgerInfo = {
-    accountName: "John Doe",
-    balance: "$5,000",
-    accountNumber: "123456789",
-    lastUpdated: "Feb 12, 2025",
+  const [ledgerDetail, setLedgerDetail] = useState(null);
+  const { id } = useParams();
+
+  useEffect(() => {
+    getLedgerDetail();
+  }, []);
+
+  const getLedgerDetail = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}api/ledger/detail/${id}`);
+      const data = await response.json();
+      setLedgerDetail(data.ledger); // Ensure we store only the ledger object
+    } catch (error) {
+      console.error("Error fetching ledger details:", error);
+    }
   };
 
-  const transactions = [
-    { id: 1, date: "2025-02-10", description: "Purchase", amount: "-$200" },
-    { id: 2, date: "2025-02-08", description: "Salary Credit", amount: "+$3,000" },
-    { id: 3, date: "2025-02-05", description: "Utility Bill", amount: "-$100" },
-  ];
+  if (!ledgerDetail) return <p>Loading...</p>;
 
   return (
-    <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
-      <h2>Ledger Details</h2>
-      <div style={{ border: "1px solid #ddd", padding: "15px", borderRadius: "8px", marginBottom: "20px" }}>
-        <p><strong>Account Name:</strong> {ledgerInfo.accountName}</p>
-        <p><strong>Balance:</strong> {ledgerInfo.balance}</p>
-        <p><strong>Account Number:</strong> {ledgerInfo.accountNumber}</p>
-        <p><strong>Last Updated:</strong> {ledgerInfo.lastUpdated}</p>
+    <div style={{ padding: "20px", margin: "0 auto" }}>
+      <StyledHeading>Ledger Details</StyledHeading>
+
+      {/* Ledger Summary */}
+      <div style={{ border: "1px solid #ddd",marginTop:"2rem", padding: "15px", borderRadius: "8px", marginBottom: "20px" }}>
+        <p><strong>Opening Cash:</strong> ${ledgerDetail.openingCash}</p>
+        <p><strong>Closing Cash:</strong> ${ledgerDetail.closingCash}</p>
+        <p><strong>Total Cash Paid:</strong> ${ledgerDetail.cashPaid}</p>
+        <p><strong>Total Cash Received:</strong> ${ledgerDetail.cashReceived}</p>
+        <p><strong>Total Expenses:</strong> ${ledgerDetail.expense}</p>
+        {/* <p><strong>Last Updated:</strong> {new Date(ledgerDetail.updatedAt).toLocaleString()}</p> */}
       </div>
-      <h3>Transactions</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+
+      {/* Cash Paid Details */}
+      <h3>Cash Paid Details</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
         <thead>
           <tr>
-            <th style={{ borderBottom: "1px solid #ddd", padding: "10px" }}>Date</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: "10px" }}>Description</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: "10px" }}>Amount</th>
+            <th style={tableHeaderStyle}>Date</th>
+            <th style={tableHeaderStyle}>Recipient</th>
+            <th style={tableHeaderStyle}>Amount</th>
           </tr>
         </thead>
         <tbody>
-          {transactions.map((txn) => (
-            <tr key={txn.id}>
-              <td style={{ padding: "10px", textAlign: "center" }}>{txn.date}</td>
-              <td style={{ padding: "10px" }}>{txn.description}</td>
-              <td style={{ padding: "10px", textAlign: "right" }}>{txn.amount}</td>
+          {ledgerDetail.cashPaidDetails.map((item) => (
+            <tr key={item._id}>
+              <td style={tableCellStyle}>{new Date(item.date).toLocaleDateString()}</td>
+              <td style={tableCellStyle}>{item.recipient}</td>
+              <td style={tableCellStyle}>${item.amount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Cash Received Details */}
+      <h3>Cash Received Details</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+        <thead>
+          <tr>
+            <th style={tableHeaderStyle}>Date</th>
+            <th style={tableHeaderStyle}>Source</th>
+            <th style={tableHeaderStyle}>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ledgerDetail.cashReceivedDetails.map((item) => (
+            <tr key={item._id}>
+              <td style={tableCellStyle}>{new Date(item.date).toLocaleDateString()}</td>
+              <td style={tableCellStyle}>{item.source}</td>
+              <td style={tableCellStyle}>${item.amount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Expense Details */}
+      <h3>Expense Details</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+        <thead>
+          <tr>
+            <th style={tableHeaderStyle}>Date</th>
+            <th style={tableHeaderStyle}>Purpose</th>
+            <th style={tableHeaderStyle}>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ledgerDetail.expenseDetails.map((item) => (
+            <tr key={item._id}>
+              <td style={tableCellStyle}>{new Date(item.date).toLocaleDateString()}</td>
+              <td style={tableCellStyle}>{item.purpose}</td>
+              <td style={tableCellStyle}>${item.amount}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
+};
+
+// Styles for table headers and cells
+const tableHeaderStyle = {
+  borderBottom: "1px solid #ddd",
+  padding: "10px",
+  textAlign: "left",
+  background: "#f4f4f4",
+};
+
+const tableCellStyle = {
+  padding: "10px",
+  borderBottom: "1px solid #ddd",
+  textAlign: "left",
 };
 
 export default LedgerDetail;
