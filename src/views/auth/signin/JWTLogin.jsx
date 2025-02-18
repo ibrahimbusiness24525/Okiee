@@ -5,16 +5,20 @@ import { Formik } from 'formik';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from 'config/constant';
-import backgroundImage1 from '../../../assets/images/user/img-avatar-1.jpg';
 import backgroundImage2 from '../../../assets/4.png';
-
+import { FaMobileAlt } from "react-icons/fa";
 const JWTLogin = () => {
   const navigate = useNavigate();
   const [isSignup, setIsSignup] = useState(false);
 
   const handleLoginSubmit = async (values, { setErrors, setStatus, setSubmitting }) => {
     try {
-      const response = await axios.post(`${BASE_URL}api/admin/login`, values);
+      const response = await axios.post(`${BASE_URL}api/admin/login`, values, {
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      
       if (response.data) {
         localStorage.setItem('user', JSON.stringify(response.data.data));
         setStatus({ success: true });
@@ -26,10 +30,8 @@ const JWTLogin = () => {
         setSubmitting(false);
       }
     } catch (error) {
-      
       setErrors({ submit: error.response.data.message });
       setSubmitting(false);
-      
     }
   };
 
@@ -59,21 +61,43 @@ const JWTLogin = () => {
   return (
     <div style={styles.container}>
       <div className="login-leftSection" style={styles.leftSection}>
-        <img src="src/assets/images/logo.png" alt="Okiiee Logo" style={styles.logo} />
-        <h1 style={{ color: 'black', textAlign: 'left' }}>Okiiee</h1>
-        <h2 style={{ color: 'black', textAlign: 'left', fontSize: '28px', marginTop: '30px' }}>
+        {/* <img src={MainLogo} alt="Okiiee Logo" style={styles.logo} /> */}
+        <h1
+  style={{
+    display: "flex",
+    alignItems: "center",
+    color: "#000",
+    textAlign: "left",
+    fontSize: "2rem",
+    fontWeight: "bold",
+    letterSpacing: "1px",
+    margin: "10px 0",
+    marginBottom: "3rem",
+    gap: "10px", // Adds spacing between the icon and text
+  }}
+>
+  <FaMobileAlt style={{ fontSize: "2.5rem", color: "#007bff" }} /> Okiiee
+</h1>
+
+       <div style={{width:"100%",height:"100%",justifyContent:"space-between",display:"flex",flexDirection:"column"}}>
+       <div>
+       <h2 style={{ color: '#000', textAlign: 'start', fontSize: '28px', marginTop: '30px' }}>
           Contact Us:
         </h2>
         <div style={{ paddingLeft: '20px' }}>
-          <p style={{ color: 'black', textAlign: 'left', marginTop: '20px', fontSize: '20px' }}>
-            +92 305 7903867
+          <p style={{ color: '#000', textAlign: 'left', marginTop: '20px', fontSize: '20px' }}>
+             0305 7903867
           </p>
-          <p style={{ color: 'black', textAlign: 'left', marginTop: '0px', fontSize: '20px' }}>
-            +92 305 7903867
+          <p style={{ color: '#000', textAlign: 'left', marginTop: '0px', fontSize: '20px' }}>
+            0329 6181822
           </p>
 
-          <div style={{ marginTop: '40px' }}>
-            <h3>Vist Our Social</h3>
+
+        </div>
+       </div>
+        <div>
+        <div style={{ marginTop: '40px',}}>
+            <h3 style={{color: '#000' }}>Vist Our Social</h3>
           </div>
           
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '30px' }}>
@@ -87,8 +111,8 @@ const JWTLogin = () => {
               <i className="feather icon-facebook" style={{ fontSize: '20px' }} />
             </Button>
           </div>
-
         </div>
+       </div>
       </div>
       <div style={styles.rightSection}>
         <Formik
@@ -244,7 +268,10 @@ const styles = {
   leftSection: {
     flex: 1,
     backgroundImage: 'linear-gradient(to right, rgb(80, 181, 244), rgb(237 237 237))', // Apply the same gradient
+    // backgroundColor: '#141227', 
     backgroundPosition: 'center',
+    alignItems:"center",
+    display:"flex",
     backgroundRepeat: 'no-repeat',
     flexDirection: 'column',
     padding: '30px',
@@ -253,10 +280,10 @@ const styles = {
     backdropFilter: 'blur(10px)',
   },
   logo: {
-    width: '100px', // Adjust the size as needed
+    width: '150px', // Adjust the size as needed
     height: 'auto',
     marginBottom: '20px', // Adds space below the logo
-    textAlign: 'left',
+    textAlign: 'center',
     display: 'block'
   },
   rightSection: {
