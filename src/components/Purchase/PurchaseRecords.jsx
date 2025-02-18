@@ -107,7 +107,7 @@ const handleScan = (value) => {
       </div>
       <StyledHeading>New Phones</StyledHeading>
       <Table
-                 routes={["/purchase/todayPurchase"]}
+                 routes={["/purchase/purchaseRecords"]}
                         array={newPhones}
                         search={"imei1"}
                         keysToDisplay={["modelName", "phoneCondition", "warranty", "name","date"]}
@@ -141,7 +141,7 @@ const handleScan = (value) => {
         <div style={{marginTop:"3rem"}}>
         <StyledHeading>Used Phones</StyledHeading>
         <Table
-                   routes={["/purchase/todayPurchase"]}
+                   routes={["/purchase/purchaseRecords"]}
                         array={oldPhones}
                         search={"imei1"}
                         keysToDisplay={["modelName", "phoneCondition", "warranty", "name","date"]}
@@ -177,7 +177,7 @@ const handleScan = (value) => {
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"5rem" }}>Bulk Purchases</h3>
       </div>
       <Table
-                //  routes={["/purchase/todayPurchase"]}
+                 routes={["/purchase/purchaseRecords/bulkPurchase"]}
                         array={purchasedPhones?.bulkPhones}
                         search={"imeiNumbers"}
                         keysToDisplay={["partyName", "companyName", "modelName","totalQuantity","date"]}

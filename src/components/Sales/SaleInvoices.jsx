@@ -238,6 +238,7 @@ const handleScan = (value) => {
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Single Invoice</h3>
       </div>
         <Table
+        routes={["/sales/saleInvoices"]}
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[

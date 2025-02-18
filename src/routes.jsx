@@ -157,8 +157,33 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/purchase/purchaseRecords/:id',
+        element: lazy(() => import('./components/Purchase/PurchaseDetail'))
+      },
+      {
+        exact: 'true',
+        path: '/purchase/todayPurchase/bulkPurchase/:id',
+        element: lazy(() => import('./components/Purchase/BulkPurchaseDetail'))
+      },
+      {
+        exact: 'true',
+        path: '/purchase/purchaseRecords/bulkPurchase/:id',
+        element: lazy(() => import('./components/Purchase/BulkPurchaseDetail'))
+      },
+      {
+        exact: 'true',
         path: '/sales/todaySales',
         element: lazy(() => import('./components/Sales/TodaySales'))
+      },
+      {
+        exact: 'true',
+        path: '/sales/todaySales/:id',
+        element: lazy(() => import('./components/Sales/SalesDetail'))
+      },
+      {
+        exact: 'true',
+        path: '/sales/todayBulkSales/:id',
+        element: lazy(() => import('./components/Sales/BulkSalesDetail'))
       },
       {
         exact: 'true',
@@ -169,6 +194,16 @@ const routes = [
         exact: 'true',
         path: '/sales/saleInvoices',
         element: lazy(() => import('./components/Sales/SaleInvoices'))
+      },
+      {
+        exact: 'true',
+        path: '/sales/saleInvoices/:id',
+        element: lazy(() => import('./components/Sales/SalesDetail'))
+      },
+      {
+        exact: 'true',
+        path: '/sales/bulkSaleInvoices/:id',
+        element: lazy(() => import('./components/Sales/BulkSalesDetail'))
       },
       {
         exact: 'true',

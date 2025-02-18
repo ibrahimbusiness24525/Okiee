@@ -123,6 +123,7 @@ console.log('====================================');
       {/* <StyledHeading>New Phones</StyledHeading> */}
   
         <Table
+        routes={["/sales/todaySales"]}
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[

@@ -1,6 +1,7 @@
 import { BASE_URL } from "config/constant";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { AiOutlineUser, AiOutlineMobile } from "react-icons/ai"; // Import Icons
 
 const PurchaseDetail = () => {
     const { id } = useParams();
@@ -8,26 +9,26 @@ const PurchaseDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchPurchaseDetail = async () => {
-            try {
-                const response = await fetch(`${BASE_URL}api/Purchase/purchase-phone/${id}`);
-                const result = await response.json();
-                console.log(result);
-                if (response.ok) {
-                    setPurchase(result.data);
-                } else {
-                    setError(result.message || "Failed to fetch data");
-                }
-            } catch (err) {
-                setError("Network error");
-            } finally {
-                setLoading(false);
+    const fetchPurchaseDetail = async () => {
+        try {
+            const response = await fetch(`${BASE_URL}api/Purchase/purchase-phone/${id}`);
+            const result = await response.json();
+            console.log(result);
+            if (response.ok) {
+                setPurchase(result.data);
+            } else {
+                setError(result.message || "Failed to fetch data");
             }
-        };
+        } catch (err) {
+            setError("Network error");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchPurchaseDetail();
-    }, [id]);
+    }, []);
     
     if (loading) return <h2 style={{ textAlign: "center", color: "blue" }}>Loading...</h2>;
     if (error) return <h2 style={{ textAlign: "center", color: "red" }}>Error: {error}</h2>;
@@ -53,11 +54,55 @@ const PurchaseDetail = () => {
                 <p><strong>Mobile Number:</strong> {purchase.mobileNumber}</p>
                 <p><strong>Approved from Egadgets:</strong> {purchase.isApprovedFromEgadgets ? "Yes" : "No"}</p>
             </div>
+          
             <div style={{ textAlign: "center", marginTop: "20px" }}>
-                <h4 style={{ color: "#555" }}>Profile & Egadget Pics</h4>
-                <img src={purchase.profilePic || "not-found.jpg"} alt="Profile" style={{ width: "100px", height: "100px", borderRadius: "10px", marginRight: "10px" }} />
-                <img src={purchase.egadgetPic || "not-found.jpg"} alt="Egadget" style={{ width: "100px", height: "100px", borderRadius: "10px" }} />
+    <h4 style={{ color: "#555", marginBottom: "10px" }}>Profile & Egadget Pics</h4>
+
+    {/* Profile Picture */}
+    <div style={{ display: "inline-block", textAlign: "center", marginRight: "15px" }}>
+        {purchase.profilePic ? (
+            <img
+                src={purchase.profilePic}
+                alt="Profile"
+                style={{
+                    width: "100px",
+                    height: "100px",
+                    borderRadius: "10px",
+                    objectFit: "cover",
+                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)"
+                }}
+            />
+        ) : (
+            <>
+                <AiOutlineUser size={100} color="#888" style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", borderRadius: "10px", padding: "10px" }} />
+                <p style={{ fontSize: "12px", color: "#888", marginTop: "5px" }}>Not Found</p>
+            </>
+        )}
+    </div>
+
+    {/* Egadget Picture */}
+    <div style={{ display: "inline-block", textAlign: "center" }}>
+        {purchase.egadgetPic ? (
+            <img
+                src={purchase.egadgetPic}
+                alt="Egadget"
+                style={{
+                    width: "100px",
+                    height: "100px",
+                    borderRadius: "10px",
+                    objectFit: "cover",
+                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)"
+                }}
+             />
+                ) : (
+                <>
+                    <AiOutlineMobile size={100} color="#888" style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", borderRadius: "10px", padding: "10px" }} />
+                    <p style={{ fontSize: "12px", color: "#888", marginTop: "5px" }}>Not Found</p>
+                </>
+              )}
             </div>
+        </div>
+
         </div>
     );
 };

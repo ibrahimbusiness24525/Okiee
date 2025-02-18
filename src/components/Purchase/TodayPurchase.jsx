@@ -192,7 +192,7 @@ const handleScan = (value) => {
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"5rem" }}>Bulk Purchases</h3>
       </div>
       <Table
-          //  routes={["/purchase/todayPurchase"]}
+           routes={["/purchase/todayPurchase/bulkPurchase"]}
                         array={bulkPhones }
                         search={"imeiNumbers"}
                         keysToDisplay={["partyName", "companyName", "modelName","totalQuantity","date"]}
