@@ -12,15 +12,15 @@ const PurchaseDetail = () => {
         try {
             const response = await fetch(`${BASE_URL}api/Purchase/bulk-phone-purchase/${id}`);
             const result = await response.json();
-            console.log("bulk result",result);
-            
-            setPurchase(result)
+            console.log("bulk result", result);
+            setPurchase(result);
         } catch (err) {
             setError("Network error");
         } finally {
             setLoading(false);
         }
     };
+
     useEffect(() => {
         fetchBulkPurchaseDetail();
     }, []);
@@ -31,42 +31,45 @@ const PurchaseDetail = () => {
 
     return (
         <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-            <h3 style={{ textAlign: "center", color: "#333" }}>Purchase Detail</h3>
-                <div style={{ border: "1px solid #ccc", padding: "15px", borderRadius: "10px", background: "#f9f9f9" }}>
-                    <p><strong>Party Name:</strong> {purchase.partyName}</p>
-                    <p><strong>Company:</strong> {purchase.companyName}</p>
-                    <p><strong>Model:</strong> {purchase.modelName}</p>
-                    <p><strong>Date:</strong> {new Date(purchase.date).toLocaleDateString()}</p>
-                    <p><strong>Status:</strong> {purchase.status}</p>
-                    <h4>Prices</h4>
-                    <p><strong>Buying Price:</strong> {purchase.prices.buyingPrice}</p>
-                    <p><strong>Dealer Price:</strong> {purchase.prices.dealerPrice}</p>
-                    <p><strong>LP:</strong> {purchase.prices.lp}</p>
-                    <p><strong>Lifting:</strong> {purchase.prices.lifting}</p>
-                    <p><strong>Promo:</strong> {purchase.prices.promo}</p>
-                    <p><strong>Activation:</strong> {purchase.prices.activation}</p>
-                    <h4>RAM & SIM Details</h4>
-                       {purchase.ramSimDetails.length > 0 ?
-                       <>
-                          {purchase.ramSimDetails.map((ramSim, index) => (
-                              <div key={index} style={{ borderBottom: "1px solid #ddd", paddingBottom: "10px", marginBottom: "10px" }}>
-                                  <p><strong>RAM/Memory:</strong> {ramSim.ramMemory}</p>
-                                  <p><strong>SIM Option:</strong> {ramSim.simOption}</p>
-                                  <h5>IMEI Numbers</h5>
-                                  {ramSim.imeiNumbers.map((imei, i) => (
-                                      <p key={i}><strong>IMEI {i + 1}:</strong> {imei.imei1}</p>
-                                  ))}
-                              </div>
-                          ))}
-       
-                       </>:
-                      <>
-                       <p>
-                          Not Found
-                       </p>
-                      </>
-                      }
-                </div>
+            <h2 style={{ textAlign: "center", color: "#333" }}>Purchase Detail</h2>
+            <div style={{ border: "1px solid #ccc", padding: "20px", borderRadius: "10px", background: "#f9f9f9" }}>
+                <p><strong>Party Name:</strong> {purchase.partyName}</p>
+                <p><strong>Company:</strong> {purchase.companyName}</p>
+                <p><strong>Model:</strong> {purchase.modelName}</p>
+                <p><strong>Date:</strong> {new Date(purchase.date).toLocaleDateString()}</p>
+                <p><strong>Status:</strong> {purchase.status}</p>
+                
+                <h3 style={{ marginTop: "15px", borderBottom: "2px solid #ccc", paddingBottom: "5px" }}>Prices</h3>
+                <p><strong>Buying Price:</strong> {purchase.prices.buyingPrice}</p>
+                <p><strong>Dealer Price:</strong> {purchase.prices.dealerPrice}</p>
+                <p><strong>LP:</strong> {purchase.prices.lp}</p>
+                <p><strong>Lifting:</strong> {purchase.prices.lifting}</p>
+                <p><strong>Promo:</strong> {purchase.prices.promo}</p>
+                <p><strong>Activation:</strong> {purchase.prices.activation}</p>
+
+                <h3 style={{ marginTop: "15px", borderBottom: "2px solid #ccc", paddingBottom: "5px" }}>RAM & SIM Details</h3>
+                {purchase.ramSimDetails.length > 0 ? (
+                    <div>
+                        {purchase.ramSimDetails.map((ramSim, index) => (
+                            <div key={index} style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "15px", marginBottom: "15px", background: "#fff" }}>
+                                <h4 style={{ color: "#555" }}>RAM & SIM of Mobile {index + 1}</h4>
+                                <p><strong>RAM/Memory:</strong> {ramSim.ramMemory}</p>
+                                <p><strong>SIM Option:</strong> {ramSim.simOption}</p>
+                                <h5 style={{ marginTop: "10px", color: "#777" }}>IMEI Numbers</h5>
+                                <ul style={{ listStyleType: "none", paddingLeft: "0" }}>
+                                    {ramSim.imeiNumbers.map((imei, i) => (
+                                        <li key={i} style={{ padding: "5px 0", borderBottom: "1px solid #eee" }}>
+                                            <strong>IMEI {i + 1}:</strong> {imei.imei1}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p style={{ textAlign: "center", color: "#777" }}>No RAM & SIM details found.</p>
+                )}
+            </div>
         </div>
     );
 };
