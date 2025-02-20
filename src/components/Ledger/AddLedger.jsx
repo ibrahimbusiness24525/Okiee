@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Tabs, Tab, Modal, Button, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-
+import {api} from '../../../api/api'
 import avatar1 from '../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../assets/images/user/avatar-3.jpg';
@@ -98,7 +98,8 @@ const AddLedger = () => {
 
   const getTodayLedger = async() =>{
     try{
-        const response = await axios.get(`${BASE_URL}api/ledger/today`)
+        const response = await api.get(`/api/ledger/today`)
+        // const response = await axios.get(`${BASE_URL}api/ledger/today`)
         console.log("ledger today data",response);
         setLedgerData(response?.data?.ledger)
     }catch(error){
@@ -114,9 +115,7 @@ const AddLedger = () => {
     
     console.log("cashPaid payload",payload)
     try{
-      const response = await axios.post(`${BASE_URL}api/ledger/update-cash-paid`,payload,{
-        header:{"Content-type": "application/json"}
-      })
+      const response = await api.post(`/api/ledger/update-cash-paid`,payload)
       console.log(response)
       toast.success("Cash Paid Updated Successfully");
     }catch(error){
@@ -132,9 +131,7 @@ const AddLedger = () => {
     
     console.log("cash Received payload",payload)
     try{
-      const response = await axios.post(`${BASE_URL}api/ledger/update-cash-received`,payload,{
-        header:{"Content-type": "application/json"}
-      })
+      const response = await api.post(`/api/ledger/update-cash-received`,payload)
       console.log(response)
       toast.success("Cash Received Updated Successfully");
     }catch(error){
@@ -150,9 +147,7 @@ const AddLedger = () => {
     
     console.log("cash expense payload",payload)
     try{
-      const response = await axios.post(`${BASE_URL}api/ledger/update-expense`,payload,{
-        header:{"Content-type": "application/json"}
-      })
+      const response = await api.post(`/api/ledger/update-expense`,payload)
       console.log(response)
       toast.success("Cash expense Updated Successfully");
     }catch(error){
@@ -167,9 +162,7 @@ const AddLedger = () => {
     
     console.log("opening payload",payload)
     try{
-      const response = await axios.put(`${BASE_URL}api/ledger/update-opening-cash`,payload,{
-        header:{"Content-type": "application/json"}
-      })
+      const response = await api.put(`/api/ledger/update-opening-cash`,payload)
       console.log(response)
       toast.success("Opening Cash Updated Successfully");
     }catch(error){
@@ -180,7 +173,7 @@ const AddLedger = () => {
 
   const updateEndDay = async() =>{
     try{
-      const response  = await axios.post(`${BASE_URL}api/ledger/end-day`)
+      const response  = await api.post(`/api/ledger/end-day`)
       console.log("End day response", response)
       toast.success("End Day Updated Successfully");
     }catch(error){

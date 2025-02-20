@@ -4,6 +4,7 @@ import { BASE_URL } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
 import Table from 'components/Table/Table';
 import { dateFormatter } from 'utils/dateFormatter';
+import { api } from '../../../api/api';
 
 const LedgerRecords = () => {
   // Static data for today's sales
@@ -95,7 +96,7 @@ const handlePrintClick = (invoice) => {
   };
   const getAllLedgerRecords = async() =>{
     try{
-      const response = await axios.get(`${BASE_URL}api/ledger/all`)
+      const response = await api.get(`/api/ledger/all`)
       console.log("This is the records",response)
       setLedgerRecords(response?.data?.records)
     }catch(error){
