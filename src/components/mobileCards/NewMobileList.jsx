@@ -10,6 +10,7 @@ import bulkMobileImage from "../../assets/images/phoneBoxes.jpg"
 import BarcodeScannerComponent from 'react-webcam-barcode-scanner';
 import useScanDetection from 'use-scan-detection';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
+import { api } from '../../../api/api';
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
   const [type, setType] = useState("");
@@ -51,7 +52,8 @@ const NewMobilesList = () => {
   const getMobiles = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const response = await axios.get(BASE_URL + `api/phone/getAllPhones/${user._id}`);
-    console.log(response);
+    // const response = await api.get("/api/Purchase/purchase-phone")
+    console.log("this is the response of single mobile",response);
     setMobiles(response.data.phones);
   };
   const getActualPrice = (prices) => {

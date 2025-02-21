@@ -8,6 +8,7 @@ import { FaBarcode } from "react-icons/fa"; // Use FaBarcode or another availabl
 import SingalPurchaseModal from "./SingalPurchase";
 import BulkPurchaseModal from "./BulkPurchase";
 import { useEffect } from "react";
+import { api } from "../../../../api/api";
 
 const PurchasePhone = ({ modal,editMobile, handleModalClose }) => {
   const today = new Date().toISOString().split("T")[0]; 
@@ -241,21 +242,24 @@ console.log("this is the data",singlePurchase);
   }
     if(!editMobile){
       try {
-        const response = await axios.post(
-          `${BASE_URL}api/Purchase/purchase-phone`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-    
+        // const response = await axios.post(
+        //   `${BASE_URL}api/Purchase/purchase-phone`,
+        //   formData,
+        //   {
+        //     headers: { "Content-Type": "multipart/form-data" },
+        //   }
+        // );
+    const response = await api.post(
+      `/api/Purchase/purchase-phone`,
+      formData
+    )
         console.log(response, "response");
     
         if (response) {
           toast("Purchase Phone Record Added Successfully");
           handleSinglePhoneModalclose();
           handleModalClose()
-          resetForm();
+          // resetForm();
         }
       } catch (error) {
         console.error(error);
