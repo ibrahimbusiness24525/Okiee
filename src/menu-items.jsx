@@ -57,14 +57,14 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/usedMobileList'
         },
-        {
-          id: 'mobile',
-          title: 'Available Phones',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/app/dashboard/availablePhones'
-          // url: '/app/dashboard/DispachmobileList'
-        },
+        // {
+        //   id: 'mobile',
+        //   title: 'Available Phones',
+        //   type: 'item',
+        //   icon: 'feather icon-server',
+        //   url: '/app/dashboard/availablePhones'
+        //   // url: '/app/dashboard/DispachmobileList'
+        // },
       ]
     },
     {
