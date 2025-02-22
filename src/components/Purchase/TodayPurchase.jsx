@@ -7,6 +7,7 @@ import { dateFormatter } from 'utils/dateFormatter';
 import styled from 'styled-components';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
+import { api } from '../../../api/api';
 
 const TodayPurchase = () => {
 
@@ -77,7 +78,8 @@ const TodayPurchase = () => {
 
   const getAllPurchasedPhones = async() =>{
     try{
-      const response = await axios.get(`${BASE_URL}api/Purchase/all-purchase-phone`)
+      const response = await api.get("api/Purchase/all-purchase-phone")
+      // const response = await axios.get(`${BASE_URL}api/Purchase/all-purchase-phone`)
       console.log("This is the records",response)
       setSinglePhones(response?.data?.data?.singlePhones?.filter((item) => {
         return new Date(item.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
@@ -88,21 +90,23 @@ const TodayPurchase = () => {
     
         return itemDate === todayDate && item.phoneCondition === "New"; 
     }));
+    
     setOldPhones(response?.data?.data?.singlePhones?.filter((item) => {
         const itemDate = new Date(item.date).toISOString().split('T')[0];
         const todayDate = new Date().toISOString().split('T')[0];
-    
+        
         return itemDate === todayDate && item.phoneCondition === "Used"; 
     }));
 
       setBulkPhones(response?.data?.data?.bulkPhones?.filter((item) => {
         return new Date(item.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
-    }));
-    
+      }));
+      
     }catch(error){
       console.log("error in getting all ledger records", error)
     }
   }
+  console.log("These are the new phones",newPhones);
   
   useEffect(()=>{
     getAllPurchasedPhones()

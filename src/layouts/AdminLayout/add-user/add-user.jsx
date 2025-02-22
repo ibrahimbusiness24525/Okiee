@@ -64,7 +64,8 @@ const UserTable = () => {
         fetchUsers();
       } else {
         const accountId = JSON.parse(localStorage.getItem('user'))._id;
-        await axios.post(`${BASE_URL}api/admin/addUser/${accountId}`, newUser);
+        await axios.post(`${BASE_URL}api/admin/addUser`, newUser);
+        // await axios.post(`${BASE_URL}api/admin/addUser/${accountId}`, newUser);
         setUsers([...users, { ...newUser, id: users.length + 1 }]);
       }
     } catch (error) {
