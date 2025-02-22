@@ -51,8 +51,10 @@ const NewMobilesList = () => {
 
   const getMobiles = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
-    const response = await axios.get(BASE_URL + `api/phone/getAllPhones/${user._id}`);
-    // const response = await api.get("/api/Purchase/purchase-phone")
+    console.log("required id", user._id);
+    
+    // const response = await axios.get(BASE_URL + `api/phone/getAllPhones/${user._id}`);
+    const response = await api.get("/api/Purchase/purchase-phone")
     console.log("this is the response of single mobile",response);
     setMobiles(response.data.phones);
   };
@@ -121,7 +123,8 @@ const NewMobilesList = () => {
   };
   const getBulkPhones = async() =>{
     try{
-      const response =  await axios.get(`${BASE_URL}api/Purchase/bulk-phone-purchase`);
+      // const response =  await axios.get(`${BASE_URL}api/Purchase/bulk-phone-purchase`);
+      const response =  await api.get("/api/Purchase/bulk-phone-purchase");
       console.log("bulk record response",response);
       setBulkMobiles(response?.data)
       

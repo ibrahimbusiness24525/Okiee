@@ -6,6 +6,7 @@ import Table from 'components/Table/Table';
 import { dateFormatter } from 'utils/dateFormatter';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
+import { api } from '../../../api/api';
 
 const PurchaseRecords = () => {
 
@@ -74,7 +75,8 @@ const PurchaseRecords = () => {
 
   const getAllPurchasedPhones = async() =>{
     try{
-      const response = await axios.get(`${BASE_URL}api/Purchase/all-purchase-phone`)
+      const response = await api.get("api/Purchase/all-purchase-phone")
+      // const response = await axios.get(`${BASE_URL}api/Purchase/all-purchase-phone`)
       console.log("This is the records",response)
       setNewPhones(response?.data?.data?.singlePhones?.filter((item) => {
         return  item.phoneCondition === "New"; 

@@ -386,14 +386,14 @@ console.log("this is the data",singlePurchase);
      console.log("bulk purchase payload",payload);
      
       console.log("bulk phone payload",payload);
-      const response = await axios.post(
-        `${BASE_URL}api/Purchase/bulk-phone-purchase`,
-        payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-  
+      // const response = await axios.post(
+      //   `${BASE_URL}api/Purchase/bulk-phone-purchase`,
+      //   payload,
+      //   {
+      //     headers: { "Content-Type": "application/json" },
+      //   }
+      // );
+      const response = await api.post(`/api/Purchase/bulk-phone-purchase`,payload)
       console.log( "bulk phone response",response);
   
       if (response) {
