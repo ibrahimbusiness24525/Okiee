@@ -297,12 +297,18 @@ useScanDetection({
                     fontSize: '1.2rem',
                   }}
                 />
-                 {mobile.images[0] &&  <Card.Img
+                  <Card.Img
+                                 variant="top"
+                                 src={`https://media.johnlewiscontent.com/i/JohnLewis/mobiles-nav-card-apple-v3-130924?fmt=auto`}
+                                 alt={mobile.modelSpecifications}
+                                 style={{ height: '400px', objectFit: 'cover' }}
+                               />
+                 {/* {mobile.images[0] &&  <Card.Img
                                  variant="top"
                                  src={`${mobile.images[0]}`}
                                  alt={mobile.modelSpecifications}
                                  style={{ height: '400px', objectFit: 'cover' }}
-                               />}
+                               />} */}
 
                 <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
                   <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
@@ -341,7 +347,7 @@ useScanDetection({
                     </div>
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
-                  <Button
+                  {/* <Button
                  onClick={() => handleDispatchClick(mobile)}
                style={{
                 backgroundColor: '#FFD000',
@@ -355,7 +361,7 @@ useScanDetection({
                }}
               >
              Dispatch
-             </Button>
+             </Button> */}
                     <Button
                       onClick={() => handleSoldClick(mobile,"single")}
                       style={{

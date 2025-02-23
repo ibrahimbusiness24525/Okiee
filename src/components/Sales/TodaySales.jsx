@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { dateFormatter } from 'utils/dateFormatter';
 import Table from 'components/Table/Table';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
+import { api } from '../../../api/api';
 
 const TodaySales = () => {
   const [allInvoices, setAllInvoices] = useState([]);
@@ -21,11 +22,11 @@ const TodaySales = () => {
   const getInvoices = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-      const response = await axios.get(`${BASE_URL}api/invoice/invoices/getAll/${user._id}`);
+      const response = await api.get(`api/Purchase/sold-single-phones`);
       console.log(response);
 
-      setAllInvoices(response.data.invoices.filter((item) => {
-        return new Date(item.invoiceDate).toDateString() === new Date().toDateString();
+      setAllInvoices(response.data.soldPhones.filter((item) => {
+        return new Date(item.saleDate).toDateString() === new Date().toDateString();
     }));
     } catch (error) {
       console.error('Error fetching invoices:', error);
@@ -33,7 +34,7 @@ const TodaySales = () => {
   };
   const getAllBulkSales = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}api/Purchase/all-sales`);
+      const response = await api.get(`api/Purchase/all-sales`);
      console.log("These are bulk sales",response);
 
       setAllBulkSales(response.data.data.filter((item) => {
@@ -122,43 +123,43 @@ console.log('====================================');
       </div>
       {/* <StyledHeading>New Phones</StyledHeading> */}
   
-        <Table
-        routes={["/sales/todaySales"]}
+      <Table
+        // routes={["/sales/saleInvoices"]}
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[
-    "mobileName",
-    "mobileCompany",
-    "amount",
-    "quantity",
+    "salePrice",
     "warranty",
-    "invoiceDate",
+    "saleDate"
+   
     
   ]}
   label={[
-    "Mobile Name",
-    "Company",
     "Price",
-    "Number of Mobiles",
     "Warranty",
     "Invoice Date",
+        "Actions"
   ]}
   customBlocks={[
+       
          {
-           index: 2,
-          component: (invoice) => {
-          // const profit = (invoice.totalAmount - (invoice.items[0]?.purchaseAmount || 0)).toFixed(2);
-          return `Rs ${invoice}`;
-          }
-         },
-         {
-            index: 5,
+            index: 2,
             component: (date) => {
             return dateFormatter(date)
            }
          }
         ]}
-      />
+         extraColumns={[
+                        () => {
+                            return (
+                              <FaPrint
+                              style={styles.printIcon}
+                              // onClick={() => handlePrintClick(invoice)}
+                            />
+                           );
+                      },
+                  ]}
+            />
 
       </div>
       <div>
