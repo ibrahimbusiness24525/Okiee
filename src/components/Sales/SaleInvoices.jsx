@@ -244,21 +244,25 @@ const handleScan = (value) => {
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[
-    "salePrice",
-    "warranty",
+    "customerName",
+    "companyName",
+    "modelName",
+    "finalPrice",
     "saleDate",
     
   ]}
   label={[
-    "Price",
-    "Warranty",
-    "Invoice Date",
+    "Customer Name",
+    "Company Name",
+    "Model Name",
+    "Final Price",
+    "Date Sold",
     "Actions"
   ]}
   customBlocks={[
        
          {
-            index: 2,
+            index: 4,
             component: (date) => {
             return dateFormatter(date)
            }

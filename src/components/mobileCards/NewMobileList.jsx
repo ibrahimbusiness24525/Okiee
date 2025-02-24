@@ -20,6 +20,9 @@ const NewMobilesList = () => {
   const [editMobile, setEditMobile] = useState(null);
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [soldMobile, setSoldMobile] = useState(null);
+  const[customerName,setCustomerName] = useState("");
+  const[cnicFrontPic,setCnicFrontPic]= useState("");
+  const[cnicBackPic,setCnicBackPic]= useState("");
   const [finalPrice, setFinalPrice] = useState('');
   const [warranty, setWarranty] = useState('12 months');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -161,11 +164,13 @@ const NewMobilesList = () => {
       finalPrice,
       warranty,
       addedImeis,
+      cnicBackPic,
+      cnicFrontPic,
+      customerName,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
     setFinalPrice('');
-    setWarranty('');
     setShowSoldModal(false);
   };
 
@@ -195,6 +200,9 @@ const NewMobilesList = () => {
     doc.save('Mobile_Inventory.pdf');
   };
   const filteredMobiles = mobiles?.filter((mobile) => {
+    // Exclude sold phones
+    if (mobile.isSold) return false;
+  
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
   
@@ -638,7 +646,39 @@ useScanDetection({
         </Modal.Header>
         <Modal.Body>
           <Form>
+            <div>
             <Form.Group className="mb-3">
+                  <Form.Label>Customer Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Enter Customer Name"
+                  />
+                </Form.Group>
+          
+        
+
+                {/* CNIC Front Picture */}
+                <Form.Group className="mb-3">
+                  <Form.Label>CNIC Front Picture</Form.Label>
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setCnicFrontPic(e.target.files[0]?.name)}
+                  />
+                </Form.Group>
+
+                {/* CNIC Back Picture */}
+                <Form.Group className="mb-3">
+                  <Form.Label>CNIC Back Picture</Form.Label>
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
               <Form.Label>Sold Price</Form.Label>
               <Form.Control
                 type="number"
@@ -647,34 +687,9 @@ useScanDetection({
                 placeholder="Enter Sold price"
               />
             </Form.Group>
-            {/* <Form.Group className="mb-3">
-              <Form.Label>Company Warranty</Form.Label>
-              <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
-                <option value="">Select warranty</option>
-                <option value="No Warranty">No Warranty</option>
-                <option value="1 Month">1 Month</option>
-                <option value="2 Months">2 Months</option>
-                <option value="3 Months">3 Months</option>
-                <option value="4 Months">4 Months</option>
-                <option value="5 Months">5 Months</option>
-                <option value="6 Months">6 Months</option>
-                <option value="7 Months">7 Months</option>
-                <option value="8 Months">8 Months</option>
-                <option value="9 Months">9 Months</option>
-                <option value="10 Months">10 Months</option>
-                <option value="11 Months">11 Months</option>
-                <option value="12 Months">12 Months</option>
-              </Form.Select>
-            </Form.Group> */}
-            <Form.Group className="mb-3">
-          {/* <Form.Label>IMEI Numbers</Form.Label> */}
-          <div>
-            {/* {imeis.map((imei, index) => (
-              <div key={index}>{imei}</div>
-            ))} */}
-          </div>
+            </div>
+          
        
-        </Form.Group>
         {type === "bulk" && (
             <>
                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>

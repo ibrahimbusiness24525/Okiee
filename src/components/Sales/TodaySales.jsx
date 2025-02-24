@@ -128,22 +128,25 @@ console.log('====================================');
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[
-    "salePrice",
-    "warranty",
-    "saleDate"
-   
+    "customerName",
+    "companyName",
+    "modelName",
+    "finalPrice",
+    "saleDate",
     
   ]}
   label={[
-    "Price",
-    "Warranty",
-    "Invoice Date",
-        "Actions"
+    "Customer Name",
+    "Company Name",
+    "Model Name",
+    "Final Price",
+    "Date Sold",
+    "Actions"
   ]}
   customBlocks={[
        
          {
-            index: 2,
+            index: 4,
             component: (date) => {
             return dateFormatter(date)
            }
@@ -160,7 +163,6 @@ console.log('====================================');
                       },
                   ]}
             />
-
       </div>
       <div>
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Bulk Invoices</h3>

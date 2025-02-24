@@ -209,6 +209,9 @@ const SoldInvoice = () => {
         : dataReceived?.addedImeis, 
         salePrice: dataReceived?.finalPrice,
         warranty: dataReceived?.warranty, 
+        customerName:dataReceived?.customerName,
+        cnicFrontPic:"/file",
+        cnicBackPic:"/file"
       };
       console.log("bulk payload",payload);
       try {
@@ -232,6 +235,9 @@ const SoldInvoice = () => {
           purchasePhoneId: dataReceived._id,
           salePrice: dataReceived?.finalPrice,
           warranty: dataReceived?.warranty,
+          customerName:dataReceived?.customerName,
+          cnicFrontPic:"/file",
+          cnicBackPic:"/file"
         }
         console.log("This is the single sell phone data",payload);
         
