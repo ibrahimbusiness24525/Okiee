@@ -58,21 +58,12 @@ const menuItems = {
           url: '/app/dashboard/usedMobileList'
         },
         // {
-<<<<<<< HEAD
-        //   id: 'mobile',
-        //   title: 'Available Phones',
-        //   type: 'item',
-        //   icon: 'feather icon-server',
-        //   url: '/app/dashboard/availablePhones'
-        //   // url: '/app/dashboard/DispachmobileList'
-=======
           // id: 'mobile',
           // title: 'Available Phones',
           // type: 'item',
           // icon: 'feather icon-server',
           // url: '/app/dashboard/availablePhones'
-          // url: '/app/dashboard/DispachmobileList'
->>>>>>> 4c2ea13c723574c296e6bb5a84dbe16535d9ca6a
+          // uclrl: '/app/dashboard/DispachmobileList'
         // },
       ]
     },
