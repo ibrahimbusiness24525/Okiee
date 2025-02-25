@@ -3,6 +3,7 @@ import html2pdf from 'html2pdf.js';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { BASE_URL } from 'config/constant';
+import { api } from '../../../api/api';
 
 const SoldInvoice = () => {
   const styles = {
@@ -208,12 +209,16 @@ const SoldInvoice = () => {
         : dataReceived?.addedImeis, 
         salePrice: dataReceived?.finalPrice,
         warranty: dataReceived?.warranty, 
+        customerName:dataReceived?.customerName,
+        cnicFrontPic:"/file",
+        cnicBackPic:"/file"
       };
       console.log("bulk payload",payload);
       try {
-        const response = await axios.post(BASE_URL + `api/Purchase/sell-phone`, payload,{
-          "headers": {"Content-Type": "application/json"}
-        });
+        const response = await api.post(`api/Purchase/sell-phone`, payload);
+        // const response = await axios.post(BASE_URL + `api/Purchase/sell-phone`, payload,{
+        //   "headers": {"Content-Type": "application/json"}
+        // });
         console.log("response of bulk invoice",response);
         
         if (response) {
@@ -226,13 +231,35 @@ const SoldInvoice = () => {
 
     }else{
       try {
-        const response = await axios.post(BASE_URL + `api/invoice/invoices`, invoiceData);
+        const payload = { 
+          purchasePhoneId: dataReceived._id,
+          salePrice: dataReceived?.finalPrice,
+          warranty: dataReceived?.warranty,
+          customerName:dataReceived?.customerName,
+          cnicFrontPic:"/file",
+          cnicBackPic:"/file"
+        }
+        console.log("This is the single sell phone data",payload);
+        
+        const response = await api.post(`api/Purchase/sell-single-phone`, payload);
+
         if (response) {
           alert('Invoice submitted successfully');
         }
       } catch (error) {
         alert('Error submitting invoice: ' + error.message);
       }
+      // try {
+      //   console.log("This is the single invoice data",invoiceData);
+        
+      //   const response = await axios.post(BASE_URL + `api/invoice/invoices`, invoiceData);
+
+      //   if (response) {
+      //     alert('Invoice submitted successfully');
+      //   }
+      // } catch (error) {
+      //   alert('Error submitting invoice: ' + error.message);
+      // }
     }
   };
 console.log("this is the type",dataReceived?.type);

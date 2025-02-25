@@ -84,12 +84,12 @@ const TodayPurchase = () => {
       setSinglePhones(response?.data?.data?.singlePhones?.filter((item) => {
         return new Date(item.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
     }));
-    setNewPhones(response?.data?.data?.singlePhones?.filter((item) => {
-        const itemDate = new Date(item.date).toISOString().split('T')[0];
-        const todayDate = new Date().toISOString().split('T')[0];
+    setNewPhones(response?.data?.data?.singlePhones.filter(phone => {
+      const phoneDate = new Date(phone.date).toISOString().split("T")[0]; // Convert phone's date to "YYYY-MM-DD"
+      return phoneDate ===  new Date().toISOString().split("T")[0] && phone.phoneCondition === "New"; // Check if the phone is new and added today
+    }))
+ 
     
-        return itemDate === todayDate && item.phoneCondition === "New"; 
-    }));
     
     setOldPhones(response?.data?.data?.singlePhones?.filter((item) => {
         const itemDate = new Date(item.date).toISOString().split('T')[0];

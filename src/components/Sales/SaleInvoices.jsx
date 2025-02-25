@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { dateFormatter } from 'utils/dateFormatter';
 import Table from 'components/Table/Table';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
+import { api } from '../../../api/api';
 
 const SaleInvoices = () => {
   const [search, setSearch] = useState('');
@@ -24,17 +25,18 @@ const SaleInvoices = () => {
   const getInvoices = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-      const response = await axios.get(`${BASE_URL}api/invoice/invoices/getAll/${user._id}`);
+      const response = await api.get(`api/Purchase/sold-single-phones`);
+      // const response = await axios.get(`${BASE_URL}api/invoice/invoices/getAll/${user._id}`);
       console.log(response);
 
-      setAllInvoices(response.data.invoices);
+      setAllInvoices(response.data.soldPhones);
     } catch (error) {
       console.error('Error fetching invoices:', error);
     }
   };
   const getAllBulkSales = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}api/Purchase/all-sales`);
+      const response = await api.get(`api/Purchase/all-sales`);
      console.log("These are bulk sales",response);
 
       setAllBulkSales(response?.data?.data);
@@ -238,38 +240,29 @@ const handleScan = (value) => {
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Single Invoice</h3>
       </div>
         <Table
-        routes={["/sales/saleInvoices"]}
+        // routes={["/sales/saleInvoices"]}
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[
-    "mobileName",
-    "mobileCompany",
-    "amount",
-    "quantity",
-    "warranty",
-    "invoiceDate",
-   
+    "customerName",
+    "companyName",
+    "modelName",
+    "finalPrice",
+    "saleDate",
     
   ]}
   label={[
-    "Mobile Name",
-    "Company",
-    "Price",
-    "Number of Mobiles",
-    "Warranty",
-    "Invoice Date",
-     "Action"
+    "Customer Name",
+    "Company Name",
+    "Model Name",
+    "Final Price",
+    "Date Sold",
+    "Actions"
   ]}
   customBlocks={[
+       
          {
-           index: 2,
-          component: (invoice) => {
-          // const profit = (invoice.totalAmount - (invoice.items[0]?.purchaseAmount || 0)).toFixed(2);
-          return `Rs ${invoice}`;
-          }
-         },
-         {
-            index: 5,
+            index: 4,
             component: (date) => {
             return dateFormatter(date)
            }

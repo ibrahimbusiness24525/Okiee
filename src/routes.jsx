@@ -69,12 +69,12 @@ const routes = [
         path: '/app/dashboard/usedMobileList',
         element: lazy(() => import('./components/mobileCards/UsedMobileList')) // Mobile List
       },
-      {
-        exact: 'true',
-        path: '/app/dashboard/availablePhones',
+      // {
+      //   exact: 'true',
+      //   path: '/app/dashboard/availablePhones',
         // path: '/app/dashboard/DispachmobileList',
-        element: lazy(() => import('./components/mobileCards/DispachMobileList')) // Dispach Mobile List
-      },
+      //   element: lazy(() => import('./components/mobileCards/DispachMobileList')) // Dispach Mobile List
+      // },
       {
         exact: 'true',
         path: '/app/dashboard/addLedger',
