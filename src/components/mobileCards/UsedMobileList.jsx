@@ -70,7 +70,8 @@ const UsedMobilesList = () => {
 
   const deletePhone = async () => {
     try {
-      await axios.delete(`${BASE_URL}api/Purchase/purchase-phone/${deleteMobileId}`);
+     await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
+      // await axios.delete(`${BASE_URL}api/Purchase/purchase-phone/${deleteMobileId}`);
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
       console.log('Phone deleted successfully');
     } catch (error) {
@@ -371,7 +372,7 @@ const UsedMobilesList = () => {
     filteredMobiles.map((mobile) => (
       <Col key={mobile._id}>
         <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-          <FaEdit
+          {/* <FaEdit
             onClick={() => handleEdit(mobile)}
             style={{
               position: 'absolute',
@@ -381,7 +382,7 @@ const UsedMobilesList = () => {
               cursor: 'pointer',
               fontSize: '1.2rem',
             }}
-          />
+          /> */}
           <FaTrash
             onClick={() => confirmDelete(mobile._id)}
             style={{
