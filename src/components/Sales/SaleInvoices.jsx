@@ -240,7 +240,7 @@ const handleScan = (value) => {
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Single Invoice</h3>
       </div>
         <Table
-        // routes={["/sales/saleInvoices"]}
+        routes={["/sales/sales"]}
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[
@@ -285,6 +285,7 @@ const handleScan = (value) => {
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Bulk Invoices</h3>
       </div>
       <Table
+      routes={["/sales/BulkSales"]}
   array={allbulkSales}
   search={"imei1"}
   keysToDisplay={[
