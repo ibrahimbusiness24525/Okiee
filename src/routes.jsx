@@ -172,17 +172,27 @@ const routes = [
       },
       {
         exact: 'true',
-        path: '/sales/todaySales',
-        element: lazy(() => import('./components/Sales/TodaySales'))
-      },
-      {
-        exact: 'true',
         path: '/sales/todaySales/:id',
         element: lazy(() => import('./components/Sales/SalesDetail'))
       },
       {
         exact: 'true',
+        path: '/sales/sales/:id',
+        element: lazy(() => import('./components/Sales/SalesDetail'))
+      },
+      {
+        exact: 'true',
+        path: '/sales/todaySales',
+        element: lazy(() => import('./components/Sales/TodaySales'))
+      },
+      {
+        exact: 'true',
         path: '/sales/todayBulkSales/:id',
+        element: lazy(() => import('./components/Sales/BulkSalesDetail'))
+      },
+      {
+        exact: 'true',
+        path: '/sales/BulkSales/:id',
         element: lazy(() => import('./components/Sales/BulkSalesDetail'))
       },
       {

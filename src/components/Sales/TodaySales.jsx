@@ -124,7 +124,7 @@ console.log('====================================');
       {/* <StyledHeading>New Phones</StyledHeading> */}
   
       <Table
-        // routes={["/sales/saleInvoices"]}
+        routes={["/sales/todaySales"]}
   array={allInvoices}
   search={"imei1"}
   keysToDisplay={[
@@ -168,6 +168,7 @@ console.log('====================================');
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Bulk Invoices</h3>
       </div>
       <Table
+      routes={["/sales/todayBulkSales"]}
   array={allbulkSales}
   search={"imei1"}
   keysToDisplay={[

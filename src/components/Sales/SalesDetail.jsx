@@ -1,6 +1,6 @@
-import { BASE_URL } from "config/constant";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { api } from "../../../api/api";
 
 const SalesDetail = () => {
     const { id } = useParams();
@@ -8,55 +8,61 @@ const SalesDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchSaleDetail = async () => {
-        try {
-            const response = await fetch(`${BASE_URL}api/invoice/invoices/${id}`);
-            const result = await response.json();
-            console.log(result);
-            if (response.ok) {
-                setSale(result.invoice);  // ✅ Corrected to use `invoice`
-            } else {
-                setError(result.message || "Failed to fetch data");
-            }
-        } catch (err) {
-            setError("Network error");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchSaleDetail();
-    }, [id]);  // ✅ Dependency added to refetch if `id` changes
-    
-    if (loading) return <h2 style={{ textAlign: "center", color: "blue" }}>Loading...</h2>;
-    if (error) return <h2 style={{ textAlign: "center", color: "red" }}>Error: {error}</h2>;
-    if (!sale) return <h2 style={{ textAlign: "center", color: "gray" }}>Not Found</h2>;
+        const fetchSaleDetail = async () => {
+            try {
+                const response = await api.get(`/api/Purchase/single-sold-phone/${id}`);
+                if (response.data?.success) {
+                    setSale(response.data.soldPhoneDetail);
+                } else {
+                    setError("Failed to fetch sale details");
+                }
+            } catch (err) {
+                setError("Network error");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    // Extract first item from invoice (since it's an array)
-    const item = sale.items?.[0] || {};
+        fetchSaleDetail();
+    }, [id]);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
 
     return (
         <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-            <h3 style={{ textAlign: "center", color: "#333" }}>Invoice Detail</h3>
-            <div style={{ border: "1px solid #ccc", padding: "15px", borderRadius: "10px", background: "#f9f9f9" }}>
-                <p><strong>Invoice Number:</strong> {sale.invoiceNumber}</p>
-                <p><strong>Date:</strong> {new Date(sale.invoiceDate).toLocaleDateString()}</p>
-                <p><strong>Shop ID:</strong> {sale.shopId}</p>
-                <p><strong>Total Amount:</strong> {sale.totalAmount}</p>
-                
-                {/* Mobile Details */}
-                {item && (
-                    <>
-                        <p><strong>Mobile Name:</strong> {item.mobileName}</p>
-                        <p><strong>Company:</strong> {item.mobileCompany}</p>
-                        <p><strong>IMEI 1:</strong> {item.imei}</p>
-                        <p><strong>IMEI 2:</strong> {item.imei2}</p>
-                        <p><strong>Warranty:</strong> {item.warranty}</p>
-                        <p><strong>Quantity:</strong> {item.quantity}</p>
-                    </>
-                )}
-            </div>
+            <h2>Sale Details</h2>
+            {sale ? (
+                <>
+                    <p><strong>Invoice Number:</strong> {sale.invoiceNumber}</p>
+                    <p><strong>Customer Name:</strong> {sale.customerName}</p>
+                    <p><strong>Mobile Number:</strong> {sale.mobileNumber}</p>
+                    <p><strong>Father Name:</strong> {sale.fatherName}</p>
+                    <p><strong>Company Name:</strong> {sale.companyName}</p>
+                    <p><strong>Model:</strong> {sale.modelName}</p>
+                    <p><strong>Condition:</strong> {sale.phoneCondition}</p>
+                    <p><strong>Warranty:</strong> {sale.warranty}</p>
+                    <p><strong>Specifications:</strong> {sale.specifications}</p>
+                    <p><strong>RAM:</strong> {sale.ramMemory} GB</p>
+                    <p><strong>Color:</strong> {sale.color}</p>
+                    <p><strong>IMEI 1:</strong> {sale.imei1}</p>
+                    <p><strong>IMEI 2:</strong> {sale.imei2}</p>
+                    <p><strong>Purchase Price:</strong> {sale.purchasePrice} PKR</p>
+                    <p><strong>Final Price:</strong> {sale.finalPrice} PKR</p>
+                    <p><strong>Demand Price:</strong> {sale.demandPrice} PKR</p>
+                    <p><strong>Sale Date:</strong> {new Date(sale.saleDate).toLocaleString()}</p>
+                    <p><strong>Purchase Date:</strong> {new Date(sale.purchaseDate).toLocaleString()}</p>
+                    <p><strong>Accessories:</strong></p>
+                    <ul>
+                        <li>Box: {sale.accessories?.box ? "Yes" : "No"}</li>
+                        <li>Charger: {sale.accessories?.charger ? "Yes" : "No"}</li>
+                        <li>Hand Free: {sale.accessories?.handFree ? "Yes" : "No"}</li>
+                    </ul>
+                </>
+            ) : (
+                <p>No sale details available.</p>
+            )}
         </div>
     );
 };

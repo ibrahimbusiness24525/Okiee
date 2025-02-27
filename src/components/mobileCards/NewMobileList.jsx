@@ -83,15 +83,24 @@ const NewMobilesList = () => {
 
 
   const deletePhone = async () => {
+
     try {
-      await axios.delete(`${BASE_URL}api/phone/deletePhone/${deleteMobileId}`);
+      console.log("deleteMobileId",deleteMobileId);
+      if(type === "bulk"){
+        await api.delete(`/api/Purchase/purchase-bulk/delete/${deleteMobileId}`);
+      }else{
+        await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
+      }
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
       console.log('Phone deleted successfully');
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Error deleting phone:', error);
-    } finally {
+    } 
+    finally {
       setShowDeleteModal(false);
     }
+
   };
 
   const handleDispatchClick = (mobile) => {
@@ -177,6 +186,7 @@ const NewMobilesList = () => {
   const confirmDelete = (mobileId) => {
     setDeleteMobileId(mobileId);
     setShowDeleteModal(true);
+    setType("single");
   };
 
   const handleShareInventory = () => {
@@ -248,7 +258,11 @@ useScanDetection({
     setSelectedMobile(null);
   };
   console.log("bulk Mobile",bulkMobile);
-  
+  const handleBulkDelete = (id) =>{
+    setDeleteMobileId(id);
+    setType("bulk");
+    setShowDeleteModal(true);
+  }
   return (
     <>
       {/* Search bar */}
@@ -283,7 +297,7 @@ useScanDetection({
           filteredMobiles.map((mobile) => (
             <Col key={mobile._id}>
               <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                <FaEdit
+                {/* <FaEdit
                   onClick={() => handleEdit(mobile)}
                   style={{
                     position: 'absolute',
@@ -293,7 +307,7 @@ useScanDetection({
                     cursor: 'pointer',
                     fontSize: '1.2rem',
                   }}
-                />
+                /> */}
                 <FaTrash
                   onClick={() => confirmDelete(mobile._id)}
                   style={{
@@ -417,9 +431,9 @@ useScanDetection({
                   cursor: 'pointer',
                   fontSize: '1.5rem',
                 }}
-              />
+              /> */}
               <FaTrash
-                onClick={() => confirmDelete(mobile._id)}
+                onClick={() => handleBulkDelete(mobile._id)}
                 style={{
                   position: 'absolute',
                   top: '10px',
@@ -428,7 +442,7 @@ useScanDetection({
                   cursor: 'pointer',
                   fontSize: '1.5rem',
                 }}
-              /> */}
+              />
 
               {/* Image handling */}
               {mobile?.images?.[0] ? (

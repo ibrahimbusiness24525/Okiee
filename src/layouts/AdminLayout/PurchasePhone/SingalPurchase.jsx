@@ -10,7 +10,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
 
       const [showWarranty, setShowWarranty] = useState(false);
         const [loading, setLoading] = useState(false);
-        const todayDate = new Date().toISOString().split("T")[0]; 
+        // const todayDate = new Date().toISOString().split("T")[0]; 
         
 
     return(
@@ -33,8 +33,12 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         
                       <Form.Group controlId="purchasePhoneDate" style={{ width: "48%" }}>
                         <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>Date</Form.Label>
-                        <Form.Control type="date" defaultValue={todayDate} value={todayDate}
-                          readOnly
+                        <Form.Control type="date"
+                         defaultValue={singlePurchase.date} 
+                         value={singlePurchase.date}
+                        //  defaultValue={todayDate} 
+                        //  value={todayDate}
+                          // readOnly
 
                             name="date"
                             onChange={handleChange}  required />
@@ -155,7 +159,6 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         
               
                     {/* E-Gadget Status Pic Field */}
-                   
               
                     {/* Specifications Section */}
                     <div style={{ marginTop: "15px" }}>
@@ -163,7 +166,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
     Specifications
   </Form.Label>
   <Row style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-    {["PTA", "Non-PTA FU", "Non-PTA JV"].map((spec) => (
+    {["PTA", "Non-PTA FU", "Non-PTA JV","CPID","Patch Approval","Other"].map((spec) => (
       <Form.Group key={spec} style={{ width: "30%" }}>
         <Col>
           <Form.Check
