@@ -5,12 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import Table from 'components/Table/Table';
 import { dateFormatter } from 'utils/dateFormatter';
 import { api } from '../../../api/api';
+import { StyledHeading } from 'components/StyledHeading/StyledHeading';
+import { toast } from 'react-toastify';
+import { Alert } from 'react-bootstrap';
 
 const LedgerRecords = () => {
   // Static data for today's sales
   const [todayInvoices, setTodayInvoices] = useState([]);
   const navigate = useNavigate();
-  const[ledgerRecords, setLedgerRecords] = useState([])
+  const[ledgerRecords, setLedgerRecords] = useState([]);
+  const[comitteeRecords, setComitteeRecords] = useState([]);
 
   // Inline styles for the table
   const styles = {
@@ -91,9 +95,9 @@ const LedgerRecords = () => {
     }
   };
 
-const handlePrintClick = (invoice) => {
-    navigate('/invoice/shop', { state: { invoice } }); // Pass invoice data to the route
-  };
+  const handlePrintClick = (invoice) => {
+      navigate('/invoice/shop', { state: { invoice } }); // Pass invoice data to the route
+    };
   const getAllLedgerRecords = async() =>{
     try{
       const response = await api.get(`/api/ledger/all`)
@@ -104,9 +108,41 @@ const handlePrintClick = (invoice) => {
     }
   }
   
+  const getAllCommitteeRecords = async() =>{
+    try{
+      const response = await api.get("/api/committee/getComitteesRecords");
+      setComitteeRecords(response?.data?.committees)
+      console.log("This is CommitteeRecords response",response);
+    }catch(error){
+      console.log("error in getting all ledger records", error)
+    }
+  }
+
+  const handleChangeStatus = (committeeId,recordId) => {
+    const confirmed = window.confirm("Do you really want to mark it as paid?");
+        if (confirmed) {
+          applyStatusConfirmation(committeeId,recordId);
+        }
+  };
+
+  const applyStatusConfirmation = async(committeeId,recordId) =>{
+    console.log("committee Id", committeeId, "Record ID", recordId);
+    
+    try{
+      const response = await api.patch(`/api/committee/updateComittee/${committeeId}/${recordId}`)
+      console.log(response);
+      toast.success("Paid Successfully");
+    }catch(error){
+      console.log("Error in making paid", error);
+    }
+
+  }
+  console.log("This is response",comitteeRecords);
   useEffect(()=>{
     getAllLedgerRecords()
+    getAllCommitteeRecords()
   },[])
+
 
 console.log(todayInvoices,'todayInvoice')
   return (
@@ -144,61 +180,83 @@ console.log(todayInvoices,'todayInvoice')
                         //     },
                         // ]}
                     />
-      {/* <div style={styles.tableWrapper}>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Opening Cash</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Cash Paid</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Cash Recieved</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Expense</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Closing Cash</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {todayInvoices.map((invoice, index) => (
-              <tr
-                key={invoice.id}
-                style={{
-                  ...styles.row,
-                  ...(index % 2 === 0 ? styles.evenRow : styles.oddRow),
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor;
-                  e.currentTarget.querySelector('svg').style.color = styles.printIconHover.color;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor;
-                  e.currentTarget.querySelector('svg').style.color = styles.printIcon.color;
-                }}
-              >
-                <td style={styles.cell}>{invoice.invoiceNumber}</td>
-                <td style={styles.cell}>{invoice.items[0]?.mobileName}</td>
-                <td style={styles.cell}>{invoice.items[0]?.imei}</td>
-                <td style={styles.cell}>{invoice.items[0]?.imei2}</td>
-                <td style={styles.cell}>Rs{invoice.items[0]?.purchaseAmount}</td>
-                <td style={styles.cell}>Rs{invoice.totalAmount}</td>
-                <td style={styles.cell}>{new Intl.DateTimeFormat('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: '2-digit',
-                }).format(new Date(invoice.invoiceDate))}
-                </td>
-                <td style={styles.cell}>
-                  <FaPrint
-                    style={styles.printIcon}
-                    onClick={() => handlePrintClick(invoice)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div> */}
+                    <div style={{marginTop:"2rem"}}></div>
+                   <StyledHeading>Comittee Ledger Records</StyledHeading>
+                    {comitteeRecords.map((item)=>{
+                        return(
+                          <div>
+                           <h1 style={{ 
+                            fontSize: "22px", 
+                            marginTop: "2rem", 
+                            fontWeight: "bold", 
+                            color: "#222", 
+                            marginBottom: "8px" 
+                          }}>
+                            🏛 Committee Name: <span style={{ color: "#5a54b4" }}>{item.committeeName}</span>
+                          </h1>
+                          <h1 style={{ 
+                            fontSize: "20px", 
+                            fontWeight: "600", 
+                            color: "#555" 
+                          }}>
+                            👤 Committee Head: <span style={{ color: "#5a54b4" }}>{item.headName}</span>
+                          </h1>
+
+
+                                <div>
+                                   <Table
+                                       array={item.monthlyRecords}
+                                       search={"monthNumber"}
+                                       keysToDisplay={["amountPaid", "monthNumber", "status"]}
+                                       label={[
+                                           "Amount Paid",
+                                           "Month Number",
+                                           "Status",
+                                       ]}
+                                       customBlocks={[
+                                        {
+                                          index: 2,
+                                          component: (status) => {
+                                            return status === "Paid" ? (
+                                              <button 
+                                                style={{ 
+                                                  color: "#000", 
+                                                  padding: "6px 12px", 
+                                                  borderRadius: "5px", 
+                                                  border: "none", 
+                                                  cursor: "default"
+                                                }}
+                                              >
+                                                ✅ Paid
+                                              </button>
+                                            ) : (
+                                              <button 
+                                                style={{ 
+                                                  color: "#000", 
+                                                  padding: "6px 12px", 
+                                                  borderRadius: "5px", 
+                                                  border: "none", 
+                                                  cursor: "pointer",
+                                                  transition: "0.3s",
+                                                }}
+                                                onClick={()=> handleChangeStatus(item._id,status._id)}
+                                              >
+                                                💰 Pay Now
+                                              </button>
+                                            );
+                                          },
+                                        },
+                                      ]}
+                                      
+                                   
+                                   />
+                                </div>
+                          </div>
+                        )
+                    })}
     </div>
   );
 };
 
 export default LedgerRecords;
+

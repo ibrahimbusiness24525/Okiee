@@ -1,100 +1,99 @@
 import React, { useState } from "react";
+import { api } from "../../../api/api";
+import { toast } from "react-toastify";
 
 const CommetyLedger = () => {
-  const [commetyName, setCommetyName] = useState("");
-  const [totalAmount, setTotalAmount] = useState("");
-  const [members, setMembers] = useState("");
-  const [memberList, setMemberList] = useState([]);
-  const [ledger, setLedger] = useState([]);
+  const [formData, setFormData] = useState({
+    committeeName: "",
+    totalAmount: 0,
+    numberOfMembers: 0,
+    myComitteeNameNumber: 0,
+    headName: "",
+  });
 
-  const handleCreateCommety = () => {
-    const count = parseInt(members);
-    if (!commetyName || !totalAmount || count <= 0) return;
-    const perPerson = (totalAmount / count).toFixed(2);
-    const newMembers = Array.from({ length: count }, (_, i) => ({ id: i + 1, name: "", paid: false, amount: perPerson }));
-    setMemberList(newMembers);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: name === "totalAmount" || name === "numberOfMembers" || name === "myComitteeNameNumber" 
+        ? Number(value) 
+        : value,
+    });
   };
 
-  const handleMemberUpdate = (id, name) => {
-    setMemberList((prev) => prev.map((m) => (m.id === id ? { ...m, name } : m)));
-  };
-
-  const handleConfirm = () => {
-    if (memberList.some((m) => !m.name.trim())) return;
-    const commetyData = {
-      id: ledger.length + 1,
-      name: commetyName,
-      members: memberList,
-      openDate: new Date().toLocaleDateString(),
+  const createCommittee = async () => {
+    const payload = {
+      committeeName: formData.committeeName,
+      totalAmount: formData.totalAmount,
+      numberOfMembers: formData.numberOfMembers,
+      myComitteeNameNumber: formData.myComitteeNameNumber,
+      headName: formData.headName,
     };
-    setLedger([...ledger, commetyData]);
-    setCommetyName("");
-    setTotalAmount("");
-    setMembers("");
-    setMemberList([]);
-  };
-
-  const handlePayment = (commetyId, memberId) => {
-    setLedger((prev) =>
-      prev.map((c) =>
-        c.id === commetyId
-          ? { ...c, members: c.members.map((m) => (m.id === memberId ? { ...m, paid: !m.paid } : m)) }
-          : c
-      )
-    );
+    console.log("Committee payload", payload);
+    try {
+      const response = await api.post("/api/committee/createCommittee", payload);
+      console.log("Committee created", response);
+      toast.success("Committee Created Successfully");
+    } catch (error) {
+      console.log("Error in creating committee", error);
+    }
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto", fontFamily: "Arial, sans-serif" }}>
-      <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "20px", backgroundColor: "#f9f9f9" }}>
-        <h2>Create Commety</h2>
-        <input placeholder="Commety Name" value={commetyName} onChange={(e) => setCommetyName(e.target.value)} style={{ width: "100%", margin: "5px 0", padding: "10px" }} />
-        <input placeholder="Total Amount" type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} style={{ width: "100%", margin: "5px 0", padding: "10px" }} />
-        <input placeholder="Number of Members" type="number" value={members} onChange={(e) => setMembers(e.target.value)} style={{ width: "100%", margin: "5px 0", padding: "10px" }} />
-        <button onClick={handleCreateCommety} style={{ width: "100%", padding: "10px", backgroundColor: "blue", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>Create</button>
-        {memberList.length > 0 && (
-          <div>
-            <h3>Enter Member Names</h3>
-            {memberList.map((m) => (
-              <input key={m.id} placeholder={`Member ${m.id}`} value={m.name} onChange={(e) => handleMemberUpdate(m.id, e.target.value)} style={{ width: "100%", margin: "5px 0", padding: "10px" }} />
-            ))}
-            <button onClick={handleConfirm} style={{ width: "100%", padding: "10px", backgroundColor: "green", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>Confirm</button>
-          </div>
-        )}
-      </div>
-      <div style={{ marginTop: "20px" }}>
-        <h2>Commety Ledger</h2>
-        {ledger.map((commety) => (
-          <div key={commety.id} style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "10px", marginTop: "10px", backgroundColor: "#fff" }}>
-            <h3>{commety.name}</h3>
-            <p>Opened on: {commety.openDate}</p>
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
-              <thead>
-                <tr>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>Name</th>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>Amount</th>
-                  <th style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {commety.members.map((member) => (
-                  <tr key={member.id}>
-                    <td style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>{member.name}</td>
-                    <td style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>${member.amount}</td>
-                    <td style={{ borderBottom: "1px solid #ddd", padding: "8px" }}>
-                      <button
-                        onClick={() => handlePayment(commety.id, member.id)}
-                        style={{ padding: "5px 10px", border: "none", borderRadius: "5px", color: "white", cursor: "pointer", backgroundColor: member.paid ? "green" : "red" }}
-                      >
-                        {member.paid ? "Paid" : "Unpaid"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ))}
+    <div style={{ width: "100%", maxWidth: "500px", margin: "auto", padding: "20px", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#f9f9f9" }}>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Create Committee</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <label htmlFor="">Committee Name</label>
+        <input
+          type="text"
+          name="committeeName"
+          value={formData.committeeName}
+          onChange={handleChange}
+          placeholder="Committee Name"
+          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+        />
+      <label htmlFor="">Total Amount</label>
+        <input
+          type="number"
+          name="totalAmount"
+          value={formData.totalAmount}
+          onChange={handleChange}
+          placeholder="Total Amount"
+          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+        />
+      <label htmlFor="">Number Of Members</label>
+        <input
+          type="number"
+          name="numberOfMembers"
+          value={formData.numberOfMembers}
+          onChange={handleChange}
+          placeholder="Number of Members"
+          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+        />
+      <label htmlFor="">My Comittee Name Number</label>
+        <input
+          type="number"
+          name="myComitteeNameNumber"
+          value={formData.myComitteeNameNumber}
+          onChange={handleChange}
+          placeholder="My Committee Number"
+          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+        />
+      <label htmlFor="">Head Name</label>
+        <input
+          type="text"
+          name="headName"
+          value={formData.headName}
+          onChange={handleChange}
+          placeholder="Head Name"
+          style={{ padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
+        />
+        <button
+          onClick={createCommittee}
+          style={{ padding: "10px", borderRadius: "5px", backgroundColor: "#5a54b4", color: "white", border: "none", cursor: "pointer" }}
+        >
+          Create Committee
+        </button>
       </div>
     </div>
   );
