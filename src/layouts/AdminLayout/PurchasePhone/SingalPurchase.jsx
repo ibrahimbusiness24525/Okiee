@@ -147,6 +147,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         }
       >
         <option value="">Select warranty</option>
+        <option value="No Warranty">No warranty</option>
         {[...Array(12).keys()].map((month) => (
           <option key={month} value={`${month + 1} Month${month + 1 > 1 ? "s" : ""}`}>
             {month + 1} Month{month + 1 > 1 ? "s" : ""}

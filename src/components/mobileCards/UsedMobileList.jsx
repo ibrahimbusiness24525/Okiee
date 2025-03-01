@@ -398,16 +398,16 @@ const UsedMobilesList = () => {
             <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
               {mobile.companyName} {mobile.modelSpecifications}
             </Card.Title>
-            <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
+            {/* <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
               {mobile.warranty}
-            </Card.Title>
+            </Card.Title> */}
             <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
-              <div>
+              {/* <div>
                 <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
                   Specs:
                 </strong>{' '}
                 {mobile.specs}
-              </div>
+              </div> */}
               <div>
                 <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
                   Color:
@@ -428,6 +428,18 @@ const UsedMobilesList = () => {
                   {mobile.imei2}
                 </div>
               )}
+               <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
+                      {mobile.purchasePrice}
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
+                      {mobile.demandPrice}
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
+                      {mobile.finalPrice || 'Not Sold'}
+                    </div>
             </Card.Text>
             <div style={{ textAlign: 'right', width: '100%' }}>
               {/* <Button
@@ -444,6 +456,34 @@ const UsedMobilesList = () => {
               >
                 Dispatch
               </Button> */}
+               <Button
+                // onClick={() => handleSoldClick(mobile)}
+                style={{
+                  backgroundColor: '#DE970B',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '5px 10px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                }}
+              >
+              {mobile.warranty}
+              </Button>
+                 <Button
+                // onClick={() => handleSoldClick(mobile)}
+                style={{
+                  backgroundColor: 'green',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '5px 10px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                }}
+              >
+            {mobile.specs}
+              </Button>
               <Button
                 onClick={() => handleSoldClick(mobile)}
                 style={{

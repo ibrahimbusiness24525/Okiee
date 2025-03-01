@@ -75,16 +75,30 @@ const menuItems = {
       children: [
         {
           id: 'mobile',
-          title: 'Add Ledger',
+          title: 'Shop Ledger',
           type: 'item',
-          icon: 'feather icon-user',
+          icon: 'feather icon-server',
           url: '/app/dashboard/addLedger'
+        },
+        {
+          id: 'mobile',
+          title: 'Party Ledger',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/partyLedger'
+        },
+        {
+          id: 'mobile',
+          title: 'Commety Ledger',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/commetyLedger'
         },
         {
           id: 'mobile',
           title: 'Ledger Records',
           type: 'item',
-          icon: 'feather icon-server',
+          icon: 'feather icon-file-text',
           url: '/app/dashboard/ledgerRecords'
         },
       ]
