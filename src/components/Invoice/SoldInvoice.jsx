@@ -214,7 +214,20 @@ const SoldInvoice = () => {
         cnicBackPic:"/file",
         sellingPaymentType:dataReceived.sellingType,
         accesssoryName:dataReceived.accessoryName,
-        accesssoryAmount:Number(dataReceived.accessoryPrice)
+        accesssoryAmount:Number(dataReceived.accessoryPrice),
+        ...(dataReceived?.sellingType === "Bank" && { bankName: dataReceived?.bankName }),
+
+        // Conditionally add credit fields if selling type is "Credit"
+        ...(dataReceived?.sellingType === "Credit" && { 
+            payableAmountNow: dataReceived?.payableAmountNow,
+            payableAmountLater: dataReceived?.payableAmountLater,
+            payableAmountLaterDate: dataReceived?.payableAmountLaterDate
+        }),
+      
+        // Conditionally add exchangePhoneDetail if selling type is "Exchange"
+        ...(dataReceived?.sellingType === "Exchange" && { 
+            exchangePhoneDetail: dataReceived?.exchangePhoneDetail 
+        })
       };
       console.log("bulk payload",payload);
       try {
@@ -243,7 +256,20 @@ const SoldInvoice = () => {
           cnicBackPic:"/file",
           sellingPaymentType:dataReceived.sellingType,
           accesssoryName:dataReceived.accessoryName,
-          accesssoryAmount:Number(dataReceived.accessoryPrice)
+          accesssoryAmount:Number(dataReceived.accessoryPrice),
+          ...(dataReceived?.sellingType === "Bank" && { bankName: dataReceived?.bankName }),
+
+          // Conditionally add credit fields if selling type is "Credit"
+          ...(dataReceived?.sellingType === "Credit" && { 
+              payableAmountNow: dataReceived?.payableAmountNow,
+              payableAmountLater: dataReceived?.payableAmountLater,
+              payableAmountLaterDate: dataReceived?.payableAmountLaterDate
+          }),
+        
+          // Conditionally add exchangePhoneDetail if selling type is "Exchange"
+          ...(dataReceived?.sellingType === "Exchange" && { 
+              exchangePhoneDetail: dataReceived?.exchangePhoneDetail 
+          })
         }
         console.log("This is the single sell phone data",payload);
         

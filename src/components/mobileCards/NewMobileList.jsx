@@ -13,6 +13,11 @@ import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
+  const[bankName,setBankName]= useState("");
+  const[payableAmountNow,setPayableAmountNow]= useState("")
+  const[payableAmountLater,setPayableAmountLater]= useState("");
+  const[payableAmountLaterDate,setPayableAmountLaterDate]=useState("");
+  const[exchangePhoneDetail,setExchangePhoneDetail]= useState("");
   const [type, setType] = useState("");
   const[cnicFrontPic,setCnicFrontPic]= useState("");
   const[cnicBackPic,setCnicBackPic]= useState("");
@@ -181,7 +186,12 @@ const NewMobilesList = () => {
       cnicFrontPic,
       customerName,
       accessoryName,
-      accessoryPrice
+      accessoryPrice,
+      bankName,
+      payableAmountNow,
+      payableAmountLater,
+      payableAmountLaterDate,
+      exchangePhoneDetail
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -218,6 +228,7 @@ const NewMobilesList = () => {
   const filteredMobiles = mobiles?.filter((mobile) => {
     // Exclude sold phones
     if (mobile.isSold) return false;
+    if(mobile.phoneCondition==="Used") return false
   
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
@@ -376,20 +387,20 @@ useScanDetection({
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
                   {/* <Button
-                 onClick={() => handleDispatchClick(mobile)}
-               style={{
-                backgroundColor: '#FFD000',
-                color: '#fff',
-                border: 'none',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                 marginRight: '5px',
-               }}
-              >
-             Dispatch
-             </Button> */}
+                     onClick={() => handleDispatchClick(mobile)}
+                   style={{
+                    backgroundColor: '#FFD000',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                     marginRight: '5px',
+                   }}
+                  >
+                      Dispatch
+                </Button> */}
                     <Button
                       onClick={() => handleSoldClick(mobile,"single")}
                       style={{
@@ -719,19 +730,80 @@ useScanDetection({
               />
             </Form.Group>
             <Form.Group>
-              <Form.Label>Selling Type</Form.Label>
-              <Form.Control
-                as="select"
-                value={sellingType}
-                onChange={(e) => setSellingType(e.target.value)}
-              >
-                <option value="">Select Selling Type</option>
-                <option value="Bank">Bank</option>
-                <option value="Exchange">Exchange</option>
-                <option value="Cash">Cash</option>
-                <option value="Credit">Credit</option>
-              </Form.Control>
-            </Form.Group>
+                <Form.Label>Selling Type</Form.Label>
+                <Form.Select
+                  as="select"
+                  value={sellingType}
+                  onChange={(e) => setSellingType(e.target.value)}
+                >
+                  <option value="">Select Selling Type</option>
+                  <option value="Bank">Bank</option>
+                  <option value="Exchange">Exchange</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Credit">Credit</option>
+                </Form.Select>
+              </Form.Group>
+
+              {/* Conditional Fields Based on Selling Type */}
+              {sellingType === "Bank" && (
+                <Form.Group>
+                  <Form.Label>Bank Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter Bank Name"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                  />
+                </Form.Group>
+              )}
+
+              {sellingType === "Credit" && (
+                  <>
+                    <Form.Group>
+                      <Form.Label>Payable Amount Now</Form.Label>
+                      <Form.Control
+                        type="number"
+                        placeholder="Enter amount payable now"
+                        value={payableAmountNow}
+                        onChange={(e) => setPayableAmountNow(e.target.value)}
+                      />
+                    </Form.Group>
+                            
+                    <Form.Group>
+                      <Form.Label>Payable Amount Later</Form.Label>
+                      <Form.Control
+                        type="number"
+                        placeholder="Enter amount payable later"
+                        value={payableAmountLater}
+                        onChange={(e) => setPayableAmountLater(e.target.value)}
+                      />
+                    </Form.Group>
+                            
+                    <Form.Group>
+                      <Form.Label>When will it be paid?</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={payableAmountLaterDate}
+                        onChange={(e) => setPayableAmountLaterDate(e.target.value)}
+                      />
+                    </Form.Group>
+                  </>
+                )}
+
+              {sellingType === "Exchange" && (
+                <Form.Group>
+                  <Form.Label>Exchange Phone Details</Form.Label>
+                  <Form.Control
+                  as={"textarea"}
+                  rows={4} //
+                    type="text"
+                    placeholder="Enter exchange phone details"
+                    value={exchangePhoneDetail}
+                    onChange={(e) => setExchangePhoneDetail(e.target.value)}
+                  />
+                </Form.Group>
+              )}
+
               <Form.Group className="mb-3">
                   <Form.Label>Sold Price</Form.Label>
                   <Form.Control
