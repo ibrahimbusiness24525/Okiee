@@ -14,6 +14,11 @@ import { api } from '../../../api/api';
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
   const [type, setType] = useState("");
+  const[cnicFrontPic,setCnicFrontPic]= useState("");
+  const[cnicBackPic,setCnicBackPic]= useState("");
+  const[sellingType,setSellingType]= useState("")
+  const[accessoryName,setAccessoryName] = useState("");
+  const[accessoryPrice,setAccessoryPrice]= useState(0);
   const [bulkMobile, setBulkMobiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -21,8 +26,6 @@ const NewMobilesList = () => {
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [soldMobile, setSoldMobile] = useState(null);
   const[customerName,setCustomerName] = useState("");
-  const[cnicFrontPic,setCnicFrontPic]= useState("");
-  const[cnicBackPic,setCnicBackPic]= useState("");
   const [finalPrice, setFinalPrice] = useState('');
   const [warranty, setWarranty] = useState('12 months');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -171,11 +174,14 @@ const NewMobilesList = () => {
     const updatedMobile = {
       ...soldMobile,
       finalPrice,
+      sellingType,
       warranty,
       addedImeis,
       cnicBackPic,
       cnicFrontPic,
       customerName,
+      accessoryName,
+      accessoryPrice
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -692,15 +698,49 @@ useScanDetection({
                     onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
                   />
                 </Form.Group>
-                <Form.Group className="mb-3">
-              <Form.Label>Sold Price</Form.Label>
+               
+            <Form.Group>
+            <Form.Label>Accessory Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={accessoryName}
+                onChange={(e) => setAccessoryName(e.target.value)}
+                placeholder="Enter Sold price"
+              />
+            
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Accessory Price</Form.Label>
               <Form.Control
                 type="number"
-                value={finalPrice}
-                onChange={(e) => setFinalPrice(e.target.value)}
+                value={accessoryPrice}
+                onChange={(e) => setAccessoryPrice(e.target.value)}
                 placeholder="Enter Sold price"
               />
             </Form.Group>
+            <Form.Group>
+              <Form.Label>Selling Type</Form.Label>
+              <Form.Control
+                as="select"
+                value={sellingType}
+                onChange={(e) => setSellingType(e.target.value)}
+              >
+                <option value="">Select Selling Type</option>
+                <option value="Bank">Bank</option>
+                <option value="Exchange">Exchange</option>
+                <option value="Cash">Cash</option>
+                <option value="Credit">Credit</option>
+              </Form.Control>
+            </Form.Group>
+              <Form.Group className="mb-3">
+                  <Form.Label>Sold Price</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={finalPrice}
+                    onChange={(e) => setFinalPrice(e.target.value)}
+                    placeholder="Enter Sold price"
+                  />
+                 </Form.Group>
             </div>
           
        

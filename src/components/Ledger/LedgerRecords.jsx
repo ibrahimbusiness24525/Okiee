@@ -131,6 +131,7 @@ const LedgerRecords = () => {
     try{
       const response = await api.patch(`/api/committee/updateComittee/${committeeId}/${recordId}`)
       console.log(response);
+      getAllCommitteeRecords();
       toast.success("Paid Successfully");
     }catch(error){
       console.log("Error in making paid", error);
@@ -189,7 +190,6 @@ console.log(todayInvoices,'todayInvoice')
                             fontSize: "22px", 
                             marginTop: "2rem", 
                             fontWeight: "bold", 
-                            color: "#222", 
                             marginBottom: "8px" 
                           }}>
                             🏛 Committee Name: <span style={{ color: "#5a54b4" }}>{item.committeeName}</span>
@@ -197,59 +197,41 @@ console.log(todayInvoices,'todayInvoice')
                           <h1 style={{ 
                             fontSize: "20px", 
                             fontWeight: "600", 
-                            color: "#555" 
                           }}>
                             👤 Committee Head: <span style={{ color: "#5a54b4" }}>{item.headName}</span>
                           </h1>
-
-
+                          <h1 style={{ 
+                            fontSize: "20px", 
+                            fontWeight: "600", 
+                          }}>
+                            📌 My Committee Name Number: <span style={{ color: "#5a54b4" }}>{item.myComitteeNameNumber}</span>
+                          </h1>
                                 <div>
-                                   <Table
-                                       array={item.monthlyRecords}
-                                       search={"monthNumber"}
-                                       keysToDisplay={["amountPaid", "monthNumber", "status"]}
-                                       label={[
-                                           "Amount Paid",
-                                           "Month Number",
-                                           "Status",
-                                       ]}
-                                       customBlocks={[
-                                        {
-                                          index: 2,
-                                          component: (status) => {
-                                            return status === "Paid" ? (
-                                              <button 
-                                                style={{ 
-                                                  color: "#000", 
-                                                  padding: "6px 12px", 
-                                                  borderRadius: "5px", 
-                                                  border: "none", 
-                                                  cursor: "default"
-                                                }}
-                                              >
-                                                ✅ Paid
-                                              </button>
-                                            ) : (
-                                              <button 
-                                                style={{ 
-                                                  color: "#000", 
-                                                  padding: "6px 12px", 
-                                                  borderRadius: "5px", 
-                                                  border: "none", 
-                                                  cursor: "pointer",
-                                                  transition: "0.3s",
-                                                }}
-                                                onClick={()=> handleChangeStatus(item._id,status._id)}
-                                              >
-                                                💰 Pay Now
-                                              </button>
-                                            );
-                                          },
-                                        },
-                                      ]}
-                                      
-                                   
-                                   />
+                                <Table
+                                 array={item.monthlyRecords.map((record) => ({
+                                   ...record,
+                                   statusComponent: (
+                                     <button
+                                       style={{
+                                         color: "#000",
+                                         padding: "6px 12px",
+                                         borderRadius: "5px",
+                                         border: "none",
+                                         cursor: record.status === "Paid" ? "default" : "pointer",
+                                         transition: "0.3s",
+                                       }}
+                                       onClick={() =>
+                                         record.status !== "Paid" && handleChangeStatus(item._id, record._id)
+                                       }
+                                     >
+                                       {record.status === "Paid" ? "✅ Paid" : "💰 Pay Now"}
+                                     </button>
+                                   ),
+                                 }))}
+                                 search="monthNumber"
+                                 keysToDisplay={["amountPaid", "monthNumber", "statusComponent"]}
+                                 label={["Amount Paid", "Month Number", "Status"]}
+                                />
                                 </div>
                           </div>
                         )

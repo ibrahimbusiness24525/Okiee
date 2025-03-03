@@ -211,7 +211,10 @@ const SoldInvoice = () => {
         warranty: dataReceived?.warranty, 
         customerName:dataReceived?.customerName,
         cnicFrontPic:"/file",
-        cnicBackPic:"/file"
+        cnicBackPic:"/file",
+        sellingPaymentType:dataReceived.sellingType,
+        accesssoryName:dataReceived.accessoryName,
+        accesssoryAmount:Number(dataReceived.accessoryPrice)
       };
       console.log("bulk payload",payload);
       try {
@@ -237,7 +240,10 @@ const SoldInvoice = () => {
           warranty: dataReceived?.warranty,
           customerName:dataReceived?.customerName,
           cnicFrontPic:"/file",
-          cnicBackPic:"/file"
+          cnicBackPic:"/file",
+          sellingPaymentType:dataReceived.sellingType,
+          accesssoryName:dataReceived.accessoryName,
+          accesssoryAmount:Number(dataReceived.accessoryPrice)
         }
         console.log("This is the single sell phone data",payload);
         
@@ -318,7 +324,7 @@ console.log("this is the type",dataReceived?.type);
   {/* Right Side */}
       <div style={{ textAlign: 'right' }}>
         <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.partyName}</p>
-        <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.modelName}</p>
+        {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.modelName}</p> */}
         { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'N/A'}</p>}
       </div>
       </section>

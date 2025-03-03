@@ -3,14 +3,17 @@ import { Card, Row, Col, Form, InputGroup, Modal, Button } from 'react-bootstrap
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
-import axios from 'axios';
 import { BASE_URL } from 'config/constant';
-import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { api } from '../../../api/api';
 
 const UsedMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
+  const[cnicFrontPic,setCnicFrontPic]= useState("");
+  const[cnicBackPic,setCnicBackPic]= useState("");
+  const[sellingType,setSellingType]= useState("")
+  const[accessoryName,setAccessoryName] = useState("");
+  const[accessoryPrice,setAccessoryPrice]= useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editMobile, setEditMobile] = useState(null);
@@ -25,8 +28,7 @@ const UsedMobilesList = () => {
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [customerNumber, setCustomerNumber] = useState('');
-  const [customerCNIC, setCustomerCNIC] = useState('');
+
 
 
   
@@ -71,7 +73,6 @@ const UsedMobilesList = () => {
   const deletePhone = async () => {
     try {
      await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
-      // await axios.delete(`${BASE_URL}api/Purchase/purchase-phone/${deleteMobileId}`);
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
       console.log('Phone deleted successfully');
     } catch (error) {
@@ -122,26 +123,26 @@ const UsedMobilesList = () => {
   };
 
   const handleSoldSubmit = async () => {
-    if (!finalPrice || !warranty || !customerName || !customerNumber) {
+    if (!finalPrice || !warranty || !customerName ) {
       alert('Please fill all fields');
       return;
     }
-
     const updatedMobile = {
       ...soldMobile,
       finalPrice,
+      sellingType,
       warranty,
-      customerNumber,
+      cnicBackPic,
+      cnicFrontPic,
       customerName,
-      customerCNIC,
+      accessoryName,
+      accessoryPrice
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
-    setFinalPrice('');
-    setWarranty('');
-    setCustomerNumber('');
-    setCustomerName('');
-    setCustomerCNIC('');
+    // setFinalPrice('');
+    // setWarranty('');
+    // setCustomerName('');
     setShowSoldModal(false);
   };
 
@@ -170,19 +171,7 @@ const UsedMobilesList = () => {
 
     doc.save('Mobile_Inventory.pdf');
   };
-  // const filteredMobiles = mobiles?.filter((mobile) => {
-  //   // Split the search term into words
-  //   const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
-  
-  //   return searchWords.every((word) =>
-  //     // Check if each word exists in any of the searchable fields
-  //     mobile.companyName?.toLowerCase()?.includes(word) ||
-  //     mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
-  //     mobile.specs?.toLowerCase()?.includes(word) ||
-  //     mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
-  //     String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
-  //   );
-  // });
+
   const filteredMobiles = mobiles.filter(mobile => mobile.phoneCondition === "Used");
   
   console.log("all mobiles", mobiles);
@@ -224,149 +213,7 @@ const UsedMobilesList = () => {
 </div>
 
 
-      {/* <Row xs={1} md={2} lg={3} className="g-4">
-        {filteredMobiles.length > 0 || filteredMobiles  ? (
-          filteredMobiles.map((mobile) => (
-            <Col key={mobile._id}>
-              <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                <FaEdit
-                  onClick={() => handleEdit(mobile)}
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '50px',
-                    color: '#28a745',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                  }}
-                />
-                <FaTrash
-                  onClick={() => confirmDelete(mobile._id)}
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    color: 'red',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                  }}
-
-                /> */}
-             {/* {mobile.phonePicture &&  <Card.Img
-                  variant="top"
-                  src={`${mobile.phonePicture}`}
-                  alt={mobile.modelName}
-                  style={{ height: '400px', objectFit: 'cover' }}
-                />} */}
-
-                {/* <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
-                  <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
-                    {mobile.companyName} {mobile.modelName}
-                  </Card.Title>
-                  <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
-                  <div>
-                  <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
-                    Ram/Memory:
-                  </strong>{' '}
-                  {mobile.ramMemory}{' '}
-                  <span
-                    style={{
-                      backgroundColor: mobile.specifications === 'PTA' ? 'green' : 'red',
-                      color: '#fff',
-                      padding: '2px 6px',
-                      borderRadius: '5px',
-                      fontSize: '0.8rem',
-                      marginLeft: mobile.specifications === 'PTA' ? '160px' : '113px',
-                    }}
-                  >
-                    {mobile.specifications}
-                  </span>
-                </div>
-                <div>
-                  <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
-                    Color:
-                  </strong>{' '}
-                  {mobile.color}{' '}
-                  <span
-                    style={{
-                      backgroundColor: mobile.isApprovedFromEgadgets ? 'green' : 'red',
-                      color: '#fff',
-                      padding: '2px 6px',
-                      borderRadius: '5px',
-                      fontSize: '0.8rem',
-                      marginLeft:  mobile.isApprovedFromEgadgets ? '93px' : '70px',
-                    }}
-                  >
-                  E-Gadget status: {mobile.isApprovedFromEgadgets ? 'Approved' : 'Not Approved'}
-                  </span>
-                </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>{mobile.imei2 ? "imei 1" : "imei"}</strong>{' '}
-                      {mobile.imei1}
-                    </div>
-                    {mobile.imei2 && <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>imei 2</strong>{' '}
-                      {mobile.imei2}
-                    </div> */}
-                    {/* <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
-                      {mobile.price.purchasePrice}
-                    </div> */}
-                    {/* <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
-                      {mobile.price.demandPrice}
-                    </div> */}
-                    {/* <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
-                      {mobile.price.finalPrice || 'Not Sold'}
-                    </div> */}
-                  {/* </Card.Text>
-                  <div style={{ textAlign: 'right', width: '100%' }}>
-
-
-                  <Button
-                 onClick={() => handleDispatchClick(mobile)}
-               style={{
-                backgroundColor: '#FFD000',
-                color: '#fff',
-                border: 'none',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-               }}
-              >
-             Dispatch
-                 </Button>
-                    <Button
-                      onClick={() => handleSoldClick(mobile)}
-                      style={{
-                        backgroundColor: '#007bff',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Sold
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))
-        ) : (
-          <Col>
-            <Card className="text-center">
-              <Card.Body>
-                <Card.Text>No mobiles found</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        )}
-      </Row> */}
+     
 <Row xs={1} md={2} lg={3} className="g-4">
   {filteredMobiles.length > 0 ? (
     filteredMobiles.map((mobile) => (
@@ -569,7 +416,7 @@ const UsedMobilesList = () => {
 </Modal>
 
 
-      <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
+      {/* <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
   <Modal.Header closeButton>
     <Modal.Title>Sell Mobile</Modal.Title>
   </Modal.Header>
@@ -640,8 +487,124 @@ const UsedMobilesList = () => {
       Sold
     </Button>
   </Modal.Footer>
-</Modal>
+</Modal> */}
 
+<Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Sell Mobile</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <div>
+            <Form.Group className="mb-3">
+                  <Form.Label>Customer Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Enter Customer Name"
+                  />
+                </Form.Group>
+          
+        
+
+                {/* CNIC Front Picture */}
+                <Form.Group className="mb-3">
+                  <Form.Label>CNIC Front Picture</Form.Label>
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setCnicFrontPic(e.target.files[0]?.name)}
+                  />
+                </Form.Group>
+
+                {/* CNIC Back Picture */}
+                <Form.Group className="mb-3">
+                  <Form.Label>CNIC Back Picture</Form.Label>
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
+                  />
+                </Form.Group>
+               
+            <Form.Group>
+            <Form.Label>Accessory Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={accessoryName}
+                onChange={(e) => setAccessoryName(e.target.value)}
+                placeholder="Enter Sold price"
+              />
+            
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Accessory Price</Form.Label>
+              <Form.Control
+                type="number"
+                value={accessoryPrice}
+                onChange={(e) => setAccessoryPrice(e.target.value)}
+                placeholder="Enter Sold price"
+              />
+            </Form.Group>
+            <Form.Group>
+            <Form.Group className="mb-3">
+        <Form.Label>Company Warranty</Form.Label>
+        <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
+          <option value="">Select Warranty</option>
+          <option value="No Warranty">No Warranty</option>
+          <option value="1 Month">1 Month</option>
+          <option value="2 Months">2 Months</option>
+          <option value="3 Months">3 Months</option>
+          <option value="4 Months">4 Months</option>
+          <option value="5 Months">5 Months</option>
+          <option value="6 Months">6 Months</option>
+          <option value="7 Months">7 Months</option>
+          <option value="8 Months">8 Months</option>
+          <option value="9 Months">9 Months</option>
+          <option value="10 Months">10 Months</option>
+          <option value="11 Months">11 Months</option>
+          <option value="12 Months">12 Months</option>
+        </Form.Select>
+      </Form.Group>
+              <Form.Label>Selling Type</Form.Label>
+              <Form.Select
+                as="select"
+                value={sellingType}
+                onChange={(e) => setSellingType(e.target.value)}
+              >
+                <option value="">Select Selling Type</option>
+                <option value="Bank">Bank</option>
+                <option value="Exchange">Exchange</option>
+                <option value="Cash">Cash</option>
+                <option value="Credit">Credit</option>
+              </Form.Select>
+            </Form.Group>
+              <Form.Group className="mb-3">
+                  <Form.Label>Sold Price</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={finalPrice}
+                    onChange={(e) => setFinalPrice(e.target.value)}
+                    placeholder="Enter Sold price"
+                  />
+                 </Form.Group>
+            </div>
+          
+       
+        
+   
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowSoldModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSoldSubmit}>
+            Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
