@@ -430,7 +430,15 @@ console.log("this is the type",dataReceived?.type);
             </tr> */}
           </tbody>
         </table>
-
+        {dataReceived.accessoryName && (
+  <div style={{ ...styles.termsSection, display: "flex",marginBottom:"10px", alignItems: "center", justifyContent:"center",border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
+    <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
+    <div style={{ flex: 1, display: "flex", gap: "20px" }}>
+      <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
+      <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
+    </div>
+  </div>
+)}
         <div style={styles.totalSection}>
           <h3>Total:{price}Rs</h3>
         </div>
@@ -444,7 +452,7 @@ console.log("this is the type",dataReceived?.type);
           <p style={styles.termsText}>4. Payment must be made in full before the invoice is considered complete.</p>
           <p style={styles.termsText}>5. Terms and conditions are subject to change without prior notice.</p>
         </div> */}
-      {dataReceived.accessoryName && <>
+      {/* {dataReceived.accessoryName && <>
         <div style={styles.termsSection}>
               <div style={styles.termsHeading}>Accessory Details</div>
               <div style={styles.termsText}>
@@ -453,12 +461,15 @@ console.log("this is the type",dataReceived?.type);
               </div>
              
           </div>
-      </>}
+      </>} */}
+ 
+
 
         <div style={styles.termsSection}>
-           <div style={styles.termsHeading}>Sold Type Details</div>
+           {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+           <div style={styles.termsHeading}>Terms & conditions</div>
            <div style={styles.termsText}>
-           {
+           {/* {
            dataReceived.sellingType === "Bank" ? (
              <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
                <p><strong>Selling Type:</strong> Bank</p>
@@ -482,11 +493,11 @@ console.log("this is the type",dataReceived?.type);
                <p><strong>Total Cash:</strong> {price}</p>
              </div>
            )
-         }
+         } */}
          
-             {/* {shop?.termsCondition.map((item, index) => (
+             {shop?.termsCondition.map((item, index) => (
                <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
-             ))} */}
+             ))}
            </div>
      </div>
         <footer style={styles.footer}>
@@ -546,13 +557,21 @@ console.log("this is the type",dataReceived?.type);
             </tr>
           </tbody>
         </table>
-
+        {dataReceived.accessoryName && (
+  <div style={{ ...styles.termsSection, display: "flex",marginBottom:"10px", alignItems: "center", justifyContent:"center",border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
+    <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
+    <div style={{ flex: 1, display: "flex", gap: "20px" }}>
+      <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
+      <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
+    </div>
+  </div>
+)}
         <div style={styles.totalSection}>
           <h3>Total:{price}Rs</h3>
         </div>
 
  
-      {dataReceived.accessoryName && <>
+      {/* {dataReceived.accessoryName && <>
         <div style={styles.termsSection}>
               <div style={styles.termsHeading}>Accessory Details</div>
               <div style={styles.termsText}>
@@ -561,12 +580,15 @@ console.log("this is the type",dataReceived?.type);
               </div>
              
           </div>
-      </>}
+      </>} */}
+ 
+
 
         <div style={styles.termsSection}>
-           <div style={styles.termsHeading}>Sold Type Details</div>
+           {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+           <div style={styles.termsHeading}>Terms and conditions</div>
            <div style={styles.termsText}>
-           {
+           {/* {
            dataReceived.sellingType === "Bank" ? (
              <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
                <p><strong>Selling Type:</strong> Bank</p>
@@ -590,11 +612,11 @@ console.log("this is the type",dataReceived?.type);
                <p><strong>Total Cash:</strong> {price}</p>
              </div>
            )
-         }
+         } */}
          
-             {/* {shop?.termsCondition.map((item, index) => (
+             {shop?.termsCondition.map((item, index) => (
                <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
-             ))} */}
+             ))}
            </div>
      </div>
         <footer style={styles.footer}>

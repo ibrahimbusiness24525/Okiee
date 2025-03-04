@@ -80,13 +80,13 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/addLedger'
         },
-        {
-          id: 'mobile',
-          title: 'Party Ledger',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/app/dashboard/partyLedger'
-        },
+        // {
+        //   id: 'mobile',
+        //   title: 'Party Ledger',
+        //   type: 'item',
+        //   icon: 'feather icon-server',
+        //   url: '/app/dashboard/partyLedger'
+        // },
         {
           id: 'mobile',
           title: 'Commety Ledger',
