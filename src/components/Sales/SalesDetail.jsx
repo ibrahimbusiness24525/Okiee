@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../../../api/api";
+import { StyledHeading } from "components/StyledHeading/StyledHeading";
 
 const SalesDetail = () => {
     const { id } = useParams();
@@ -26,7 +27,8 @@ const SalesDetail = () => {
 
         fetchSaleDetail();
     }, [id]);
-
+    console.log("sales detail", sale);
+    
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
@@ -53,6 +55,41 @@ const SalesDetail = () => {
                     <p><strong>Demand Price:</strong> {sale.demandPrice} PKR</p>
                     <p><strong>Sale Date:</strong> {new Date(sale.saleDate).toLocaleString()}</p>
                     <p><strong>Purchase Date:</strong> {new Date(sale.purchaseDate).toLocaleString()}</p>
+                    {
+                        sale.sellingPaymentType ? 
+                        <>
+                        <StyledHeading>Sale Type</StyledHeading>
+                            {
+                     sale.sellingPaymentType === "Bank" ? (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Bank</p>
+                         <p>{sale.bankName}</p>
+                       </div>
+                     ) : sale.sellingPaymentType === "Credit" ? (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Credit</p>
+                         <p><strong>Payable Amount:</strong> {sale.payableAmountNow}</p>
+                         <p><strong>Payable Amount Later:</strong> {sale.payableAmountLater}</p>
+                         <p><strong>Due Date:</strong> {sale.payableAmountLaterDate}</p>
+                       </div>
+                     ) : sale.sellingPaymentType === "Exchange" ? (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Exchange</p>
+                         <p><strong>Exchange Detail:</strong> {sale.exchangePhoneDetail}</p>
+                       </div>
+                     ) : (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Cash</p>
+                         <p><strong>Total Cash:</strong> {sale.finalPrice}</p>
+                       </div>
+                     )
+                   }
+                        </>
+                        :
+                        <>
+                        <p>No sale type mentioned</p>
+                        </>
+                    }
                     <p><strong>Accessories:</strong></p>
                     <ul>
                         <li>Box: {sale.accessories?.box ? "Yes" : "No"}</li>
