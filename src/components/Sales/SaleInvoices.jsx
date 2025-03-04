@@ -247,37 +247,44 @@ const handleScan = (value) => {
     "customerName",
     "companyName",
     "modelName",
+    "sellingPaymentType",
     "finalPrice",
     "saleDate",
-    
   ]}
   label={[
     "Customer Name",
     "Company Name",
     "Model Name",
+    "Selling Payment Type",
     "Final Price",
     "Date Sold",
-    "Actions"
+    // "Actions"
   ]}
   customBlocks={[
        
          {
-            index: 4,
+            index: 3,
+            component: (sellingType) => {
+            return sellingType ? sellingType : "Not mentioned"
+           }
+         },
+         {
+            index: 5,
             component: (date) => {
             return dateFormatter(date)
            }
          }
         ]}
-         extraColumns={[
-                        () => {
-                            return (
-                              <FaPrint
-                              style={styles.printIcon}
-                              // onClick={() => handlePrintClick(invoice)}
-                            />
-                           );
-                      },
-                  ]}
+        //  extraColumns={[
+        //                 () => {
+        //                     return (
+        //                       <FaPrint
+        //                       style={styles.printIcon}
+        //                       // onClick={() => handlePrintClick(invoice)}
+        //                     />
+        //                    );
+        //               },
+        //           ]}
             />
 
       </div>
@@ -294,6 +301,7 @@ const handleScan = (value) => {
     // "companyName",
     // "partyName",
     "salePrice",
+    "sellingPaymentType",
     "warranty",
     "dateSold",
     
@@ -304,12 +312,19 @@ const handleScan = (value) => {
     // "Party Name",
     "Type of Sale",
     "Price",
+    "Selling Payment Type",
     "Warranty",
     "Invoice Date",
   ]}
   customBlocks={[
+    {
+      index: 2,
+      component: (sellingType) => {
+      return sellingType ? sellingType : "Not mentioned"
+     }
+   },
          {
-            index: 3,
+            index: 4,
             component: (date) => {
             return dateFormatter(date)
            }

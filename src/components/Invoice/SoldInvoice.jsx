@@ -100,8 +100,8 @@ const SoldInvoice = () => {
       boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
     },
     footer: {
-      marginTop: '40px',
-      paddingTop: '20px',
+      marginTop: '15px',
+      paddingTop: '10px',
       borderTop: '3px solid #004B87',
       textAlign: 'center',
       fontSize: '14px',
@@ -444,15 +444,51 @@ console.log("this is the type",dataReceived?.type);
           <p style={styles.termsText}>4. Payment must be made in full before the invoice is considered complete.</p>
           <p style={styles.termsText}>5. Terms and conditions are subject to change without prior notice.</p>
         </div> */}
+      {dataReceived.accessoryName && <>
+        <div style={styles.termsSection}>
+              <div style={styles.termsHeading}>Accessory Details</div>
+              <div style={styles.termsText}>
+              <p><strong>Accessory Name: </strong>{dataReceived.accessoryName}</p>
+              <p>Accessory Sold Price: {dataReceived.accessoryPrice}</p>
+              </div>
+             
+          </div>
+      </>}
 
         <div style={styles.termsSection}>
-  <div style={styles.termsHeading}>Terms and Conditions</div>
-  <div style={styles.termsText}>
-    {shop?.termsCondition.map((item, index) => (
-      <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
-    ))}
-  </div>
-</div>
+           <div style={styles.termsHeading}>Sold Type Details</div>
+           <div style={styles.termsText}>
+           {
+           dataReceived.sellingType === "Bank" ? (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Bank</p>
+               <p>{dataReceived.bankName}</p>
+             </div>
+           ) : dataReceived.sellingType === "Credit" ? (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Credit</p>
+               <p><strong>Payable Amount:</strong> {dataReceived.payableAmountNow}</p>
+               <p><strong>Payable Amount Later:</strong> {dataReceived.payableAmountLater}</p>
+               <p><strong>Due Date:</strong> {dataReceived.payableAmountLaterDate}</p>
+             </div>
+           ) : dataReceived.sellingType === "Exchange" ? (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Exchange</p>
+               <p><strong>Exchange Detail:</strong> {dataReceived.exchangePhoneDetail}</p>
+             </div>
+           ) : (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Cash</p>
+               <p><strong>Total Cash:</strong> {price}</p>
+             </div>
+           )
+         }
+         
+             {/* {shop?.termsCondition.map((item, index) => (
+               <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
+             ))} */}
+           </div>
+     </div>
         <footer style={styles.footer}>
           <p>
             {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}
@@ -482,7 +518,7 @@ console.log("this is the type",dataReceived?.type);
   {/* Right Side */}
   <div style={{ textAlign: 'right' }}>
     <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerName : dataReceived?.customerName ?? 'N/A'}</p>
-    <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p>
+    {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p> */}
    { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'N/A'}</p>}
   </div>
 </section>
@@ -515,24 +551,52 @@ console.log("this is the type",dataReceived?.type);
           <h3>Total:{price}Rs</h3>
         </div>
 
-        {/* Terms & Conditions Section */}
-        {/* <div style={styles.termsSection}>
-          <h3 style={styles.termsHeading}>Terms & Conditions</h3>
-          <p style={styles.termsText}>1. All sales are final once the invoice is generated.</p>
-          <p style={styles.termsText}>2. Warranty is valid only for products with a valid invoice.</p>
-          <p style={styles.termsText}>3. The company is not responsible for any damages caused by misuse of the product.</p>
-          <p style={styles.termsText}>4. Payment must be made in full before the invoice is considered complete.</p>
-          <p style={styles.termsText}>5. Terms and conditions are subject to change without prior notice.</p>
-        </div> */}
+ 
+      {dataReceived.accessoryName && <>
+        <div style={styles.termsSection}>
+              <div style={styles.termsHeading}>Accessory Details</div>
+              <div style={styles.termsText}>
+              <p><strong>Accessory Name: </strong>{dataReceived.accessoryName}</p>
+              <p>Accessory Sold Price: {dataReceived.accessoryPrice}</p>
+              </div>
+             
+          </div>
+      </>}
 
         <div style={styles.termsSection}>
-  <div style={styles.termsHeading}>Terms and Conditions</div>
-  <div style={styles.termsText}>
-    {shop?.termsCondition.map((item, index) => (
-      <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
-    ))}
-  </div>
-</div>
+           <div style={styles.termsHeading}>Sold Type Details</div>
+           <div style={styles.termsText}>
+           {
+           dataReceived.sellingType === "Bank" ? (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Bank</p>
+               <p>{dataReceived.bankName}</p>
+             </div>
+           ) : dataReceived.sellingType === "Credit" ? (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Credit</p>
+               <p><strong>Payable Amount:</strong> {dataReceived.payableAmountNow}</p>
+               <p><strong>Payable Amount Later:</strong> {dataReceived.payableAmountLater}</p>
+               <p><strong>Due Date:</strong> {dataReceived.payableAmountLaterDate}</p>
+             </div>
+           ) : dataReceived.sellingType === "Exchange" ? (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Exchange</p>
+               <p><strong>Exchange Detail:</strong> {dataReceived.exchangePhoneDetail}</p>
+             </div>
+           ) : (
+             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+               <p><strong>Selling Type:</strong> Cash</p>
+               <p><strong>Total Cash:</strong> {price}</p>
+             </div>
+           )
+         }
+         
+             {/* {shop?.termsCondition.map((item, index) => (
+               <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
+             ))} */}
+           </div>
+     </div>
         <footer style={styles.footer}>
           <p>
             {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}

@@ -544,7 +544,7 @@ const UsedMobilesList = () => {
                 type="text"
                 value={accessoryName}
                 onChange={(e) => setAccessoryName(e.target.value)}
-                placeholder="Enter Sold price"
+                placeholder="Enter accessory name"
               />
             
             </Form.Group>

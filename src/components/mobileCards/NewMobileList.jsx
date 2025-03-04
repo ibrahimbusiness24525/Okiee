@@ -336,12 +336,12 @@ useScanDetection({
                     fontSize: '1.2rem',
                   }}
                 />
-                  <Card.Img
+                  {/* <Card.Img
                                  variant="top"
                                  src={`https://media.johnlewiscontent.com/i/JohnLewis/mobiles-nav-card-apple-v3-130924?fmt=auto`}
                                  alt={mobile.modelSpecifications}
                                  style={{ height: '400px', objectFit: 'cover' }}
-                               />
+                               /> */}
                  {/* {mobile.images[0] &&  <Card.Img
                                  variant="top"
                                  src={`${mobile.images[0]}`}
@@ -716,7 +716,7 @@ useScanDetection({
                 type="text"
                 value={accessoryName}
                 onChange={(e) => setAccessoryName(e.target.value)}
-                placeholder="Enter Sold price"
+                placeholder="Enter accessory name"
               />
             
             </Form.Group>

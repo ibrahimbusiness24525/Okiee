@@ -131,6 +131,7 @@ console.log('====================================');
     "customerName",
     "companyName",
     "modelName",
+    "sellingPaymentType",
     "finalPrice",
     "saleDate",
     
@@ -139,29 +140,36 @@ console.log('====================================');
     "Customer Name",
     "Company Name",
     "Model Name",
+    "Selling Payment Type",
     "Final Price",
     "Date Sold",
-    "Actions"
+    // "Actions"
   ]}
   customBlocks={[
+    {
+      index: 3,
+      component: (sellingType) => {
+      return sellingType ? sellingType : "Not mentioned"
+     }
+   },
        
          {
-            index: 4,
+            index: 5,
             component: (date) => {
             return dateFormatter(date)
            }
          }
         ]}
-         extraColumns={[
-                        () => {
-                            return (
-                              <FaPrint
-                              style={styles.printIcon}
-                              // onClick={() => handlePrintClick(invoice)}
-                            />
-                           );
-                      },
-                  ]}
+        //  extraColumns={[
+        //                 () => {
+        //                     return (
+        //                       <FaPrint
+        //                       style={styles.printIcon}
+        //                       // onClick={() => handlePrintClick(invoice)}
+        //                     />
+        //                    );
+        //               },
+        //           ]}
             />
       </div>
       <div>
@@ -177,6 +185,7 @@ console.log('====================================');
     // "companyName",
     // "partyName",
     "salePrice",
+    "sellingPaymentType",
     "warranty",
     "dateSold",
     
@@ -187,12 +196,19 @@ console.log('====================================');
     // "Party Name",
     "Type of Sale",
     "Price",
+    "Selling Payment Type",
     "Warranty",
     "Invoice Date",
   ]}
   customBlocks={[
+    {
+      index: 2,
+      component: (sellingType) => {
+      return sellingType ? sellingType : "Not mentioned"
+     }
+   },
          {
-            index: 3,
+            index: 4,
             component: (date) => {
             return dateFormatter(date)
            }
