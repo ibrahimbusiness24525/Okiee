@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
+import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
 
 const TodayPurchase = () => {
 
@@ -129,33 +130,28 @@ const handleScan = (value) => {
       routes={["/purchase/todayPurchase"]}
                         array={newPhones}
                         search={"imei1"}
-                        keysToDisplay={["modelName", "phoneCondition", "warranty", "name","date"]}
+                        keysToDisplay={["modelName", "phoneCondition","imei1", "warranty", "name","date"]}
                         label={[
                             "Model Name",
                             "Phone Condition",
+                            "Imei of mobile",
                             "Mobile Warranty",
                             "Name of Seller",
-                            "Date of Purchase"
+                            "Date of Purchase",
                     
-                            // "Actions",
+                            "Actions",
                         ]}
                         customBlocks={[
                             {
-                                index: 4,
+                                index: 5,
                                 component: (date) => {
                                     return dateFormatter(date)
                                 }
                             }
                         ]}
-                        // extraColumns={[
-                        //     () => {
-                        //         return (
-                        //             <MdEdit
-
-                        //                 className="text-[#ccccc] text-[1.3rem]" />
-                        //         );
-                        //     },
-                        // ]}
+                        extraColumns={[
+                          (obj) => <BarcodePrinter  obj={obj}/>
+                      ]}
                     />
         <div style={{marginTop:"3rem"}}>
         <StyledHeading>Used Phones</StyledHeading>
@@ -163,33 +159,28 @@ const handleScan = (value) => {
            routes={["/purchase/todayPurchase"]}
                         array={oldPhones}
                         search={"imei1"}
-                        keysToDisplay={["modelName", "phoneCondition", "warranty", "name","date"]}
+                        keysToDisplay={["modelName", "phoneCondition","imei1", "warranty", "name","date"]}
                         label={[
                             "Model Name",
                             "Phone Condition",
+                            "Imei of mobile",
                             "Mobile Warranty",
                             "Name of Seller",
-                            "Date of Purchase"
+                            "Date of Purchase",
                     
-                            // "Actions",
+                            "Actions",
                         ]}
                         customBlocks={[
                             {
-                                index: 4,
+                                index: 5,
                                 component: (date) => {
                                     return dateFormatter(date)
                                 }
                             }
                         ]}
-                        // extraColumns={[
-                        //     () => {
-                        //         return (
-                        //             <MdEdit
-
-                        //                 className="text-[#ccccc] text-[1.3rem]" />
-                        //         );
-                        //     },
-                        // ]}
+                        extraColumns={[
+                          (obj) => <BarcodePrinter obj={obj}/>
+                      ]}
                     />
         </div>
       <div>
