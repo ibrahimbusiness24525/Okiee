@@ -57,6 +57,13 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/usedMobileList'
         },
+        {
+          id: 'mobile',
+          title: 'Scan Device Details',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/scanDeviceDetails'
+        },
         // {
           // id: 'mobile',
           // title: 'Available Phones',

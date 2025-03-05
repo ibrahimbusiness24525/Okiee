@@ -6,7 +6,7 @@ import BarcodeScanner from "react-qr-barcode-scanner";
 import { FiCopy, FiCamera } from "react-icons/fi";
 
 const BarcodeReader = ({ onScan }) => {
-  const [imeiNumber, setImeiNumber] = useState("Not Scanned yet");
+  const [imeiNumber, setImeiNumber] = useState("111111111111");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isUsingZXing, setIsUsingZXing] = useState(false);
   const videoRef = useRef(null);

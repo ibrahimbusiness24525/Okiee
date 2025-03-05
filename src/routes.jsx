@@ -69,6 +69,11 @@ const routes = [
         path: '/app/dashboard/usedMobileList',
         element: lazy(() => import('./components/mobileCards/UsedMobileList')) // Mobile List
       },
+      {
+        exact: 'true',
+        path: '/app/dashboard/scanDeviceDetails',
+        element: lazy(() => import('./components/mobileCards/ScanDeviceDetails')) // Mobile List
+      },
       // {
       //   exact: 'true',
       //   path: '/app/dashboard/availablePhones',
