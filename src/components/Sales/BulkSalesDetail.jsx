@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../../../api/api";
+import { StyledHeading } from "components/StyledHeading/StyledHeading";
 
 const BulkSalesDetail = () => {
     const { id } = useParams();
@@ -26,7 +27,7 @@ const BulkSalesDetail = () => {
 
         fetchBulkSalesDetail();
     }, [id]);
-
+    console.log("sales detail", saleDetail);
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
@@ -41,6 +42,41 @@ const BulkSalesDetail = () => {
                     <p><strong>IMEI 2:</strong> {saleDetail.imei2 || "N/A"}</p>
                     <p><strong>Sale Price:</strong> {saleDetail.salePrice} PKR</p>
                     <p><strong>Warranty:</strong> {saleDetail.warranty}</p>
+                    {
+                        saleDetail.sellingPaymentType ? 
+                        <>
+                        <StyledHeading>Sale Type</StyledHeading>
+                            {
+                     saleDetail.sellingPaymentType === "Bank" ? (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Bank</p>
+                         <p>{saleDetail.bankName}</p>
+                       </div>
+                     ) : saleDetail.sellingPaymentType === "Credit" ? (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Credit</p>
+                         <p><strong>Payable Amount:</strong> {saleDetail.payableAmountNow}</p>
+                         <p><strong>Payable Amount Later:</strong> {saleDetail.payableAmountLater}</p>
+                         <p><strong>Due Date:</strong> {saleDetail.payableAmountLaterDate}</p>
+                       </div>
+                     ) : saleDetail.sellingPaymentType === "Exchange" ? (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Exchange</p>
+                         <p><strong>Exchange Detail:</strong> {saleDetail.exchangePhoneDetail}</p>
+                       </div>
+                     ) : (
+                       <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+                         <p><strong>Selling Type:</strong> Cash</p>
+                         <p><strong>Total Cash:</strong> {saleDetail.finalPrice}</p>
+                       </div>
+                     )
+                   }
+                        </>
+                        :
+                        <>
+                        <p>No sale type mentioned</p>
+                        </>
+                    }
                     <p><strong>Date Sold:</strong> {new Date(saleDetail.dateSold).toLocaleString()}</p>
                 </>
             ) : (
