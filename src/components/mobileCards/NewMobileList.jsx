@@ -11,6 +11,7 @@ import BarcodeScannerComponent from 'react-webcam-barcode-scanner';
 import useScanDetection from 'use-scan-detection';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
+import List from '../List/List'
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
@@ -41,7 +42,7 @@ const NewMobilesList = () => {
   const [personName, setPersonName] = useState('');
   const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
   const [addedImeis, setAddedImeis] = useState([]);
-
+    const[list,setList]= useState(false)
   const navigate = useNavigate();
  
 
@@ -306,10 +307,35 @@ useScanDetection({
    </Button>
 
 </div>
-
+<button
+  onClick={() => setList(!list)}
+  style={{
+    padding: "10px 16px",
+    backgroundColor: "#2563EB",
+    color: "white",
+    fontWeight: "600",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.3s ease",
+  }}
+  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E40AF")}
+  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
+>
+  Change Record Design
+</button>
 <h3 style={{marginTop:"1rem",marginBottom:"1rem"}}>New Single Phones</h3>
-      <Row xs={1} md={2} lg={3} className="g-4">
-
+      {list? 
+    <>
+<List items={filteredMobiles}
+displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
+descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
+onRowClick={"handleClick"}
+ />
+    
+    </> :<>
+    <Row xs={1} md={2} lg={3} className="g-4">
         {filteredMobiles.length > 0 ? (
           filteredMobiles.map((mobile) => (
             <Col key={mobile._id}>
@@ -430,10 +456,22 @@ useScanDetection({
           </Col>
         )}
       </Row>
+    </> 
+    }
       
       <h3 style={{marginTop:"5rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
+      {list?
+    <>
+    <List items={bulkMobile}
+      displayKeys={["modelName","companyName", "partyName","status"]}
+      descriptions={["Model Name","Company Name","Party Price","Status",]}
+      onRowClick={"handleClick"}
+    />
 
-      <Row xs={1} md={2} lg={3} className="g-4">
+    </> 
+    :
+    <>
+    <Row xs={1} md={2} lg={3} className="g-4">
       {bulkMobile.length > 0 ? (
         bulkMobile.map((mobile) => (
           <Col key={mobile._id}>
@@ -615,6 +653,9 @@ useScanDetection({
         </Modal.Footer>
       </Modal>
     </Row>
+    
+    </> 
+    }
       <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 
       {/* Delete Confirmation Modal */}

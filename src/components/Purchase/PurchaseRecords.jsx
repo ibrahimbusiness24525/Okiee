@@ -8,17 +8,40 @@ import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
-
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import CommentIcon from '@mui/icons-material/Comment';
 const PurchaseRecords = () => {
 
   const navigate = useNavigate();
   const[purchasedPhones, setPurchasedPhone] = useState([])
   const[newPhones,setNewPhones] = useState([])
   const[oldPhones,setOldPhones] = useState([])
+  const[list,setList]= useState(false)
+  const [checked, setChecked] = React.useState([0]);
+
+  const handleToggle = (value) => () => {
+    const currentIndex = checked.indexOf(value);
+    const newChecked = [...checked];
+
+    if (currentIndex === -1) {
+      newChecked.push(value);
+    } else {
+      newChecked.splice(currentIndex, 1);
+    }
+
+    setChecked(newChecked);
+  };
 
   // Inline styles for the table
   const styles = {
     container: {
+      width:"100%",
       padding: '20px',
       // backgroundColor: 'rgb(249, 250, 251)',
       borderRadius: '8px',
@@ -104,11 +127,69 @@ const handleScan = (value) => {
   return (
     <div style={styles.container}>
       <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Purchase Records</h2>
+      <button
+  onClick={() => setList(!list)}
+  style={{
+    padding: "10px 16px",
+    backgroundColor: "#2563EB",
+    color: "white",
+    fontWeight: "600",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.3s ease",
+  }}
+  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E40AF")}
+  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
+>
+  Change Record Design
+</button>
+
       <BarcodeReader onScan={handleScan} />
       <div>
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700" }}>Single Purchases</h3>
       </div>
       <StyledHeading>New Phones</StyledHeading>
+      {list? 
+      <>
+         <List sx={{ width: '100%',margin:"12px", bgcolor: 'background.paper' }}>
+    {newPhones.map((phone, index) => {
+    const labelId = `checkbox-list-label-${phone._id}`;
+
+    return (
+    
+      <ListItem
+        key={phone._id}
+        secondaryAction={
+          <IconButton edge="end" aria-label="comments">
+            <CommentIcon />
+          </IconButton>
+        }
+        disablePadding
+      >
+        <ListItemButton role={undefined} onClick={handleToggle(phone._id)} dense>
+          <ListItemIcon>
+            <Checkbox
+              edge="start"
+              checked={checked.includes(phone._id)}
+              tabIndex={-1}
+              disableRipple
+              inputProps={{ 'aria-labelledby': labelId }}
+            />
+          </ListItemIcon>
+          <ListItemText 
+            id={labelId} 
+            primary={`${phone.companyName} - ${phone.modelName}`} 
+            secondary={`IMEI: ${phone.imei1 || "N/A"}, Price: ${phone.price.finalPrice}`}
+          />
+        </ListItemButton>
+      </ListItem>
+    );
+  })}
+</List>
+      </>:
+      <>
       <Table
                  routes={["/purchase/purchaseRecords"]}
                         array={newPhones}
@@ -136,6 +217,10 @@ const handleScan = (value) => {
                           (obj) => <BarcodePrinter obj={obj}/>
                       ]}
                     />
+    </>
+    }
+   
+  
         <div style={{marginTop:"3rem"}}>
         <StyledHeading>Used Phones</StyledHeading>
         <Table

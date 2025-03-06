@@ -3,13 +3,14 @@ import { useState } from "react";
 import { api } from "../../../api/api";
 
 const ScanDeviceDetails = () => {
-    const [imei, setImei] = useState("111111111111");
+    const [imei, setImei] = useState("");
     const [data, setData] = useState({
         purchasePhone: {},
         bulkPhone: {},
     });
 
-    console.log("this is imei", data);
+    console.log("this is imei", imei);
+    console.log("this is data", data);
 
     const getDeviceDetail = async () => {
         try {
@@ -31,12 +32,15 @@ const ScanDeviceDetails = () => {
             {/* Scanner */}
             <div className="scanner-section">
                 <BarcodeReader onScan={setImei} />
+            </div>
+            <div style={{ padding: "12px", width: "100%", display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
                 <button className="scan-btn" onClick={getDeviceDetail}>Get Device Details</button>
             </div>
 
+
             {/* Conditional Rendering */}
             <div className="device-details">
-                {Object.keys(data.purchasePhone).length > 0 ? (
+                {Object.keys(data.purchasePhone).length > 0 ? 
                     <div className="device-card">
                         <h2>📱 Purchase Phone Details</h2>
                         <div className="device-info">
@@ -52,27 +56,27 @@ const ScanDeviceDetails = () => {
                             <p><strong>Mobile:</strong> {data.purchasePhone.mobileNumber}</p>
                         </div>
                     </div>
-                ) : (
-                    <p className="no-data">No purchase phone details found.</p>
-                )}
-
-                {Object.keys(data.bulkPhone).length > 0 ? (
-                    <div className="device-card">
-                        <h2>📦 Bulk Phone Details</h2>
-                        <div className="device-info">
-                            <p><strong>IMEI 1:</strong> {data.bulkPhone.imeiNumbers?.imei1}</p>
-                            <p><strong>IMEI 2:</strong> {data.bulkPhone.imeiNumbers?.imei2}</p>
+                 : 
+                    Object.keys(data.bulkPhone).length > 0 ? (
+                        <div className="device-card">
+                            <h2>📦 Bulk Phone Details</h2>
+                            <div className="device-info">
+                                <p><strong>IMEI 1:</strong> {data.bulkPhone.imeiNumbers?.imei1}</p>
+                                <p><strong>IMEI 2:</strong> {data.bulkPhone.imeiNumbers?.imei2}</p>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <p className="no-data">No bulk phone details found.</p>
-                )}
+                    ) : (
+                        <p className="no-data">{data?.data?.error || "No details Found"}</p>
+                    )
+                }
+
+               
             </div>
 
             {/* Styles */}
             <style jsx>{`
                 .container {
-                    max-width: 800px;
+                    max-width: 100%;
                     margin: auto;
                     padding: 20px;
                     text-align: center;

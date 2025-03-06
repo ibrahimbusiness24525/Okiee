@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Row, Col, Alert, Button } from 'react-bootstrap';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -10,7 +10,69 @@ import { FaMobileAlt } from "react-icons/fa";
 const JWTLogin = () => {
   const navigate = useNavigate();
   const [isSignup, setIsSignup] = useState(false);
-
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const styles = {
+    container: {
+      display: 'flex',
+      height: '100vh',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      overflow: 'hidden', // Prevent scrolling
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      maxWidth: '1200px',
+      margin: 'auto',
+      maxHeight: '600px',
+      width: '100%'
+    },
+    leftSection: {
+      flex: 1,
+      backgroundImage: 'linear-gradient(to right, rgb(80, 181, 244), rgb(237, 237, 237))',
+      backgroundPosition: 'center',
+      alignItems: "center",
+      display: windowWidth < 768 ? "none" : "flex", // Hide on small screens
+      backgroundRepeat: 'no-repeat',
+      flexDirection: 'column',
+      padding: '30px',
+      borderRadius: '10px 0 0 10px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      backdropFilter: 'blur(10px)',
+    },
+    logo: {
+      width: '150px', // Adjust the size as needed
+      height: 'auto',
+      marginBottom: '20px', // Adds space below the logo
+      textAlign: 'center',
+      display: 'block'
+    },
+    rightSection: {
+      flex: 2,
+      backgroundImage: `url(${backgroundImage2})`, // Add your right section image path
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '40px',
+      borderRadius: '0px 10px 10px 0px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      backgroundColor: '#f9f9f9' // light gray with 80% opacity
+    },
+    form: {
+      width: '100%',
+      maxWidth: '500px',
+      backgroundColor: 'rgba(211, 211, 211, 0.8)', // light gray with 80% opacity
+      padding: '30px',
+      borderRadius: '10px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      overflow: 'hidden' // Prevent overflowing content
+    }
+    // logo: {
+    //   width: '120px',
+    //   marginBottom: '20px'
+    // }
+  };
+  
   const handleLoginSubmit = async (values, { setErrors, setStatus, setSubmitting }) => {
     try {
       const response = await axios.post(`${BASE_URL}api/admin/login`, values, {
@@ -60,11 +122,16 @@ const JWTLogin = () => {
   const toggleForm = () => {
     setIsSignup(!isSignup);
   };
-
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <div style={styles.container}>
-      <div className="login-leftSection" style={styles.leftSection}>
         {/* <img src={MainLogo} alt="Okiiee Logo" style={styles.logo} /> */}
+      <div className="login-leftSection" style={styles.leftSection}>
         <h1
   style={{
     display: "flex",
@@ -257,67 +324,5 @@ const JWTLogin = () => {
 };
 
 // Styles object
-const styles = {
-  container: {
-    display: 'flex',
-    height: '100vh',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    overflow: 'hidden', // Prevent scrolling
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    maxWidth: '1200px',
-    margin: 'auto',
-    maxHeight: '600px',
-    width: '100%'
-  },
-  leftSection: {
-    flex: 1,
-    backgroundImage: 'linear-gradient(to right, rgb(80, 181, 244), rgb(237 237 237))', // Apply the same gradient
-    // backgroundColor: '#141227', 
-    backgroundPosition: 'center',
-    alignItems:"center",
-    display:"flex",
-    backgroundRepeat: 'no-repeat',
-    flexDirection: 'column',
-    padding: '30px',
-    borderRadius: '10px 0 0 10px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    backdropFilter: 'blur(10px)',
-  },
-  logo: {
-    width: '150px', // Adjust the size as needed
-    height: 'auto',
-    marginBottom: '20px', // Adds space below the logo
-    textAlign: 'center',
-    display: 'block'
-  },
-  rightSection: {
-    flex: 2,
-    backgroundImage: `url(${backgroundImage2})`, // Add your right section image path
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '40px',
-    borderRadius: '0px 10px 10px 0px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#f9f9f9' // light gray with 80% opacity
-  },
-  form: {
-    width: '100%',
-    maxWidth: '500px',
-    backgroundColor: 'rgba(211, 211, 211, 0.8)', // light gray with 80% opacity
-    padding: '30px',
-    borderRadius: '10px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    overflow: 'hidden' // Prevent overflowing content
-  }
-  // logo: {
-  //   width: '120px',
-  //   marginBottom: '20px'
-  // }
-};
 
 export default JWTLogin;

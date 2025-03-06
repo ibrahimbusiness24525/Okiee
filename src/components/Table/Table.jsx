@@ -50,14 +50,14 @@ const Table = ({
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", marginBottom: "16px" ,overflowX:"auto"}}>
         {search && (
           <TableSearchBar onChange={(event) => setSearchedData(event.target.value)} />
         )}
         {filter && filter()}
       </div>
-      <div style={{ background: "transparent", borderRadius: "9px", border: "1px solid #c4c4c4", boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)" }}>
-        <table style={{ width: "100%" }}>
+      <div style={{ background: "transparent",overflowX:"auto", borderRadius: "9px", border: "1px solid #c4c4c4", boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)" }}>
+        <table style={{ width: "100%", }}>
           <thead>
             <tr style={{ textTransform: "uppercase", borderBottom: "1px solid #c4c4c4" }}>
               {label.map((text, index) => (
