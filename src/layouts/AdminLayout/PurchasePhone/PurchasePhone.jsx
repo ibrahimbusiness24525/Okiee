@@ -23,6 +23,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose }) => {
       fatherName: '', // Matches `fatherName`
       companyName: '', // Matches `companyName`
       modelName: '', // Matches `modelName`
+      batteryHealth: '', // Matches `modelName`
       date: today, // Matches `date`
       cnic: '', // Matches `cnic`
       accessories: {
@@ -177,6 +178,7 @@ console.log("this is the data",singlePurchase);
     formData.append("companyName", singlePurchase.companyName);
     formData.append("specifications", singlePurchase.specifications);
     formData.append("modelName", singlePurchase.modelName);
+    formData.append("batteryHealth", singlePurchase.batteryHealth);
     formData.append("imei1", singlePurchase.imei1); // Use correct field name
     formData.append("imei2", singlePurchase.imei2);
     formData.append("color", singlePurchase.color);

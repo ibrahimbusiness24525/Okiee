@@ -56,9 +56,9 @@ const CheckableList = ({ items = [], displayKeys = [], onRowClick,descriptions=[
               </ListItemIcon>
               <ListItemText id={labelId} primary={displayText} />
             </ListItemButton>
-            <IconButton edge="end" aria-label="comments">
+            {/* <IconButton edge="end" aria-label="comments">
               <CommentIcon />
-            </IconButton>
+            </IconButton> */}
           </ListItem>
         );
       })}

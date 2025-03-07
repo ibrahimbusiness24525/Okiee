@@ -6,6 +6,7 @@ import { jsPDF } from 'jspdf';
 import { BASE_URL } from 'config/constant';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { api } from '../../../api/api';
+import List from '../List/List'
 
 const UsedMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
@@ -33,6 +34,7 @@ const UsedMobilesList = () => {
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const[list,setList] = useState(false)
 
 
 
@@ -182,10 +184,14 @@ const UsedMobilesList = () => {
     doc.save('Mobile_Inventory.pdf');
   };
 
-  const filteredMobiles = mobiles.filter(mobile => mobile.phoneCondition === "Used");
+  const filteredMobiles = mobiles.filter(mobile => 
+    mobile.phoneCondition === "Used" &&
+    (searchTerm === "" || mobile.imei.includes(searchTerm) || mobile.imei2.includes(searchTerm))
+  );
+  
   
   console.log("all mobiles", mobiles);
-  console.log("all filtereed", filteredMobiles);
+  console.log("all filtered data is here ", filteredMobiles);
   return (
     <>
       {/* Search bar */}
@@ -223,8 +229,34 @@ const UsedMobilesList = () => {
 </div>
 
 
-     
-<Row xs={1} md={2} lg={3} className="g-4">
+<button
+  onClick={() => setList(!list)}
+  style={{
+    padding: "10px 16px",
+    backgroundColor: "#2563EB",
+    color: "white",
+    marginBottom:"20px",
+    fontWeight: "600",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.3s ease",
+  }}
+  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E40AF")}
+  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
+>
+  Change Record Design
+</button>   
+{list? <>
+    <List items={filteredMobiles}
+    displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
+    descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
+    onRowClick={"handleClick"}
+     />
+      </>:
+      <>
+      <Row xs={1} md={2} lg={3} className="g-4">
   {filteredMobiles.length > 0 ? (
     filteredMobiles.map((mobile) => (
       <Col key={mobile._id}>
@@ -370,6 +402,8 @@ const UsedMobilesList = () => {
     </Col>
   )}
 </Row>;
+      </>
+}
 
       <PurchasePhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 

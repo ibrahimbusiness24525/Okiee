@@ -74,6 +74,12 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
                             onChange={handleChange} type="text" placeholder="Enter Model Name" required />
                       </Form.Group>
                     </div>
+                      <Form.Group controlId="purchasePhoneModel" style={{ width: "48%" ,marginTop:"10px"}}>
+                        <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>Battery Health</Form.Label>
+                        <Form.Control value={singlePurchase.batteryHealth}
+                         name="batteryHealth"
+                            onChange={handleChange} type="text" placeholder="Enter Battery Health"  />
+                      </Form.Group>
                    
         
                     {/* Accessories Section */}

@@ -42,6 +42,7 @@ const NewMobilesList = () => {
   const [personName, setPersonName] = useState('');
   const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
   const [addedImeis, setAddedImeis] = useState([]);
+  const[bulkData,setBulkData]= useState([])
     const[list,setList]= useState(false)
   const navigate = useNavigate();
  
@@ -144,15 +145,30 @@ const NewMobilesList = () => {
   };
   const getBulkPhones = async() =>{
     try{
-      // const response =  await axios.get(`${BASE_URL}api/Purchase/bulk-phone-purchase`);
       const response =  await api.get("/api/Purchase/bulk-phone-purchase");
+      setBulkData(response.data)
+      setBulkMobiles(response.data.filter((item) => 
+        item.ramSimDetails?.some((ramSim) =>
+          ramSim.imeiNumbers?.some((imei) => 
+            imei.imei1?.includes(searchTerm) || imei.imei2?.includes(searchTerm)
+          )
+        )
+      ));
       console.log("bulk record response",response);
-      setBulkMobiles(response?.data)
-      
     }catch(error){
       console.log("error in getting bulk mobiles", error);
     }
   }
+  useEffect(()=>{
+    setBulkMobiles(bulkData.filter((item) => 
+      item.ramSimDetails?.some((ramSim) =>
+        ramSim.imeiNumbers?.some((imei) => 
+          imei.imei1?.includes(searchTerm) || imei.imei2?.includes(searchTerm)
+        )
+      )
+    ));
+  },[searchTerm])
+  
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -230,6 +246,7 @@ const NewMobilesList = () => {
     // Exclude sold phones
     if (mobile.isSold) return false;
     if(mobile.phoneCondition==="Used") return false
+    if(mobile.imei.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
   
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
@@ -283,6 +300,17 @@ useScanDetection({
   }
   return (
     <>
+     <InputGroup className="mb-3">
+            <InputGroup.Text>
+              <FaSearch />
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              placeholder="Search by name or company"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </InputGroup>
       {/* Search bar */}
       
 

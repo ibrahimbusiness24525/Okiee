@@ -22,7 +22,7 @@ const PurchaseRecords = () => {
   const[purchasedPhones, setPurchasedPhone] = useState([])
   const[newPhones,setNewPhones] = useState([])
   const[oldPhones,setOldPhones] = useState([])
-  const[list,setList]= useState(false)
+  // const[list,setList]= useState(false) 
   const [checked, setChecked] = React.useState([0]);
 
   const handleToggle = (value) => () => {
@@ -127,7 +127,7 @@ const handleScan = (value) => {
   return (
     <div style={styles.container}>
       <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Purchase Records</h2>
-      <button
+      {/* <button
   onClick={() => setList(!list)}
   style={{
     padding: "10px 16px",
@@ -144,14 +144,14 @@ const handleScan = (value) => {
   onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
 >
   Change Record Design
-</button>
+</button> */}
 
       <BarcodeReader onScan={handleScan} />
       <div>
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700" }}>Single Purchases</h3>
       </div>
       <StyledHeading>New Phones</StyledHeading>
-      {list? 
+      {/* {list? 
       <>
          <List sx={{ width: '100%',margin:"12px", bgcolor: 'background.paper' }}>
     {newPhones.map((phone, index) => {
@@ -189,7 +189,7 @@ const handleScan = (value) => {
   })}
 </List>
       </>:
-      <>
+      <> */}
       <Table
                  routes={["/purchase/purchaseRecords"]}
                         array={newPhones}
@@ -217,9 +217,9 @@ const handleScan = (value) => {
                           (obj) => <BarcodePrinter obj={obj}/>
                       ]}
                     />
-    </>
+    {/* </>
     }
-   
+    */}
   
         <div style={{marginTop:"3rem"}}>
         <StyledHeading>Used Phones</StyledHeading>

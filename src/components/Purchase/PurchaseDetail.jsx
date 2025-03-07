@@ -52,6 +52,7 @@ const PurchaseDetail = () => {
                 <p><strong>IMEI 1:</strong> {purchase.imei1}</p>
                 <p><strong>IMEI 2:</strong> {purchase.imei2}</p>
                 <p><strong>Mobile Number:</strong> {purchase.mobileNumber}</p>
+                <p><strong>Battery Health:</strong> {purchase.batteryHealth || "Not mentioned"}</p>
                 <p><strong>Approved from Egadgets:</strong> {purchase.isApprovedFromEgadgets ? "Yes" : "No"}</p>
             </div>
           
