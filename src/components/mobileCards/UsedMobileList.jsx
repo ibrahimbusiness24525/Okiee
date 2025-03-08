@@ -7,6 +7,7 @@ import { BASE_URL } from 'config/constant';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { api } from '../../../api/api';
 import List from '../List/List'
+import Table from 'components/Table/Table';
 
 const UsedMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
@@ -249,11 +250,44 @@ const UsedMobilesList = () => {
   Change Record Design
 </button>   
 {list? <>
-    <List items={filteredMobiles}
+    {/* <List items={filteredMobiles}
     displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
     descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
     onRowClick={"handleClick"}
-     />
+     /> */}
+     <Table
+           // routes={["/purchase/purchaseRecords"]}
+                array={filteredMobiles}
+               //  search={"imei1"}
+                keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
+                label={[
+                    "Model Name",
+                    "Company Name",
+                    "Final Price",
+                    "Condition",
+                    "Warranty",
+            
+                    "Actions",
+                ]}
+                
+                extraColumns={[
+                  (obj) =>  
+                  <Button
+                  onClick={() => handleSoldClick(obj)}
+                  style={{
+                    backgroundColor: '#28a745',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  Sold
+                </Button>
+              ]}
+            />
       </>:
       <>
       <Row xs={1} md={2} lg={3} className="g-4">

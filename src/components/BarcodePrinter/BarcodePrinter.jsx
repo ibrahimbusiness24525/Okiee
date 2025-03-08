@@ -72,8 +72,9 @@ const BarcodePrinter = ({ obj }) => {
                             line-height: 1.2;
                             padding-left: 10px;
                         }
-                        img { 
-                            max-width: 100%; 
+                        .barcode-img { 
+                            width:90px
+                            height:80px;
                             margin-bottom: 5px;
                         }
                         p {
@@ -87,15 +88,15 @@ const BarcodePrinter = ({ obj }) => {
                     <div class="container">
                         <div class="company-name">${shopName}</div>
                         <div class="barcode-section">
-                          <img src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
+                          <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
                             <p>${modelName}</p>
-                            ${imei2 ? `<img src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
+                            ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
                             <p>${specifications || "No Mentioned"}</p>
                             
                             </div>
                             <div class="company-name">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
                              
-                    </div>
+                        </div>
         
                     <script>
                         window.onload = function() {

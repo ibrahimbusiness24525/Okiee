@@ -207,7 +207,8 @@ const SoldInvoice = () => {
         imeiNumbers: dataReceived?.addedImeis.length === 0 
         ? imeis.map(item => item?.imei1)  // Extract imei1 properly
         : dataReceived?.addedImeis, 
-        salePrice: dataReceived?.finalPrice,
+        salePrice: totalInvoice,
+        // salePrice: dataReceived?.finalPrice,
         warranty: dataReceived?.warranty, 
         customerName:dataReceived?.customerName,
         cnicFrontPic:"/file",
@@ -249,7 +250,8 @@ const SoldInvoice = () => {
       try {
         const payload = { 
           purchasePhoneId: dataReceived._id,
-          salePrice: dataReceived?.finalPrice,
+          salePrice: totalInvoice,
+          // salePrice: dataReceived?.finalPrice,
           warranty: dataReceived?.warranty,
           customerName:dataReceived?.customerName,
           cnicFrontPic:"/file",
@@ -295,6 +297,10 @@ const SoldInvoice = () => {
     }
   };
 console.log("this is the type",dataReceived?.type);
+const totalInvoice =
+Number(dataReceived.finalPrice || 0) + Number(dataReceived.accessoryPrice || 0);
+console.log("this is the total invoice",totalInvoice);
+
 
   return (
     <div>
@@ -440,7 +446,7 @@ console.log("this is the type",dataReceived?.type);
   </div>
 )}
         <div style={styles.totalSection}>
-          <h3>Total:{price}Rs</h3>
+          <h3>Total:{totalInvoice}Rs</h3>
         </div>
 
         {/* Terms & Conditions Section */}
@@ -567,7 +573,7 @@ console.log("this is the type",dataReceived?.type);
   </div>
 )}
         <div style={styles.totalSection}>
-          <h3>Total:{price}Rs</h3>
+          <h3>Total:{totalInvoice}Rs</h3>
         </div>
 
  

@@ -12,6 +12,7 @@ import useScanDetection from 'use-scan-detection';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 import List from '../List/List'
+import Table from 'components/Table/Table';
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
@@ -356,11 +357,44 @@ useScanDetection({
 <h3 style={{marginTop:"1rem",marginBottom:"1rem"}}>New Single Phones</h3>
       {list? 
     <>
-<List items={filteredMobiles}
-displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
-descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
-onRowClick={"handleClick"}
- />
+      {/* <List items={filteredMobiles}
+      displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
+      descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
+      onRowClick={"handleClick"}
+      /> */}
+      <Table
+      // routes={["/purchase/purchaseRecords"]}
+           array={filteredMobiles}
+          //  search={"imei1"}
+           keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
+           label={[
+               "Model Name",
+               "Company Name",
+               "Final Price",
+               "Condition",
+               "Warranty",
+       
+               "Actions",
+           ]}
+           
+           extraColumns={[
+             (obj) =>  
+             <Button
+             onClick={() => handleSoldClick(obj,"single")}
+             style={{
+               backgroundColor: '#28a745',
+               color: '#fff',
+               border: 'none',
+               padding: '5px 10px',
+               borderRadius: '5px',
+               cursor: 'pointer',
+               fontSize: '0.8rem',
+             }}
+           >
+             Sold
+           </Button>
+         ]}
+       />
     
     </> :<>
     <Row xs={1} md={2} lg={3} className="g-4">
@@ -490,11 +524,42 @@ onRowClick={"handleClick"}
       <h3 style={{marginTop:"5rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
       {list?
     <>
-    <List items={bulkMobile}
+    {/* <List items={bulkMobile}
       displayKeys={["modelName","companyName", "partyName","status"]}
       descriptions={["Model Name","Company Name","Party Price","Status",]}
       onRowClick={"handleClick"}
-    />
+    /> */}
+      <Table
+      // routes={["/purchase/purchaseRecords"]}
+           array={bulkMobile}
+          //  search={"imei1"}
+           keysToDisplay={["modelName", "companyName","partyName", "status", ]}
+           label={[
+               "Model Name",
+               "Company Name",
+               "Parth Name",
+               "Status",
+       
+               "Actions",
+           ]}
+           
+           extraColumns={[
+             (obj) => <Button
+             onClick={() => handleSoldClick(obj,"bulk")}
+             style={{
+               backgroundColor: '#28a745',
+               color: '#fff',
+               border: 'none',
+               padding: '5px 10px',
+               borderRadius: '5px',
+               cursor: 'pointer',
+               fontSize: '0.8rem',
+             }}
+           >
+             Sold
+           </Button>
+         ]}
+       />
 
     </> 
     :
