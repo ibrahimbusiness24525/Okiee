@@ -1,8 +1,8 @@
 import axios from "axios";
 
 export const api = axios.create({
-    // baseURL: "https://api.okiiee.com",
-    baseURL: "http://localhost:8000",
+    baseURL: "https://api.okiiee.com",
+    // baseURL: "http://localhost:8000",
     headers: {
         "Content-Type": "application/json",
     },
@@ -10,7 +10,7 @@ export const api = axios.create({
 
 // ✅ Add an interceptor to update the token dynamically before each 
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token"); // Get latest token
+    const token = localStorage.getItem("token"); // Get latest tokenGIT
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
