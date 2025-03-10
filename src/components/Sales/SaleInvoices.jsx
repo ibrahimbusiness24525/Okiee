@@ -246,26 +246,32 @@ const handleScan = (value) => {
   keysToDisplay={[
     "customerName",
     "companyName",
-    "modelName",
     "sellingPaymentType",
-    "finalPrice",
+    "purchasePrice",
+    "salePrice",
     "saleDate",
   ]}
   label={[
     "Customer Name",
     "Company Name",
-    "Model Name",
     "Selling Payment Type",
-    "Final Price",
+    "Purchase Price",
+    "Sale Price",
     "Date Sold",
-    // "Actions"
+    "Profit/Loss",
   ]}
   customBlocks={[
        
          {
-            index: 3,
+            index: 2,
             component: (sellingType) => {
             return sellingType ? sellingType : "Not mentioned"
+           }
+         },
+         {
+            index: 4,
+            component: (salePrice) => {
+            return salePrice? salePrice :"Not Mentioned"
            }
          },
          {
@@ -275,16 +281,16 @@ const handleScan = (value) => {
            }
          }
         ]}
-        //  extraColumns={[
-        //                 () => {
-        //                     return (
-        //                       <FaPrint
-        //                       style={styles.printIcon}
-        //                       // onClick={() => handlePrintClick(invoice)}
-        //                     />
-        //                    );
-        //               },
-        //           ]}
+        extraColumns={[
+          (obj) => {
+            const salePrice = Number(obj.salePrice) || 0;
+            const purchasePrice = Number(obj.purchasePrice) || 0;
+            const profitOrLoss = salePrice - purchasePrice;
+        
+            return <p>{profitOrLoss < 0 ? `Loss of ${-profitOrLoss}` : profitOrLoss}</p>;
+          },
+        ]}
+        
             />
 
       </div>

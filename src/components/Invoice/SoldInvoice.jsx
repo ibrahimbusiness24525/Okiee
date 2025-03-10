@@ -207,7 +207,8 @@ const SoldInvoice = () => {
         imeiNumbers: dataReceived?.addedImeis.length === 0 
         ? imeis.map(item => item?.imei1)  // Extract imei1 properly
         : dataReceived?.addedImeis, 
-        salePrice: totalInvoice,
+        salePrice: dataReceived?.finalPrice,
+          totalInvoice,
         // salePrice: dataReceived?.finalPrice,
         warranty: dataReceived?.warranty, 
         customerName:dataReceived?.customerName,
@@ -251,8 +252,8 @@ const SoldInvoice = () => {
       try {
         const payload = { 
           purchasePhoneId: dataReceived._id,
-          salePrice: totalInvoice,
-          // salePrice: dataReceived?.finalPrice,
+          salePrice: Number(dataReceived.finalPrice),
+          totalInvoice: Number(totalInvoice),
           warranty: dataReceived?.warranty,
           customerName:dataReceived?.customerName,
           cnicFrontPic:"/file",
@@ -307,6 +308,7 @@ const totalAccessoriesPrice = dataReceived.accessories.reduce(
 const totalInvoice = Number(dataReceived.finalPrice || 0) + totalAccessoriesPrice;
 
 console.log("this is the total invoice",totalInvoice);
+console.log("These are the accessories",dataReceived?.accessories);
 
 
   return (
