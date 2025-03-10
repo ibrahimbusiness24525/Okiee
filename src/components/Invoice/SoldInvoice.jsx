@@ -214,8 +214,9 @@ const SoldInvoice = () => {
         cnicFrontPic:"/file",
         cnicBackPic:"/file",
         sellingPaymentType:dataReceived.sellingType,
-        accesssoryName:dataReceived.accessoryName,
-        accesssoryAmount:Number(dataReceived.accessoryPrice),
+        accessories:dataReceived?.accessories,
+        // accesssoryName:dataReceived.accessoryName,
+        // accesssoryAmount:Number(dataReceived.accessoryPrice),
         ...(dataReceived?.sellingType === "Bank" && { bankName: dataReceived?.bankName }),
 
         // Conditionally add credit fields if selling type is "Credit"
@@ -257,8 +258,9 @@ const SoldInvoice = () => {
           cnicFrontPic:"/file",
           cnicBackPic:"/file",
           sellingPaymentType:dataReceived.sellingType,
-          accesssoryName:dataReceived.accessoryName,
-          accesssoryAmount:Number(dataReceived.accessoryPrice),
+          accessories:dataReceived?.accessories,
+          // accesssoryName:dataReceived.accessoryName,
+          // accesssoryAmount:Number(dataReceived.accessoryPrice),
           ...(dataReceived?.sellingType === "Bank" && { bankName: dataReceived?.bankName }),
 
           // Conditionally add credit fields if selling type is "Credit"
@@ -297,8 +299,13 @@ const SoldInvoice = () => {
     }
   };
 console.log("this is the type",dataReceived?.type);
-const totalInvoice =
-Number(dataReceived.finalPrice || 0) + Number(dataReceived.accessoryPrice || 0);
+const totalAccessoriesPrice = dataReceived.accessories.reduce(
+  (total, item) => total + Number(item.price || 0) * Number(item.quantity || 1),
+  0
+);
+
+const totalInvoice = Number(dataReceived.finalPrice || 0) + totalAccessoriesPrice;
+
 console.log("this is the total invoice",totalInvoice);
 
 

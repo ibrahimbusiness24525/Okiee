@@ -19,8 +19,11 @@ const UsedMobilesList = () => {
   const[cnicFrontPic,setCnicFrontPic]= useState("");
   const[cnicBackPic,setCnicBackPic]= useState("");
   const[sellingType,setSellingType]= useState("")
-  const[accessoryName,setAccessoryName] = useState("");
-  const[accessoryPrice,setAccessoryPrice]= useState(0);
+  // const[accessoryName,setAccessoryName] = useState("");
+  // const[accessoryPrice,setAccessoryPrice]= useState(0);
+  const [accessories, setAccessories] = useState([
+    { name: "", quantity: 1, price: "" }
+  ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editMobile, setEditMobile] = useState(null);
@@ -143,8 +146,9 @@ const UsedMobilesList = () => {
       cnicBackPic,
       cnicFrontPic,
       customerName,
-      accessoryName,
-      accessoryPrice,
+      accessories,
+      // accessoryName,
+      // accessoryPrice,
       bankName,
       payableAmountNow,
       payableAmountLater,
@@ -189,7 +193,22 @@ const UsedMobilesList = () => {
     mobile.phoneCondition === "Used" &&
     (searchTerm === "" || mobile.imei.includes(searchTerm) || mobile.imei2.includes(searchTerm))
   );
-  
+  const handleAccessoryChange = (index, field, value) => {
+    const updatedAccessories = [...accessories];
+    updatedAccessories[index][field] = value;
+    setAccessories(updatedAccessories);
+  };
+
+  // Add New Accessory
+  const addAccessory = () => {
+    setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
+  };
+
+  // Remove Accessory
+  const removeAccessory = (index) => {
+    const updatedAccessories = accessories.filter((_, i) => i !== index);
+    setAccessories(updatedAccessories);
+  };
   
   console.log("all mobiles", mobiles);
   console.log("all filtered data is here ", filteredMobiles);
@@ -605,8 +624,50 @@ const UsedMobilesList = () => {
                     onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
                   />
                 </Form.Group>
-               
-            <Form.Group>
+                <div>
+      {accessories.map((accessory, index) => (
+        <div key={index} className="mb-3 p-3 border rounded">
+          <Form.Group>
+            <Form.Label>Accessory Name</Form.Label>
+            <Form.Control
+              type="text"
+              value={accessory.name}
+              onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+              placeholder="Enter accessory name"
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>Quantity</Form.Label>
+            <Form.Control
+              type="number"
+              value={accessory.quantity}
+              onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
+              min="1"
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>Accessory Price</Form.Label>
+            <Form.Control
+              type="number"
+              value={accessory.price}
+              onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
+              placeholder="Enter price"
+            />
+          </Form.Group>
+
+          <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
+            Remove
+          </Button>
+        </div>
+      ))}
+
+      <Button variant="primary" onClick={addAccessory}>
+        Add Another Accessory
+      </Button>
+    </div>
+            {/* <Form.Group>
             <Form.Label>Accessory Name</Form.Label>
               <Form.Control
                 type="text"
@@ -624,7 +685,7 @@ const UsedMobilesList = () => {
                 onChange={(e) => setAccessoryPrice(e.target.value)}
                 placeholder="Enter Sold price"
               />
-            </Form.Group>
+            </Form.Group> */}
             <Form.Group>
             <Form.Group className="mb-3">
         <Form.Label>Company Warranty</Form.Label>

@@ -26,6 +26,9 @@ const NewMobilesList = () => {
   const[sellingType,setSellingType]= useState("")
   const[accessoryName,setAccessoryName] = useState("");
   const[accessoryPrice,setAccessoryPrice]= useState(0);
+  const [accessories, setAccessories] = useState([
+    { name: "", quantity: 1, price: "" }
+  ]);
   const [bulkMobile, setBulkMobiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -203,8 +206,9 @@ const NewMobilesList = () => {
       cnicBackPic,
       cnicFrontPic,
       customerName,
-      accessoryName,
-      accessoryPrice,
+      // accessoryName,
+      // accessoryPrice,
+      accessories,
       bankName,
       payableAmountNow,
       payableAmountLater,
@@ -299,6 +303,22 @@ useScanDetection({
     setType("bulk");
     setShowDeleteModal(true);
   }
+  const handleAccessoryChange = (index, field, value) => {
+    const updatedAccessories = [...accessories];
+    updatedAccessories[index][field] = value;
+    setAccessories(updatedAccessories);
+  };
+
+  // Add New Accessory
+  const addAccessory = () => {
+    setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
+  };
+
+  // Remove Accessory
+  const removeAccessory = (index) => {
+    const updatedAccessories = accessories.filter((_, i) => i !== index);
+    setAccessories(updatedAccessories);
+  };
   return (
     <>
      <InputGroup className="mb-3">
@@ -844,25 +864,49 @@ useScanDetection({
                   />
                 </Form.Group>
                
-            <Form.Group>
+                <div>
+      {accessories.map((accessory, index) => (
+        <div key={index} className="mb-3 p-3 border rounded">
+          <Form.Group>
             <Form.Label>Accessory Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={accessoryName}
-                onChange={(e) => setAccessoryName(e.target.value)}
-                placeholder="Enter accessory name"
-              />
-            
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Accessory Price</Form.Label>
-              <Form.Control
-                type="number"
-                value={accessoryPrice}
-                onChange={(e) => setAccessoryPrice(e.target.value)}
-                placeholder="Enter Sold price"
-              />
-            </Form.Group>
+            <Form.Control
+              type="text"
+              value={accessory.name}
+              onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+              placeholder="Enter accessory name"
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>Quantity</Form.Label>
+            <Form.Control
+              type="number"
+              value={accessory.quantity}
+              onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
+              min="1"
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>Accessory Price</Form.Label>
+            <Form.Control
+              type="number"
+              value={accessory.price}
+              onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
+              placeholder="Enter price"
+            />
+          </Form.Group>
+
+          <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
+            Remove
+          </Button>
+        </div>
+      ))}
+
+      <Button variant="primary" onClick={addAccessory}>
+        Add Another Accessory
+      </Button>
+    </div>
             <Form.Group>
                 <Form.Label>Selling Type</Form.Label>
                 <Form.Select
