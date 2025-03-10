@@ -90,12 +90,34 @@ const SalesDetail = () => {
                         <p>No sale type mentioned</p>
                         </>
                     }
-                    <p><strong>Accessories:</strong></p>
-                    <ul>
-                        <li>Box: {sale.accessories?.box ? "Yes" : "No"}</li>
-                        <li>Charger: {sale.accessories?.charger ? "Yes" : "No"}</li>
-                        <li>Hand Free: {sale.accessories?.handFree ? "Yes" : "No"}</li>
-                    </ul>
+                    <div style={{ marginTop: "16px" }}>
+  <p style={{ fontWeight: "bold" }}>Accessories:</p>
+
+  {sale.accessories.length > 0 ? (
+    <div style={{ display: "flex", gap: "16px", padding: "8px", background: "#f3f4f6", borderRadius: "8px" }}>
+      {sale.accessories.map((accessory, index) => (
+        <div 
+          key={index} 
+          style={{ 
+            padding: "8px", 
+            background: "white", 
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)", 
+            borderRadius: "8px", 
+            textAlign: "center",
+            flex: "1"
+          }}
+        >
+          <p style={{ fontWeight: "600" }}>{accessory.name}</p>
+          <p style={{ fontSize: "14px", color: "#4B5563" }}>Qty: {accessory.quantity}</p>
+          <p style={{ fontSize: "14px", fontWeight: "bold", color: "#1F2937" }}> {accessory.price}</p>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p style={{ color: "#9CA3AF", fontStyle: "italic", marginTop: "8px" }}>No accessories found</p>
+  )}
+</div>
+
                 </>
             ) : (
                 <p>No sale details available.</p>
