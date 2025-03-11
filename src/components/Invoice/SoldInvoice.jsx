@@ -279,6 +279,7 @@ const SoldInvoice = () => {
         console.log("This is the single sell phone data",payload);
         
         const response = await api.post(`api/Purchase/sell-single-phone`, payload);
+        console.log("This is the single phone",response);
 
         if (response) {
           alert('Invoice submitted successfully');

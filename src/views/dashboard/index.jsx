@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Card, Table, Tabs, Tab } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigation } from 'react-router-dom';
 
 import avatar1 from '../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../assets/images/user/avatar-2.jpg';
@@ -8,12 +8,14 @@ import avatar3 from '../../assets/images/user/avatar-3.jpg';
 import { color } from 'd3';
 
 const dashSalesData = [
-  { title: 'Daily Sales', amount: 'Rs249.95'},
-  { title: 'Monthly Sales', amount: 'Rs2.942.32'},
-  { title: 'Yearly Sales', amount: 'Rs8.638.32'}
+  { title: 'Today Book'},
+  { title: 'Committees', amount: 'Rs2.942.32'},
+  { title: '', amount: 'Rs8.638.32'}
 ];
 
 const DashDefault = () => {
+
+
   const tabContent = (
     <React.Fragment>
       <div className="d-flex friendlist-box align-items-center justify-content-center m-b-20">
@@ -101,20 +103,48 @@ const DashDefault = () => {
         </div>
       </div>
     </React.Fragment>
+
   );
   return (
     <React.Fragment>
       <Row >
-        {dashSalesData.map((data, index) => {
-          return (
-            <Col key={index} xl={6} xxl={4} style={{marginBottom:25}}> 
+           <Col   xl={6} xxl={4} style={{marginBottom:25}}> 
+           <Link to={"/todayBook"}>
               <Card >
                 <Card.Body>
-                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>{data.title}</h6>
+                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Today Book</h6>
                   <div className="row d-flex align-items-center">
                     <div className="col-9">
                       <h3 className="f-w-300 d-flex align-items-center m-b-0">
-                        <i className={`feather ${data.icon} f-30 m-r-20`} /> Rs50000
+                        <i className={`feather } f-30 m-r-20`} /> 
+                      </h3>
+                    </div>
+                    {/* <div className="col-3 text-end">
+                      <p className="m-b-0">{data.value}%</p>
+                    </div> */}
+                  </div>
+                  {/* <div className="progress m-t-30" style={{ height: '7px' }}>
+                     <div
+                      className={`progress-bar ${data.class}`}
+                      role="progressbar"
+                      style={{ width: `${data.value}%` }}
+                      aria-valuenow={data.value}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    />
+                  </div> */}
+                </Card.Body>
+              </Card>
+           </Link>
+            </Col>
+            <Col xl={6} xxl={4} style={{marginBottom:25}}> 
+              <Card >
+                <Card.Body>
+                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Commiittees</h6>
+                  <div className="row d-flex align-items-center">
+                    <div className="col-9">
+                      <h3 className="f-w-300 d-flex align-items-center m-b-0">
+                        <i className={`feather  f-30 m-r-20`} />5
                       </h3>
                     </div>
                     {/* <div className="col-3 text-end">
@@ -134,8 +164,33 @@ const DashDefault = () => {
                 </Card.Body>
               </Card>
             </Col>
-          );
-        })}
+            <Col  xl={6} xxl={4} style={{marginBottom:25}}> 
+              <Card >
+                <Card.Body>
+                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>User</h6>
+                  <div className="row d-flex align-items-center">
+                    <div className="col-9">
+                      <h3 className="f-w-300 d-flex align-items-center m-b-0">
+                        <i className={`feather  f-30 m-r-20`} />30
+                      </h3>
+                    </div>
+                    {/* <div className="col-3 text-end">
+                      <p className="m-b-0">{data.value}%</p>
+                    </div> */}
+                  </div>
+                  {/* <div className="progress m-t-30" style={{ height: '7px' }}>
+                     <div
+                      className={`progress-bar ${data.class}`}
+                      role="progressbar"
+                      style={{ width: `${data.value}%` }}
+                      aria-valuenow={data.value}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    />
+                  </div> */}
+                </Card.Body>
+              </Card>
+            </Col>
         <Col md={6} xl={8}>
           <Card className="Recent-Users widget-focus-lg">
             <Card.Header>
