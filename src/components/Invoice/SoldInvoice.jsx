@@ -301,7 +301,7 @@ const SoldInvoice = () => {
     }
   };
 console.log("this is the type",dataReceived?.type);
-const totalAccessoriesPrice = dataReceived.accessories.reduce(
+const totalAccessoriesPrice = dataReceived?.accessories?.reduce(
   (total, item) => total + Number(item.price || 0) * Number(item.quantity || 1),
   0
 );
