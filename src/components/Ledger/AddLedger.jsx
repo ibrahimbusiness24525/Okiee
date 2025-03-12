@@ -232,15 +232,22 @@ const AddLedger = () => {
           >
             Opening Cash
           </button>
-          <Card className="card-event">
+          <Card className="card-event" 
+          style={{
+              borderRadius: "12px", 
+              margin: "auto", 
+              background: "linear-gradient(135deg, #ffffff, #f3f4f6)",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+          }}
+          >
             <Card.Body className="border-bottom">
-              <h5 className="m-16" style={{ fontSize: 30, fontWeight: 'bold' }}>Opening Cash</h5>
+            <h5 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}>
+          Opening Cash
+        </h5>
+        <hr style={{ margin: "10px 0", borderTop: "2px solid #ddd" }} />
             </Card.Body>
             {
-            // ledgerData?.openingCash.length === 0 ? (
-            //   <p>No records found</p>
-            // ) : (
-              // records.openingCash.map((record, index) => (
+    
                 <Card.Body className="border-bottom">
                   <div className="row d-flex align-items-center">
                     <div className="col">
@@ -248,8 +255,6 @@ const AddLedger = () => {
                     </div>
                   </div>
                 </Card.Body>
-              // ))
-            // )
             }
           </Card>
         </Col>
@@ -290,9 +295,19 @@ const AddLedger = () => {
           >
             Cash Paid
           </button>
-          <Card className="card-event">
+          <Card className="card-event"
+          style={{
+            borderRadius: "12px", 
+            margin: "auto", 
+            background: "linear-gradient(135deg, #ffffff, #f3f4f6)",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+        }}
+          >
             <Card.Body className="border-bottom">
-              <h5 className="m-16" style={{ fontSize: 30, fontWeight: 'bold' }}>Today Cash Paid</h5>
+            <h5 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}>
+          Today Cash Paid
+        </h5>
+        <hr style={{ margin: "10px 0", borderTop: "2px solid #ddd" }} />
             </Card.Body>
             {ledgerData?.cashPaidDetails?.length === 0 ? (
               <p>No records found</p>
@@ -331,9 +346,19 @@ const AddLedger = () => {
           >
             Cash Received
           </button>
-          <Card className="card-event">
+          <Card className="card-event"
+          style={{
+            borderRadius: "12px", 
+            margin: "auto", 
+            background: "linear-gradient(135deg, #ffffff, #f3f4f6)",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+        }}
+          >
             <Card.Body className="border-bottom">
-              <h5 className="m-16" style={{ fontSize: 30, fontWeight: 'bold' }}>Today Cash Received</h5>
+            <h5 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}>
+         Today Cash Received
+        </h5>
+        <hr style={{ margin: "10px 0", borderTop: "2px solid #ddd" }} />
             </Card.Body>
             {ledgerData?.cashReceivedDetails?.length === 0 ? (
               <p>No records found</p>
@@ -367,14 +392,25 @@ const AddLedger = () => {
               fontSize: '16px',
               minWidth: '200px',
               maxWidth: '300px',
+              marginTop:"22px",
               boxSizing: 'border-box',
             }}
           >
             Today Expense
           </button>
-          <Card className="card-event">
+          <Card className="card-event"
+          style={{
+            borderRadius: "12px", 
+            margin: "auto", 
+            background: "linear-gradient(135deg, #ffffff, #f3f4f6)",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+        }}
+          >
             <Card.Body className="border-bottom">
-              <h5 className="m-16" style={{ fontSize: 30, fontWeight: 'bold' }}>Today Expense</h5>
+            <h5 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}>
+          Today Expense
+        </h5>
+        <hr style={{ margin: "10px 0", borderTop: "2px solid #ddd" }} />
             </Card.Body>
             {ledgerData?.expenseDetails?.length === 0 ? (
               <p>No records found</p>
@@ -455,9 +491,19 @@ const AddLedger = () => {
           >
             Closing Cash
           </button> */}
-          <Card className="card-event">
+          <Card className="card-event"
+          style={{
+            borderRadius: "12px", 
+            margin: "auto", 
+            background: "linear-gradient(135deg, #ffffff, #f3f4f6)", // Softer gradient
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+        }}
+          >
             <Card.Body className="border-bottom">
-              <h5 className="m-16" style={{ fontSize: 30, fontWeight: 'bold' }}>Closing Cash</h5>
+            <h5 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}>
+          Closing Cash
+        </h5>
+        <hr style={{ margin: "10px 0", borderTop: "2px solid #ddd" }} />
             </Card.Body>
             {
             // records.closingCash.length === 0 ? (

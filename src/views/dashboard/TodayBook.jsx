@@ -4,6 +4,8 @@ import Table from "components/Table/Table";
 import { dateFormatter } from "utils/dateFormatter";
 import { StyledHeading } from "components/StyledHeading/StyledHeading";
 import { Button } from "@mui/material";
+import { Card } from "react-bootstrap";
+import { BarChart } from '@mui/x-charts/BarChart';
 
 const TodayBook = () => {
 const[todayBookData,setTodayBookData] = useState([]);
@@ -21,6 +23,18 @@ const[todayBookData,setTodayBookData] = useState([]);
   },[]); 
 
   console.log("Today Book Data",todayBookData);
+  const totalPurchasePrice = todayBookData?.purchasedSinglePhone?.reduce(
+    (acc, phone) => acc + (phone.price?.purchasePrice || phone.purchasePrice || 0), 
+    0
+  );
+  const totalInvoices = todayBookData?.soldSinglePhone?.reduce(
+    (acc, phone) => acc + (phone.totalInvoice  || 0), 
+    0
+  );
+  
+  console.log("Total Purchase Price:", totalPurchasePrice);
+  
+  console.log("Total invoices:", totalInvoices);
   
   
   return (
@@ -28,6 +42,66 @@ const[todayBookData,setTodayBookData] = useState([]);
             <h1 style={{ fontSize: "24px", marginBottom:"33px",fontWeight: "600", color: "#333", marginBottom: "16px" }}>
                Today Book
             </h1>
+            <div style={{display:"flex", alignItems:"center",justifyContent:"space-between"}}>
+            <Card 
+              className="text-center shadow-lg p-3" 
+              style={{
+                borderRadius: "12px",
+                width: "350px",
+                margin: "auto",
+                background: "linear-gradient(135deg, #667eea, #764ba2)", // Cool gradient
+                boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+                color: "white"
+              }}
+            >
+              <Card.Body style={{display:"flex", flexDirection:"column"}}>
+                <h5 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "8px" }}>
+                  Total Purchase (Today)
+                </h5>
+                <hr style={{ borderTop: "2px solid rgba(255, 255, 255, 0.6)", margin: "10px 0" }} />
+                <span style={{ fontSize: "28px", fontWeight: "700", display: "block" }}>
+                  {totalPurchasePrice?.toLocaleString() || "0.00"} PKR 
+                  
+                </span>
+              </Card.Body>
+            </Card>
+
+            <Card 
+            className="text-center shadow-lg p-3" 
+             style={{
+               borderRadius: "12px",
+               width: "350px",
+               margin: "auto",
+               background: "linear-gradient(135deg, #ff7e5f, #feb47b)", // Warm gradient
+               boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+               color: "white"
+             }}
+           >
+                <Card.Body style={{display:"flex", flexDirection:"column"}}>
+                <h5 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "8px" }}>
+                  Total Sales (Today)
+                </h5>
+                <hr style={{ borderTop: "2px solid rgba(255, 255, 255, 0.6)", margin: "10px 0" }} />
+                <span style={{ fontSize: "28px", fontWeight: "700", display: "block" }}>
+                  {totalInvoices?.toLocaleString() || "0.00"} PKR
+                
+                </span>
+              </Card.Body>
+            </Card>
+            </div>
+            <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginTop: "145px" }}>
+  <BarChart
+    xAxis={[{ scaleType: "band", data: ["Loss", "Profit", "Average"] }]}
+    series={[{ data: [4, 3, 5] }, { data: [1, 6, 3] }, { data: [2, 5, 6] }]}
+    width={550}
+    height={300}
+  />
+  <p style={{ fontSize: "18px", fontWeight: "bold", color: "#28a745", marginTop: "10px" }}>
+    {/* 🔥  */}
+    10% Profit 
+    {/* 🔥 */}
+  </p>
+</div>
 
             <div style={{ marginTop: "50px" }}></div>
             <StyledHeading>Today Ledger</StyledHeading>
