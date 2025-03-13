@@ -12,8 +12,11 @@ const BarcodePrinter = ({ obj }) => {
         const imei2 = obj?.imei2 ? obj.imei2.toString() : null;
         const batteryHealth = obj?.batteryHealth? obj?.batteryHealth.toString() : null;
         const specifications = obj?.specifications? obj?.specifications.toString() : null;
-        const modelName = obj?.modelName || "Unknown Model"; // Fallback for modelName
-        const companyName = obj?.companyName || "Unknown Company Name"; // Fallback for modelName
+        const modelName = obj?.modelName || "Unknown Model"; // Fallback value
+const ramMemory = obj?.ramMemory || "Unknown RAM"; // Fallback value
+const phoneCondition = obj?.phoneCondition || "Unknown Condition"; // Fallback value
+const companyName = obj?.companyName || "Unknown Brand"; // Fallback value
+const color = obj?.color || "Unknown Color"; // Fallback value
         const shop = JSON.parse(localStorage.getItem("shop") || "{}"); // Ensure it's an object
         const { shopName } = shop;
 
@@ -100,9 +103,9 @@ p {
                     <div class="container">
                         <div class="company-name">${shopName}</div>
                         <div class="barcode-section">
-                          <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
+                        <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
+                      <p>${companyName || ""}  ${color || ""}  ${ramMemory || ""} ${phoneCondition || ""}</p>
                             ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
-                            
                             </div>
                             <div class="company-name">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
 
@@ -147,4 +150,4 @@ p {
 export default BarcodePrinter;
 
 
-{/* <p>${specifications || "No Mentioned"}</p> */}
+
