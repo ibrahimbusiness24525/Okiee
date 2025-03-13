@@ -23,7 +23,7 @@ const BarcodePrinter = ({ obj }) => {
             format: "CODE128",
             displayValue: true,
             width: 2,
-            height: 50,
+            height: 30,
         });
 
         let canvas2;
@@ -33,7 +33,7 @@ const BarcodePrinter = ({ obj }) => {
                 format: "CODE128",
                 displayValue: true,
                 width: 2,
-                height: 50,
+                height: 30,
             });
         }
 
@@ -45,43 +45,55 @@ const BarcodePrinter = ({ obj }) => {
                 <head>
                     <title>Print Barcode</title>
                     <style>
-                        body { 
-                            font-family: Arial, sans-serif; 
-                            display: flex; 
-                            align-items: center; 
-                            justify-content: center; 
-                            height: 20rem; 
-                            margin: 0;
-                        }
-                        .container {
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                        }
-                        .company-name {
-                            writing-mode: vertical-rl;
-                            transform: rotate(180deg);
-                            font-size: 14px;
-                            font-weight: bold;
-                            padding: 10px;
-                            text-align: center;
-                            white-space: nowrap;
-                        }
-                        .barcode-section {
-                            text-align: center;
-                            line-height: 1.2;
-                            padding-left: 10px;
-                        }
-                        .barcode-img { 
-                            width:90px
-                            height:80px;
-                            margin-bottom: 5px;
-                        }
-                        p {
-                            margin: 5px 0;
-                            font-size: 10px;
-                            font-weight: 800;
-                        }
+                       body { 
+    font-family: Arial, sans-serif; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 50.8mm;
+    height: 25.4mm;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 5rem;
+    border: 1px solid black; /* Optional: for visualization */
+}
+
+.company-name {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 8px; /* Adjusted for better fit */
+    font-weight: bold;
+    padding: 2px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.barcode-section {
+    text-align: center;
+    line-height: 1.0;
+    padding-right: 18px;
+    padding-bottom:3px
+}
+
+.barcode-img { 
+    width: 36mm;  /* Adjusted for scale */
+    height: 8mm; /* Adjusted for scale */
+    margin-top: 2px;
+}
+
+p {
+    margin: 2px 0;
+    font-size: 8px;
+    font-weight: 800;
+}
+
                     </style>
                 </head>
                 <body>
@@ -89,13 +101,11 @@ const BarcodePrinter = ({ obj }) => {
                         <div class="company-name">${shopName}</div>
                         <div class="barcode-section">
                           <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                            <p>${modelName}</p>
                             ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
-                            <p>${specifications || "No Mentioned"}</p>
                             
                             </div>
                             <div class="company-name">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
-                             
+
                         </div>
         
                     <script>
@@ -135,3 +145,6 @@ const BarcodePrinter = ({ obj }) => {
 };
 
 export default BarcodePrinter;
+
+
+{/* <p>${specifications || "No Mentioned"}</p> */}

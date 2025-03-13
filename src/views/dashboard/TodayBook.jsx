@@ -6,6 +6,23 @@ import { StyledHeading } from "components/StyledHeading/StyledHeading";
 import { Button } from "@mui/material";
 import { Card } from "react-bootstrap";
 import { BarChart } from '@mui/x-charts/BarChart';
+import { axisClasses } from '@mui/x-charts/ChartsAxis';
+import { dataset, valueFormatter } from '../../constant/weather';
+import { PieChart } from '@mui/x-charts/PieChart';
+const chartSetting = {
+  yAxis: [
+    {
+      label: 'rainfall (mm)',
+    },
+  ],
+  width: 500,
+  height: 300,
+  sx: {
+    [`.${axisClasses.left} .${axisClasses.label}`]: {
+      transform: 'translate(-20px, 0)',
+    },
+  },
+};
 
 const TodayBook = () => {
 const[todayBookData,setTodayBookData] = useState([]);
@@ -89,19 +106,37 @@ const[todayBookData,setTodayBookData] = useState([]);
               </Card.Body>
             </Card>
             </div>
-            <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginTop: "145px" }}>
-  <BarChart
-    xAxis={[{ scaleType: "band", data: ["Loss", "Profit", "Average"] }]}
-    series={[{ data: [4, 3, 5] }, { data: [1, 6, 3] }, { data: [2, 5, 6] }]}
-    width={550}
-    height={300}
+            <div
+  style={{
+    width: "80%", // Adjust width
+    maxWidth: "750px", // Prevents it from becoming too large
+    backgroundColor: "#fff", // Card background
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", // Soft shadow effect
+    borderRadius: "12px", // Rounded corners
+    padding: "20px", // Padding inside card
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    margin: "145px auto", // Center it horizontally
+  }}
+>
+  <h3 style={{ marginBottom: "10px", color: "#333" }}>Today's Sales & Purchases</h3>
+  <PieChart
+    series={[
+      {
+        data: [
+          { id: 0, value: 10, label: "Today Single Purchase" },
+          { id: 1, value: 15, label: "Today Bulk Purchase" },
+          { id: 2, value: 20, label: "Today Single Sale" },
+          { id: 3, value: 20, label: "Today Bulk Sale" },
+        ],
+      },
+    ]}
+    width={700}
+    height={250}
   />
-  <p style={{ fontSize: "18px", fontWeight: "bold", color: "#28a745", marginTop: "10px" }}>
-    {/* 🔥  */}
-    10% Profit 
-    {/* 🔥 */}
-  </p>
 </div>
+
 
             <div style={{ marginTop: "50px" }}></div>
             <StyledHeading>Today Ledger</StyledHeading>

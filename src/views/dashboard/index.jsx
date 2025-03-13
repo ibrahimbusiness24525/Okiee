@@ -167,11 +167,11 @@ const DashDefault = () => {
             <Col  xl={6} xxl={4} style={{marginBottom:25}}> 
               <Card >
                 <Card.Body>
-                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>User</h6>
+                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Parties</h6>
                   <div className="row d-flex align-items-center">
                     <div className="col-9">
                       <h3 className="f-w-300 d-flex align-items-center m-b-0">
-                        <i className={`feather  f-30 m-r-20`} />30
+                        <i className={`feather  f-30 m-r-20`} />6
                       </h3>
                     </div>
                     {/* <div className="col-3 text-end">
