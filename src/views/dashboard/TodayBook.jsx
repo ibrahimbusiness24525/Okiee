@@ -40,10 +40,16 @@ const[todayBookData,setTodayBookData] = useState([]);
   },[]); 
 
   console.log("Today Book Data",todayBookData);
-  const totalPurchasePrice = todayBookData?.purchasedSinglePhone?.reduce(
-    (acc, phone) => acc + (phone.price?.purchasePrice || phone.purchasePrice || 0), 
+  const totalPurchasePrice = 
+  (todayBookData?.purchasedSinglePhone?.reduce(
+    (acc, phone) => acc + (Number(phone.price?.purchasePrice) || Number(phone.purchasePrice) || 0), 
     0
-  );
+  ) || 0) + 
+  (todayBookData?.purchaseBulkPhone?.reduce(
+    (price, phone) => price + (Number(phone.prices?.buyingPrice) || 0),
+    0
+  ) || 0);
+
   const totalInvoices = todayBookData?.soldSinglePhone?.reduce(
     (acc, phone) => acc + (phone.totalInvoice  || 0), 
     0

@@ -247,7 +247,7 @@ const handleScan = (value) => {
                             }
                         ]}
                         extraColumns={[
-                          (obj) => <BarcodePrinter obj={obj}/>
+                          (obj) => <BarcodePrinter type={"single"} obj={obj}/>
                       ]}
                     />
                     </div>
@@ -266,7 +266,7 @@ const handleScan = (value) => {
                             "No of quantity",
                             "Date of Purchasing",
                     
-                            // "Actions",
+                            "Actions",
                         ]}
                         customBlocks={[
                            
@@ -277,28 +277,9 @@ const handleScan = (value) => {
                                 }
                             }
                         ]}
-                      //   extraColumns={[
-                      //     () => {
-                      //         return (
-                      //             <button
-                      //                 style={{
-                      //                     background: "#007bff",
-                      //                     color: "white",
-                      //                     border: "none",
-                      //                     padding: "8px 12px",
-                      //                     borderRadius: "5px",
-                      //                     cursor: "pointer",
-                      //                     display: "flex",
-                      //                     alignItems: "center",
-                      //                     gap: "5px",
-                      //                 }}
-                      //                 onClick={() => console.log("Print Barcode")}
-                      //             >
-                      //                 Print Barcode
-                      //             </button>
-                      //         );
-                      //     },
-                      // ]}
+                        extraColumns={[
+                          (obj) => <BarcodePrinter type='bulk' obj={obj}/>
+                      ]}
                       
                     />
  

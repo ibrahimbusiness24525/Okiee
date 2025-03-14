@@ -179,7 +179,7 @@ const handleScan = (value) => {
                             }
                         ]}
                         extraColumns={[
-                          (obj) => <BarcodePrinter obj={obj}/>
+                          (obj) => <BarcodePrinter type='bulk' obj={obj}/>
                       ]}
                     />
         </div>
