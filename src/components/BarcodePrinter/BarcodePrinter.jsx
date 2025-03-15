@@ -1,14 +1,13 @@
 import JsBarcode from "jsbarcode";
 import { useRef, useState } from "react";
 import { Button, ListGroup, Modal,Form } from "react-bootstrap";
-import List from '../List/List'
+
 const BarcodePrinter = ({ obj,type}) => {
     const barcodeRef = useRef(null);
     const [selectedImeis, setSelectedImeis] = useState([]);
     const[modal,setModal] = useState(false)
     const printBarcode = () => {
         if (!obj) return;
-        // Determine which IMEI(s) to print
         const imei1 = obj?.imei1 ? obj.imei1.toString() : null;
         const imei2 = obj?.imei2 ? obj.imei2.toString() : null;
         const batteryHealth = obj?.batteryHealth? obj?.batteryHealth.toString() : null;
@@ -21,7 +20,6 @@ const BarcodePrinter = ({ obj,type}) => {
         const shop = JSON.parse(localStorage.getItem("shop") || "{}"); // Ensure it's an object
         const { shopName } = shop;
 
-        // Create barcodes for available IMEIs
         const canvas1 = document.createElement("canvas");
         JsBarcode(canvas1, imei1 || "N/A", {
             format: "CODE128",
@@ -50,69 +48,67 @@ const BarcodePrinter = ({ obj,type}) => {
                     <title>Print Barcode</title>
                     <style>
                        body { 
-    font-family: Arial, sans-serif; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    width: 50.8mm;
-    height: 25.4mm;
-    margin: 0;
-}
+                            font-family: Arial, sans-serif; 
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            width: 50.8mm;
+                            height: 25.4mm;
+                            margin: 0;
+                        }
 
-.container {
-    display: flex;
-    
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 5rem;
-    border: 1px solid black; /* Optional: for visualization */
-}
+                        .container {
+                            display: flex;
 
-.company-name {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-size: 8px; /* Adjusted for better fit */
-    font-weight: bold;
-    padding: 2px;
-    text-align: center;
-    white-space: nowrap;
-}
+                            align-items: center;
+                            justify-content: center;
+                            width: 100%;
+                            height: 5rem;
+                            border: 1px solid black; /* Optional: for visualization */
+                        }
 
-.barcode-section {
-    text-align: center;
-    line-height: 1.0;
-    padding-right: 18px;
-    padding-bottom:3px
-}
+                        .company-name {
+                            writing-mode: vertical-rl;
+                            transform: rotate(180deg);
+                            font-size: 8px; /* Adjusted for better fit */
+                            font-weight: bold;
+                            padding: 2px;
+                            text-align: center;
+                            white-space: nowrap;
+                        }
 
-.barcode-img { 
-    width: 36mm;  /* Adjusted for scale */
-    height: 8mm; /* Adjusted for scale */
-    margin-top: 2px;
-}
+                        .barcode-section {
+                            text-align: center;
+                            line-height: 1.0;
+                            padding-right: 18px;
+                            padding-bottom:3px
+                        }
 
-p {
-    margin: 2px 0;
-    font-size: 8px;
-    font-weight: 800;
-}
+                        .barcode-img { 
+                            width: 36mm;  /* Adjusted for scale */
+                            height: 8mm; /* Adjusted for scale */
+                            margin-top: 2px;
+                        }
+
+                        p {
+                            margin: 2px 0;
+                            font-size: 8px;
+                            font-weight: 800;
+                        }
 
                     </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="company-name">${shopName}</div>
-                        <div class="barcode-section">
-                        <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                      <p>${companyName || ""}  ${color || ""}  ${ramMemory || ""} ${phoneCondition || ""}</p>
-                            ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
-                            </div>
-                            <div class="company-name">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
-
-                        </div>
-        
-                    <script>
+                        </head>
+                            <body>
+                                <div class="container">
+                                    <div class="company-name">${shopName}</div>
+                                     <div class="barcode-section">
+                                        <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
+                                            <p>${companyName || ""}  ${color || ""}  ${ramMemory || ""} ${phoneCondition || ""}</p>
+                                                    ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
+                                            </div>
+                                            <div class="company-name">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
+                                    </div>
+                        <script>
                         window.onload = function() {
                             window.print();
                             setTimeout(() => window.close(), 500);
@@ -129,30 +125,149 @@ p {
     const printBulkPhoneBarcode = () =>{
         setModal(true)
     }
-
-
-    const imeiList = obj?.ramSimDetails
-    ?.flatMap(item => item.imeiNumbers?.flatMap(num => [num.imei1, num.imei2]) || [])
-    .filter(Boolean) || []; 
-
-    // const imeiList = obj?.ramSimDetails?.map((item) => ({
-    //     imeis: item.imeiNumbers?.flatMap(num => [num.imei1, num.imei2]).filter(Boolean) || [],
-    //     modelName: obj?.modelName || "N/A",
-    //     partyName: obj?.partyName || "N/A",
-    //     prices: obj?.prices || {},
-    // })) || [];
-
+    const imeiList = obj?.ramSimDetails?.map(item => {
+        return item.imeiNumbers?.map(num => ({
+            imei1: num.imei1 || null,
+            imei2: num.imei2 || null, // Include IMEI2 only if present
+            modelName: obj?.modelName || "N/A",
+            batteryHealth: obj?.batteryHealth || "N/A",
+            partyName: obj?.partyName || "N/A",
+            prices: obj?.prices || {},
+            simType: num.imei2 ? "Dual SIM" : "Single SIM", // Identify Single or Dual SIM
+        }));
+    }).flat() || []; // Flatten the array to remove nesting
+    
+    
 console.log("Extracted IMEIs:", imeiList);
 console.log("This is the object:", obj);
 const handleSelectImei = (imei) => {
-    setSelectedImeis((prevSelected) =>
-        prevSelected.includes(imei)
-            ? prevSelected.filter((item) => item !== imei) // Remove if already selected
-            : [...prevSelected, imei] // Add if not selected
-    );
+    setSelectedImeis((prevSelected) => {
+        const isAlreadySelected = prevSelected.some(
+            (item) => item.imei1 === imei.imei1 && item.imei2 === imei.imei2
+        );
+
+        return isAlreadySelected
+            ? prevSelected.filter((item) => item.imei1 !== imei.imei1 || item.imei2 !== imei.imei2) // Remove selected IMEI pair
+            : [...prevSelected, imei]; // Add new IMEI pair
+    });
 };
-const printBulkBarcode = (imei) =>{
-   
+
+// const printBulkBarcode = (data) =>{
+//     console.log("this is the data", data);
+    
+//    const imei = data.imei1 ? data.imei1.toString() : null;
+//     const imei2 = data.imei2 ? data.imei2.toString() : null;
+//     const modelName = data.modelName || "Unknown Model"; // Fallback value
+//     const batteryHealth = data?.batteryHealth; // Fallback value
+//     const partyName = data.partyName || "Unknown Party Name"; // Fallback value
+//     // Create barcodes for available IMEIs
+//     const canvas1 = document.createElement("canvas");
+//     JsBarcode(canvas1, imei || "N/A", {
+//         format: "CODE128",
+//         displayValue: true,
+//         width: 2,
+//         height: 30,
+//     });
+
+//     let canvas2;
+//     if (imei2) {
+//         canvas2 = document.createElement("canvas");
+//         JsBarcode(canvas2, imei2, {
+//             format: "CODE128",
+//             displayValue: true,
+//             width: 2,
+//             height: 30,
+//         });
+//     }
+
+//     // Open a new print window
+//     const printWindow = window.open("", "_blank");
+//     if (printWindow) {
+//         printWindow.document.write(`
+//             <html>
+//             <head>
+//                 <title>Print Barcode</title>
+//                 <style>
+//                    body { 
+//                     font-family: Arial, sans-serif; 
+//                     display: flex; 
+//                     align-items: center; 
+//                     justify-content: center; 
+//                     width: 50.8mm;
+//                     height: 25.4mm;
+//                     margin: 0;
+//                     }
+
+//                     .container {
+//                     display: flex;
+
+//                     align-items: center;
+//                     justify-content: center;
+//                     width: 100%;
+//                     height: 5rem;
+//                     border: 1px solid black; /* Optional: for visualization */
+//                     }
+
+//                     .company-name {
+//                     writing-mode: vertical-rl;
+//                     transform: rotate(180deg);
+//                     font-size: 8px; /* Adjusted for better fit */
+//                     font-weight: bold;
+//                     padding: 2px;
+//                     text-align: center;
+//                     white-space: nowrap;
+//                     }
+
+//                     .barcode-section {
+//                     text-align: center;
+//                     line-height: 1.0;
+//                     padding-right: 18px;
+//                     padding-bottom:3px
+//                     }
+
+//                     .barcode-img { 
+//                     width: 36mm;  /* Adjusted for scale */
+//                     height: 8mm; /* Adjusted for scale */
+//                     margin-top: 2px;
+//                     }
+
+//                     p {
+//                     margin: 2px 0;
+//                     font-size: 8px;
+//                     font-weight: 800;
+//                     }
+
+//                 </style>
+//             </head>
+//             <body>
+//                 <div class="container">
+//                     <div class="barcode-section">
+//                      <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
+//                       <p>${modelName || ""}   ${ "New"}</p>
+//                             ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
+//                             </div>
+
+//                         </div>
+//                     </div>
+//                 <script>
+//                     window.onload = function() {
+//                         window.print();
+//                         setTimeout(() => window.close(), 500);
+//                     };
+//                 </script>
+//             </body>
+//             </html>
+//         `);
+//         printWindow.document.close();
+//     }
+// }
+const printBulkBarcode = (data) => {
+    console.log("this is the data", data);
+
+    const imei = data.imei1 ? data.imei1.toString() : null;
+    const imei2 = data.imei2 ? data.imei2.toString() : null;
+    const modelName = data.modelName || "Unknown Model";
+
     // Create barcodes for available IMEIs
     const canvas1 = document.createElement("canvas");
     JsBarcode(canvas1, imei || "N/A", {
@@ -163,9 +278,9 @@ const printBulkBarcode = (imei) =>{
     });
 
     let canvas2;
-    if (imei) {
+    if (imei2) {
         canvas2 = document.createElement("canvas");
-        JsBarcode(canvas2, imei, {
+        JsBarcode(canvas2, imei2, {
             format: "CODE128",
             displayValue: true,
             width: 2,
@@ -173,90 +288,97 @@ const printBulkBarcode = (imei) =>{
         });
     }
 
-    // Open a new print window
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>Print Barcode</title>
-                <style>
-                   body { 
-font-family: Arial, sans-serif; 
-display: flex; 
-align-items: center; 
-justify-content: center; 
-width: 50.8mm;
-height: 25.4mm;
-margin: 0;
-}
+    // Create a hidden iframe for printing
+    let iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "none";
+    document.body.appendChild(iframe);
 
-.container {
-display: flex;
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+        <html>
+        <head>
+            <title>Print Barcode</title>
+            <style>
+               body { 
+                font-family: Arial, sans-serif; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                width: 50.8mm;
+                height: 25.4mm;
+                margin: 0;
+                }
 
-align-items: center;
-justify-content: center;
-width: 100%;
-height: 5rem;
-border: 1px solid black; /* Optional: for visualization */
-}
+                .container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 5rem;
+                border: 1px solid black;
+                }
 
-.company-name {
-writing-mode: vertical-rl;
-transform: rotate(180deg);
-font-size: 8px; /* Adjusted for better fit */
-font-weight: bold;
-padding: 2px;
-text-align: center;
-white-space: nowrap;
-}
+                .barcode-section {
+                text-align: center;
+                line-height: 1.0;
+                padding-right: 18px;
+                padding-bottom:3px
+                }
 
-.barcode-section {
-text-align: center;
-line-height: 1.0;
-padding-right: 18px;
-padding-bottom:3px
-}
+                .barcode-img { 
+                width: 36mm;
+                height: 8mm;
+                margin-top: 2px;
+                }
 
-.barcode-img { 
-width: 36mm;  /* Adjusted for scale */
-height: 8mm; /* Adjusted for scale */
-margin-top: 2px;
-}
-
-p {
-margin: 2px 0;
-font-size: 8px;
-font-weight: 800;
-}
-
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="barcode-section">
+                p {
+                margin: 2px 0;
+                font-size: 8px;
+                font-weight: 800;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="barcode-section">
                     <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                        </div>
-                    </div>
-    
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        setTimeout(() => window.close(), 500);
-                    };
-                </script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-    }
-}
+                    <p>${modelName} New</p>
+                    ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
+                </div>
+            </div>
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(() => {
+                        window.parent.document.body.removeChild(window.frameElement);
+                    }, 500);
+                };
+            </script>
+        </body>
+        </html>
+    `);
+    doc.close();
+};
 
-const handlePrintSelectedImeis = () => {
-    selectedImeis.forEach((imei, index) => {
-        console.log(`Printing IMEI ${index + 1}: ${imei}`);
-        printBulkBarcode(imei);
-    });
+
+const handlePrintSelectedImeis = async () => {
+    if (selectedImeis.length === 0) {
+        alert("No IMEIs selected for printing.");
+        return;
+    }
+
+    for (let i = 0; i < selectedImeis.length; i++) {
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                printBulkBarcode(selectedImeis[i]);
+                resolve();
+            }, 1000); 
+        });
+    }
 };
     return (
         <div>
@@ -267,24 +389,27 @@ const handlePrintSelectedImeis = () => {
                     <Modal.Body>
                         
                     <ListGroup>
-                    {imeiList.length > 0 ? (
-                        imeiList.map((imei, index) => (
-                            <ListGroup.Item key={index} className="d-flex align-items-center">
-                                <Form.Check
-                                    type="checkbox"
-                                    checked={selectedImeis.includes(imei)}
-                                    onChange={() => handleSelectImei(imei)}
-                                />
-                                <span className="ms-2">{imei}</span>
-                            </ListGroup.Item>
-                        ))
-                    ) : (
-                        <p>No IMEIs available</p>
-                    )}
-                </ListGroup>
+  {imeiList.length > 0 ? (
+    imeiList.map((item, index) => (
+      <ListGroup.Item key={index} className="d-flex align-items-center">
+        <Form.Check
+          type="checkbox"
+          checked={selectedImeis.some(i => i.imei1 === item.imei1 && i.imei2 === item.imei2)}
+          onChange={() => handleSelectImei(item)}
+        />
+        <span className="ms-2">Imei1: {item.imei1}</span>
+        {item.imei2 && <span className="ms-2">Imei2: {item.imei2}</span>}
+        <span className="ms-2">{item.modelName}</span>
+        <span className="ms-2">{item.partyName}</span>
+      </ListGroup.Item>
+    ))
+  ) : (
+    <p>No IMEIs available</p>
+  )}
+</ListGroup>
 
-                <h6 className="mt-3">Selected IMEIs:</h6>
-                {selectedImeis.length > 0 ? (
+                {/* <h6 className="mt-3">Selected IMEIs:</h6> */}
+                {/* {selectedImeis.length > 0 ? (
                     <ListGroup>
                         {selectedImeis.map((imei, index) => (
                             <ListGroup.Item key={index}>{imei}</ListGroup.Item>
@@ -292,7 +417,7 @@ const handlePrintSelectedImeis = () => {
                     </ListGroup>
                 ) : (
                     <p>No IMEIs selected</p>
-                )}
+                )} */}
                     </Modal.Body>
                     <Modal.Footer>
                 <Button variant="secondary"onClick={()=> setModal(false)}>
