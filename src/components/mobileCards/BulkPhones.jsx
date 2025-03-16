@@ -375,16 +375,16 @@ useScanDetection({
 >
   Change Record Design
 </button>
-<h3 style={{marginTop:"1rem",marginBottom:"1rem"}}>New Single Phones</h3>
+{/* <h3 style={{marginTop:"1rem",marginBottom:"1rem"}}>New Single Phones</h3>
       {list? 
-    <>
+    <> */}
       {/* <List items={filteredMobiles}
       displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
       descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
       onRowClick={"handleClick"}
       /> */}
-      <Table
-      // routes={["/purchase/purchaseRecords"]}
+      {/* <Table */}
+      {/* // routes={["/purchase/purchaseRecords"]}
            array={filteredMobiles}
           //  search={"imei1"}
            keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
@@ -396,9 +396,9 @@ useScanDetection({
                "Warranty",
        
                "Actions",
-           ]}
+           ]} */}
            
-           extraColumns={[
+           {/* extraColumns={[
              (obj) =>  
              <Button
              onClick={() => handleSoldClick(obj,"single")}
@@ -415,14 +415,14 @@ useScanDetection({
              Sold
            </Button>
          ]}
-       />
+       /> */}
     
-    </> :<>
-    <Row xs={1} md={2} lg={3} className="g-4">
+    {/* </> :<> */}
+    {/* <Row xs={1} md={2} lg={3} className="g-4">
         {filteredMobiles.length > 0 ? (
           filteredMobiles.map((mobile) => (
             <Col key={mobile._id}>
-              <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+              <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}> */}
                 {/* <FaEdit
                   onClick={() => handleEdit(mobile)}
                   style={{
@@ -434,7 +434,7 @@ useScanDetection({
                     fontSize: '1.2rem',
                   }}
                 /> */}
-                <FaTrash
+                {/* <FaTrash
                   onClick={() => confirmDelete(mobile._id)}
                   style={{
                     position: 'absolute',
@@ -444,7 +444,7 @@ useScanDetection({
                     cursor: 'pointer',
                     fontSize: '1.2rem',
                   }}
-                />
+                /> */}
                   {/* <Card.Img
                                  variant="top"
                                  src={`https://media.johnlewiscontent.com/i/JohnLewis/mobiles-nav-card-apple-v3-130924?fmt=auto`}
@@ -458,7 +458,7 @@ useScanDetection({
                                  style={{ height: '400px', objectFit: 'cover' }}
                                />} */}
 
-                <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
+                {/* <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
                   <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
                     {mobile.companyName} {mobile.modelSpecifications}
                   </Card.Title>
@@ -494,7 +494,7 @@ useScanDetection({
                       {mobile.finalPrice || 'Not Sold'}
                     </div>
                   </Card.Text>
-                  <div style={{ textAlign: 'right', width: '100%' }}>
+                  <div style={{ textAlign: 'right', width: '100%' }}> */}
                   {/* <Button
                      onClick={() => handleDispatchClick(mobile)}
                    style={{
@@ -510,7 +510,7 @@ useScanDetection({
                   >
                       Dispatch
                 </Button> */}
-                    <Button
+                    {/* <Button
                       onClick={() => handleSoldClick(mobile,"single")}
                       style={{
                         backgroundColor: '#28a745',
@@ -540,20 +540,20 @@ useScanDetection({
         )}
       </Row>
     </> 
-    }
+    } */}
       
-      {/* <h3 style={{marginTop:"5rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
+      <h3 style={{marginTop:"5rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
       {list?
-    <> */}
+    <>
     {/* <List items={bulkMobile}
       displayKeys={["modelName","companyName", "partyName","status"]}
       descriptions={["Model Name","Company Name","Party Price","Status",]}
       onRowClick={"handleClick"}
     /> */}
-      {/* <Table
-      routes={["/purchase/purchaseRecords"]}
+      <Table
+      // routes={["/purchase/purchaseRecords"]}
            array={bulkMobile}
-           search={"imei1"}
+          //  search={"imei1"}
            keysToDisplay={["modelName", "companyName","partyName", "status", ]}
            label={[
                "Model Name",
@@ -582,14 +582,14 @@ useScanDetection({
          ]}
        />
 
-    </>  */}
-    {/* : */}
-    {/* <> */}
-    {/* <Row xs={1} md={2} lg={3} className="g-4">
+    </> 
+    :
+    <>
+    <Row xs={1} md={2} lg={3} className="g-4">
       {bulkMobile.length > 0 ? (
         bulkMobile.map((mobile) => (
           <Col key={mobile._id}>
-            <Card className="h-100 shadow border-0" style={{ borderRadius: '15px', overflow: 'hidden', position: 'relative' }}> */}
+            <Card className="h-100 shadow border-0" style={{ borderRadius: '15px', overflow: 'hidden', position: 'relative' }}>
               {/* <FaEdit
                 onClick={() => handleEdit(mobile)}
                 style={{
@@ -601,7 +601,7 @@ useScanDetection({
                   fontSize: '1.5rem',
                 }}
               /> */}
-              {/* <FaTrash
+              <FaTrash
                 onClick={() => handleBulkDelete(mobile._id)}
                 style={{
                   position: 'absolute',
@@ -611,10 +611,10 @@ useScanDetection({
                   cursor: 'pointer',
                   fontSize: '1.5rem',
                 }}
-              /> */}
+              />
 
               {/* Image handling */}
-              {/* {mobile?.images?.[0] ? (
+              {mobile?.images?.[0] ? (
                 <Card.Img
                   variant="top"
                   src={bulkMobileImage}
@@ -628,15 +628,15 @@ useScanDetection({
                   alt={bulkMobileImage}
                   style={{ height: '350px', objectFit: 'cover', borderRadius: '10px' }}
                 />
-              )} */}
+              )}
 
-              {/* <Card.Body style={{ padding: '1.5rem', display: 'flex',justifyContent:"left",alignItems:"start", flexDirection: 'column',width:"100%" }}>
+              <Card.Body style={{ padding: '1.5rem', display: 'flex',justifyContent:"left",alignItems:"start", flexDirection: 'column',width:"100%" }}>
                 <Card.Title style={{ fontSize: '1.4rem', fontWeight: '600', color: '#333' }}>
                   {mobile?.companyName || 'No Company Name'} {mobile?.modelName || 'No Model Name'}
-                </Card.Title> */}
+                </Card.Title>
 
                 {/* Bulk Mobile Details */}
-                {/* <Card.Text style={{ fontSize: '1rem', color: '#666', lineHeight: '1.6' }}>
+                <Card.Text style={{ fontSize: '1rem', color: '#666', lineHeight: '1.6' }}>
                   <div>
                     <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Party Name:</strong> {mobile?.partyName || 'Not Available'}
                   </div>
@@ -663,12 +663,12 @@ useScanDetection({
                        }}
                       >
                        View All Prices
-                      </Button> */}
+                      </Button>
 
-                  {/* </div> */}
+                  </div>
 
                   {/* RAM & SIM Options - Dropdowns */}
-                  {/* {mobile?.ramSimDetails?.length > 0 ? (
+                  {mobile?.ramSimDetails?.length > 0 ? (
                     <div>
                       <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>RAM and SIM Options:</strong>
                       {mobile?.ramSimDetails?.map((ramSim) => (
@@ -677,7 +677,7 @@ useScanDetection({
                           <div><strong>SIM Option:</strong> {ramSim?.simOption || 'Not Available'}</div>
                           <div className='' style={{display:"flex"}}>
                             <strong>Quantity</strong>
-                            <ul> */}
+                            <ul>
                               {/* {ramSim?.imeiNumbers?.length > 0 ? 
 
                               (
@@ -688,7 +688,7 @@ useScanDetection({
                               : (
                                 <li>No stock available</li>
                               )} */}
-                              {/* <p>{ramSim?.imeiNumbers?.length > 0 ? ` ${ramSim.imeiNumbers.length}` : "No stock available"}</p>
+                              <p>{ramSim?.imeiNumbers?.length > 0 ? ` ${ramSim.imeiNumbers.length}` : "No stock available"}</p>
                             </ul>
                           </div>
                         </div>
@@ -697,11 +697,11 @@ useScanDetection({
                   ) : (
                     <div>RAM and SIM Options: Not Available</div>
                   )}
-                </Card.Text> */}
+                </Card.Text>
 
                 {/* Action Buttons */}
-              {/* </Card.Body>
-                <div style={{ textAlign: 'right', width: '100%',padding: '1.5rem' }}> */}
+              </Card.Body>
+                <div style={{ textAlign: 'right', width: '100%',padding: '1.5rem' }}>
                   {/* <Button
                  onClick={() => handleDispatchClick(mobile)}
                style={{
@@ -717,7 +717,7 @@ useScanDetection({
               >
              Dispatch
              </Button> */}
-                    {/* <Button
+                    <Button
                       onClick={() => handleSoldClick(mobile,"bulk")}
                       style={{
                         backgroundColor: '#28a745',
@@ -743,10 +743,10 @@ useScanDetection({
             </Card.Body>
           </Card>
         </Col>
-      )} */}
+      )}
 
       {/* Modal for Prices */}
-      {/* <Modal show={showPrices} onHide={handleClosePrices}>
+      <Modal show={showPrices} onHide={handleClosePrices}>
         <Modal.Header closeButton>
           <Modal.Title>Prices for {selectedMobile?.companyName} {selectedMobile?.modelName}</Modal.Title>
         </Modal.Header>
@@ -766,10 +766,10 @@ useScanDetection({
           </Button>
         </Modal.Footer>
       </Modal>
-    </Row> */}
+    </Row>
     
-    {/* </>  */}
-    {/* } */}
+    </> 
+    }
       <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 
       {/* Delete Confirmation Modal */}

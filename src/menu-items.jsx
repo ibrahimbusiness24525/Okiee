@@ -52,6 +52,13 @@ const menuItems = {
         },
         {
           id: 'mobile',
+          title: 'Bulk Phones',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/bulkPhones'
+        },
+        {
+          id: 'mobile',
           title: 'Used Phones',
           type: 'item',
           icon: 'feather icon-server',
