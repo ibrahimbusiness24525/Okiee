@@ -1,33 +1,31 @@
 import JsBarcode from "jsbarcode";
 import { useRef, useState } from "react";
-import { Button, ListGroup, Modal,Form } from "react-bootstrap";
+import { Button, ListGroup, Modal, Form } from "react-bootstrap";
 import List from '../List/List'
-const BarcodePrinter = ({ obj,type}) => {
-    const barcodeRef = useRef(null);
+
+const BarcodePrinter = ({ obj, type }) => {
     const [selectedImeis, setSelectedImeis] = useState([]);
-    const[modal,setModal] = useState(false)
+    const [modal, setModal] = useState(false);
+
     const printBarcode = () => {
         if (!obj) return;
-        // Determine which IMEI(s) to print
         const imei1 = obj?.imei1 ? obj.imei1.toString() : null;
         const imei2 = obj?.imei2 ? obj.imei2.toString() : null;
-        const batteryHealth = obj?.batteryHealth? obj?.batteryHealth.toString() : null;
-        const specifications = obj?.specifications? obj?.specifications.toString() : null;
-        const modelName = obj?.modelName || "Unknown Model"; // Fallback value
-        const ramMemory = obj?.ramMemory || "Unknown RAM"; // Fallback value
-        const phoneCondition = obj?.phoneCondition || "Unknown Condition"; // Fallback value
-        const companyName = obj?.companyName || "Unknown Brand"; // Fallback value
-        const color = obj?.color || "Unknown Color"; // Fallback value
-        const shop = JSON.parse(localStorage.getItem("shop") || "{}"); // Ensure it's an object
+        const batteryHealth = obj?.batteryHealth ? obj?.batteryHealth.toString() : null;
+        const modelName = obj?.modelName || "Unknown Model";
+        const ramMemory = obj?.ramMemory || "Unknown RAM";
+        const phoneCondition = obj?.phoneCondition || "Unknown Condition";
+        const companyName = obj?.companyName || "Unknown Brand";
+        const color = obj?.color || "Unknown Color";
+        const shop = JSON.parse(localStorage.getItem("shop") || "{}");
         const { shopName } = shop;
 
-        // Create barcodes for available IMEIs
         const canvas1 = document.createElement("canvas");
         JsBarcode(canvas1, imei1 || "N/A", {
             format: "CODE128",
             displayValue: true,
             width: 2,
-            height: 30,
+            height: 50,
         });
 
         let canvas2;
@@ -37,11 +35,10 @@ const BarcodePrinter = ({ obj,type}) => {
                 format: "CODE128",
                 displayValue: true,
                 width: 2,
-                height: 30,
+                height: 50,
             });
         }
 
-        // Open a new print window
         const printWindow = window.open("", "_blank");
         if (printWindow) {
             printWindow.document.write(`
@@ -49,69 +46,88 @@ const BarcodePrinter = ({ obj,type}) => {
                 <head>
                     <title>Print Barcode</title>
                     <style>
-                       body { 
+                       @page { 
+    size: portrait; /* Keep portrait */
+    margin: 0;
+}
+
+body { 
     font-family: Arial, sans-serif; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    width: 50.8mm;
-    height: 25.4mm;
+    width: 70mm;  /* Increase width */
+    height: 40mm; /* Increase height */
     margin: 0;
 }
 
 .container {
     display: flex;
-    
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     width: 100%;
-    height: 5rem;
-    border: 1px solid black; /* Optional: for visualization */
+    height: 100%;
+    padding: 1mm; /* Slightly more padding */
 }
 
 .company-name {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 8px; /* Adjusted for better fit */
+    font-size: 40px;  /* Bigger text */
     font-weight: bold;
-    padding: 2px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.battery-health {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 100px;  /* Bigger text */
+    font-weight: bold;
+    text-align: left;
+    white-space: nowrap;
+        margin-right: 40mm;  /* Add margin to move it to the right */
+
+}
+
+.shop-name {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 12px;  /* Bigger text */
+    font-weight: bold;
     text-align: center;
     white-space: nowrap;
 }
 
 .barcode-section {
     text-align: center;
-    line-height: 1.0;
-    padding-right: 18px;
-    padding-bottom:3px
+    line-height: 1.2;
+    padding: 1mm;
 }
 
 .barcode-img { 
-    width: 36mm;  /* Adjusted for scale */
-    height: 8mm; /* Adjusted for scale */
-    margin-top: 2px;
+    width: 60mm;  /* Bigger barcode */
+    height: 10mm; 
 }
 
 p {
     margin: 2px 0;
-    font-size: 8px;
-    font-weight: 800;
+    font-size: 12px;  /* Bigger text */
+    font-weight: bold;
 }
 
                     </style>
                 </head>
                 <body>
                     <div class="container">
-                        <div class="company-name">${shopName}</div>
+                        <div class="shop-name">${shopName}</div>
                         <div class="barcode-section">
-                        <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                      <p>${companyName || ""}  ${color || ""}  ${ramMemory || ""} ${phoneCondition || ""}</p>
+                            <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
+                            <p>${companyName} ${color} ${ramMemory} ${phoneCondition}</p>
                             ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
-                            </div>
-                            <div class="company-name">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
-
                         </div>
-        
+                        <div class="battery-health">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
+                    </div>
                     <script>
                         window.onload = function() {
                             window.print();
@@ -123,187 +139,10 @@ p {
             `);
             printWindow.document.close();
         }
-        
     };
 
-    const printBulkPhoneBarcode = () =>{
-        setModal(true)
-    }
-
-
-    const imeiList = obj?.ramSimDetails
-    ?.flatMap(item => item.imeiNumbers?.flatMap(num => [num.imei1, num.imei2]) || [])
-    .filter(Boolean) || []; 
-
-    // const imeiList = obj?.ramSimDetails?.map((item) => ({
-    //     imeis: item.imeiNumbers?.flatMap(num => [num.imei1, num.imei2]).filter(Boolean) || [],
-    //     modelName: obj?.modelName || "N/A",
-    //     partyName: obj?.partyName || "N/A",
-    //     prices: obj?.prices || {},
-    // })) || [];
-
-console.log("Extracted IMEIs:", imeiList);
-console.log("This is the object:", obj);
-const handleSelectImei = (imei) => {
-    setSelectedImeis((prevSelected) =>
-        prevSelected.includes(imei)
-            ? prevSelected.filter((item) => item !== imei) // Remove if already selected
-            : [...prevSelected, imei] // Add if not selected
-    );
-};
-const printBulkBarcode = (imei) =>{
-   
-    // Create barcodes for available IMEIs
-    const canvas1 = document.createElement("canvas");
-    JsBarcode(canvas1, imei || "N/A", {
-        format: "CODE128",
-        displayValue: true,
-        width: 2,
-        height: 30,
-    });
-
-    let canvas2;
-    if (imei) {
-        canvas2 = document.createElement("canvas");
-        JsBarcode(canvas2, imei, {
-            format: "CODE128",
-            displayValue: true,
-            width: 2,
-            height: 30,
-        });
-    }
-
-    // Open a new print window
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>Print Barcode</title>
-                <style>
-                   body { 
-font-family: Arial, sans-serif; 
-display: flex; 
-align-items: center; 
-justify-content: center; 
-width: 50.8mm;
-height: 25.4mm;
-margin: 0;
-}
-
-.container {
-display: flex;
-
-align-items: center;
-justify-content: center;
-width: 100%;
-height: 5rem;
-border: 1px solid black; /* Optional: for visualization */
-}
-
-.company-name {
-writing-mode: vertical-rl;
-transform: rotate(180deg);
-font-size: 8px; /* Adjusted for better fit */
-font-weight: bold;
-padding: 2px;
-text-align: center;
-white-space: nowrap;
-}
-
-.barcode-section {
-text-align: center;
-line-height: 1.0;
-padding-right: 18px;
-padding-bottom:3px
-}
-
-.barcode-img { 
-width: 36mm;  /* Adjusted for scale */
-height: 8mm; /* Adjusted for scale */
-margin-top: 2px;
-}
-
-p {
-margin: 2px 0;
-font-size: 8px;
-font-weight: 800;
-}
-
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="barcode-section">
-                    <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                        </div>
-                    </div>
-    
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        setTimeout(() => window.close(), 500);
-                    };
-                </script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-    }
-}
-
-const handlePrintSelectedImeis = () => {
-    selectedImeis.forEach((imei, index) => {
-        console.log(`Printing IMEI ${index + 1}: ${imei}`);
-        printBulkBarcode(imei);
-    });
-};
     return (
         <div>
-              <Modal show={modal} >
-                    <Modal.Header>
-                      <Modal.Title>Imeis </Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        
-                    <ListGroup>
-                    {imeiList.length > 0 ? (
-                        imeiList.map((imei, index) => (
-                            <ListGroup.Item key={index} className="d-flex align-items-center">
-                                <Form.Check
-                                    type="checkbox"
-                                    checked={selectedImeis.includes(imei)}
-                                    onChange={() => handleSelectImei(imei)}
-                                />
-                                <span className="ms-2">{imei}</span>
-                            </ListGroup.Item>
-                        ))
-                    ) : (
-                        <p>No IMEIs available</p>
-                    )}
-                </ListGroup>
-
-                <h6 className="mt-3">Selected IMEIs:</h6>
-                {selectedImeis.length > 0 ? (
-                    <ListGroup>
-                        {selectedImeis.map((imei, index) => (
-                            <ListGroup.Item key={index}>{imei}</ListGroup.Item>
-                        ))}
-                    </ListGroup>
-                ) : (
-                    <p>No IMEIs selected</p>
-                )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                <Button variant="secondary"onClick={()=> setModal(false)}>
-                    Close
-                </Button>
-                <Button variant="primary" onClick={handlePrintSelectedImeis}>
-                    Print Selected IMEIs
-                </Button>
-            </Modal.Footer>
-                    
-                  </Modal>
             <button
                 style={{
                     background: "#007bff",
@@ -316,7 +155,7 @@ const handlePrintSelectedImeis = () => {
                     alignItems: "center",
                     gap: "5px",
                 }}
-                onClick={() => (type === "bulk" ? printBulkPhoneBarcode() : printBarcode())}
+                onClick={() => printBarcode()}
             >
                 Print Barcode
             </button>
@@ -325,6 +164,3 @@ const handlePrintSelectedImeis = () => {
 };
 
 export default BarcodePrinter;
-
-
-
