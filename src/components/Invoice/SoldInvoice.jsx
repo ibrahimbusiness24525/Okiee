@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { BASE_URL } from 'config/constant';
 import { api } from '../../../api/api';
-
+import { truncate } from '../../utils/truncate';
 const SoldInvoice = () => {
   const styles = {
     container: {
@@ -309,7 +309,7 @@ const totalAccessoriesPrice = dataReceived?.accessories?.reduce(
 const totalInvoice = Number(dataReceived.finalPrice || 0) + totalAccessoriesPrice;
 
 console.log("this is the total invoice",totalInvoice);
-console.log("These are the accessories",dataReceived?.accessories);
+console.log("These are the dataReceived",dataReceived.addedImeis);
 
 
   return (
@@ -346,7 +346,7 @@ console.log("These are the accessories",dataReceived?.accessories);
      {dataReceived?.prices?.buyingPrice ? 
        <>
           <div id="invoice" style={styles.container}>
-            <h1>Bulk Mobile Invoice</h1>
+            {/* <h1>Bulk Mobile Invoice</h1> */}
         <header style={styles.header}>
           <div>
             <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
@@ -406,14 +406,39 @@ console.log("These are the accessories",dataReceived?.accessories);
       <td style={styles.td}>{detail?.simOption ?? 'N/A'}</td>
 
       {/* IMEI Numbers */}
-      <td style={styles.td}>
-        {detail?.imeiNumbers?.length
+        {/* {detail?.imeiNumbers?.length
           ? detail.imeiNumbers.map((imei, i) => (
               <div key={i}>
-                {imei?.imei1} {imei?.imei2 && `/ ${imei.imei2}`}
-              </div>
+               { truncate(imei.imei1, 7)} {imei?.imei2 && `/ ${truncate(imei.imei2, 7)}`} */}
+                {/* {imei?.imei1} {imei?.imei2 && `/ ${imei.imei2}`} */}
+              {/* </div>
             ))
-          : 'N/A'}
+          : 'N/A'} */}
+      <td style={styles.td}>
+          { dataReceived?.addedImeis.length !== 0 ? 
+          <>
+            {
+                <div>
+                 Typed Imei
+                    {/* {truncate(dataReceived?.addedImeis[0], 7)} */}
+                </div>
+            }
+          </>
+
+          :
+          <>
+          {
+            detail?.imeiNumbers?.length ? (
+              <div>
+                  {truncate(detail.imeiNumbers[0].imei1, 7)}
+                   {detail.imeiNumbers[0]?.imei2 && ` / ${truncate(detail.imeiNumbers[0].imei2, 7)}`}
+                   {detail.imeiNumbers.length > 1 && " ..."}
+              </div>
+                  ) : (
+                "N/A"
+            )
+          }
+          </>}
       </td>
 
       {/* Final Price */}
