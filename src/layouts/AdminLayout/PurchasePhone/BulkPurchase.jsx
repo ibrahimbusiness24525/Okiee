@@ -162,7 +162,7 @@ return(
     <tr>
       <th>#</th>
       <th>IMEI 1</th>
-      {bulkData.simOption === "Dual SIM" && <th>IMEI 2</th>}
+      {bulkData?.ramSimDetails[0]?.simOption === "Dual SIM" && <th>IMEI 2</th>}
       <th>Color</th>
     </tr>
   </thead>
@@ -188,7 +188,7 @@ return(
             required
           />
         </td>
-        {bulkData.simOption === "Dual SIM" && (
+        {bulkData.ramSimDetails[0]?.simOption === "Dual SIM" && (
           <td>
             <Form.Control
               type="number"

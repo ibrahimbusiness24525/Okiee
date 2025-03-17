@@ -212,6 +212,7 @@ const UsedMobilesList = () => {
   
   console.log("all mobiles", mobiles);
   console.log("all filtered data is here ", filteredMobiles);
+
   return (
     <>
       {/* Search bar */}
@@ -231,10 +232,9 @@ const UsedMobilesList = () => {
   {/* Total Stock Amount */}
   <div>
     <h5 style={{fontSize: 30}}>
-      Total Stock 
-      {/* Total Stock Amount:  */}
+      Total Stock Amount : 
       <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {/* {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)} */}
+        {filteredMobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)}
       </span>
     </h5>
   </div>

@@ -20,7 +20,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose }) => {
     const [singlePurchase, setSinglePurchase] = useState({
       name: '', // Matches `name` from the backend
       warranty: '12 Months',
-      fatherName: '', // Matches `fatherName`
       companyName: '', // Matches `companyName`
       modelName: '', // Matches `modelName`
       batteryHealth: '', // Matches `modelName`

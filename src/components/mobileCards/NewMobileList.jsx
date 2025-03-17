@@ -340,9 +340,9 @@ useScanDetection({
    <div>
     <h5 style={{fontSize: 30}}>
       {/* Total Stock Amount:  */}
-      Total Stock
+      Total Stock Amount : 
       <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {/* {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)} */}
+        {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)}
       </span>
     </h5>
   </div>
