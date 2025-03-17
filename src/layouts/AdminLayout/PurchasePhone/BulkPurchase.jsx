@@ -279,8 +279,8 @@ return(
                   required
                 >
                   <option value="">Select SIM Option</option>
-                  <option value="single">Single SIM</option>
-                  <option value="dual">Dual SIM</option>
+                  <option value="Single SIM">Single SIM</option>
+                  <option value="Dual SIM">Dual SIM</option>
                 </Form.Select>
               </Form.Group>
             </Col>
@@ -296,7 +296,7 @@ return(
                     const quantity = parseInt(e.target.value) || 0;
                     const simOption = bulkData.ramSimDetails[1]?.simOption || "single";
                     const imeiFields = Array(quantity).fill(
-                      simOption === "dual"
+                      simOption === "Dual SIM"
                         ? { imei1: "", imei2: "", color: "" }
                         : { imei1: "", color: "" }
                     );
@@ -321,7 +321,7 @@ return(
               <tr>
                 <th>#</th>
                 <th>IMEI 1</th>
-                {bulkData.ramSimDetails[1]?.simOption === "dual" && <th>IMEI 2</th>}
+                {bulkData.ramSimDetails[1]?.simOption === "Dual SIM" && <th>IMEI 2</th>}
                 <th>Color</th>
               </tr>
             </thead>
@@ -352,7 +352,7 @@ return(
                       required
                     />
                   </td>
-                  {bulkData.ramSimDetails[1]?.simOption === "dual" && (
+                  {bulkData.ramSimDetails[1]?.simOption === "Dual SIM" && (
                     <td>
                       <Form.Control
                         type="number"
