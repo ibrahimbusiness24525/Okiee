@@ -275,6 +275,7 @@ console.log("this is the data",singlePurchase);
   
   const resetForm = () => {
     setSinglePurchase({
+      name:"",
       images: [], // For multiple images if needed
       coverImage: '', // Represents a main image or specific photo
       companyName: '', // Matches `companyName` from the backend

@@ -251,7 +251,7 @@ const NewMobilesList = () => {
     // Exclude sold phones
     if (mobile.isSold) return false;
     if(mobile.phoneCondition==="Used") return false
-    if(mobile.imei.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
+    if(mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
   
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
