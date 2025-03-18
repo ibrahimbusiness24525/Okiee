@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { BASE_URL } from 'config/constant';
 import { FaBarcode } from "react-icons/fa";
 
-const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, showSingleModal, modal,editMobile,handleAccessoriesCheck, handleImageChange, handleModalClose , handleSubmit , handleChange , singlePurchase , today }) => {
+const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSinglePurchase, showSingleModal, modal,editMobile,handleAccessoriesCheck, handleImageChange, handleModalClose , handleSubmit , handleChange , singlePurchase , today }) => {
 
       const [showWarranty, setShowWarranty] = useState(false);
         const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
          
                 <Modal show={showSingleModal} onHide={handleSinglePhoneModalclose} centered size="lg">
                 <Modal.Header closeButton>
-                  <Modal.Title style={{ textAlign: "center", width: "100%" }}>Purchase Phone Slip</Modal.Title>
+                  <Modal.Title style={{ textAlign: "center", width: "100%" }}>{type==="edit" ? "Edit Phone": "Purchase Phone Slip"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                   <Form onSubmit={handleSubmit}>
@@ -400,7 +400,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
                     Cancel
                   </Button>
                   <Button variant="primary" type="submit" disabled={loading}>
-                      {loading ? (editMobile ? 'Updating...' : 'Adding...') : editMobile ? 'Update Phone' : 'Add Phone'}
+                      {type === "edit" ? "Update" : "Save"}
                     </Button>
                 </Modal.Footer>
                   </Form>

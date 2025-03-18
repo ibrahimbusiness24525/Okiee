@@ -13,6 +13,7 @@ import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 import List from '../List/List'
 import Table from 'components/Table/Table';
+import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
@@ -770,7 +771,8 @@ useScanDetection({
     
     {/* </>  */}
     {/* } */}
-      <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+      <PurchasePhone type="edit" modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+      {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>

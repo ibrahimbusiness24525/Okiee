@@ -459,9 +459,9 @@ const UsedMobilesList = () => {
 </Row>;
       </>
 }
-           <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+           {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
      
-      {/* <PurchasePhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
+      <PurchasePhone type="edit" modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
