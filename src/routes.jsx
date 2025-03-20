@@ -62,7 +62,17 @@ const routes = [
       {
         exact: 'true',
         path: '/todayBook',
-        element: lazy(() => import('./views/dashboard/TodayBook'))
+        element: lazy(() => import('./views/dashboard/TodayBook/index'))
+      },
+      {
+        exact: 'true',
+        path: '/todayBook/pruchaseDetail/:id',
+        element: lazy(() => import('./views/dashboard/TodayBook/PurchaseDetail'))
+      },
+      {
+        exact: 'true',
+        path: '/todayBook/saleDetail/:id',
+        element: lazy(() => import('./views/dashboard/TodayBook/SalesDetails'))
       },
       {
         exact: 'true',

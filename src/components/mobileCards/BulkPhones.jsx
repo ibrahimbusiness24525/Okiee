@@ -251,7 +251,7 @@ const NewMobilesList = () => {
     // Exclude sold phones
     if (mobile.isSold) return false;
     if(mobile.phoneCondition==="Used") return false
-    if(mobile.imei.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
+    if(mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
   
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
@@ -319,6 +319,12 @@ useScanDetection({
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
+console.log("bulk mobile",bulkMobile);
+  const totalBulkStockAmount = bulkMobile.reduce((total,mobile)=>total+(Number(mobile?.prices?.buyingPrice) || 0),0)
+  console.log("total stock amount",totalBulkStockAmount);
+  
+
+  
   return (
     <>
      <InputGroup className="mb-3">
@@ -340,9 +346,9 @@ useScanDetection({
    <div>
     <h5 style={{fontSize: 30}}>
       {/* Total Stock Amount:  */}
-      Total Stock
+      Total Stock Amount : 
       <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {/* {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)} */}
+         {totalBulkStockAmount}
       </span>
     </h5>
   </div>
@@ -614,7 +620,7 @@ useScanDetection({
               />
 
               {/* Image handling */}
-              {mobile?.images?.[0] ? (
+              {/* {mobile?.images?.[0] ? (
                 <Card.Img
                   variant="top"
                   src={bulkMobileImage}
@@ -628,7 +634,7 @@ useScanDetection({
                   alt={bulkMobileImage}
                   style={{ height: '350px', objectFit: 'cover', borderRadius: '10px' }}
                 />
-              )}
+              )} */}
 
               <Card.Body style={{ padding: '1.5rem', display: 'flex',justifyContent:"left",alignItems:"start", flexDirection: 'column',width:"100%" }}>
                 <Card.Title style={{ fontSize: '1.4rem', fontWeight: '600', color: '#333' }}>

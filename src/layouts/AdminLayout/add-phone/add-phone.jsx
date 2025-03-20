@@ -3,22 +3,25 @@ import { Modal, Form, Button, Row, Col, Image } from 'react-bootstrap';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { BASE_URL } from 'config/constant';
+import { api } from '../../../../api/api';
 
 const AddPhone = ({ modal, editMobile, handleModalClose }) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [newPhone, setNewPhone] = useState({
     images: [],
+    name:'',
     coverImage: '',
     companyName: '',
     modelSpecifications: '',
     specs: '',
-    imei: '',
+    imei1: '',
     demandPrice: '',
     purchasePrice: '',
     imei2: '',
     finalPrice: '',
     color: ''
+    
   });
   const [isDualSim, setIsDualSim] = useState(false);
 
@@ -26,12 +29,13 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
     setShowModal(modal);
     if (editMobile) {
       setNewPhone({
+        name: editMobile.name || '',
         images: editMobile.images || [],
         coverImage: editMobile.images[0] || '',
         companyName: editMobile.companyName || '',
         modelSpecifications: editMobile.modelSpecifications || '',
         specs: editMobile.specs || '',
-        imei: editMobile.imei || '',
+        imei1: editMobile.imei1 || '',
         demandPrice: editMobile.demandPrice || '',
         purchasePrice: editMobile.purchasePrice || '',
         imei2: editMobile.imei2 || '',
@@ -76,7 +80,8 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
       });
     }
 
-    formData.append('coverImage', newPhone.coverImage);
+    formData.append('coverImage', newPhone.coverImage); 
+    formData.append('name', newPhone.name); 
     formData.append('companyName', newPhone.companyName);
     formData.append('modelSpecifications', newPhone.modelSpecifications);
     formData.append('specs', newPhone.specs);
@@ -91,9 +96,23 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
     try {
       let response;
       if (editMobile) {
-        response = await axios.put(`${BASE_URL}api/phone/updatePhone/${editMobile._id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const payload = {
+          name: newPhone.name, 
+          companyName: newPhone.companyName,
+          modelSpecifications: newPhone.modelSpecifications,
+          color: newPhone.color,
+          imei1: newPhone.imei1,
+          imei2: newPhone?.imei2,
+          price: {  
+            demandPrice: newPhone.demandPrice,
+            purchasePrice: newPhone.purchasePrice,
+            finalPrice: newPhone.finalPrice,
+          }
+        };
+        
+        console.log("This is single phone edit payload", payload);
+        
+         await api.put(`/api/Purchase/single-purchase-phone/${editMobile._id}`, payload)
         toast('Mobile Phone Record Updated Successfully');
       } else {
         response = await axios.post(`${BASE_URL}api/phone/addPhone`, formData, {
@@ -152,7 +171,7 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Row className="mb-3">
+            {/* <Row className="mb-3">
               <Col xs={12}>
                 <Form.Group controlId="formFileMultiple" className="mb-3">
                   <Form.Label>Upload Images(Only 1)</Form.Label>
@@ -175,8 +194,21 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
                   </div>
                 </Form.Group>
               </Col>
-            </Row>
+            </Row> */}
             <Row className="mb-3">
+            <Col md={6}>
+                <Form.Group controlId="formName" className="mb-3">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter Name"
+                    name="name"
+                    value={newPhone.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
               <Col md={6}>
                 <Form.Group controlId="formCompanyName" className="mb-3">
                   <Form.Label>Company Name</Form.Label>
@@ -190,6 +222,7 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
                   />
                 </Form.Group>
               </Col>
+              
               <Col md={6}>
                 <Form.Group controlId="formModelSpecifications" className="mb-3">
                   <Form.Label>Model Name</Form.Label>
@@ -239,13 +272,32 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
                   <Form.Control
                     type="text"
                     placeholder="Enter IMEI 1"
-                    name="imei"
-                    value={newPhone.imei}
+                    name="imei1"
+                    value={newPhone.imei1}
                     onChange={handleChange}
                     required
                   />
+                  
                 </Form.Group>
+                
               </Col>
+              <Col md={6}>
+              {isDualSim && (
+                <Col >
+                  <Form.Group controlId="formIMEI2" className="mb-3">
+                    <Form.Label>IMEI 2</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter IMEI 2"
+                      name="imei2"
+                      value={newPhone.imei2}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                </Col>
+            )}
+              </Col>
+             
               <Col md={6}>
                 <Form.Group controlId="formDemandPrice" className="mb-3">
                   <Form.Label>Demand Price</Form.Label>
@@ -273,22 +325,7 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
                 </Form.Group>
               </Col>
             </Row>
-            {isDualSim && (
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group controlId="formIMEI2" className="mb-3">
-                    <Form.Label>IMEI 2</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter IMEI 2"
-                      name="imei2"
-                      value={newPhone.imei2}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            )}
+            
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group controlId="formFinalPrice" className="mb-3">

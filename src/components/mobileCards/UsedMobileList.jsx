@@ -8,6 +8,7 @@ import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { api } from '../../../api/api';
 import List from '../List/List'
 import Table from 'components/Table/Table';
+import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 
 const UsedMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
@@ -191,7 +192,7 @@ const UsedMobilesList = () => {
 
   const filteredMobiles = mobiles.filter(mobile => 
     mobile.phoneCondition === "Used" &&
-    (searchTerm === "" || mobile.imei.includes(searchTerm) || mobile.imei2.includes(searchTerm))
+    (searchTerm === "" || mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
   );
   const handleAccessoryChange = (index, field, value) => {
     const updatedAccessories = [...accessories];
@@ -212,6 +213,7 @@ const UsedMobilesList = () => {
   
   console.log("all mobiles", mobiles);
   console.log("all filtered data is here ", filteredMobiles);
+
   return (
     <>
       {/* Search bar */}
@@ -231,10 +233,9 @@ const UsedMobilesList = () => {
   {/* Total Stock Amount */}
   <div>
     <h5 style={{fontSize: 30}}>
-      Total Stock 
-      {/* Total Stock Amount:  */}
+      Total Stock Amount : 
       <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {/* {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)} */}
+        {filteredMobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)}
       </span>
     </h5>
   </div>
@@ -315,7 +316,7 @@ const UsedMobilesList = () => {
     filteredMobiles.map((mobile) => (
       <Col key={mobile._id}>
         <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-          {/* <FaEdit
+          <FaEdit
             onClick={() => handleEdit(mobile)}
             style={{
               position: 'absolute',
@@ -325,7 +326,7 @@ const UsedMobilesList = () => {
               cursor: 'pointer',
               fontSize: '1.2rem',
             }}
-          /> */}
+          />
           <FaTrash
             onClick={() => confirmDelete(mobile._id)}
             style={{
@@ -361,7 +362,7 @@ const UsedMobilesList = () => {
                 <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
                   IMEI:
                 </strong>{' '}
-                {mobile.imei}
+                {mobile.imei1}
               </div>
               {mobile.imei2 && (
                 <div>
@@ -458,8 +459,9 @@ const UsedMobilesList = () => {
 </Row>;
       </>
 }
-
-      <PurchasePhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+           {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
+     
+      <PurchasePhone type="edit" modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>

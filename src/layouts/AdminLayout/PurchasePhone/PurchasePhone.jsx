@@ -10,7 +10,7 @@ import BulkPurchaseModal from "./BulkPurchase";
 import { useEffect } from "react";
 import { api } from "../../../../api/api";
 
-const PurchasePhone = ({ modal,editMobile, handleModalClose }) => {
+const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase" }) => {
   const today = new Date().toISOString().split("T")[0]; 
   
   const [showSingleModal, setShowSingleModal] = useState(false); // For Single Phone Purchase Modal
@@ -20,7 +20,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose }) => {
     const [singlePurchase, setSinglePurchase] = useState({
       name: '', // Matches `name` from the backend
       warranty: '12 Months',
-      fatherName: '', // Matches `fatherName`
       companyName: '', // Matches `companyName`
       modelName: '', // Matches `modelName`
       batteryHealth: '', // Matches `modelName`
@@ -70,14 +69,25 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose }) => {
 
     if (editMobile) {
       setSinglePurchase({
+        accessories:{
+          box: editMobile.accessories || false,
+          charger: editMobile.accessories || false,
+          handFree: editMobile.accessories || false,
+        },
+        // accessories:{
+        //   box: editMobile.accessories?.includes("box") || false,
+        //   charger: editMobile.accessories?.includes("charger") || false,
+        //   handFree: editMobile.accessories?.includes("handFree") || false,
+        // },
         name: editMobile.name || '', // Matches `name`
         warranty: editMobile.warranty || '', // Matches `warranty`
         fatherName: editMobile.fatherName || '', // Matches `fatherName`
         companyName: editMobile.companyName || '', // Matches `companyName`
         modelName: editMobile.modelName || '', // Matches `modelName`
-        date: editMobile.date || '', // Matches `date`
-        cnic: editMobile.cnic || '', // Matches `cnic`
-        accessories: editMobile.accessories || [], // Matches `accessories`
+        date: editMobile.date ? new Date(editMobile.date).toISOString().split("T")[0] : '', // Matches `date`
+        cnic: editMobile.cnic || '',
+        batteryHealth:editMobile.batteryHealth || "", // Matches `cnic`
+        // accessories: editMobile.accessories || [], 
         phoneCondition: editMobile.phoneCondition || '', // Matches `phoneCondition`
         specifications: editMobile.specifications || '', // Matches `specifications`
         ramMemory: editMobile.ramMemory || '', // Matches `ramMemory`
@@ -217,16 +227,8 @@ console.log("this is the data",singlePurchase);
     }
   if(editMobile){
     try {
-      const response = await axios.put(
-        `${BASE_URL}api/Purchase/purchase-phone/${editMobile._id}`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-  
+    const response =   await api.put(`/api/Purchase/single-purchase-phone/${editMobile._id}`, formData)
       console.log(response, "response");
-  
       if (response) {
         toast("Purchase Phone Record edited Successfully");
         handleSinglePhoneModalclose();
@@ -276,6 +278,7 @@ console.log("this is the data",singlePurchase);
   
   const resetForm = () => {
     setSinglePurchase({
+      name:"",
       images: [], // For multiple images if needed
       coverImage: '', // Represents a main image or specific photo
       companyName: '', // Matches `companyName` from the backend
@@ -420,7 +423,7 @@ console.log("this is the data",singlePurchase);
       {/* Options Modal */}
         <Modal show={modal} onHide={handleModalClose} centered>
           <Modal.Header closeButton>
-            <Modal.Title>Purchase Phone</Modal.Title>
+            <Modal.Title>{type=="edit" ? "Edit Phone" : "Purchase Phone" }</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
@@ -434,7 +437,8 @@ console.log("this is the data",singlePurchase);
                 }}
                 onClick={handleSinglePhoneModalOpen}
               >
-                Single Phone Purchase
+                {type=="edit" ? "Single Phone Edit" : "Single Phone Purchase" }
+                
               </Button>
               <Button
                 variant="secondary"
@@ -446,7 +450,7 @@ console.log("this is the data",singlePurchase);
                 }}
                 onClick={handleBulkPhoneModalOpen}
               >
-                Bulk Purchase
+               {type=="edit" ? "Bulk Edit" : "Bulk Purchase" }
               </Button>
             </div>
           </Modal.Body>
@@ -459,7 +463,7 @@ console.log("this is the data",singlePurchase);
       {/* Bulk Purchase Modal */}
      
       <BulkPurchaseModal handleBulkPhoneModalclose={handleBulkPhoneModalclose} handleSubmit={handleBulkRecordSubmit}  showBulkModal={showBulkModal} setBulkData={setBulkData} bulkData={bulkData} handleAddMorePhones={handleAddMorePhones}/>
-      <SingalPurchaseModal handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
+      <SingalPurchaseModal type="edit" handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
     </>
   );
 };

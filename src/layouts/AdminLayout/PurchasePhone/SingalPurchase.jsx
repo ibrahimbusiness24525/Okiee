@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { BASE_URL } from 'config/constant';
 import { FaBarcode } from "react-icons/fa";
 
-const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, showSingleModal, modal,editMobile,handleAccessoriesCheck, handleImageChange, handleModalClose , handleSubmit , handleChange , singlePurchase , today }) => {
+const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSinglePurchase, showSingleModal, modal,editMobile,handleAccessoriesCheck, handleImageChange, handleModalClose , handleSubmit , handleChange , singlePurchase , today }) => {
 
       const [showWarranty, setShowWarranty] = useState(false);
         const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
          
                 <Modal show={showSingleModal} onHide={handleSinglePhoneModalclose} centered size="lg">
                 <Modal.Header closeButton>
-                  <Modal.Title style={{ textAlign: "center", width: "100%" }}>Purchase Phone Slip</Modal.Title>
+                  <Modal.Title style={{ textAlign: "center", width: "100%" }}>{type==="edit" ? "Edit Phone": "Purchase Phone Slip"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                   <Form onSubmit={handleSubmit}>
@@ -47,12 +47,12 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
                     </div>
               
                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-                      <Form.Group controlId="purchasePhoneFatherName" style={{ width: "48%" }}>
+                      {/* <Form.Group controlId="purchasePhoneFatherName" style={{ width: "48%" }}>
                         <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>Father Name</Form.Label>
                         <Form.Control type="text" placeholder="Father Name" value={singlePurchase.fatherName}
                          name="fatherName"
                             onChange={handleChange}  />
-                      </Form.Group>
+                      </Form.Group> */}
                       <Form.Group controlId="purchasePhoneCNIC" style={{ width: "48%" }}>
                         <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>CNIC No#</Form.Label>
                         <Form.Control value={singlePurchase.cnic}
@@ -75,7 +75,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
                       </Form.Group>
                     </div>
                       <Form.Group controlId="purchasePhoneModel" style={{ width: "48%" ,marginTop:"10px"}}>
-                        <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>Battery Health</Form.Label>
+                        <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>Battery Health (optional)</Form.Label>
                         <Form.Control value={singlePurchase.batteryHealth}
                          name="batteryHealth"
                             onChange={handleChange} type="text" placeholder="Enter Battery Health"  />
@@ -85,7 +85,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
                     {/* Accessories Section */}
                     <div style={{ marginTop: "10px" }}>
   <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>
-    Accessories
+    Accessories (optional)
   </Form.Label>
   <Row>
     {["charger", "handFree", "box"].map((item) => (
@@ -116,6 +116,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         id="phoneNew"
         name="phoneCondition"
         label="New"
+        required
         value="New"
         checked={singlePurchase.phoneCondition === "New"} // Bind state
         onChange={(e) => {
@@ -200,7 +201,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         </Form.Group>
         
         <Form.Group controlId="Color" style={{ width: "48%" }}>
-          <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>Color</Form.Label>
+          <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>Color (optional)</Form.Label>
           <Form.Control value={singlePurchase.color}
            name="color"
                             onChange={handleChange} type="text" placeholder="Enter Color" />
@@ -230,7 +231,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         {/* Phone Pic Field */}
         <Form.Group controlId="purchasePhonePic" style={{ width: "48%" }}>
           <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>
-            Phone Picture
+            Phone Picture (optional)
           </Form.Label>
           <Form.Control
             type="file"
@@ -255,7 +256,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         
         <Form.Group controlId="purchasePersonPic" style={{ width: "48%" }}>
           <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>
-            Person Picture
+            Person Picture (optional)
           </Form.Label>
           <Form.Control
             type="file"
@@ -328,7 +329,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
         
         <Form.Group controlId="eGadgetStatusPic" style={{ width: "48%" }}>
           <Form.Label style={{ fontWeight: "bold", fontSize: "18px" }}>
-            E-Gadget Status Picture
+            E-Gadget Status Picture (optional)
           </Form.Label>
           <Form.Control
             type="file"
@@ -399,7 +400,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose, setSinglePurchase, sh
                     Cancel
                   </Button>
                   <Button variant="primary" type="submit" disabled={loading}>
-                      {loading ? (editMobile ? 'Updating...' : 'Adding...') : editMobile ? 'Update Phone' : 'Add Phone'}
+                      {type === "edit" ? "Update" : "Save"}
                     </Button>
                 </Modal.Footer>
                   </Form>

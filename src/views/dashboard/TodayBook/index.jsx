@@ -1,5 +1,4 @@
 import {  useEffect, useState } from "react";
-import { api } from "../../../api/api";
 import Table from "components/Table/Table";
 import { dateFormatter } from "utils/dateFormatter";
 import { StyledHeading } from "components/StyledHeading/StyledHeading";
@@ -7,8 +6,10 @@ import { Button } from "@mui/material";
 import { Card } from "react-bootstrap";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { axisClasses } from '@mui/x-charts/ChartsAxis';
-import { dataset, valueFormatter } from '../../constant/weather';
+import { dataset, valueFormatter } from '../../../constant/weather';
 import { PieChart } from '@mui/x-charts/PieChart';
+import { api } from "../../../../api/api";
+import { useNavigate } from "react-router-dom";
 const chartSetting = {
   yAxis: [
     {
@@ -53,13 +54,25 @@ const[todayBookData,setTodayBookData] = useState([]);
   const totalInvoices = todayBookData?.soldSinglePhone?.reduce(
     (acc, phone) => acc + (phone.totalInvoice  || 0), 
     0
+  ) + (todayBookData?.soldBulkPhone?.reduce(
+    (acc, phone) => acc + (phone.totalInvoice  || 0),
+    0
+  ) || 0);
+
+  const totalBulkInvoices = todayBookData?.soldBulkPhone?.reduce(
+    (acc, phone) => acc + (phone.totalInvoice  || 0),
+    0
   );
+
   
   console.log("Total Purchase Price:", totalPurchasePrice);
   
   console.log("Total invoices:", totalInvoices);
+
+  console.log("Total bulk invoices:", totalBulkInvoices);
   
-  
+  console.log("detail today book", todayBookData);
+  const navigation = useNavigate()
   return (
 <div style={{ padding: "20px", minHeight: "100vh" }}>
             <h1 style={{ fontSize: "24px", marginBottom:"33px",fontWeight: "600", color: "#333", marginBottom: "16px" }}>
@@ -67,6 +80,7 @@ const[todayBookData,setTodayBookData] = useState([]);
             </h1>
             <div style={{display:"flex", alignItems:"center",justifyContent:"space-between"}}>
             <Card 
+              onClick={()=>navigation("/todayBook/pruchaseDetail/:id")}
               className="text-center shadow-lg p-3" 
               style={{
                 borderRadius: "12px",
@@ -76,7 +90,7 @@ const[todayBookData,setTodayBookData] = useState([]);
                 boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
                 color: "white"
               }}
-            >
+              >
               <Card.Body style={{display:"flex", flexDirection:"column"}}>
                 <h5 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "8px" }}>
                   Total Purchase (Today)
@@ -90,9 +104,10 @@ const[todayBookData,setTodayBookData] = useState([]);
             </Card>
 
             <Card 
+            onClick={()=>navigation("/todayBook/saleDetail/:id")}
             className="text-center shadow-lg p-3" 
-             style={{
-               borderRadius: "12px",
+            style={{
+              borderRadius: "12px",
                width: "350px",
                margin: "auto",
                background: "linear-gradient(135deg, #ff7e5f, #feb47b)", // Warm gradient
@@ -131,10 +146,30 @@ const[todayBookData,setTodayBookData] = useState([]);
     series={[
       {
         data: [
-          { id: 0, value: 10, label: "Today Single Purchase" },
-          { id: 1, value: 15, label: "Today Bulk Purchase" },
-          { id: 2, value: 20, label: "Today Single Sale" },
-          { id: 3, value: 20, label: "Today Bulk Sale" },
+          { id: 0, 
+            value:
+             todayBookData?.purchasedSinglePhone?.reduce(
+            (acc, phone) => acc + (Number(phone.price?.purchasePrice) || Number(phone.purchasePrice) || 0), 
+            0
+          ) || 0,
+           label: "Today Single Purchase" },
+          { id: 1, 
+            value: todayBookData?.purchaseBulkPhone?.reduce(
+              (price, phone) => price + (Number(phone.prices?.buyingPrice) || 0),
+              0
+            ) || 0,
+             label: "Today Bulk Purchase" },
+          { id: 2,
+             value: todayBookData?.soldSinglePhone?.reduce(
+              (acc, phone) => acc + (phone.totalInvoice  || 0), 
+              0) || 0,
+             label: "Today Single Sale" },
+          { id: 3,
+             value: todayBookData?.soldBulkPhone?.reduce(
+              (acc, phone) => acc + (phone.totalInvoice  || 0),
+              0
+            ) || 0, 
+             label: "Today Bulk Sale" },
         ],
       },
     ]}
@@ -180,7 +215,8 @@ const[todayBookData,setTodayBookData] = useState([]);
                      <StyledHeading>Today Purchased Single Phones</StyledHeading>
                      <Table
 
-                           array={todayBookData.purchasedSinglePhone}
+                          routes={["/purchase/purchaseRecords"]}
+                        array={todayBookData.purchasedSinglePhone}
                          search={"imei1"}
                            keysToDisplay={["modelName", "companyName","color", "phoneCondition", "warranty"]}
                            label={[
@@ -196,6 +232,7 @@ const[todayBookData,setTodayBookData] = useState([]);
                         <div style={{ marginTop: "50px" }}></div>
                         <StyledHeading>Today Purchased Bulk Phones</StyledHeading>
                          <Table
+                         routes={["/purchase/purchaseRecords/bulkPurchase"]}
                          array={todayBookData.purchaseBulkPhone}
                          search={"imei1"}
                          keysToDisplay={["modelName", "companyName","partyName", "status", ]}
@@ -211,6 +248,7 @@ const[todayBookData,setTodayBookData] = useState([]);
                       <div style={{ marginTop: "50px" }}></div>
                       <StyledHeading>Today Sold Single Phones</StyledHeading>
                     <Table
+                    routes={["/sales/sales"]}
                        array={todayBookData.soldSinglePhone}
                        search={"imei1"}
                        keysToDisplay={[
@@ -265,6 +303,7 @@ const[todayBookData,setTodayBookData] = useState([]);
                               <div style={{ marginTop: "50px" }}></div>
                                  <StyledHeading>Today Sold Bulk Phones</StyledHeading>
                        <Table
+                        routes={["/sales/BulkSales"]}
                        array={todayBookData.soldBulkPhone}
                        search={"imei1"}
                        keysToDisplay={[

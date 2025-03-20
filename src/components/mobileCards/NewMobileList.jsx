@@ -13,6 +13,7 @@ import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 import List from '../List/List'
 import Table from 'components/Table/Table';
+import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
@@ -251,7 +252,7 @@ const NewMobilesList = () => {
     // Exclude sold phones
     if (mobile.isSold) return false;
     if(mobile.phoneCondition==="Used") return false
-    if(mobile.imei.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
+    if(mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
   
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
@@ -340,9 +341,9 @@ useScanDetection({
    <div>
     <h5 style={{fontSize: 30}}>
       {/* Total Stock Amount:  */}
-      Total Stock
+      Total Stock Amount : 
       <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {/* {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)} */}
+        {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)}
       </span>
     </h5>
   </div>
@@ -423,7 +424,7 @@ useScanDetection({
           filteredMobiles.map((mobile) => (
             <Col key={mobile._id}>
               <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                {/* <FaEdit
+                <FaEdit
                   onClick={() => handleEdit(mobile)}
                   style={{
                     position: 'absolute',
@@ -433,7 +434,7 @@ useScanDetection({
                     cursor: 'pointer',
                     fontSize: '1.2rem',
                   }}
-                /> */}
+                />
                 <FaTrash
                   onClick={() => confirmDelete(mobile._id)}
                   style={{
@@ -475,7 +476,7 @@ useScanDetection({
                     </div>
                     <div>
                       <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>{mobile.imei2 ? "imei 1" : "imei"}</strong>{' '}
-                      {mobile.imei}
+                      {mobile.imei1}
                     </div>
                     {mobile.imei2 && <div>
                       <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>imei 2</strong>{' '}
@@ -770,7 +771,8 @@ useScanDetection({
     
     {/* </>  */}
     {/* } */}
-      <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+      <PurchasePhone type="edit" modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+      {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
