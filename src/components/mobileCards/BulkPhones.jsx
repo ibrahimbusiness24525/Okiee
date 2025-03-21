@@ -13,7 +13,16 @@ import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 import List from '../List/List'
 import Table from 'components/Table/Table';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import { TextField } from '@mui/material';
+
 const NewMobilesList = () => {
+  const [imei, setImei] = useState([]);
+  const [imeiList, setImeiList] = useState([]);
+  const [search, setSearch] = useState("");
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
   const[payableAmountNow,setPayableAmountNow]= useState("")
@@ -182,6 +191,12 @@ const NewMobilesList = () => {
     
     if(type==="bulk"){
       setType("bulk")
+      const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) =>
+        ramSim.imeiNumbers?.map((imei) => imei.imei1) || []
+      );
+      
+
+      setImeiList(imeiList); // 
     }
     if(type==="single"){
       setType("single")
@@ -190,6 +205,7 @@ const NewMobilesList = () => {
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
+console.log(imei);
 
   const handleSoldSubmit = async () => {
     if (!finalPrice || !warranty) {
@@ -322,7 +338,14 @@ useScanDetection({
 console.log("bulk mobile",bulkMobile);
   const totalBulkStockAmount = bulkMobile.reduce((total,mobile)=>total+(Number(mobile?.prices?.buyingPrice) || 0),0)
   console.log("total stock amount",totalBulkStockAmount);
+  const handleChange = (event) => {
+    const selectedImeis = event.target.value; // Get new selected IMEIs
+    setImei(selectedImeis); // Update selected IMEIs
   
+    setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); // Ensure uniqueness
+  };
+  
+  console.log("this is imei", imei,"these are added", addedImeis);
 
   
   return (
@@ -909,7 +932,32 @@ console.log("bulk mobile",bulkMobile);
           </Button>
         </div>
       ))}
+     <FormControl fullWidth variant="outlined" className="mb-3">
+      <InputLabel>IMEI</InputLabel>
+      <Select value={imei} onChange={handleChange} displayEmpty multiple>
+      {/* Search Field Inside Dropdown */}
+      {/* <MenuItem onMouseDown={(e) => e.stopPropagation()}>
+        <TextField
+          value={search}
+          placeholder="Search IMEI..."
+          size="small"
+          fullWidth
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </MenuItem> */}
 
+      {/* Filtered IMEI Options */}
+      {imeiList
+        .filter((item) =>
+          item.toLowerCase().includes(search.toLowerCase())
+        )
+        .map((item, index) => (
+          <MenuItem key={index} value={item}>
+            {item}
+          </MenuItem>
+        ))}
+    </Select>
+    </FormControl>
       <Button variant="primary" onClick={addAccessory}>
         Add Another Accessory
       </Button>
