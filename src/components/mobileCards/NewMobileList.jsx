@@ -69,11 +69,9 @@ const NewMobilesList = () => {
 
   const getMobiles = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
-    console.log("required id", user._id);
     
     // const response = await axios.get(BASE_URL + `api/phone/getAllPhones/${user._id}`);
     const response = await api.get("/api/Purchase/purchase-phone")
-    console.log("this is the response of single mobile",response);
     setMobiles(response.data.phones);
   };
   const getActualPrice = (prices) => {
@@ -100,14 +98,12 @@ const NewMobilesList = () => {
   const deletePhone = async () => {
 
     try {
-      console.log("deleteMobileId",deleteMobileId);
       if(type === "bulk"){
         await api.delete(`/api/Purchase/purchase-bulk/delete/${deleteMobileId}`);
       }else{
         await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
       }
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
-      console.log('Phone deleted successfully');
     } 
     catch (error) {
       console.error('Error deleting phone:', error);
@@ -136,7 +132,6 @@ const NewMobilesList = () => {
     };
   
     // You can navigate or perform any API call here with dispatchDetails
-    console.log('Dispatch Details:', dispatchDetails);
   
     setShopName('');
     setPersonName('');
@@ -159,7 +154,6 @@ const NewMobilesList = () => {
           )
         )
       ));
-      console.log("bulk record response",response);
     }catch(error){
       console.log("error in getting bulk mobiles", error);
     }
@@ -179,7 +173,6 @@ const NewMobilesList = () => {
   };
 
   const handleSoldClick = (mobile,type) => {
-    console.log("this is type", type);
     
     if(type==="bulk"){
       setType("bulk")
@@ -267,7 +260,6 @@ const NewMobilesList = () => {
     );
   });
   
-  console.log(mobiles);
   useEffect(()=>{
     getBulkPhones()
   },[])
@@ -298,7 +290,6 @@ useScanDetection({
     setShowPrices(false);
     setSelectedMobile(null);
   };
-  console.log("bulk Mobile",bulkMobile);
   const handleBulkDelete = (id) =>{
     setDeleteMobileId(id);
     setType("bulk");
@@ -492,6 +483,7 @@ useScanDetection({
                     </div>
                     <div>
                       <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
+                      
                       {mobile.finalPrice || 'Not Sold'}
                     </div>
                   </Card.Text>
