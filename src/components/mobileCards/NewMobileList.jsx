@@ -483,6 +483,7 @@ useScanDetection({
                     </div>
                     <div>
                       <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
+                      
                       {mobile.finalPrice || 'Not Sold'}
                     </div>
                   </Card.Text>

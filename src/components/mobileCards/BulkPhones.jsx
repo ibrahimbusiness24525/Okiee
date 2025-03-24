@@ -675,7 +675,10 @@ console.log("bulk mobile",bulkMobile);
 
                   <div >
                     <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Prices:</strong>
-                    <p>Final Price: {getActualPrice(mobile?.prices)}</p>
+                    <p>Buying Price :
+                       {mobile.prices?.buyingPrice }
+                       {/* {getActualPrice(mobile?.prices)} */}
+                       </p>
                     <Button
                        onClick={() => handleShowPrices(mobile)}
                        style={{
