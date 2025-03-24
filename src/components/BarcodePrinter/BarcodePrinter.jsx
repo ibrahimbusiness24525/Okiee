@@ -92,7 +92,7 @@ body {
 
 .shop-name {
     writing-mode: vertical-rl;
-    transform: rotate(180deg);
+    transform: rotate(360deg);
     font-size: 12px;  /* Bigger text */
     font-weight: bold;
     text-align: center;
@@ -102,7 +102,8 @@ body {
 .barcode-section {
     text-align: center;
     line-height: 1.2;
-    padding: 1mm;
+        transform: rotate(270deg);
+margin-top: 40mm
 }
 
 .barcode-img { 
