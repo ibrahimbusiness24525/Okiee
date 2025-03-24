@@ -1,17 +1,34 @@
 import { text } from "d3";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Button, Row, Col, Table , Image } from "react-bootstrap";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { BASE_URL } from 'config/constant';
 import { FaBarcode } from "react-icons/fa";
+import { api } from "../../../../api/api";
 
 const BulkPurchaseModal = ({ handleBulkPhoneModalclose, handleSubmit,showBulkModal, modal,editMobile, handleModalClose , bulkData , setBulkData , handleAddMorePhones }) => {
 
 const[showTextBox,setShowTextBox]= useState(false)
+const[partyNames,setPartyNames] =  useState([])
+
 const handleShowTextBox = () =>{
   setShowTextBox(true)
 }
+
+const getAllPartyNames = async( ) =>{
+  try{
+    const response =  await api.get("/api/partyLedger/getAllNames");
+    setPartyNames(response?.data?.data)
+  }catch(error){
+    console.log("Error getting in name", error)
+  }
+}
+
+useEffect(()=>{
+    getAllPartyNames()
+},[])
+
 
 return(
      <Modal show={showBulkModal} onHide={handleBulkPhoneModalclose} centered size="lg">
@@ -25,7 +42,22 @@ return(
                   <Col>
                     <Form.Group controlId="bulkPartyName">
                       <Form.Label>Party Name</Form.Label>
-                      <Form.Control
+                      <Form.Select
+                          as="select"
+                          value={bulkData.partyName}
+                          onChange={(e) =>
+                            setBulkData({ ...bulkData, partyName: e.target.value })
+                          }
+                          required
+                        >
+                          <option value="">Select Party Name</option>
+                          {partyNames.map((name, index) => (
+                            <option key={index} value={name}>
+                              {name}
+                            </option> 
+                          ))}
+                        </Form.Select>
+                      {/* <Form.Control
                         type="text"
                         placeholder="Enter Party Name"
                         value={bulkData.partyName}
@@ -33,7 +65,7 @@ return(
                           setBulkData({ ...bulkData, partyName: e.target.value })
                         }
                         required
-                      />
+                      /> */}
                     </Form.Group>
                   </Col>
                   <Col>
