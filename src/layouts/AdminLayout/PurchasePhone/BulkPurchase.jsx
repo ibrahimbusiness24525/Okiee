@@ -30,6 +30,8 @@ useEffect(()=>{
 },[])
 
 
+
+
 return(
      <Modal show={showBulkModal} onHide={handleBulkPhoneModalclose} centered size="lg">
             <Modal.Header closeButton>
@@ -261,7 +263,26 @@ return(
     ))}
   </tbody>
 </Table>
+<Col>
+                    <Form.Group controlId="bulkRamMemory">
+                      <Form.Label>Mobile Price (one piece)</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter Mobile Price"
+                        value={bulkData.ramSimDetails[0]?.priceOfOne || ""}
+                        onChange={(e) =>
+                          setBulkData({
+                            ...bulkData,
+                            ramSimDetails: bulkData.ramSimDetails.map((item, index) =>
+                              index === 0 ? { ...item, priceOfOne: e.target.value } : item
+                            )
+                          })
+                        }
+                        required
+                      />
 
+                    </Form.Group>
+                  </Col>
           
                 {/* Additional Fields */}
 <Button
@@ -435,6 +456,25 @@ return(
               ))}
             </tbody>
           </Table>
+          <Col>
+                    <Form.Group controlId="bulkPriceOfOne">
+                      <Form.Label>Mobile Price (one piece)</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter Mobile Price"
+                        value={bulkData.ramSimDetails[1]?.priceOfOne || ""}
+                        onChange={(e) =>
+                          setBulkData({
+                            ...bulkData,
+                            ramSimDetails: bulkData.ramSimDetails.map((item, index) =>
+                              index === 1   ? { ...item, priceOfOne: e.target.value } : item
+                            )
+                          })
+                        }
+                      />
+                    </Form.Group>
+                  </Col>
+
         </>
       )}
 

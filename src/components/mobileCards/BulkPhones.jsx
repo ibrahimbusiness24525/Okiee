@@ -674,8 +674,8 @@ console.log("bulk mobile",bulkMobile);
                   </div>
 
                   <div >
-                    <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Prices:</strong>
-                    <p>Buying Price :
+                    <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Price:</strong>
+                    <p>Total Buying Price :
                        {mobile.prices?.buyingPrice }
                        {/* {getActualPrice(mobile?.prices)} */}
                        </p>
@@ -685,6 +685,7 @@ console.log("bulk mobile",bulkMobile);
                          backgroundColor: '#3f4d67',
                          color: '#fff',
                          border: 'none',
+                         width:"100%",
                          padding: '6px 14px', // Smaller padding
                          borderRadius: '3px', // Slightly smaller border radius
                          cursor: 'pointer',
@@ -702,29 +703,44 @@ console.log("bulk mobile",bulkMobile);
                   {/* RAM & SIM Options - Dropdowns */}
                   {mobile?.ramSimDetails?.length > 0 ? (
                     <div>
-                      <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>RAM and SIM Options:</strong>
+                      <div style={{marginBottom:"20px"}}></div>
+                      <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600', }}>RAM and SIM Options:</strong>
+                      <div style={{marginBottom:"10px"}}></div>
                       {mobile?.ramSimDetails?.map((ramSim) => (
-                        <div key={ramSim._id} style={{ marginBottom: '10px' }}>
-                          <div><strong>RAM Memory:</strong> {ramSim?.ramMemory || 'Not Available'} GB</div>
-                          <div><strong>SIM Option:</strong> {ramSim?.simOption || 'Not Available'}</div>
-                          <div className='' style={{display:"flex"}}>
-                            <strong>Quantity</strong>
-                            <ul>
-                              {/* {ramSim?.imeiNumbers?.length > 0 ? 
+                         <div
+                           key={ramSim._id}
+                           style={{
+                             border: "1px solid #ddd",
+                             padding: "10px",
+                             borderRadius: "8px",
+                             marginBottom: "20px",
+                             backgroundColor: "#f9f9f9",
+                             boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
+                           }}
+                         >
+                           <div style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "5px" }}>
+                             RAM Memory: {ramSim?.ramMemory || "Not Available"} GB
+                           </div>
 
-                              (
-                                ramSim?.imeiNumbers?.map((imei) => (
-                                  <li key={imei._id}>IMEI 1: {imei?.imei1 || 'Not Available'}</li>
-                                ))
-                              )
-                              : (
-                                <li>No stock available</li>
-                              )} */}
-                              <p>{ramSim?.imeiNumbers?.length > 0 ? ` ${ramSim.imeiNumbers.length}` : "No stock available"}</p>
-                            </ul>
-                          </div>
-                        </div>
-                      ))}
+                           <div style={{ fontSize: "14px", marginBottom: "5px" }}>
+                             <strong>SIM Option:</strong> {ramSim?.simOption || "Not Available"}
+                           </div>
+                         
+                           <div style={{ display: "flex", alignItems: "center", fontSize: "14px", marginBottom: "5px" }}>
+                             <strong style={{ marginRight: "5px" }}>Quantity:</strong>
+                             <span>
+                               {ramSim?.imeiNumbers?.length > 0 ? `${ramSim.imeiNumbers.length}` : "No stock available"}
+                             </span>
+                           </div>
+                         
+                           {ramSim.priceOfOne && (
+                             <div style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}>
+                               Per Piece Price: <span style={{ color: "#007bff" }}>{ramSim.priceOfOne}</span>
+                             </div>
+                           )}
+                         </div>
+                        ))}
+
                     </div>
                   ) : (
                     <div>RAM and SIM Options: Not Available</div>
@@ -935,6 +951,9 @@ console.log("bulk mobile",bulkMobile);
           </Button>
         </div>
       ))}
+       <Button variant="primary" onClick={addAccessory} style={{marginBottom:"20px"}}>
+        Add Another Accessory
+      </Button>
      <FormControl fullWidth variant="outlined" className="mb-3">
       <InputLabel>IMEI</InputLabel>
       <Select value={imei} onChange={handleChange} displayEmpty multiple>
@@ -961,9 +980,7 @@ console.log("bulk mobile",bulkMobile);
         ))}
     </Select>
     </FormControl>
-      <Button variant="primary" onClick={addAccessory}>
-        Add Another Accessory
-      </Button>
+     
     </div>
             <Form.Group>
                 <Form.Label>Selling Type</Form.Label>
@@ -1054,9 +1071,9 @@ console.log("bulk mobile",bulkMobile);
        
         {type === "bulk" && (
             <>
-               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
+               {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
                 <BarcodeReader />
-              </div>
+              </div> */}
 
               <Form.Group className="mb-3">
                 <Form.Label>IMEI Number</Form.Label>

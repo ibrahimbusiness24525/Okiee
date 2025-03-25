@@ -354,16 +354,32 @@ console.log("this is the data",singlePurchase);
       {
         ramMemory: "",
         simOption: "",
-        imeiNumbers: []
+        priceOfOne:"",
+        imeiNumbers: [],
       },
       {
         ramMemory: "",
         simOption: "",
+        priceOfOne:"",
         imeiNumbers: [],
       }
      
     ]
   });
+  const calculateBuyingPrice = (data) => {
+    return data.ramSimDetails.reduce((total, item) => {
+      return total + item.imeiNumbers.length * (parseFloat(item.priceOfOne) || 0);
+    }, 0);
+  };
+  
+  // Update `buyingPrice` whenever `ramSimDetails` change
+  useEffect(() => {
+    setBulkData((prev) => ({
+      ...prev,
+      buyingPrice: calculateBuyingPrice(prev),
+    }));
+  }, [bulkData.ramSimDetails])
+
   const handleBulkRecordSubmit = async() =>{
     console.log('====================================');
     console.log("bulk data",bulkData);
@@ -390,16 +406,9 @@ console.log("this is the data",singlePurchase);
       }
      console.log("bulk purchase payload",payload);
      
-      console.log("bulk phone payload",payload);
-      // const response = await axios.post(
-      //   `${BASE_URL}api/Purchase/bulk-phone-purchase`,
-      //   payload,
-      //   {
-      //     headers: { "Content-Type": "application/json" },
-      //   }
-      // );
+     
       const response = await api.post(`/api/Purchase/bulk-phone-purchase`,payload)
-      console.log( "bulk phone response",response);
+      console.log( "bulk purchase phone response",response);
   
       if (response) {
         toast("Purchase bulk Record Added Successfully");

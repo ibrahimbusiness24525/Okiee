@@ -18,6 +18,7 @@ const PartyLedger = () => {
         }
         const response = await api.post("/api/partyLedger/create",payload);
         console.log("This is the response", response)
+        toast.success("Party added successfully")
     }catch(error){
         console.log("Error in creating file,",error)
         toast.error(error?.response?.data?.message || "Error in creating party")
@@ -33,6 +34,18 @@ const PartyLedger = () => {
     }
   }
 
+  const groupByPartyName = (records) => {
+    return records.reduce((acc, record) => {
+      if (!acc[record.partyName]) {
+        acc[record.partyName] = [];
+      }
+      acc[record.partyName].push(record);
+      return acc;
+    }, {});
+  };
+  
+  // Group records by partyName
+  const groupedRecords = groupByPartyName(partyLedgerRecords);
   useEffect(()=>{
     getAllPartyLedgerRecords()
   },[])
@@ -84,29 +97,24 @@ const PartyLedger = () => {
       </Modal>
       <h3>Party Ledger Records</h3>
       <div style={{marginBottom:"50px"}}></div>
-      {partyLedgerRecords.map((party) => (
-        <div key={party._id} style={{ marginBottom: "20px" }}>
-           <StyledHeading>{party._id}</StyledHeading> {/* Party Name as Heading */}
+      {Object.entries(groupedRecords).map(([partyName, records]) => (
+      <div key={partyName} style={{ marginBottom: "20px" }}>
+        <StyledHeading>{partyName}</StyledHeading> {/* Party Name as Heading */}
 
-           <Table
-      array={party.purchases.map((purchase) => ({
-        companyName: purchase.companyName,
-        modelName: purchase.modelName,
-        buyingPrice: purchase.prices.buyingPrice, // Added Buying Price
-        date: purchase.date,
-      }))}
-      keysToDisplay={["companyName", "modelName", "buyingPrice", "date"]}
-      label={["Company Name", "Model Name", "Buying Price", "Date"]}
-      customBlocks={[
-        {
-          index: 3,
-          component: (date) => dateFormatter(date), // Formatting Date
-        },
-      ]}
-    />
-
-         </div>
-        ))}
+        <Table
+         routes={["/app/dashboard/partyLedger"]}
+          array={records}
+          keysToDisplay={["companyName", "modelName", "buyingPrice","totalPurchasedMobiles", "createdDate"]}
+          label={["Company Name", "Model Name", "Buying Price","Total Mobiles", "Date"]}
+          customBlocks={[
+            {
+              index: 4,
+              component: (date) => dateFormatter(date), // Formatting Date
+            },
+          ]}
+        />
+      </div>
+    ))}
 
     </div>
   );

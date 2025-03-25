@@ -112,6 +112,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/partyLedger/:id',
+        element: lazy(() => import('./components/Ledger/PartyLedgerDetail')) // Ledger
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/commetyLedger',
         element: lazy(() => import('./components/Ledger/CommetyLedger')) // Ledger
       },

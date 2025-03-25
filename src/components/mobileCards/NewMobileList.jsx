@@ -504,6 +504,34 @@ useScanDetection({
                       Dispatch
                 </Button> */}
                     <Button
+                                // onClick={() => handleSoldClick(mobile)}
+                                style={{
+                                  backgroundColor: '#DE970B',
+                                  color: '#fff',
+                                  border: 'none',
+                                  padding: '5px 10px',
+                                  borderRadius: '5px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                              {mobile.warranty}
+                              </Button>
+                                 <Button
+                                // onClick={() => handleSoldClick(mobile)}
+                                style={{
+                                  backgroundColor: 'green',
+                                  color: '#fff',
+                                  border: 'none',
+                                  padding: '5px 10px',
+                                  borderRadius: '5px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                            {mobile.specs}
+                              </Button>
+                    <Button
                       onClick={() => handleSoldClick(mobile,"single")}
                       style={{
                         backgroundColor: '#28a745',
