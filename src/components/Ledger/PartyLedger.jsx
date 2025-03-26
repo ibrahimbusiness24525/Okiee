@@ -10,7 +10,14 @@ const PartyLedger = () => {
   const [showModal, setShowModal] = useState(false);
   const [partyName, setPartyName] = useState("");
   const [partyLedgerRecords, setAllPartyLedgerRecords] = useState([]);
-
+  const[amount, setAmount] = useState("");
+  const[showAmountPayModal, setShowAmountPayModal] = useState(false);
+  const[id, setId] = useState("");
+  const handleAddPayment = (rowData) => {
+    console.log("Row Data", rowData);
+    setId(rowData._id);
+    setShowAmountPayModal(true);
+  }
   const createParty = async() =>{
     try{
         const payload = {
@@ -43,13 +50,29 @@ const PartyLedger = () => {
       return acc;
     }, {});
   };
+  console.log("this is id", id);
   
+  const handleAddAmount = async() =>{
+    try{
+      const payload = {
+        amountToPay:amount
+      }
+      const response = await api.patch(`/api/Purchase/bulk-purchase-credit-pay/${id}`,payload);
+      console.log("This is the response", response)
+      toast.success("Amount added successfully")
+      getAllPartyLedgerRecords()
+    }catch(error){
+      console.log("Error in adding amount",error)
+      toast.error(error?.response?.data?.message || "Error in adding amount")
+  }
+}
   // Group records by partyName
   const groupedRecords = groupByPartyName(partyLedgerRecords);
   useEffect(()=>{
     getAllPartyLedgerRecords()
   },[])
-
+  console.log("party records", partyLedgerRecords);
+  
   return (
     <div style={{ width: "100%", padding: "16px",  }}>
       <div style={{ width: "100%", display: "flex", justifyContent: "end" }}>
@@ -68,6 +91,33 @@ const PartyLedger = () => {
       </div>
 
       {/* React Bootstrap Modal */}
+      <Modal show={showAmountPayModal} onHide={() => setShowAmountPayModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Amount to pay</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="amount">
+              <Form.Label>Amount</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter Amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAmountPayModal(false)}>
+            Close
+          </Button>
+          <Button variant="success" onClick={handleAddAmount}>
+            Save 
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Create Party</Modal.Title>
@@ -102,17 +152,51 @@ const PartyLedger = () => {
         <StyledHeading>{partyName}</StyledHeading> {/* Party Name as Heading */}
 
         <Table
-         routes={["/app/dashboard/partyLedger"]}
+        //  routes={["/app/dashboard/partyLedger"]}
           array={records}
-          keysToDisplay={["companyName", "modelName", "buyingPrice","totalPurchasedMobiles", "createdDate"]}
-          label={["Company Name", "Model Name", "Buying Price","Total Mobiles", "Date"]}
+          keysToDisplay={["companyName", "modelName", "buyingPrice","totalPurchasedMobiles","purchasePaymentType","purchasePaymentStatus","payableAmountLater", "createdDate"]}
+          label={["Company Name", "Model Name", "Buying Price","Total Mobiles","Payment Type","Payment Status","Payable Amount", "Date"]}
           customBlocks={[
             {
               index: 4,
+              component: (paymentType) => paymentType || "Not Mentioned",
+            },
+            {
+              index: 5,
+              component: (paymentStatus, rowData) =>
+                paymentStatus === "pending" ? (
+                  <button
+                  onClick={() => handleAddPayment(rowData)}
+                  style={{
+                    padding: "6px 12px",
+                    backgroundColor: "#3B82F6", // Blue-500
+                    color: "white",
+                    borderRadius: "4px",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s ease-in-out",
+                  }}
+                  onMouseEnter={(e) => (e.target.style.backgroundColor = "#2563EB")} // Hover effect (Blue-600)
+                  onMouseLeave={(e) => (e.target.style.backgroundColor = "#3B82F6")}
+                >
+                  Add Payment
+                </button>
+                
+                ) : (
+                  paymentStatus || "Not Mentioned"
+                ),
+            },
+            {
+              index: 6,
+              component: (payableAmount) => (payableAmount ? `${payableAmount} PKR` : "0 PKR"),
+            },
+            {
+              index: 7,
               component: (date) => dateFormatter(date), // Formatting Date
             },
           ]}
         />
+
       </div>
     ))}
 

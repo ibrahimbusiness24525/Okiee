@@ -350,6 +350,10 @@ console.log("this is the data",singlePurchase);
     activation:"",
     dealerPrice: "",
     buyingPrice: "",
+    paymentType:"",
+    payableAmountNow:"",
+    payableAmountLater:"",
+    paymentDate:"",
     ramSimDetails: [
       {
         ramMemory: "",
@@ -391,6 +395,15 @@ console.log("this is the data",singlePurchase);
         date : bulkData.date,
         companyName : bulkData.companyName,
         modelName: bulkData.model,
+        purchasePaymentType: bulkData.paymentType,
+        purchasePaymentStatus: bulkData.paymentType === "full-payment" ? "paid" : "pending",
+        ...(bulkData.paymentType === "credit" && {
+          creditPaymentData: {
+            payableAmountNow: bulkData.payableAmountNow,
+            payableAmountLater: bulkData.payableAmountLater,
+            dateOfPayment: bulkData.paymentDate,
+          },
+        }),
         prices : {
           dealerPrice:bulkData.dealerPrice,
           buyingPrice:bulkData.buyingPrice,
