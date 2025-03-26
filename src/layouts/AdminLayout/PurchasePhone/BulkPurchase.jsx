@@ -570,6 +570,69 @@ return(
                   </Col>
                 
                 </Row>
+                <Col style={{marginTop:"10px"}}>
+                <Form.Group controlId="bulkPayment">
+                  <Form.Label>Payment Type</Form.Label>
+                  <Form.Select
+                    value={bulkData.paymentType}
+                    onChange={(e) =>
+                      setBulkData({ ...bulkData, paymentType: e.target.value })
+                    }
+                    required>
+                    <option value="">Select Payment Type</option>
+                    <option value="full-payment">Full Payment</option>  
+                    <option value="credit">Credit</option>  
+                    </Form.Select>
+                </Form.Group>
+                </Col>
+                {bulkData.paymentType === "credit" && (
+
+                <Row style={{marginTop:"10px"}}>
+                  <Col>
+                  <Form.Group controlId="payableAmountNow">
+                    <Form.Label>Payable Amount Now</Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="Enter Payable Amount Now"
+                      value={bulkData.payableAmountNow}
+                      onChange={(e) =>
+                        setBulkData({ ...bulkData, payableAmountNow: e.target.value })
+                      }
+                      required />
+
+                      
+                  </Form.Group>
+                  </Col>
+                  <Col>
+                  <Form.Group controlId="payableAmountLater">
+                    <Form.Label>Payable Amount Later</Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="Enter Payable Amount Now"
+                      value={bulkData.payableAmountLater}
+                      onChange={(e) =>
+                        setBulkData({ ...bulkData, payableAmountLater: e.target.value })
+                      }
+                      required />
+
+                      
+                  </Form.Group>
+                  </Col>
+                  <Col>
+                  <Form.Group controlId="payableAmountLater">
+                    <Form.Label>First Payment Date/Payment Date</Form.Label>
+                    <Form.Control
+                      type="Date"
+                      placeholder="Enter Payment Date"
+                      value={bulkData.paymentDate}
+                      onChange={(e) =>
+                        setBulkData({ ...bulkData, paymentDate: e.target.value })
+                      }
+                      required />
+                  </Form.Group>
+                  </Col>
+                </Row>
+                )}
           
                 
               </Form>
