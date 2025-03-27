@@ -282,7 +282,7 @@ const SoldInvoice = () => {
         console.log("This is the single phone",response);
 
         if (response) {
-          alert('Invoice submitted successfully');
+          alert('Invoice submitted s=uccessfully');
         }
       } catch (error) {
         alert('Error submitting invoice: ' + error.message);
@@ -483,7 +483,58 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
         <div style={styles.totalSection}>
           <h3>Total:{totalInvoice}Rs</h3>
         </div>
+        {dataReceived.addedImeis.length !== 0? 
+        <>
+            <div style={styles.termsSection}>
+           {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+           <div style={styles.termsHeading}>Total Selected Imeis</div>
+           <div style={styles.termsText}>
+           { dataReceived?.addedImeis.length !== 0 ? 
+          <>
+            {
+                <div style={{display:"flex" , gap:"5px"}}>
+                 Selected Imeis:
+                   {dataReceived.addedImeis?.map((item)=>{
+                    return(
+                      <p>{item}</p>
+                    )
+                   })}
+                </div>
+            }
+            </> : <>
+            </>
+            }
+         
+            
+           </div>
+     </div>
+        </>:
+        <>
+       {
+  dataReceived.ramSimDetails?.length>0 ? (
+    <div>
+      <div style={styles.termsSection} >
+        <strong style={styles.termsHeading}>Total IMEIs:</strong>
+        {dataReceived.ramSimDetails.map((detail, index) =>
+          detail.imeiNumbers?.length ? (
+            <div key={index} style={{ display: "flex", gap: "10px" }}>
+              {detail.imeiNumbers.map((imeiObj, i) => (
+                <p key={i}>{imeiObj.imei1}</p>
+              ))}
+            </div>
+          ) : (
+            <p key={index}>N/A</p>
+          )
+        )}
+      </div>
+    </div>
+  ) : (
+    "N/A"
+  )
+}
 
+        </>
+        }
         {/* Terms & Conditions Section */}
         {/* <div style={styles.termsSection}>
           <h3 style={styles.termsHeading}>Terms & Conditions</h3>
@@ -624,7 +675,7 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
       </>} */}
  
 
-
+      
         <div style={styles.termsSection}>
            {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
            <div style={styles.termsHeading}>Terms and conditions</div>
