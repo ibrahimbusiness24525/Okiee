@@ -154,42 +154,119 @@ const PartyLedger = () => {
         <Table
         //  routes={["/app/dashboard/partyLedger"]}
           array={records}
-          keysToDisplay={["companyName", "modelName", "buyingPrice","totalPurchasedMobiles","purchasePaymentType","purchasePaymentStatus","payableAmountLater", "createdDate"]}
-          label={["Company Name", "Model Name", "Buying Price","Total Mobiles","Payment Type","Payment Status","Payable Amount", "Date"]}
+          keysToDisplay={["companyName", "buyingPrice","totalPurchasedMobiles","purchasePaymentType","purchasePaymentStatus","payableAmountLater", "totalPaidAmount","createdDate"]}
+          label={["Company Name", "Buying Price","Total Mobiles","Payment Type","Payment Status","Remaining Amount","Paid Amount", "Date"]}
           customBlocks={[
             {
-              index: 4,
-              component: (paymentType) => paymentType || "Not Mentioned",
+              index: 3,
+              component: (paymentType) =>
+                paymentType === "credit" ? (
+                  <button
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      borderRadius: "5px",
+                      border: "none",
+                      display: "inline-block",
+                    }}
+                  >
+                    💳 Credit Payment
+                  </button>
+                ) : paymentType === "full-payment" ? (
+                  <button
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      borderRadius: "5px",
+                      border: "none",
+                      display: "inline-block",
+                    }}
+                  >
+                    ✅ Full Payment
+                  </button>
+                ) : (
+                  "Not Mentioned"
+                ),
             },
+            
             {
-              index: 5,
+              index: 4,
               component: (paymentStatus, rowData) =>
                 paymentStatus === "pending" ? (
                   <button
-                  onClick={() => handleAddPayment(rowData)}
-                  style={{
-                    padding: "6px 12px",
-                    backgroundColor: "#3B82F6", // Blue-500
-                    color: "white",
-                    borderRadius: "4px",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "background-color 0.2s ease-in-out",
-                  }}
-                  onMouseEnter={(e) => (e.target.style.backgroundColor = "#2563EB")} // Hover effect (Blue-600)
-                  onMouseLeave={(e) => (e.target.style.backgroundColor = "#3B82F6")}
-                >
-                  Add Payment
-                </button>
-                
+                    onClick={() => handleAddPayment(rowData)}
+                    style={{
+                      color: "#000",
+                      padding: "6px 12px",
+                      borderRadius: "5px",
+                      border: "none",
+                      cursor: paymentStatus.status === "Paid" ? "default" : "pointer",
+                      transition: "0.3s",
+                    }}
+                  >
+                    💰 Pay Now
+                  </button>
                 ) : (
-                  paymentStatus || "Not Mentioned"
+                  <button
+                    style={{
+                      color: "#000",
+                      padding: "6px 12px",
+                      borderRadius: "5px",
+                      border: "none",
+                      cursor: paymentStatus.status === "Paid" ? "default" : "pointer",
+                      transition: "0.3s",
+                    }}
+                  >
+                    ✅ {paymentStatus}
+                  </button>
                 ),
+            },
+            
+            {
+              index: 5,
+              component: (remainingAmount, rowData) => (
+                <button
+                  style={{
+                    backgroundColor: "#FF4D4D", // Red background
+                    color: "#fff",
+                    padding: "6px 12px",
+                    borderRadius: "5px",
+                    border: "none",
+                    transition: "0.3s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
+                   ⚠️ {remainingAmount ? `${remainingAmount}` : "Not mentioned"}
+                </button>
+              ),
             },
             {
               index: 6,
-              component: (payableAmount) => (payableAmount ? `${payableAmount} PKR` : "0 PKR"),
+              component: (paidAmount, rowData) => (
+                <button
+                  style={{
+                    backgroundColor: "#4CAF50", // Green background
+                    color: "#fff",
+                    padding: "6px 12px",
+                    borderRadius: "5px",
+                    border: "none",
+                    transition: "0.3s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
+                 ✅ {paidAmount ? `  ${paidAmount}` : "Not mentioned"}
+                </button>
+              ),
             },
+            
             {
               index: 7,
               component: (date) => dateFormatter(date), // Formatting Date

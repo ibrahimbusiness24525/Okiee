@@ -738,6 +738,11 @@ console.log("bulk mobile",bulkMobile);
                                Per Piece Price: <span style={{ color: "#007bff" }}>{ramSim.priceOfOne}</span>
                              </div>
                            )}
+                           {ramSim.priceOfOne && (
+                             <div style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}>
+                               Total Amount: <span style={{ color: "#007bff" }}>{ramSim.priceOfOne * ramSim.imeiNumbers.length}</span>
+                             </div>
+                           )}
                          </div>
                         ))}
 
