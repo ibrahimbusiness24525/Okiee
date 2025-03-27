@@ -18,7 +18,7 @@ const PartyLedger = () => {
     setId(rowData._id);
     setShowAmountPayModal(true);
   }
-  const createParty = async() =>{ 
+  const createParty = async() =>{
     try{
         const payload = {
             partyName
