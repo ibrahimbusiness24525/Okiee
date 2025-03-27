@@ -204,7 +204,7 @@ const PartyLedger = () => {
                       padding: "6px 12px",
                       borderRadius: "5px",
                       border: "none",
-                      // cursor: paymentStatus.status === "Paid" ? "default" : "pointer",
+                      cursor: paymentStatus === "Paid" ? "default" : "pointer",
                       transition: "0.3s",
                     }}
                   >
@@ -217,7 +217,7 @@ const PartyLedger = () => {
                       padding: "6px 12px",
                       borderRadius: "5px",
                       border: "none",
-                      // cursor: paymentStatus.status === "Paid" ? "default" : "pointer",
+                      cursor: paymentStatus === "Paid" ? "default" : "pointer",
                       transition: "0.3s",
                     }}
                   >
