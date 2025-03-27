@@ -125,7 +125,7 @@ p {
                     <div class="container">
                         <div class="barcode-section">
                             <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                            <p>${companyName} ${modelName} ${ramMemory} ${phoneCondition}</p>
+                            <p>${companyName} ${modelName} ${ramMemory} ${specifications} </p>
                                                     <p>${shopName}</p>
                             ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
                         </div>
