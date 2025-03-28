@@ -137,42 +137,17 @@ const DashDefault = () => {
               </Card>
            </Link>
             </Col>
-            <Col xl={6} xxl={4} style={{marginBottom:25}}> 
-              <Card >
-                <Card.Body>
-                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Commiittees</h6>
-                  <div className="row d-flex align-items-center">
-                    <div className="col-9">
-                      <h3 className="f-w-300 d-flex align-items-center m-b-0">
-                        <i className={`feather  f-30 m-r-20`} />5
-                      </h3>
-                    </div>
-                    {/* <div className="col-3 text-end">
-                      <p className="m-b-0">{data.value}%</p>
-                    </div> */}
-                  </div>
-                  {/* <div className="progress m-t-30" style={{ height: '7px' }}>
-                     <div
-                      className={`progress-bar ${data.class}`}
-                      role="progressbar"
-                      style={{ width: `${data.value}%` }}
-                      aria-valuenow={data.value}
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    />
-                  </div> */}
-                </Card.Body>
-              </Card>
-            </Col>
             <Col  xl={6} xxl={4} style={{marginBottom:25}}> 
+            <Link to={"/app/dashboard/partyLedger"}>
+
               <Card >
                 <Card.Body>
                   <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Parties</h6>
                   <div className="row d-flex align-items-center">
                     <div className="col-9">
-                      <h3 className="f-w-300 d-flex align-items-center m-b-0">
+                      {/* <h3 className="f-w-300 d-flex align-items-center m-b-0">
                         <i className={`feather  f-30 m-r-20`} />6
-                      </h3>
+                      </h3> */}
                     </div>
                     {/* <div className="col-3 text-end">
                       <p className="m-b-0">{data.value}%</p>
@@ -190,6 +165,37 @@ const DashDefault = () => {
                   </div> */}
                 </Card.Body>
               </Card>
+            </Link>
+            </Col>
+            <Col xl={6} xxl={4} style={{marginBottom:25}}> 
+            <Link to={"/app/dashboard/ledgerRecords"}>
+
+              <Card >
+                <Card.Body>
+                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Shop/Commiittees</h6>
+                  <div className="row d-flex align-items-center">
+                    <div className="col-9">
+                      {/* <h3 className="f-w-300 d-flex align-items-center m-b-0">
+                        <i className={`feather  f-30 m-r-20`} />5
+                      </h3> */}
+                    </div>
+                    {/* <div className="col-3 text-end">
+                      <p className="m-b-0">{data.value}%</p>
+                    </div> */}
+                  </div>
+                  {/* <div className="progress m-t-30" style={{ height: '7px' }}>
+                     <div
+                      className={`progress-bar ${data.class}`}
+                      role="progressbar"
+                      style={{ width: `${data.value}%` }}
+                      aria-valuenow={data.value}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    />
+                  </div> */}
+                </Card.Body>
+              </Card>
+            </Link>
             </Col>
         <Col md={6} xl={8}>
           <Card className="Recent-Users widget-focus-lg">

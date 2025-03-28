@@ -26,8 +26,10 @@ const PartyLedger = () => {
         const response = await api.post("/api/partyLedger/create",payload);
         console.log("This is the response", response)
         toast.success("Party added successfully")
-    }catch(error){
+        setShowModal(false)
+      }catch(error){
         console.log("Error in creating file,",error)
+        setShowModal(false)
         toast.error(error?.response?.data?.message || "Error in creating party")
     }
   }
@@ -61,8 +63,10 @@ const PartyLedger = () => {
       console.log("This is the response", response)
       toast.success("Amount added successfully")
       getAllPartyLedgerRecords()
+      setShowAmountPayModal(false)
     }catch(error){
       console.log("Error in adding amount",error)
+      setShowAmountPayModal(false)
       toast.error(error?.response?.data?.message || "Error in adding amount")
   }
 }

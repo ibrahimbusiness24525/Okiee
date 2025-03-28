@@ -59,7 +59,7 @@ const NewMobilesList = () => {
     const[list,setList]= useState(false)
   const navigate = useNavigate();
  
-
+  
   const handleAddImei = () => {
     if (imeiInput.trim() !== "" && !imeis.includes(imeiInput)) {
       setAddedImeis([...addedImeis, imeiInput]);
@@ -88,7 +88,7 @@ const NewMobilesList = () => {
     if (!prices || !prices.buyingPrice) return 0;
   
     const { buyingPrice, dealerPrice, lp, lifting, promo, activation } = prices;
-  
+    
     const dealerDiscount = buyingPrice * (Number(dealerPrice) / 100 || 0);
   
     const actualPrice =
@@ -99,13 +99,13 @@ const NewMobilesList = () => {
       (Number(promo) || 0) -
       (Number(activation) || 0);
   
-    return parseInt(Math.abs(actualPrice));
-  };
+      return parseInt(Math.abs(actualPrice));
+    };
+    
   
-  
-
-
-  const deletePhone = async () => {
+    
+    
+    const deletePhone = async () => {
 
     try {
       console.log("deleteMobileId",deleteMobileId);
@@ -142,16 +142,16 @@ const NewMobilesList = () => {
       shopName,
       personName,
     };
-  
+    
     // You can navigate or perform any API call here with dispatchDetails
     console.log('Dispatch Details:', dispatchDetails);
-  
+    
     setShopName('');
     setPersonName('');
     setShowDispatchModal(false);
   };
   
-
+  
   const handleEdit = (mobile) => {
     setEditMobile(mobile);
     setShowModal(true);
@@ -164,7 +164,7 @@ const NewMobilesList = () => {
         item.ramSimDetails?.some((ramSim) =>
           ramSim.imeiNumbers?.some((imei) => 
             imei.imei1?.includes(searchTerm) || imei.imei2?.includes(searchTerm)
-          )
+    )
         )
       ));
       console.log("bulk record response",response);
@@ -177,42 +177,46 @@ const NewMobilesList = () => {
       item.ramSimDetails?.some((ramSim) =>
         ramSim.imeiNumbers?.some((imei) => 
           imei.imei1?.includes(searchTerm) || imei.imei2?.includes(searchTerm)
-        )
-      )
+  )
+)
     ));
   },[searchTerm])
   
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
-
+  
   const handleSoldClick = (mobile,type) => {
     console.log("this is type", type);
     
     if(type==="bulk"){
       setType("bulk")
+      // const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) =>
+      //   ramSim.imeiNumbers?.flatMap((imei) => [imei.imei1, imei.imei2].filter(Boolean)) || []
+      // );
+      
       const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) =>
         ramSim.imeiNumbers?.map((imei) => imei.imei1) || []
       );
       
-
+      
       setImeiList(imeiList); // 
     }
     if(type==="single"){
       setType("single")
     }
- 
+    
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
-console.log(imei);
+  console.log(imei);
 
   const handleSoldSubmit = async () => {
     if (!finalPrice || !warranty) {
       alert('Please fill all fields');
       return;
     }
-
+    
     const updatedMobile = {
       ...soldMobile,
       finalPrice,
@@ -236,22 +240,22 @@ console.log(imei);
     setFinalPrice('');
     setShowSoldModal(false);
   };
-
+  
   const confirmDelete = (mobileId) => {
     setDeleteMobileId(mobileId);
     setShowDeleteModal(true);
     setType("single");
   };
-
+  
   const handleShareInventory = () => {
     const doc = new jsPDF();
     doc.text('Mobile Inventory', 10, 10);
-
+    
     mobiles.forEach((mobile, index) => {
       const { images, companyName, modelSpecifications , specs, color } = mobile;
       const imgData = `data:image/jpeg;base64,${images[0]}`;
       const y = 20 + index * 50;
-
+      
       if (imgData) {
         doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
       }
@@ -268,10 +272,10 @@ console.log(imei);
     if (mobile.isSold) return false;
     if(mobile.phoneCondition==="Used") return false
     if(mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
-  
+    
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
-  
+    
     return searchWords.every((word) =>
       // Check if each word exists in any of the searchable fields
       mobile.companyName?.toLowerCase()?.includes(word) ||
@@ -304,11 +308,11 @@ useScanDetection({
   minLength:3,
 })
 
-  const handleShowPrices = (mobile) => {
-    setSelectedMobile(mobile);
+const handleShowPrices = (mobile) => {
+  setSelectedMobile(mobile);
     setShowPrices(true);
   };
-
+  
   const handleClosePrices = () => {
     setShowPrices(false);
     setSelectedMobile(null);
@@ -324,7 +328,7 @@ useScanDetection({
     updatedAccessories[index][field] = value;
     setAccessories(updatedAccessories);
   };
-
+  
   // Add New Accessory
   const addAccessory = () => {
     setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
@@ -335,19 +339,20 @@ useScanDetection({
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
-console.log("bulk mobile",bulkMobile);
+  console.log("bulk mobile",bulkMobile);
   const totalBulkStockAmount = bulkMobile.reduce((total,mobile)=>total+(Number(mobile?.prices?.buyingPrice) || 0),0)
   console.log("total stock amount",totalBulkStockAmount);
   const handleChange = (event) => {
     const selectedImeis = event.target.value; // Get new selected IMEIs
     setImei(selectedImeis); // Update selected IMEIs
-  
+    
     setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); // Ensure uniqueness
   };
   
   console.log("this is imei", imei,"these are added", addedImeis);
-
   
+  
+  console.log("These are the  imeis",imeiList)
   return (
     <>
      <InputGroup className="mb-3">
@@ -983,6 +988,14 @@ console.log("bulk mobile",bulkMobile);
             {item}
           </MenuItem>
         ))}
+        {/* {imeiList
+  .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
+  .map((item, index) => (
+    <MenuItem key={index} value={item}>
+      {item}
+    </MenuItem>
+  ))} */}
+
     </Select>
     </FormControl>
      

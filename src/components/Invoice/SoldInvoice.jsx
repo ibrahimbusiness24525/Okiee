@@ -367,7 +367,7 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
       <div style={{ textAlign: 'right' }}>
         <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.partyName}</p>
         {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.modelName}</p> */}
-        { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'N/A'}</p>}
+        { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
       </div>
       </section>
 
@@ -379,8 +379,9 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
               <th style={styles.th}>Model</th>
               <th style={styles.th}>RAM/ROM</th>
               <th style={styles.th}>SIM</th>
-              <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
-              {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>}
+              <th style={styles.th}>Quantity</th>
+              {/* <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
+              {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>} */}
               <th style={styles.th}>Price</th>
               <th style={styles.th}>Warranty</th>
             </tr>
@@ -393,17 +394,17 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
       <td style={styles.td}>
         {dataReceived?.invoice?.items
           ? dataReceived?.invoice?.items[0]?.mobileCompany
-          : dataReceived?.companyName ?? 'N/A'}
+          : dataReceived?.companyName ?? 'Not Available'}
       </td>
 
       {/* Model Name */}
-      <td style={styles.td}>{dataReceived?.modelName ?? 'N/A'}</td>
+      <td style={styles.td}>{dataReceived?.modelName ?? 'Not Available'}</td>
 
       {/* RAM Memory */}
-      <td style={styles.td}>{detail?.ramMemory ?? 'N/A'}</td>
+      <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
 
       {/* SIM Option */}
-      <td style={styles.td}>{detail?.simOption ?? 'N/A'}</td>
+      <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
 
       {/* IMEI Numbers */}
         {/* {detail?.imeiNumbers?.length
@@ -414,18 +415,19 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
               {/* </div>
             ))
           : 'N/A'} */}
-      <td style={styles.td}>
-          { dataReceived?.addedImeis.length !== 0 ? 
+       <td style={styles.td}>
+        {dataReceived?.addedImeis.length || detail?.imeiNumbers?.length}
+         {/* dataReceived?.addedImeis.length !== 0 ? 
           <>
             {
                 <div>
-                 Typed Imei
+                 Typed Imei  */}
                     {/* {truncate(dataReceived?.addedImeis[0], 7)} */}
-                </div>
+                {/* </div>
             }
-          </>
+          </> */}
 
-          :
+          {/* :
           <>
           {
             detail?.imeiNumbers?.length ? (
@@ -435,24 +437,24 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
                    {detail.imeiNumbers.length > 1 && " ..."}
               </div>
                   ) : (
-                "N/A"
+                "Not Available"
             )
           }
-          </>}
+          </>} */}
       </td>
 
       {/* Final Price */}
       <td style={styles.td}>
         {dataReceived?.invoice
           ? dataReceived?.invoice?.totalAmount
-          : dataReceived?.finalPrice ?? 'N/A'}
+          : dataReceived?.finalPrice ?? 'Not Available'}
       </td>
 
       {/* Warranty */}
       <td style={styles.td}>
         {dataReceived?.invoice?.items
           ? dataReceived?.invoice?.items[0]?.warranty
-          : dataReceived?.warranty ?? 'N/A'}
+          : dataReceived?.warranty ?? 'Not Available'}
       </td>
     </tr>
   ))
@@ -492,14 +494,33 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
            { dataReceived?.addedImeis.length !== 0 ? 
           <>
             {
-                <div style={{display:"flex" , gap:"5px"}}>
-                 Selected Imeis:
-                   {dataReceived.addedImeis?.map((item)=>{
-                    return(
-                      <p>{item}</p>
-                    )
-                   })}
-                </div>
+             <div
+             style={{
+               display: "flex",
+               flexWrap: "wrap",
+               gap: "5px",
+               maxWidth: "100%",
+               overflow: "hidden",
+               alignItems: "center"
+             }}
+           >
+             <span style={{ fontWeight: "bold" }}>Selected IMEIs:</span>
+             {dataReceived.addedImeis?.map((item, index) => (
+               <span
+                 key={index}
+                 style={{
+                   background: "#f0f0f0",
+                   padding: "2px 6px",
+                   borderRadius: "4px",
+                   fontSize: "12px",
+                   whiteSpace: "nowrap"
+                 }}
+               >
+                 {item}
+               </span>
+             ))}
+           </div>
+           
             }
             </> : <>
             </>
@@ -512,24 +533,83 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
         <>
        {
   dataReceived.ramSimDetails?.length>0 ? (
+    // <div>
+    //   <div style={styles.termsSection} >
+    //     <strong style={styles.termsHeading}>Total IMEIs:</strong>
+    //     {dataReceived.ramSimDetails.map((detail, index) =>
+    //       detail.imeiNumbers?.length ? (
+    //         <div key={index} style={{ display: "flex", gap: "10px" }}>
+    //           {detail.imeiNumbers.map((imeiObj, i) => (
+    //             <p key={i}>{imeiObj.imei1}</p>
+    //           ))}
+    //         </div>
+    //       ) : (
+    //         <p key={index}>N/A</p>
+    //       )
+    //     )}
+    //   </div>
+    // </div>
     <div>
-      <div style={styles.termsSection} >
-        <strong style={styles.termsHeading}>Total IMEIs:</strong>
-        {dataReceived.ramSimDetails.map((detail, index) =>
-          detail.imeiNumbers?.length ? (
-            <div key={index} style={{ display: "flex", gap: "10px" }}>
-              {detail.imeiNumbers.map((imeiObj, i) => (
-                <p key={i}>{imeiObj.imei1}</p>
-              ))}
-            </div>
-          ) : (
-            <p key={index}>N/A</p>
-          )
-        )}
+  <div style={styles.termsSection}>
+    <strong style={styles.termsHeading}>Total IMEIs:</strong>
+    <div
+      style={{
+        display: "flex",
+        gap: "6px",
+        maxWidth: "100%",
+        flexDirection:"column",
+        padding: "5px 0",
+      }}
+    >
+     {dataReceived.ramSimDetails.map((detail, index) => (
+  <div key={index} style={{ marginBottom: "8px" , display:"flex", alignItems:"center"}}>
+    <strong style={{ fontSize: "14px", color: "#333" }}>
+      Phone {index + 1}:
+    </strong>
+    {detail.imeiNumbers?.length ? (
+      <div
+        style={{
+          display: "flex",
+   
+          flexWrap: "wrap",
+          gap: "6px",
+          marginTop: "4px",
+        }}
+      >
+        {detail.imeiNumbers.map((imeiObj, i) => (
+          <div
+            key={i}
+            style={{
+              background: "#f0f0f0",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <strong>IMEI 1:</strong> {imeiObj.imei1}{" "}
+            {imeiObj.imei2 ? (
+              <>
+                | <strong>IMEI 2:</strong> {imeiObj.imei2}
+              </>
+            ) : null}
+          </div>
+        ))}
       </div>
+    ) : (
+      <span style={{ fontSize: "12px", color: "#888", marginLeft: "10px" }}>
+        Not Available
+      </span>
+    )}
+  </div>
+))}
+
     </div>
+  </div>
+</div>
+
   ) : (
-    "N/A"
+    ""
   )
 }
 
@@ -620,9 +700,9 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
 
   {/* Right Side */}
   <div style={{ textAlign: 'right' }}>
-    <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerName : dataReceived?.customerName ?? 'N/A'}</p>
+    <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerName : dataReceived?.customerName ?? 'Not Available'}</p>
     {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p> */}
-   { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'N/A'}</p>}
+   { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
   </div>
 </section>
 
@@ -640,12 +720,12 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
           </thead>
           <tbody>
             <tr style={styles.stripedRow}>
-              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileName :dataReceived?.modelSpecifications ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei :dataReceived?.imei ?? 'N/A'}</td>
-             {dataReceived.imei2 && <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei2 : dataReceived.imei2 ?? 'N/A'}</td> }
-              <td style={styles.td}>{dataReceived?.invoice? dataReceived?.invoice?.totalAmount :dataReceived?.finalPrice ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty :dataReceived?.warranty ?? 'N/A'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'Not Available'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileName :dataReceived?.modelSpecifications ?? 'Not Available'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei :dataReceived?.imei1 ?? 'Not Available'}</td>
+             {dataReceived.imei2 && <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei2 : dataReceived.imei2 ?? 'Not Available'}</td> }
+              <td style={styles.td}>{dataReceived?.invoice? dataReceived?.invoice?.totalAmount :dataReceived?.finalPrice ?? 'Not Available'}</td>
+              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty :dataReceived?.warranty ?? 'Not Available'}</td>
             </tr>
           </tbody>
         </table>
