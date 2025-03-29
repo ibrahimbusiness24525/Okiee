@@ -199,14 +199,16 @@ const SoldInvoice = () => {
   const [imeis, setImeis] = useState(
     dataReceived?.ramSimDetails?.flatMap(item => item.imeiNumbers) || []
   );
-  
+  const imeiOneList =dataReceived?.addedImeis.length !== 0 && dataReceived?.addedImeis?.map((imei) => imei.split(" / ")[0]) || [];
+  console.log("this is the imeiOneList",imeiOneList);
   const handleSubmit = async (type) => {
     if(dataReceived?.prices?.buyingPrice){
       const payload = {
         bulkPhonePurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId, // Get from first object
         imeiNumbers: dataReceived?.addedImeis.length === 0 
         ? imeis.map(item => item?.imei1)  // Extract imei1 properly
-        : dataReceived?.addedImeis, 
+        : imeiOneList, 
+        // : dataReceived?.addedImeis, 
         salePrice: dataReceived?.finalPrice,
           totalInvoice,
         // salePrice: dataReceived?.finalPrice,
@@ -491,43 +493,43 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
            {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
            <div style={styles.termsHeading}>Total Selected Imeis</div>
            <div style={styles.termsText}>
-           { dataReceived?.addedImeis.length !== 0 ? 
-          <>
-            {
-             <div
-             style={{
-               display: "flex",
-               flexWrap: "wrap",
-               gap: "5px",
-               maxWidth: "100%",
-               overflow: "hidden",
-               alignItems: "center"
-             }}
-           >
-             <span style={{ fontWeight: "bold" }}>Selected IMEIs:</span>
-             {dataReceived.addedImeis?.map((item, index) => (
-               <span
-                 key={index}
-                 style={{
-                   background: "#f0f0f0",
-                   padding: "2px 6px",
-                   borderRadius: "4px",
-                   fontSize: "12px",
-                   whiteSpace: "nowrap"
-                 }}
-               >
-                 {item}
-               </span>
-             ))}
-           </div>
+  {dataReceived?.addedImeis?.length ? (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        maxWidth: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <span style={{ fontWeight: "bold" }}>Selected IMEIs:</span>
+      {dataReceived.addedImeis.map((item, index) => {
+        const [imei1, imei2] = item.split(" / ");
+        return (
+          <div
+            key={index}
+            style={{
            
-            }
-            </> : <>
-            </>
-            }
-         
-            
-           </div>
+              padding: "6px 10px",
+              borderRadius: "6px",
+              fontSize: "14px",
+              whiteSpace: "nowrap",
+              display:"flex",
+              alignItems:"center",
+              gap:"10px",
+            }}
+          >
+            <strong>Phone {index + 1}: </strong>
+            <span style={{ background: "#f0f0f0",  padding: "6px 10px",borderRadius:"10px"}}>imei 1: {imei1}</span>
+            <span style={{ background: "#f0f0f0",  padding: "6px 10px",borderRadius:"10px"}}> {imei2 ? ` imei 2: ${imei2}` : ""}</span>
+          </div>
+        );
+      })}
+    </div>
+  ) : null}
+</div>
+
      </div>
         </>:
         <>
@@ -561,7 +563,7 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
         padding: "5px 0",
       }}
     >
-     {dataReceived.ramSimDetails.map((detail, index) => (
+     {/* {dataReceived.ramSimDetails.map((detail, index) => (
   <div key={index} style={{ marginBottom: "8px" , display:"flex", alignItems:"center"}}>
     <strong style={{ fontSize: "14px", color: "#333" }}>
       Phone {index + 1}:
@@ -602,7 +604,31 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
       </span>
     )}
   </div>
-))}
+))} */}
+{dataReceived?.ramSimDetails?.map((detail, detailIndex) =>
+  detail.imeiNumbers?.map((imeiObj, imeiIndex) => (
+    <div key={`${detailIndex}-${imeiIndex}`} style={{ marginBottom: "8px",display:"flex",alignItems:"center",gap:"10px" }}>
+      <strong style={{ fontSize: "14px", color: "#333" }}>
+        Phone {imeiIndex + 1}:
+      </strong>
+      <div
+        style={{
+          background: "#f0f0f0",
+          padding: "4px 8px",
+          borderRadius: "4px",
+          fontSize: "12px",
+          whiteSpace: "nowrap",
+          marginTop: "4px",
+        }}
+      >
+        <strong>IMEI 1:</strong> {imeiObj.imei1}
+        {imeiObj.imei2 && ` | `}
+        {imeiObj.imei2 && <strong>IMEI 2:</strong>} {imeiObj.imei2}
+      </div>
+    </div>
+  ))
+)}
+
 
     </div>
   </div>

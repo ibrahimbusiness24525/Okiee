@@ -191,13 +191,18 @@ const NewMobilesList = () => {
     
     if(type==="bulk"){
       setType("bulk")
-      // const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) =>
-      //   ramSim.imeiNumbers?.flatMap((imei) => [imei.imei1, imei.imei2].filter(Boolean)) || []
-      // );
+      const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) => {
+        if (!ramSim.imeiNumbers) return [];
+        return ramSim.imeiNumbers.map((imei) =>
+          imei.imei2
+            ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
+            : imei.imei1 // Otherwise, just imei1
+        );
+      }) || [];
       
-      const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) =>
-        ramSim.imeiNumbers?.map((imei) => imei.imei1) || []
-      );
+      // const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) =>
+      //   ramSim.imeiNumbers?.map((imei) => imei.imei1) || []
+      // );
       
       
       setImeiList(imeiList); // 
@@ -343,10 +348,12 @@ const handleShowPrices = (mobile) => {
   const totalBulkStockAmount = bulkMobile.reduce((total,mobile)=>total+(Number(mobile?.prices?.buyingPrice) || 0),0)
   console.log("total stock amount",totalBulkStockAmount);
   const handleChange = (event) => {
-    const selectedImeis = event.target.value; // Get new selected IMEIs
-    setImei(selectedImeis); // Update selected IMEIs
+    const selectedImeis = event.target.value; 
+    setImei(selectedImeis); 
     
-    setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); // Ensure uniqueness
+    setAddedImeis((prevImeis) => Array.from(new Set([...prevImeis, ...selectedImeis]))); // Ensure uniqueness
+
+    // setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); 
   };
   
   console.log("this is imei", imei,"these are added", addedImeis);
@@ -965,8 +972,6 @@ const handleShowPrices = (mobile) => {
         Add Another Accessory
       </Button>
      <FormControl fullWidth variant="outlined" className="mb-3">
-      <InputLabel>IMEI</InputLabel>
-      <Select value={imei} onChange={handleChange} displayEmpty multiple>
       {/* Search Field Inside Dropdown */}
       {/* <MenuItem onMouseDown={(e) => e.stopPropagation()}>
         <TextField
@@ -979,7 +984,7 @@ const handleShowPrices = (mobile) => {
       </MenuItem> */}
 
       {/* Filtered IMEI Options */}
-      {imeiList
+      {/* {imeiList
         .filter((item) =>
           item.toLowerCase().includes(search.toLowerCase())
         )
@@ -987,16 +992,17 @@ const handleShowPrices = (mobile) => {
           <MenuItem key={index} value={item}>
             {item}
           </MenuItem>
-        ))}
-        {/* {imeiList
-  .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
-  .map((item, index) => (
-    <MenuItem key={index} value={item}>
-      {item}
-    </MenuItem>
-  ))} */}
-
-    </Select>
+        ))} */}
+      <InputLabel>IMEI</InputLabel>
+<Select value={imei} onChange={handleChange} displayEmpty multiple>
+  {imeiList
+    .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
+    .map((item, index) => (
+      <MenuItem key={index} value={item}>
+        {item}
+      </MenuItem>
+    ))}
+</Select>
     </FormControl>
      
     </div>

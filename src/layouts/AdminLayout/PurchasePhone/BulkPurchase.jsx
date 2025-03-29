@@ -496,7 +496,7 @@ return(
                   </Col>
                   <Col>
                     <Form.Group controlId="bulkDealerPrice">
-                      <Form.Label>Dealer Price (DP%)</Form.Label>
+                      <Form.Label>Dealer Price (Optional)</Form.Label>
                       <Form.Control
                         type="number"
                         placeholder="Enter DP%"
@@ -512,7 +512,7 @@ return(
                 <Row>
                   <Col>
                     <Form.Group controlId="bulkLP">
-                      <Form.Label>LP</Form.Label>
+                      <Form.Label>LP (Optional)</Form.Label>
                       <Form.Control
                         type="number"
                         placeholder="Enter LP"
@@ -526,7 +526,7 @@ return(
                   </Col>
                   <Col>
                     <Form.Group controlId="bulkLifting">
-                      <Form.Label>Lifting</Form.Label>
+                      <Form.Label>Lifting (Optional)</Form.Label>
                       <Form.Control
                         type="number"
                         placeholder="Enter Lifting"
@@ -542,7 +542,7 @@ return(
                 <Row>
                   <Col>
                     <Form.Group controlId="bulkActivation">
-                      <Form.Label>Activation</Form.Label>
+                      <Form.Label>Activation (Optional)</Form.Label>
                       <Form.Control
                         type="number"
                         placeholder="Enter Activation"
@@ -556,7 +556,7 @@ return(
                   </Col>
                   <Col>
                     <Form.Group controlId="bulkPromo">
-                      <Form.Label>Promo</Form.Label>
+                      <Form.Label>Promo (Optional)</Form.Label>
                       <Form.Control
                         type="text"
                         placeholder="Enter Promo"
