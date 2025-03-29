@@ -284,7 +284,7 @@ const SoldInvoice = () => {
         console.log("This is the single phone",response);
 
         if (response) {
-          alert('Invoice submitted s=uccessfully');
+          alert('Invoice submitted successfully');
         }
       } catch (error) {
         alert('Error submitting invoice: ' + error.message);
