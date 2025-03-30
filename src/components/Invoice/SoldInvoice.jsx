@@ -199,13 +199,13 @@ const SoldInvoice = () => {
   const [imeis, setImeis] = useState(
     dataReceived?.ramSimDetails?.flatMap(item => item.imeiNumbers) || []
   );
-  const imeiOneList =dataReceived?.addedImeis.length !== 0 && dataReceived?.addedImeis?.map((imei) => imei.split(" / ")[0]) || [];
+  const imeiOneList =dataReceived?.addedImeis?.length !== 0 && dataReceived?.addedImeis?.map((imei) => imei.split(" / ")[0]) || [];
   console.log("this is the imeiOneList",imeiOneList);
   const handleSubmit = async (type) => {
     if(dataReceived?.prices?.buyingPrice){
       const payload = {
         bulkPhonePurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId, // Get from first object
-        imeiNumbers: dataReceived?.addedImeis.length === 0 
+        imeiNumbers: dataReceived?.addedImeis?.length === 0 
         ? imeis.map(item => item?.imei1)  // Extract imei1 properly
         : imeiOneList, 
         // : dataReceived?.addedImeis, 
@@ -418,7 +418,7 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
             ))
           : 'N/A'} */}
        <td style={styles.td}>
-        {dataReceived?.addedImeis.length || detail?.imeiNumbers?.length}
+        {dataReceived?.addedImeis?.length || detail?.imeiNumbers?.length}
          {/* dataReceived?.addedImeis.length !== 0 ? 
           <>
             {
