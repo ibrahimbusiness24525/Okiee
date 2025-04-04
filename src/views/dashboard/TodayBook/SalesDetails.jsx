@@ -54,6 +54,7 @@ const SalesDetail = () => {
         </p>
       </div>
 
+
       {/* Revenue Comparison */}
       <div style={cardStyle}>
         <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>Total Revenue Comparison</h2>

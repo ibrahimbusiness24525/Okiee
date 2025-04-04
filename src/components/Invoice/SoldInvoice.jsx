@@ -418,7 +418,11 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
             ))
           : 'N/A'} */}
        <td style={styles.td}>
-        {dataReceived?.addedImeis?.length || detail?.imeiNumbers?.length}
+        {/* {dataReceived?.addedImeis?.length || detail?.imeiNumbers?.length} */}
+        <td style={styles.td}>
+          {detail.imeiNumbers.length}
+        </td>
+
          {/* dataReceived?.addedImeis.length !== 0 ? 
           <>
             {
