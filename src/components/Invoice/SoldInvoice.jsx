@@ -5,6 +5,7 @@ import axios from 'axios';
 import { BASE_URL } from 'config/constant';
 import { api } from '../../../api/api';
 import { truncate } from '../../utils/truncate';
+import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 const SoldInvoice = () => {
   const styles = {
     container: {
@@ -508,28 +509,45 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
       }}
     >
       <span style={{ fontWeight: "bold" }}>Selected IMEIs:</span>
-      {dataReceived.addedImeis.map((item, index) => {
-        const [imei1, imei2] = item.split(" / ");
-        return (
-          <div
-            key={index}
-            style={{
-           
-              padding: "6px 10px",
-              borderRadius: "6px",
-              fontSize: "14px",
-              whiteSpace: "nowrap",
-              display:"flex",
-              alignItems:"center",
-              gap:"10px",
-            }}
-          >
-            <strong>Phone {index + 1}: </strong>
-            <span style={{ background: "#f0f0f0",  padding: "6px 10px",borderRadius:"10px"}}>imei 1: {imei1}</span>
-            <span style={{ background: "#f0f0f0",  padding: "6px 10px",borderRadius:"10px"}}> {imei2 ? ` imei 2: ${imei2}` : ""}</span>
-          </div>
-        );
-      })}
+      {dataReceived?.ramSimDetails?.map((ramGroup, ramIndex) => {
+  // Filter only those imeis that are present in addedImeis
+  const matchedImeis = ramGroup.imeiNumbers.filter(imeiObj =>
+    dataReceived.addedImeis.includes(imeiObj.imei1)
+  );
+
+  if (matchedImeis.length === 0) return null; // skip if no imeis matched for this RAM group
+
+  return (
+    <div key={ramIndex} style={{ marginBottom: "20px" }}>
+      <StyledHeading>Ram Memory: {ramGroup.ramMemory}</StyledHeading>
+      {matchedImeis.map((imeiObj, index) => (
+        <div
+          key={index}
+          style={{
+            padding: "6px 10px",
+            borderRadius: "6px",
+            fontSize: "14px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <strong>Phone {index + 1}:</strong>
+          <span style={{ background: "#f0f0f0", padding: "6px 10px", borderRadius: "10px" }}>
+            IMEI 1: {imeiObj.imei1}
+          </span>
+          {imeiObj.imei2 && (
+            <span style={{ background: "#f0f0f0", padding: "6px 10px", borderRadius: "10px" }}>
+              IMEI 2: {imeiObj.imei2}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+})}
+
     </div>
   ) : null}
 </div>
@@ -609,29 +627,55 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
     )}
   </div>
 ))} */}
-{dataReceived?.ramSimDetails?.map((detail, detailIndex) =>
-  detail.imeiNumbers?.map((imeiObj, imeiIndex) => (
-    <div key={`${detailIndex}-${imeiIndex}`} style={{ marginBottom: "8px",display:"flex",alignItems:"center",gap:"10px" }}>
-      <strong style={{ fontSize: "14px", color: "#333" }}>
-        Phone {imeiIndex + 1}:
-      </strong>
+{dataReceived?.ramSimDetails?.map((detail, detailIndex) => (
+  <div key={detailIndex} style={{ marginBottom: "16px" }}>
+    <StyledHeading>Ram Memory: {detail?.ramMemory}</StyledHeading>
+
+    {detail?.imeiNumbers?.length > 0 ? <>
+      {detail.imeiNumbers?.map((imeiObj, imeiIndex) => (
       <div
+        key={`${detailIndex}-${imeiIndex}`}
         style={{
-          background: "#f0f0f0",
-          padding: "4px 8px",
-          borderRadius: "4px",
-          fontSize: "12px",
-          whiteSpace: "nowrap",
-          marginTop: "4px",
+          marginBottom: "8px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px"
         }}
       >
-        <strong>IMEI 1:</strong> {imeiObj.imei1}
-        {imeiObj.imei2 && ` | `}
-        {imeiObj.imei2 && <strong>IMEI 2:</strong>} {imeiObj.imei2}
+        <strong style={{ fontSize: "14px", color: "#333" }}>
+          Phone {imeiIndex + 1}:
+        </strong>
+        <div
+          style={{
+            background: "#f0f0f0",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            whiteSpace: "nowrap",
+            marginTop: "4px",
+          }}
+        >
+          <strong>IMEI 1:</strong> {imeiObj.imei1}
+          {imeiObj.imei2 && ` | `}
+          {imeiObj.imei2 && <strong>IMEI 2:</strong>} {imeiObj.imei2}
+        </div>
       </div>
-    </div>
-  ))
-)}
+    ))}
+    </> : <>
+    <div
+          style={{
+            padding: "4px 8px",
+            fontSize: "12px",
+            marginTop: "4px",
+          }}
+        >
+          <strong>Not found</strong> 
+         
+        </div>
+    </>}
+  </div>
+))}
+
 
 
     </div>

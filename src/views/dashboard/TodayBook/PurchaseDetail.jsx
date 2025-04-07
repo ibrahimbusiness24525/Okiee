@@ -1,72 +1,125 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { api } from "../../../../api/api";
 
 const PurchaseDetail = () => {
-  // Example data
-  const singlePrice = 1200; // Price of one phone
-  const bulkQuantity = 10; // Number of phones in bulk purchase
-  const bulkDiscount = 0.15; // 15% discount on bulk purchase
+  const [todayBookData, setTodayBookData] = useState({});
 
-  const bulkPricePerUnit = singlePrice * (1 - bulkDiscount);
-  const bulkTotalPrice = bulkPricePerUnit * bulkQuantity;
-  const singleTotalPrice = singlePrice * bulkQuantity;
-
-  // Inline styles
-  const containerStyle = {
-    maxWidth: "500px",
-    margin: "auto",
-    padding: "20px",
-    backgroundColor: "#fff",
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-    borderRadius: "10px",
-    textAlign: "center",
+  const getTodayBook = async () => {
+    try {
+      const response = await api.get(`/api/dayBook/todayBook`);
+      setTodayBookData(response?.data?.data || {});
+    } catch (error) {
+      console.log("Error in getting the field", error);
+    }
   };
 
-  const cardStyle = {
-    padding: "15px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    marginBottom: "15px",
-  };
+  useEffect(() => {
+    getTodayBook();
+  }, []);
 
-  const priceText = { fontSize: "18px", fontWeight: "bold" };
-  const greenText = { color: "green", fontWeight: "bold" };
-  const redText = { color: "red", fontWeight: "bold" };
-  const blueText = { color: "blue", fontWeight: "bold", marginTop: "10px" };
+  // Calculations
+  const totalPurchasePrice =
+    (todayBookData?.purchasedSinglePhone?.reduce(
+      (acc, phone) =>
+        acc +
+        (Number(phone.price?.purchasePrice) ||
+          Number(phone.purchasePrice) ||
+          0),
+      0
+    ) || 0) +
+    (todayBookData?.purchaseBulkPhone?.reduce(
+      (price, phone) => price + (Number(phone.prices?.buyingPrice) || 0),
+      0
+    ) || 0);
+
+  const totalInvoices =
+    (todayBookData?.soldSinglePhone?.reduce(
+      (acc, phone) => acc + (phone.totalInvoice || 0),
+      0
+    ) || 0) +
+    (todayBookData?.soldBulkPhone?.reduce(
+      (acc, phone) => acc + (phone.totalInvoice || 0),
+      0
+    ) || 0);
+
+  const totalBulkInvoices =
+    todayBookData?.soldBulkPhone?.reduce(
+      (acc, phone) => acc + (phone.totalInvoice || 0),
+      0
+    ) || 0;
+
+  // Ledger calculations (iterate over all ledger entries)
+  const totalCashPaid =
+    todayBookData?.ledger?.reduce((acc, entry) => acc + (entry.cashPaid || 0), 0) || 0;
+  const totalCashReceived =
+    todayBookData?.ledger?.reduce((acc, entry) => acc + (entry.cashReceived || 0), 0) || 0;
+  const totalOpeningCash =
+    todayBookData?.ledger?.reduce((acc, entry) => acc + (entry.openingCash || 0), 0) || 0;
+  const totalClosingCash =
+    todayBookData?.ledger?.reduce((acc, entry) => acc + (entry.closingCash || 0), 0) || 0;
+  const totalExpenses =
+    todayBookData?.ledger?.reduce((acc, entry) => acc + (entry.expense || 0), 0) || 0;
+
+  const profit = totalInvoices - totalPurchasePrice - totalExpenses;
 
   return (
-    <div style={containerStyle}>
-      <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Purchase Detail</h1>
+    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+      <h2 style={{ fontSize: "1.8rem", marginBottom: "1rem" }}>
+        📊 Purchase Detail Summary
+      </h2>
 
-      {/* Single Purchase */}
-      <div style={cardStyle}>
-        <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>Single Phone</h2>
-        <p>Price per phone:</p>
-        <p style={priceText}>${singlePrice}</p>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: "1.5rem",
+        }}
+      >
+        <Card title="🛒 Total Purchase Price" value={totalPurchasePrice} />
+        <Card title="📄 Total Invoices" value={totalInvoices} />
+        <Card title="🧾 Bulk Invoices" value={totalBulkInvoices} />
+        
+        {/* Ledger-related Cards */}
+        <Card title="💸 Total Cash Paid" value={totalCashPaid} />
+        <Card title="💰 Total Cash Received" value={totalCashReceived} />
+        <Card title="🔓 Total Opening Cash" value={totalOpeningCash} />
+        <Card title="🔒 Total Closing Cash" value={totalClosingCash} />
+        
+        <Card title="💧 Total Expenses" value={totalExpenses} />
+        
+        <Card
+          title="📈 Profit / Loss"
+          value={profit}
+          style={{ color: profit >= 0 ? "green" : "red" }}
+        />
       </div>
+    </div>
+  );
+};
 
-      {/* Bulk Purchase */}
-      <div style={cardStyle}>
-        <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>Bulk Purchase</h2>
-        <p>Discounted Price per phone:</p>
-        <p style={greenText}>${bulkPricePerUnit.toFixed(2)}</p>
-        <p style={{ fontSize: "14px", color: "green" }}>
-          ({bulkDiscount * 100}% Discount)
-        </p>
-      </div>
-
-      {/* Cost Comparison */}
-      <div style={cardStyle}>
-        <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>Total Cost Comparison</h2>
-        <p>Buying {bulkQuantity} phones:</p>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <p>Without Bulk :</p>
-          <p style={redText}>${singleTotalPrice}</p>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <p>With Bulk :</p>
-          <p style={greenText}>${bulkTotalPrice.toFixed(2)}</p>
-        </div>
-      </div>
+// Card Component for reuse
+const Card = ({ title, value, style = {} }) => {
+  return (
+    <div
+      style={{
+        border: "1px solid #ddd",
+        borderRadius: "10px",
+        padding: "1rem",
+        backgroundColor: "#f9f9f9",
+        boxShadow: "0 0 8px rgba(0,0,0,0.05)",
+      }}
+    >
+      <h4 style={{ margin: "0 0 0.5rem 0", color: "#555" }}>{title}</h4>
+      <p
+        style={{
+          fontSize: "1.3rem",
+          fontWeight: "bold",
+          margin: 0,
+          ...style,
+        }}
+      >
+        {value.toLocaleString()}
+      </p>
     </div>
   );
 };
