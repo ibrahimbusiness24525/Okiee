@@ -99,6 +99,8 @@ const[todayBookData,setTodayBookData] = useState([]);
                 <span style={{ fontSize: "28px", fontWeight: "700", display: "block" }}>
                   {totalPurchasePrice?.toLocaleString() || "0.00"} PKR 
                   
+
+                  
                 </span>
               </Card.Body>
             </Card>
