@@ -313,7 +313,10 @@ const totalInvoice = Number(dataReceived.finalPrice || 0) + totalAccessoriesPric
 
 console.log("this is the total invoice",totalInvoice);
 console.log("These are the dataReceived",dataReceived.addedImeis);
-
+const addedImei1s = dataReceived?.addedImeis?.map((imeiPair) => {
+  const [imei1] = imeiPair.split('/').map((imei) => imei.trim());
+  return imei1;
+}) ?? [];
 
   return (
     <div>
@@ -390,10 +393,53 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
             </tr>
           </thead>
           <tbody>
-          {dataReceived?.ramSimDetails ? (
+                {dataReceived.addedImeis.length>0 ?
+                <>
+                {dataReceived?.ramSimDetails
+  ?.filter((detail) =>
+    detail.imeiNumbers.some((imeiObj) =>
+      addedImei1s.includes(imeiObj.imei1)
+    )
+  )
+  .map((detail, index) => (
+    <tr key={index} style={styles.stripedRow}>
+      <td style={styles.td}>
+        {dataReceived?.invoice?.items
+          ? dataReceived.invoice.items[0]?.mobileCompany
+          : dataReceived?.companyName ?? 'Not Available'}
+      </td>
+
+      <td style={styles.td}>{dataReceived?.modelName ?? 'Not Available'}</td>
+      <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
+      <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
+
+      {/* Count of matched IMEIs */}
+      <td style={styles.td}>
+        {
+          detail.imeiNumbers.filter((imeiObj) =>
+            addedImei1s.includes(imeiObj.imei1)
+          ).length
+        }
+      </td>
+
+      <td style={styles.td}>
+        {dataReceived?.invoice
+          ? dataReceived.invoice.totalAmount
+          : dataReceived?.finalPrice ?? 'Not Available'}
+      </td>
+
+      <td style={styles.td}>
+        {dataReceived?.invoice?.items
+          ? dataReceived.invoice.items[0]?.warranty
+          : dataReceived?.warranty ?? 'Not Available'}
+      </td>
+    </tr>
+))}
+                </>:
+                <>
+                       {dataReceived?.ramSimDetails ? (
   dataReceived.ramSimDetails.map((detail, index) => (
     <tr key={index} style={styles.stripedRow}>
-      {/* Mobile Company */}
       <td style={styles.td}>
         {dataReceived?.invoice?.items
           ? dataReceived?.invoice?.items[0]?.mobileCompany
@@ -409,45 +455,12 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
       {/* SIM Option */}
       <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
 
-      {/* IMEI Numbers */}
-        {/* {detail?.imeiNumbers?.length
-          ? detail.imeiNumbers.map((imei, i) => (
-              <div key={i}>
-               { truncate(imei.imei1, 7)} {imei?.imei2 && `/ ${truncate(imei.imei2, 7)}`} */}
-                {/* {imei?.imei1} {imei?.imei2 && `/ ${imei.imei2}`} */}
-              {/* </div>
-            ))
-          : 'N/A'} */}
+    
        <td style={styles.td}>
         {/* {dataReceived?.addedImeis?.length || detail?.imeiNumbers?.length} */}
         <td style={styles.td}>
           {detail.imeiNumbers.length}
         </td>
-
-         {/* dataReceived?.addedImeis.length !== 0 ? 
-          <>
-            {
-                <div>
-                 Typed Imei  */}
-                    {/* {truncate(dataReceived?.addedImeis[0], 7)} */}
-                {/* </div>
-            }
-          </> */}
-
-          {/* :
-          <>
-          {
-            detail?.imeiNumbers?.length ? (
-              <div>
-                  {truncate(detail.imeiNumbers[0].imei1, 7)}
-                   {detail.imeiNumbers[0]?.imei2 && ` / ${truncate(detail.imeiNumbers[0].imei2, 7)}`}
-                   {detail.imeiNumbers.length > 1 && " ..."}
-              </div>
-                  ) : (
-                "Not Available"
-            )
-          }
-          </>} */}
       </td>
 
       {/* Final Price */}
@@ -464,31 +477,27 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
           : dataReceived?.warranty ?? 'Not Available'}
       </td>
     </tr>
-  ))
-) : (
-  <tr>
-    <td colSpan={7} style={styles.td}>No Data Available</td>
-  </tr>
-)}
+    ))
+      ) : (
+          <tr>
+            <td colSpan={7} style={styles.td}>No Data Available</td>
+          </tr>
+      )}
 
-            {/* <tr style={styles.stripedRow}>
-              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.modelName}</td>
-              <td style={styles.td}>{dataReceived?.ramSimDetails[0]?.imeiNumbers?.imei1}</td>
-              <td style={styles.td}>{dataReceived?.invoice? dataReceived?.invoice?.totalAmount :dataReceived?.finalPrice ?? 'N/A'}</td>
-              <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty :dataReceived?.warranty ?? 'N/A'}</td>
-            </tr> */}
+                </>
+                }
+       
           </tbody>
         </table>
         {dataReceived.accessoryName && (
-  <div style={{ ...styles.termsSection, display: "flex",marginBottom:"10px", alignItems: "center", justifyContent:"center",border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
-    <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
-    <div style={{ flex: 1, display: "flex", gap: "20px" }}>
-      <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
-      <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
-    </div>
-  </div>
-)}
+        <div style={{ ...styles.termsSection, display: "flex",marginBottom:"10px", alignItems: "center", justifyContent:"center",border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
+          <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
+          <div style={{ flex: 1, display: "flex", gap: "20px" }}>
+            <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
+            <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
+          </div>
+        </div>
+        )}
         <div style={styles.totalSection}>
           <h3>Total:{totalInvoice}Rs</h3>
         </div>
@@ -512,7 +521,7 @@ console.log("These are the dataReceived",dataReceived.addedImeis);
       {dataReceived?.ramSimDetails?.map((ramGroup, ramIndex) => {
   // Filter only those imeis that are present in addedImeis
   const matchedImeis = ramGroup.imeiNumbers.filter(imeiObj =>
-    dataReceived.addedImeis.includes(imeiObj.imei1)
+    addedImei1s.includes(imeiObj.imei1)
   );
 
   if (matchedImeis.length === 0) return null; // skip if no imeis matched for this RAM group

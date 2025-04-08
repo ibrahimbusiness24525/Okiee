@@ -530,7 +530,7 @@ const BulkPhoneDetail = () => {
       )}
 
       {/* Action Buttons */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginTop: "1.5rem" }}>
+      {/* <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginTop: "1.5rem" }}>
         <button style={{...styles.button, ...styles.primaryButton}}>
           Edit Purchase
         </button>
@@ -540,7 +540,7 @@ const BulkPhoneDetail = () => {
         <button style={{...styles.button, ...styles.dangerButton}}>
           Delete Purchase
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
