@@ -592,14 +592,14 @@ const handleShowPrices = (mobile) => {
       onRowClick={"handleClick"}
     /> */}
       <Table
-      // routes={["/purchase/purchaseRecords"]}
+      routes={["/app/dashboard/bulkPhoneDetail"]}
            array={bulkMobile}
           //  search={"imei1"}
            keysToDisplay={["modelName", "companyName","partyName", "status", ]}
            label={[
                "Model Name",
                "Company Name",
-               "Parth Name",
+               "Party Name",
                "Status",
        
                "Actions",

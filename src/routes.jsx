@@ -86,6 +86,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/bulkPhoneDetail/:id',
+        element: lazy(() => import('./components/mobileCards/BulkPhoneDetail')) // Mobile List
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/usedMobileList',
         element: lazy(() => import('./components/mobileCards/UsedMobileList')) // Mobile List
       },
