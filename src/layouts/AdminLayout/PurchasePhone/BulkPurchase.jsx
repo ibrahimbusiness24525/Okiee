@@ -12,9 +12,24 @@ const BulkPurchaseModal = ({ handleBulkPhoneModalclose, handleSubmit,showBulkMod
 const[showTextBox,setShowTextBox]= useState(false)
 const[partyNames,setPartyNames] =  useState([])
 
-const handleShowTextBox = () =>{
-  setShowTextBox(true)
-}
+const handleShowTextBox = () => {
+  setBulkData((prev) => ({
+    ...prev,
+    ramSimDetails: [
+      ...prev.ramSimDetails,
+      {
+        companyName: "",
+        modelName: "",
+        batteryHealth: "",
+        ramMemory: "",
+        simOption: "",
+        priceOfOne: "",
+        imeiNumbers: [],
+      },
+    ],
+  }));
+  setShowTextBox(true);
+};
 
 const getAllPartyNames = async( ) =>{
   try{
@@ -85,398 +100,234 @@ return(
                   </Col>
                 </Row>
           
-                {/* Company Name and Model Name */}
-                <Row>
-                  <Col>
-                    <Form.Group controlId="bulkCompanyName">
-                      <Form.Label>Company Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter Company Name"
-                        value={bulkData.companyName}
-                        onChange={(e) =>
-                          setBulkData({ ...bulkData, companyName: e.target.value })
-                        }
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="bulkModel">
-                      <Form.Label>Model Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter Model Name"
-                        value={bulkData.model}
-                        onChange={(e) =>
-                          setBulkData({ ...bulkData, model: e.target.value })
-                        }
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-          
-                {/* RAM/Memory, SIM Option, and Quantity */}
-                <Row>
-                  <Col>
-                    <Form.Group controlId="bulkRamMemory">
-                      <Form.Label>RAM/Memory</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter RAM/Memory"
-                        value={bulkData.ramSimDetails[0]?.ramMemory || ""}
-                        onChange={(e) =>
-                          setBulkData({
-                            ...bulkData,
-                            ramSimDetails: bulkData.ramSimDetails.map((item, index) =>
-                              index === 0 ? { ...item, ramMemory: e.target.value } : item
-                            )
-                          })
-                        }
-                        required
-                      />
 
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="bulkSimOption">
-                      <Form.Label>SIM Option</Form.Label>
-                      <Form.Select
-                      value={bulkData.ramSimDetails[0]?.simOption || ""}
-                      onChange={(e) =>
-                        setBulkData({
-                          ...bulkData,
-                          ramSimDetails: bulkData.ramSimDetails.map((item, index) =>
-                            index === 0 ? { ...item, simOption: e.target.value } : item
-                          )
-                        })
-                      }
-                      required
-                      >
-                    <option value="">Select SIM Option</option>
-                     <option value="Single SIM">Single SIM</option>
-                    <option value="Dual SIM">Dual SIM</option>
-                    </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="bulkQuantity">
-                      <Form.Label>Number of Quantity</Form.Label>
-                      <Form.Control
-  type="number"
-  placeholder="Enter Quantity"
-  value={bulkData.quantity}
-  onChange={(e) => {
-    const quantity = parseInt(e.target.value, 10) || 0; // Ensure it's always a number
-    const imeiFields = Array.from({ length: quantity }, () =>
-      bulkData.simOption === "Dual SIM"
-        ? { imei1: "", imei2: "" }
-        : { imei1: "" }
-    );
 
-    setBulkData((prev) => ({
-      ...prev,
-      quantity,
-      ramSimDetails: prev.ramSimDetails.map((item, index) =>
-        index === 0 ? { ...item, imeiNumbers: imeiFields } : item
-      ),
-    }));
-  }}
-  required
-/>
-
-                    </Form.Group>
-                  </Col>
-                </Row>
-          
-                {/* IMEI Fields */}
-                <Table striped bordered hover className="mt-3">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>IMEI 1</th>
-      {bulkData?.ramSimDetails[0]?.simOption === "Dual SIM" && <th>IMEI 2</th>}
-      <th>Color</th>
-    </tr>
-  </thead>
-  <tbody>
-    {bulkData.ramSimDetails[0]?.imeiNumbers?.map((phone, index) => (
-      <tr key={index}>
-        <td>{index + 1}</td>
-        <td>
-          <Form.Control
-            type="number"
-            placeholder="Enter IMEI 1"
-            value={phone.imei1}
-            onChange={(e) => {
-              const updatedImeis = [...bulkData.ramSimDetails[0].imeiNumbers];
-              updatedImeis[index] = { ...updatedImeis[index], imei1: e.target.value };
-              setBulkData((prev) => ({
-                ...prev,
-                ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                  idx === 0 ? { ...item, imeiNumbers: updatedImeis } : item
-                ),
-              }));
-            }}
-            required
-          />
-        </td>
-        {bulkData.ramSimDetails[0]?.simOption === "Dual SIM" && (
-          <td>
-            <Form.Control
-              type="number"
-              placeholder="Enter IMEI 2"
-              value={phone.imei2 || ""}
-              onChange={(e) => {
-                const updatedImeis = [...bulkData.ramSimDetails[0].imeiNumbers];
-                updatedImeis[index] = { ...updatedImeis[index], imei2: e.target.value };
-                setBulkData((prev) => ({
-                  ...prev,
-                  ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                    idx === 0 ? { ...item, imeiNumbers: updatedImeis } : item
-                  ),
-                }));
-              }}
-              required
-            />
-          </td>
-        )}
-        <td>
+                {bulkData.ramSimDetails.map((detail, idx) => (
+  <div key={idx}>
+    <Row className="mt-4">
+      <Col>
+        <Form.Group controlId={`companyName-${idx}`}>
+          <Form.Label>Company Name</Form.Label>
           <Form.Control
             type="text"
-            placeholder="Enter Color"
-            value={phone.color || ""}
-            onChange={(e) => {
-              const updatedImeis = [...bulkData.ramSimDetails[0].imeiNumbers];
-              updatedImeis[index] = { ...updatedImeis[index], color: e.target.value };
+            placeholder="Enter Company Name"
+            value={detail.companyName}
+            onChange={(e) =>
               setBulkData((prev) => ({
                 ...prev,
-                ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                  idx === 0 ? { ...item, imeiNumbers: updatedImeis } : item
+                ramSimDetails: prev.ramSimDetails.map((item, i) =>
+                  i === idx ? { ...item, companyName: e.target.value } : item
+                ),
+              }))
+            }
+          />
+        </Form.Group>
+      </Col>
+
+      <Col>
+        <Form.Group controlId={`modelName-${idx}`}>
+          <Form.Label>Model Name</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter Model Name"
+            value={detail.modelName}
+            onChange={(e) =>
+              setBulkData((prev) => ({
+                ...prev,
+                ramSimDetails: prev.ramSimDetails.map((item, i) =>
+                  i === idx ? { ...item, modelName: e.target.value } : item
+                ),
+              }))
+            }
+          />
+        </Form.Group>
+      </Col>
+    </Row>
+
+    <Row>
+      <Col>
+        <Form.Group controlId={`ramMemory-${idx}`}>
+          <Form.Label>RAM/Memory</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter RAM/Memory"
+            value={detail.ramMemory}
+            onChange={(e) =>
+              setBulkData((prev) => ({
+                ...prev,
+                ramSimDetails: prev.ramSimDetails.map((item, i) =>
+                  i === idx ? { ...item, ramMemory: e.target.value } : item
+                ),
+              }))
+            }
+          />
+        </Form.Group>
+      </Col>
+
+      <Col>
+        <Form.Group controlId={`simOption-${idx}`}>
+          <Form.Label>SIM Option</Form.Label>
+          <Form.Select
+            value={detail.simOption}
+            onChange={(e) => {
+              const simOption = e.target.value;
+              const quantity = detail.quantity || 0;
+              const imeiFields = Array(quantity).fill(
+                simOption === "Dual SIM"
+                  ? { imei1: "", imei2: "", color: "" }
+                  : { imei1: "", color: "" }
+              );
+              setBulkData((prev) => ({
+                ...prev,
+                ramSimDetails: prev.ramSimDetails.map((item, i) =>
+                  i === idx
+                    ? { ...item, simOption, imeiNumbers: imeiFields }
+                    : item
+                ),
+              }));
+            }}
+          >
+            <option value="">Select SIM Option</option>
+            <option value="Single SIM">Single SIM</option>
+            <option value="Dual SIM">Dual SIM</option>
+          </Form.Select>
+        </Form.Group>
+      </Col>
+
+      <Col>
+        <Form.Group controlId={`quantity-${idx}`}>
+          <Form.Label>Number of Quantity</Form.Label>
+          <Form.Control
+            type="number"
+            placeholder="Enter Quantity"
+            value={detail.quantity || ""}
+            onChange={(e) => {
+              const quantity = parseInt(e.target.value) || 0;
+              const simOption = detail.simOption || "Single SIM";
+              const imeiFields = Array(quantity).fill(
+                simOption === "Dual SIM"
+                  ? { imei1: "", imei2: "", color: "" }
+                  : { imei1: "", color: "" }
+              );
+              setBulkData((prev) => ({
+                ...prev,
+                ramSimDetails: prev.ramSimDetails.map((item, i) =>
+                  i === idx
+                    ? { ...item, quantity, imeiNumbers: imeiFields }
+                    : item
                 ),
               }));
             }}
           />
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</Table>
-<Col>
-                    <Form.Group controlId="bulkRamMemory">
-                      <Form.Label>Mobile Price (one piece)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter Mobile Price"
-                        value={bulkData.ramSimDetails[0]?.priceOfOne || ""}
-                        onChange={(e) =>
-                          setBulkData({
-                            ...bulkData,
-                            ramSimDetails: bulkData.ramSimDetails.map((item, index) =>
-                              index === 0 ? { ...item, priceOfOne: e.target.value } : item
-                            )
-                          })
-                        }
-                        required
-                      />
+        </Form.Group>
+      </Col>
+    </Row>
 
-                    </Form.Group>
-                  </Col>
-          
-                {/* Additional Fields */}
-<Button
+    {detail.imeiNumbers.length > 0 && (
+      <Table striped bordered hover className="mt-3">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>IMEI 1</th>
+            {detail.simOption === "Dual SIM" && <th>IMEI 2</th>}
+            <th>Color</th>
+          </tr>
+        </thead>
+        <tbody>
+          {detail.imeiNumbers.map((phone, i) => (
+            <tr key={i}>
+              <td>{i + 1}</td>
+              <td>
+                <Form.Control
+                  type="text"
+                  value={phone.imei1}
+                  onChange={(e) => {
+                    const newIMEIs = detail.imeiNumbers.map((p, j) =>
+                      j === i ? { ...p, imei1: e.target.value } : p
+                    );
+                    setBulkData((prev) => ({
+                      ...prev,
+                      ramSimDetails: prev.ramSimDetails.map((item, k) =>
+                        k === idx ? { ...item, imeiNumbers: newIMEIs } : item
+                      ),
+                    }));
+                  }}
+                />
+              </td>
+              {detail.simOption === "Dual SIM" && (
+                <td>
+                  <Form.Control
+                    type="text"
+                    value={phone.imei2}
+                    onChange={(e) => {
+                      const newIMEIs = detail.imeiNumbers.map((p, j) =>
+                        j === i ? { ...p, imei2: e.target.value } : p
+                      );
+                      setBulkData((prev) => ({
+                        ...prev,
+                        ramSimDetails: prev.ramSimDetails.map((item, k) =>
+                          k === idx ? { ...item, imeiNumbers: newIMEIs } : item
+                        ),
+                      }));
+                    }}
+                  />
+                </td>
+              )}
+              <td>
+                <Form.Control
+                  type="text"
+                  value={phone.color}
+                  onChange={(e) => {
+                    const newIMEIs = detail.imeiNumbers.map((p, j) =>
+                      j === i ? { ...p, color: e.target.value } : p
+                    );
+                    setBulkData((prev) => ({
+                      ...prev,
+                      ramSimDetails: prev.ramSimDetails.map((item, k) =>
+                        k === idx ? { ...item, imeiNumbers: newIMEIs } : item
+                      ),
+                    }));
+                  }}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <Col>
+</Col>
+
+      </Table>
+    )}
+  <Form.Group controlId="priceOfOne">
+    <Form.Label>Mobile Price (one piece)</Form.Label>
+    <Form.Control
+      type="text"
+      placeholder="Enter Mobile Price"
+      value={detail.priceOfOne}
+      onChange={(e) =>
+        setBulkData((prev) => ({
+          ...prev,
+          ramSimDetails: prev.ramSimDetails.map((item, i) =>
+            i === idx ? { ...item, priceOfOne: e.target.value } : item
+          ),
+        }))
+      }
+      required
+    />
+  </Form.Group>
+
+    <hr />
+  </div>
+))}
+
+      <Button
   variant="secondary"
   className="mt-3"
   onClick={handleShowTextBox}
 >
-  Add Same Phone More Quantity with Another GB
+  Add Another Quantity
 </Button>
 
-{showTextBox && (
-        <>
-          <Row>
-            <Col>
-              <Form.Group controlId="bulkRamMemory">
-                <Form.Label>RAM/Memory</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter RAM/Memory"
-                  value={bulkData.ramSimDetails[1]?.ramMemory || ""}
-                  onChange={(e) =>
-                    setBulkData((prev) => ({
-                      ...prev,
-                      ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                        idx === 1 ? { ...item, ramMemory: e.target.value } : item
-                      ),
-                    }))
-                  }
-                  required
-                />
-              </Form.Group>
-            </Col>
-
-            <Col>
-              <Form.Group controlId="bulkSimOption">
-                <Form.Label>SIM Option</Form.Label>
-                <Form.Select
-                  value={bulkData.ramSimDetails[1]?.simOption || ""}
-                  onChange={(e) =>
-                    setBulkData((prev) => ({
-                      ...prev,
-                      ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                        idx === 1 ? { ...item, simOption: e.target.value } : item
-                      ),
-                    }))
-                  }
-                  required
-                >
-                  <option value="">Select SIM Option</option>
-                  <option value="Single SIM">Single SIM</option>
-                  <option value="Dual SIM">Dual SIM</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-
-            <Col>
-              <Form.Group controlId="bulkQuantity">
-                <Form.Label>Number of Quantity</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Enter Quantity"
-                  value={bulkData.quantity}
-                  onChange={(e) => {
-                    const quantity = parseInt(e.target.value) || 0;
-                    const simOption = bulkData.ramSimDetails[1]?.simOption || "single";
-                    const imeiFields = Array(quantity).fill(
-                      simOption === "Dual SIM"
-                        ? { imei1: "", imei2: "", color: "" }
-                        : { imei1: "", color: "" }
-                    );
-
-                    setBulkData((prev) => ({
-                      ...prev,
-                      quantity,
-                      ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                        idx === 1 ? { ...item, imeiNumbers: imeiFields } : item
-                      ),
-                    }));
-                  }}
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* IMEI Fields Table */}
-          <Table striped bordered hover className="mt-3">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>IMEI 1</th>
-                {bulkData.ramSimDetails[1]?.simOption === "Dual SIM" && <th>IMEI 2</th>}
-                <th>Color</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bulkData.ramSimDetails[1]?.imeiNumbers?.map((phone, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>
-                    <Form.Control
-                      type="number"
-                      placeholder="Enter IMEI 1"
-                      value={phone.imei1} 
-                      onChange={(e) => {
-                        setBulkData((prev) => ({
-                          ...prev,
-                          ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                            idx === 1
-                              ? {
-                                  ...item,
-                                  imeiNumbers: item.imeiNumbers.map((imei, i) =>
-                                    i === index ? { ...imei, imei1: e.target.value } : imei
-                                  ),
-                                }
-                              : item
-                          ),
-                        }));
-                      }}
-                      required
-                    />
-                  </td>
-                  {bulkData.ramSimDetails[1]?.simOption === "Dual SIM" && (
-                    <td>
-                      <Form.Control
-                        type="number"
-                        placeholder="Enter IMEI 2"
-                        value={phone.imei2}
-                        onChange={(e) => {
-                          setBulkData((prev) => ({
-                            ...prev,
-                            ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                              idx === 1
-                                ? {
-                                    ...item,
-                                    imeiNumbers: item.imeiNumbers.map((imei, i) =>
-                                      i === index ? { ...imei, imei2: e.target.value } : imei
-                                    ),
-                                  }
-                                : item
-                            ),
-                          }));
-                        }}
-                        required
-                      />
-                    </td>
-                  )}
-                  <td>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter Color"
-                      value={phone.color}
-                      onChange={(e) => {
-                        setBulkData((prev) => ({
-                          ...prev,
-                          ramSimDetails: prev.ramSimDetails.map((item, idx) =>
-                            idx === 1
-                              ? {
-                                  ...item,
-                                  imeiNumbers: item.imeiNumbers.map((imei, i) =>
-                                    i === index ? { ...imei, color: e.target.value } : imei
-                                  ),
-                                }
-                              : item
-                          ),
-                        }));
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          <Col>
-                    <Form.Group controlId="bulkPriceOfOne">
-                      <Form.Label>Mobile Price (one piece)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter Mobile Price"
-                        value={bulkData.ramSimDetails[1]?.priceOfOne || ""}
-                        onChange={(e) =>
-                          setBulkData({
-                            ...bulkData,
-                            ramSimDetails: bulkData.ramSimDetails.map((item, index) =>
-                              index === 1   ? { ...item, priceOfOne: e.target.value } : item
-                            )
-                          })
-                        }
-                      />
-                    </Form.Group>
-                  </Col>
-
-        </>
-      )}
 
                 
                 <Row>
@@ -644,15 +495,7 @@ return(
               <Button
                 variant="primary"
                 onClick={handleSubmit}
-                // onClick={() => {
-                //   if (bulkData.imeis.length < bulkData.quantity) {
-                //     alert(
-                //       `Please add IMEIs for all ${bulkData.quantity} phones before saving.`
-                //     );
-                //     return;
-                //   }
-                //   alert("Bulk Purchase Saved!");
-                // }}
+   
               >
                 Save
               </Button>

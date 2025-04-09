@@ -56,7 +56,7 @@ const NewMobilesList = () => {
   const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
   const [addedImeis, setAddedImeis] = useState([]);
   const[bulkData,setBulkData]= useState([])
-    const[list,setList]= useState(false)
+    const[list,setList]= useState(true)
   const navigate = useNavigate();
  
   
@@ -360,6 +360,15 @@ const handleShowPrices = (mobile) => {
   
   
   console.log("These are the  imeis",imeiList)
+  const totalImeisArray = bulkData.map((bulk) => {
+    // Sum the length of imeiNumbers for each ramSimDetails in the bulk data
+    return bulk.ramSimDetails.reduce((total, ramSim) => {
+      return total + ramSim.imeiNumbers.length; // Adds the number of imei entries for each ramSim
+    }, 0); // Starts the count from 0
+  });
+  
+  console.log(totalImeisArray); // This will give you an array with the total IMEI count for each mobile
+  
   return (
     <>
      <InputGroup className="mb-3">
@@ -416,212 +425,55 @@ const handleShowPrices = (mobile) => {
 >
   Change Record Design
 </button>
-{/* <h3 style={{marginTop:"1rem",marginBottom:"1rem"}}>New Single Phones</h3>
-      {list? 
-    <> */}
-      {/* <List items={filteredMobiles}
-      displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
-      descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
-      onRowClick={"handleClick"}
-      /> */}
-      {/* <Table */}
-      {/* // routes={["/purchase/purchaseRecords"]}
-           array={filteredMobiles}
-          //  search={"imei1"}
-           keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
-           label={[
-               "Model Name",
-               "Company Name",
-               "Final Price",
-               "Condition",
-               "Warranty",
-       
-               "Actions",
-           ]} */}
-           
-           {/* extraColumns={[
-             (obj) =>  
-             <Button
-             onClick={() => handleSoldClick(obj,"single")}
-             style={{
-               backgroundColor: '#28a745',
-               color: '#fff',
-               border: 'none',
-               padding: '5px 10px',
-               borderRadius: '5px',
-               cursor: 'pointer',
-               fontSize: '0.8rem',
-             }}
-           >
-             Sold
-           </Button>
-         ]}
-       /> */}
-    
-    {/* </> :<> */}
-    {/* <Row xs={1} md={2} lg={3} className="g-4">
-        {filteredMobiles.length > 0 ? (
-          filteredMobiles.map((mobile) => (
-            <Col key={mobile._id}>
-              <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}> */}
-                {/* <FaEdit
-                  onClick={() => handleEdit(mobile)}
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '50px',
-                    color: '#28a745',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                  }}
-                /> */}
-                {/* <FaTrash
-                  onClick={() => confirmDelete(mobile._id)}
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    color: 'red',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                  }}
-                /> */}
-                  {/* <Card.Img
-                                 variant="top"
-                                 src={`https://media.johnlewiscontent.com/i/JohnLewis/mobiles-nav-card-apple-v3-130924?fmt=auto`}
-                                 alt={mobile.modelSpecifications}
-                                 style={{ height: '400px', objectFit: 'cover' }}
-                               /> */}
-                 {/* {mobile.images[0] &&  <Card.Img
-                                 variant="top"
-                                 src={`${mobile.images[0]}`}
-                                 alt={mobile.modelSpecifications}
-                                 style={{ height: '400px', objectFit: 'cover' }}
-                               />} */}
 
-                {/* <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
-                  <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
-                    {mobile.companyName} {mobile.modelSpecifications}
-                  </Card.Title>
-                  <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>
-                        Specifications:
-                      </strong>{' '}
-                      {mobile.specs}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Color:</strong>{' '}
-                      {mobile.color}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>{mobile.imei2 ? "imei 1" : "imei"}</strong>{' '}
-                      {mobile.imei}
-                    </div>
-                    {mobile.imei2 && <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>imei 2</strong>{' '}
-                      {mobile.imei2}
-                    </div>}
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
-                      {mobile.purchasePrice}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
-                      {mobile.demandPrice}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
-                      {mobile.finalPrice || 'Not Sold'}
-                    </div>
-                  </Card.Text>
-                  <div style={{ textAlign: 'right', width: '100%' }}> */}
-                  {/* <Button
-                     onClick={() => handleDispatchClick(mobile)}
-                   style={{
-                    backgroundColor: '#FFD000',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                     marginRight: '5px',
-                   }}
-                  >
-                      Dispatch
-                </Button> */}
-                    {/* <Button
-                      onClick={() => handleSoldClick(mobile,"single")}
-                      style={{
-                        backgroundColor: '#28a745',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Sold
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))
-        ) : (
-          <Col>
-            <Card className="text-center">
-              <Card.Body>
-                <Card.Text>No mobiles found</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        )}
-      </Row>
-    </> 
-    } */}
       
       <h3 style={{marginTop:"5rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
       {list?
     <>
-    {/* <List items={bulkMobile}
-      displayKeys={["modelName","companyName", "partyName","status"]}
-      descriptions={["Model Name","Company Name","Party Price","Status",]}
-      onRowClick={"handleClick"}
-    /> */}
-      <Table
-      routes={["/app/dashboard/bulkPhoneDetail"]}
-           array={bulkMobile}
-          //  search={"imei1"}
-           keysToDisplay={["modelName", "companyName","partyName", "status", ]}
-           label={[
-               "Model Name",
-               "Company Name",
-               "Party Name",
-               "Status",
-       
-               "Actions",
-           ]}
-           
-           extraColumns={[
-             (obj) => <Button
-             onClick={() => handleSoldClick(obj,"bulk")}
-             style={{
-               backgroundColor: '#28a745',
-               color: '#fff',
-               border: 'none',
-               padding: '5px 10px',
-               borderRadius: '5px',
-               cursor: 'pointer',
-               fontSize: '0.8rem',
-             }}
-           >
-             Sold
-           </Button>
-         ]}
-       />
+    
+    <Table
+  routes={["/app/dashboard/bulkPhoneDetail"]}
+  array={bulkMobile}
+  keysToDisplay={["partyName", "status", "ramSimDetails"]}
+  label={[
+    "Party Name",
+    "Status",
+    "Quantity",
+    "Actions",
+  ]}
+  customBlocks={[
+    {
+      index: 2, // Custom block for the third column (Quantity)
+      component: (ramSimDetails) => {
+        // Calculate the total number of IMEI numbers in ramSimDetails
+        const totalImeiNumbers = ramSimDetails.reduce((total, ramSim) => {
+          return total + ramSim.imeiNumbers.length;
+        }, 0);
+
+        // Return the total quantity (number of IMEI numbers)
+        return <span>{totalImeiNumbers}</span>;
+      }
+    }
+  ]}
+  extraColumns={[
+    (obj) => (
+      <Button
+        onClick={() => handleSoldClick(obj, "bulk")}
+        style={{
+          backgroundColor: '#28a745',
+          color: '#fff',
+          border: 'none',
+          padding: '5px 10px',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '0.8rem',
+        }}
+      >
+        Sold
+      </Button>
+    )
+  ]}
+/>
 
     </> 
     :

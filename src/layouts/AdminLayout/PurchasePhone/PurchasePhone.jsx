@@ -342,7 +342,6 @@ console.log("this is the data",singlePurchase);
   const [bulkData, setBulkData] = useState({
     partyName: "",
     date: today,
-    model: "",
     quantity: 0,
     lp:"",
     lifting:"",
@@ -356,18 +355,14 @@ console.log("this is the data",singlePurchase);
     paymentDate:"",
     ramSimDetails: [
       {
+        companyName:"",
+        modelName:"",
+        batteryHealth:"",
         ramMemory: "",
         simOption: "",
         priceOfOne:"",
         imeiNumbers: [],
       },
-      {
-        ramMemory: "",
-        simOption: "",
-        priceOfOne:"",
-        imeiNumbers: [],
-      }
-     
     ]
   });
   const calculateBuyingPrice = (data) => {
@@ -392,9 +387,7 @@ console.log("this is the data",singlePurchase);
     try {
       const payload = {
         partyName: bulkData.partyName,
-        date : bulkData.date,
-        companyName : bulkData.companyName,
-        modelName: bulkData.model,
+        date: bulkData.date,
         purchasePaymentType: bulkData.paymentType,
         purchasePaymentStatus: bulkData.paymentType === "full-payment" ? "paid" : "pending",
         ...(bulkData.paymentType === "credit" && {
@@ -404,19 +397,25 @@ console.log("this is the data",singlePurchase);
             dateOfPayment: bulkData.paymentDate,
           },
         }),
-        prices : {
-          dealerPrice:bulkData.dealerPrice,
-          buyingPrice:bulkData.buyingPrice,
-          lp:bulkData.lp,
-          lifting:bulkData.lifting,
+        prices: {
+          dealerPrice: bulkData.dealerPrice,
+          buyingPrice: bulkData.buyingPrice,
+          lp: bulkData.lp,
+          lifting: bulkData.lifting,
           promo: bulkData.promo,
-          activation: bulkData.activation
+          activation: bulkData.activation,
         },
-        ramSimDetails:
-  bulkData.ramSimDetails.filter((item) => item.imeiNumbers.length > 0).length > 0
-    ? bulkData.ramSimDetails.filter((item) => item.imeiNumbers.length > 0)
-    : [bulkData.ramSimDetails[0]],    
-      }
+        ramSimDetails: bulkData.ramSimDetails.map(item => ({
+          companyName: item.companyName,
+          modelName: item.modelName,
+          batteryHealth: item.batteryHealth,
+          ramMemory: item.ramMemory,
+          simOption: item.simOption,
+          priceOfOne: item.priceOfOne,
+          imeiNumbers: item.imeiNumbers,
+        })),
+      };
+      
      console.log("bulk purchase payload",payload);
      
      
