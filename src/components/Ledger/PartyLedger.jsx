@@ -158,11 +158,11 @@ const PartyLedger = () => {
         <Table
         //  routes={["/app/dashboard/partyLedger"]}
           array={records}
-          keysToDisplay={["companyName", "buyingPrice","totalPurchasedMobiles","purchasePaymentType","purchasePaymentStatus","payableAmountLater", "totalPaidAmount","createdDate"]}
-          label={["Company Name", "Buying Price","Total Mobiles","Payment Type","Payment Status","Remaining Amount","Paid Amount", "Date"]}
+          keysToDisplay={[ "buyingPrice","totalPurchasedMobiles","purchasePaymentType","purchasePaymentStatus","payableAmountLater", "totalPaidAmount","createdDate"]}
+          label={[ "Buying Price","Total Mobiles","Payment Type","Payment Status","Remaining Amount","Paid Amount", "Date"]}
           customBlocks={[
             {
-              index: 3,
+              index: 2,
               component: (paymentType) =>
                 paymentType === "credit" ? (
                   <button
@@ -198,7 +198,7 @@ const PartyLedger = () => {
             },
             
             {
-              index: 4,
+              index: 3,
               component: (paymentStatus, rowData) =>
                 paymentStatus === "pending" ? (
                   <button
@@ -231,7 +231,7 @@ const PartyLedger = () => {
             },
             
             {
-              index: 5,
+              index: 4,
               component: (remainingAmount, rowData) => (
                 <button
                   style={{
@@ -251,7 +251,7 @@ const PartyLedger = () => {
               ),
             },
             {
-              index: 6,
+              index: 5,
               component: (paidAmount, rowData) => (
                 <button
                   style={{
@@ -272,7 +272,7 @@ const PartyLedger = () => {
             },
             
             {
-              index: 7,
+              index: 6,
               component: (date) => dateFormatter(date), // Formatting Date
             },
           ]}

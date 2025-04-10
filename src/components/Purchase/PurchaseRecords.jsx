@@ -258,20 +258,18 @@ const handleScan = (value) => {
                  routes={["/purchase/purchaseRecords/bulkPurchase"]}
                         array={purchasedPhones?.bulkPhones}
                         search={"imeiNumbers"}
-                        keysToDisplay={["partyName", "companyName", "modelName","totalQuantity","date"]}
+                        keysToDisplay={["partyName", "totalQuantity","status","date"]}
                         label={[
                             "Party Name",
-                            "Company Name",
-                            "Model Name",
                             "No of quantity",
+                            "Status",
                             "Date of Purchasing",
-                    
                             "Actions",
                         ]}
                         customBlocks={[
                            
                             {
-                                index: 4,
+                                index: 3,
                                 component: (date) => {
                                     return dateFormatter(date)
                                 }

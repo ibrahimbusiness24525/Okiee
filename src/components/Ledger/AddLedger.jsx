@@ -1,35 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Tabs, Tab, Modal, Button, Form } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 import {api} from '../../../api/api'
-import avatar1 from '../../assets/images/user/avatar-1.jpg';
-import avatar2 from '../../assets/images/user/avatar-2.jpg';
-import avatar3 from '../../assets/images/user/avatar-3.jpg';
-import { BASE_URL } from 'config/constant';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const dashSalesData = [
-  { title: 'Daily Sales', amount: 'Rs249.95' },
-  { title: 'Monthly Sales', amount: 'Rs2.942.32' },
-  { title: 'Yearly Sales', amount: 'Rs8.638.32' },
-];
 
 const AddLedger = () => {
   const [ledgerData,setLedgerData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState({ type: '', name: '', amount: '' ,source:"",recipient:"",purpose:""});
-  const [records, setRecords] = useState({
-    cashPaid: JSON.parse(localStorage.getItem('cashPaid')) || [],
-    cashReceived: JSON.parse(localStorage.getItem('cashReceived')) || [],
-    todayExpense: JSON.parse(localStorage.getItem('todayExpense')) || [],
-    openingCash: JSON.parse(localStorage.getItem('openingCash')) || [],
-    remaningCash: JSON.parse(localStorage.getItem('remaningCash')) || [],
-    closingCash: JSON.parse(localStorage.getItem('closingCash')) || [],
-  });
 
   const handleModalShow = (type) => {
-    
     setModalData({ ...modalData, type });
     setShowModal(true);
   };
@@ -52,42 +32,6 @@ const AddLedger = () => {
         updateCashExpense(purpose, amount)
       }
     
-    // Update records state
-    // const updatedRecords = { ...records };
-    // updatedRecords[type].push(newRecord);
-    // setRecords(updatedRecords);
-    // localStorage.setItem(type, JSON.stringify(updatedRecords[type]));
-  
-    // Handle updating Opening Cash like a parent record
-    // if (type === 'cashReceived' || type === 'cashPaid') {
-    //   let updatedRemaningCash = [...records.remaningCash];
-  
-      // If Opening Cash doesn't exist, add it to both records and remainingCash
-      // if (!updatedRemaningCash.some(record => record.name === 'Opening Cash')) {
-      //   updatedRemaningCash.push({ name: 'Opening Cash', amount: parseFloat(amount) });
-      // } else {
-        // If Opening Cash exists, update the amount based on transaction type
-        // const currentRemaningCash = updatedRemaningCash.find(record => record.name === 'Opening Cash').amount;
-  
-        // if (type === 'cashReceived') {
-        //   updatedRemaningCash = updatedRemaningCash.map(record =>
-        //     record.name === 'Opening Cash' ? { ...record, amount: currentRemaningCash + parseFloat(amount) } : record
-        //   );
-        // } else if (type === 'cashPaid') {
-        //   updatedRemaningCash = updatedRemaningCash.map(record =>
-        //     record.name === 'Opening Cash' ? { ...record, amount: currentRemaningCash - parseFloat(amount) } : record
-        //   );
-        // }
-      // }
-  
-      // Ensure "Opening Cash" is always in both the records and localStorage
-    //   setRecords((prevRecords) => ({
-    //     ...prevRecords,
-    //     remaningCash: updatedRemaningCash,
-    //   }));
-    //   localStorage.setItem('remaningCash', JSON.stringify(updatedRemaningCash));
-    // }
-  
     setShowModal(false); // Close the modal after saving
     setModalData({ type: '', name: '', amount: '' }); // Reset modal data
   };
@@ -190,27 +134,6 @@ const AddLedger = () => {
 
   return (
     <React.Fragment>
-      {/* <Col md={6} xl={4} className="d-flex justify-content-end" style={{ marginTop: -10 }}>
-    <button
-      onClick={() => updateEndDay()}
-      // onClick={() => handleEndDay()}
-      style={{
-        padding: '15px',
-        marginRight: '-850px',
-        backgroundColor: '#e74c3c', // You can choose any color
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        fontSize: '16px',
-        minWidth: '200px',
-        maxWidth: '300px',
-        boxSizing: 'border-box',
-      }}
-    >
-      End Day
-    </button>
-  </Col> */}
       <Row  style={{ marginTop: 20 }} >
       <Col md={6} xl={4}>
           <button
@@ -258,22 +181,7 @@ const AddLedger = () => {
             }
           </Card>
         </Col>
-        {/* {dashSalesData.map((data, index) => (
-          <Col key={index} xl={6} xxl={4} style={{ marginBottom: 25 }}>
-            <Card>
-              <Card.Body>
-                <h6 className="mb-1 mr-20" style={{ fontSize: 30, color: '#04a9f5' }}>{data.title}</h6>
-                <div className="row d-flex align-items-center">
-                  <div className="col-9">
-                    <h3 className="f-w-300 d-flex align-items-center m-b-0">
-                      <i className={`feather ${data.icon} f-30 m-r-20`} /> Rs50000
-                    </h3>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))} */}
+        
 
         <Col md={6} xl={4}>
           <button
@@ -300,7 +208,7 @@ const AddLedger = () => {
             borderRadius: "12px", 
             margin: "auto", 
             background: "linear-gradient(135deg, #ffffff, #f3f4f6)",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" 
         }}
           >
             <Card.Body className="border-bottom">
@@ -351,7 +259,7 @@ const AddLedger = () => {
             borderRadius: "12px", 
             margin: "auto", 
             background: "linear-gradient(135deg, #ffffff, #f3f4f6)",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" 
         }}
           >
             <Card.Body className="border-bottom">
@@ -429,74 +337,15 @@ const AddLedger = () => {
           </Card>
         </Col>
 
-        
-
-        {/* <Col md={6} xl={4} style={{marginTop:75}}>
-          <button
-            onClick={() => handleModalShow('openingCash')}
-            style={{
-              flex: '1 1 30%',
-              padding: '15px',
-              margin: '10px',
-              backgroundColor: '#9b59b6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              minWidth: '200px',
-              maxWidth: '300px',
-              boxSizing: 'border-box',
-            }}
-          >
-            Remaning Cash
-          </button>
-          <Card className="card-event">
-            <Card.Body className="border-bottom">
-              <h5 className="m-16" style={{fontSize: 30, fontWeight: 'bold' }}>Remaning Cash</h5>
-            </Card.Body>
-            {records.remaningCash.length === 0 ? (
-              <p>No records found</p>
-            ) : (
-              records.remaningCash.map((record, index) => (
-                <Card.Body key={index} className="border-bottom">
-                  <div className="row d-flex align-items-center">
-                    <div className="col">
-                      <span className="d-block text-uppercase">{record.amount}</span>
-                    </div>
-                  </div>
-                </Card.Body>
-              ))
-            )}
-          </Card>
-        </Col> */}
 
         <Col  style={{marginTop:"5rem"}} md={6} xl={4}>
-          {/* <button
-            onClick={() => handleModalShow('closingCash')}
-            style={{
-              flex: '1 1 30%',
-              padding: '15px',
-              margin: '10px',
-              backgroundColor: '#f39c12',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              minWidth: '200px',
-              maxWidth: '300px',
-              boxSizing: 'border-box',
-            }}
-          >
-            Closing Cash
-          </button> */}
+       
           <Card className="card-event"
           style={{
             borderRadius: "12px", 
             margin: "auto", 
-            background: "linear-gradient(135deg, #ffffff, #f3f4f6)", // Softer gradient
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Soft shadow effect
+            background: "linear-gradient(135deg, #ffffff, #f3f4f6)", 
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" 
         }}
           >
             <Card.Body className="border-bottom">
@@ -506,10 +355,7 @@ const AddLedger = () => {
         <hr style={{ margin: "10px 0", borderTop: "2px solid #ddd" }} />
             </Card.Body>
             {
-            // records.closingCash.length === 0 ? (
-            //   <p>No records found</p>
-            // ) : (
-              // record?.closingCash.map((record, index) => (
+           
                 <Card.Body  className="border-bottom">
                   <div className="row d-flex align-items-center">
                     <div className="col">
@@ -517,28 +363,10 @@ const AddLedger = () => {
                     </div>
                   </div>
                 </Card.Body>
-              // ))
-            // )
+             
             }
           </Card>
         </Col>
-
-
-        {/* <Col md={6} xl={12} className="user-activity">
-          <Card style={{ marginTop: 25 }}>
-            <Tabs defaultActiveKey="today" id="uncontrolled-tab-example">
-              <Tab eventKey="today" title="Today">
-                {tabContent}
-              </Tab>
-              <Tab eventKey="week" title="This Week">
-                {tabContent}
-              </Tab>
-              <Tab eventKey="all" title="All">
-                {tabContent}
-              </Tab>
-            </Tabs>
-          </Card>
-        </Col> */}
       </Row>
 
       {/* Modal for entering record data */}

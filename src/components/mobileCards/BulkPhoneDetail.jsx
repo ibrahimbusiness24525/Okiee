@@ -119,7 +119,7 @@ const BulkPhoneDetail = () => {
       backgroundColor: "rgba(246, 247, 252, 0.2)"
     },
     configHeader: {
-      backgroundColor: "#192030",
+      backgroundColor: "#34495e",
       color: "#ffffff",
       padding: "1rem",
       borderTopLeftRadius: "0.5rem",
@@ -244,7 +244,7 @@ const BulkPhoneDetail = () => {
     if (!amount) return "N/A";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "PKR",
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -256,6 +256,10 @@ const BulkPhoneDetail = () => {
   if (error) {
     return <div style={styles.error}>{error}</div>;
   }
+
+  console.log('====================================');
+  console.log(purchaseData);
+  console.log('====================================');
 
   return (
     <div style={responsiveStyles.container}>
@@ -294,25 +298,9 @@ const BulkPhoneDetail = () => {
             </div>
           </div>
           
-          <div style={styles.flexRow}>
-            <div style={styles.iconContainer}>
-              <FaBox style={styles.icon} />
-            </div>
-            <div>
-              <p style={styles.label}>Company</p>
-              <p style={styles.value}>{purchaseData?.companyName || "N/A"}</p>
-            </div>
-          </div>
+        
           
-          <div style={styles.flexRow}>
-            <div style={styles.iconContainer}>
-              <FaMobileAlt style={styles.icon} />
-            </div>
-            <div>
-              <p style={styles.label}>Model</p>
-              <p style={styles.value}>{purchaseData?.modelName || "N/A"}</p>
-            </div>
-          </div>
+     
           
           <div style={styles.flexRow}>
             <div style={styles.iconContainer}>
@@ -473,6 +461,15 @@ const BulkPhoneDetail = () => {
                 </div>
                 
                 <div style={{ padding: "1rem" }}>
+                  <div style={{...styles.flexBetween, marginBottom: "0.75rem"}}>
+                    <span style={styles.label}>Company Name:</span>
+                    <span style={styles.value}>{config?.companyName || "N/A"}</span>
+                  </div>
+                  <div style={{...styles.flexBetween, marginBottom: "0.75rem"}}>
+                    <span style={styles.label}>Model Name:</span>
+                    <span style={styles.value}>{config?.modelName || "N/A"}</span>
+                  </div>
+
                   <div style={{...styles.flexBetween, marginBottom: "0.75rem"}}>
                     <span style={styles.label}>Price Per Unit:</span>
                     <span style={styles.value}>{formatCurrency(config.priceOfOne)}</span>

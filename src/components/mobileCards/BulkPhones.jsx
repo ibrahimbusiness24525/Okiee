@@ -18,6 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { TextField } from '@mui/material';
+import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 
 const NewMobilesList = () => {
   const [imei, setImei] = useState([]);
@@ -368,7 +369,31 @@ const handleShowPrices = (mobile) => {
   });
   
   console.log(totalImeisArray); // This will give you an array with the total IMEI count for each mobile
-  
+  const groupedByParty = bulkMobile.reduce((acc, curr) => {
+    const partyName = curr.partyName || "Unknown";
+    if (!acc[partyName]) {
+      acc[partyName] = [];
+    }
+    acc[partyName].push(curr);
+    return acc;
+  }, {});
+
+  // Calculate payable amounts
+  const calculatePayables = (entries) => {
+    let now = 0;
+    let later = 0;
+
+    entries.forEach((entry) => {
+      if (entry.purchasePaymentType === "credit" && entry.creditPaymentData) {
+        now += Number(entry.prices.buyingPrice || 0);
+        later += Number(entry.creditPaymentData.payableAmountLater || 0);
+      } else if (entry.purchasePaymentType === "full-payment") {
+        now += Number(entry.prices?.buyingPrice || 0);
+      }
+    });
+
+    return { now, later };
+  };
   return (
     <>
      <InputGroup className="mb-3">
@@ -431,50 +456,78 @@ const handleShowPrices = (mobile) => {
       {list?
     <>
     
-    <Table
-  routes={["/app/dashboard/bulkPhoneDetail"]}
-  array={bulkMobile}
-  keysToDisplay={["partyName", "status", "ramSimDetails"]}
-  label={[
-    "Party Name",
-    "Status",
-    "Quantity",
-    "Actions",
-  ]}
-  customBlocks={[
-    {
-      index: 2, // Custom block for the third column (Quantity)
-      component: (ramSimDetails) => {
-        // Calculate the total number of IMEI numbers in ramSimDetails
-        const totalImeiNumbers = ramSimDetails.reduce((total, ramSim) => {
-          return total + ramSim.imeiNumbers.length;
-        }, 0);
+    {Object.entries(groupedByParty).map(([partyName, partyData]) => {
+        const { now, later } = calculatePayables(partyData);
 
-        // Return the total quantity (number of IMEI numbers)
-        return <span>{totalImeiNumbers}</span>;
-      }
-    }
-  ]}
-  extraColumns={[
-    (obj) => (
-      <Button
-        onClick={() => handleSoldClick(obj, "bulk")}
-        style={{
-          backgroundColor: '#28a745',
-          color: '#fff',
-          border: 'none',
-          padding: '5px 10px',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '0.8rem',
-        }}
-      >
-        Sold
-      </Button>
-    )
-  ]}
-/>
+        return (
+          <div key={partyName} style={{ marginBottom: "2rem" }}>
+           <StyledHeading>{partyName}</StyledHeading>
 
+           <p style={{ margin: "0 0 1rem 0", color: "#555" }}>
+            <strong>Paid Amount:</strong>{" "}
+            <span style={{ color: "green", fontWeight: "600", fontSize: "1rem" }}>
+              {now.toLocaleString()} PKR
+            </span>{" "}
+            | <strong>Remaining Amount:</strong>{" "}
+            <span style={{ color: "red", fontWeight: "600", fontSize: "1rem" }}>
+              {later.toLocaleString()} PKR
+            </span>
+          </p>
+
+
+            <Table
+              routes={["/app/dashboard/bulkPhoneDetail"]}
+              array={partyData}
+              keysToDisplay={["partyName", "prices","creditPaymentData","status", "ramSimDetails"]}
+              label={["Party Name", "Paid Amount","Remaining Amount","Status", "Quantity", "Actions"]}
+              customBlocks={[
+                {
+                  index: 1,
+                  component: (prices) => {
+                  
+                    return <span>{prices?.buyingPrice || "Not mentioned"}</span>;
+                  },
+                },
+                {
+                  index: 2,
+                  component: (creditPaymentData) => {
+                  
+                    return <span>{creditPaymentData?.payableAmountLater || "Not mentioned"}</span>;
+                  },
+                },
+                {
+                  index: 4,
+                  component: (ramSimDetails) => {
+                    const totalImeiNumbers = ramSimDetails.reduce(
+                      (total, ramSim) => total + (ramSim.imeiNumbers?.length || 0),
+                      0
+                    );
+                    return <span>{totalImeiNumbers}</span>;
+                  },
+                },
+              ]}
+              extraColumns={[
+                (obj) => (
+                  <Button
+                    onClick={() => handleSoldClick(obj, "bulk")}
+                    style={{
+                      backgroundColor: "#28a745",
+                      color: "#fff",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    Sold
+                  </Button>
+                ),
+              ]}
+            />
+          </div>
+        );
+      })}
     </> 
     :
     <>

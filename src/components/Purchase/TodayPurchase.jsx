@@ -190,34 +190,24 @@ const handleScan = (value) => {
            routes={["/purchase/todayPurchase/bulkPurchase"]}
                         array={bulkPhones }
                         search={"imeiNumbers"}
-                        keysToDisplay={["partyName", "companyName", "modelName","totalQuantity","date"]}
+                        keysToDisplay={["partyName", "totalQuantity","status","date"]}
                         label={[
                             "Party Name",
-                            "Company Name",
-                            "Model Name",
                             "No of quantity",
+                            "Status",
                             "Date of Purchasing",
-                    
-                            // "Actions",
+                            "Actions",
                         ]}
                         customBlocks={[
                            
                             {
-                                index: 4,
+                                index: 3,
                                 component: (date) => {
                                     return dateFormatter(date)
                                 }
                             }
                         ]}
-                        // extraColumns={[
-                        //     () => {
-                        //         return (
-                        //             <MdEdit
-
-                        //                 className="text-[#ccccc] text-[1.3rem]" />
-                        //         );
-                        //     },
-                        // ]}
+                       
                     />
  
     </div>
