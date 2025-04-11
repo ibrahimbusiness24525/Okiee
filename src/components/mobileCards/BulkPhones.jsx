@@ -504,17 +504,47 @@ const handleShowPrices = (mobile) => {
                 {
                   index: 2,
                   component: (prices) => {
-                  
-                    return <span>{prices?.buyingPrice || "Not mentioned"}</span>;
+                    return (
+                      <span
+                        style={{
+                          backgroundColor: '#d1fae5', // light green
+                          color: '#065f46', // dark green
+                          padding: '4px 12px',
+                          borderRadius: '8px',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {prices?.buyingPrice || "Not mentioned"}
+                      </span>
+                    );
                   },
                 },
                 {
                   index: 3,
                   component: (creditPaymentData) => {
-                  
-                    return <span>{creditPaymentData?.payableAmountLater || "Not Remaining"}</span>;
+                    const hasAmount = creditPaymentData?.payableAmountLater;
+                
+                    const style = {
+                      backgroundColor: hasAmount ? '#fee2e2' : '#d1fae5', // red or green background
+                      color: hasAmount ? '#991b1b' : '#065f46',           // red or green text
+                      padding: '4px 12px',
+                      borderRadius: '8px',
+                      fontWeight: '500',
+                      fontSize: '14px',
+                      display: 'inline-block',
+                    };
+                
+                    return (
+                      <span style={style}>
+                        {hasAmount || "Not Remaining"}
+                      </span>
+                    );
                   },
                 },
+                
+                
                 {
                   index: 5,
                   component: (ramSimDetails) => {
