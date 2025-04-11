@@ -237,14 +237,22 @@ const[todayBookData,setTodayBookData] = useState([]);
                          routes={["/purchase/purchaseRecords/bulkPurchase"]}
                          array={todayBookData.purchaseBulkPhone}
                          search={"imei1"}
-                         keysToDisplay={["modelName", "companyName","partyName", "status", ]}
+                         keysToDisplay={["partyName", "status", "createdAt"]}
                          label={[
-                           "Model Name",
-                           "Company Name",
                            "Party Name",
                            "Status",
+                           "Date"
                           ]}
-
+                          customBlocks={[
+                         
+                            {
+                              index: 2,
+                              component: (date) => {
+                                return dateFormatter(date)
+                               }
+                             },
+                            
+                           ]}
 
                      />
                       <div style={{ marginTop: "50px" }}></div>

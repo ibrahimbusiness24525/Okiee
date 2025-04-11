@@ -138,7 +138,7 @@ const ForSupport = () => {
                 flex: '1 1 30%', // Take up 30% of the row, shrink or grow as needed
                 padding: '15px',
                 margin: '10px',
-                backgroundColor: ['#3498db', '#e67e22', '#27ae60', '#8e44ad', '#f39c12', '#34495e'][index],
+                backgroundColor: ['#3498db', '#e67e22', '0#27ae6', '#8e44ad', '#f39c12', '#34495e'][index],
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',

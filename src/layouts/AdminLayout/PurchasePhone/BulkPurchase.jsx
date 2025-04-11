@@ -11,7 +11,6 @@ const BulkPurchaseModal = ({ handleBulkPhoneModalclose, handleSubmit,showBulkMod
 
 const[showTextBox,setShowTextBox]= useState(false)
 const[partyNames,setPartyNames] =  useState([])
-
 const handleShowTextBox = () => {
   setBulkData((prev) => ({
     ...prev,
@@ -45,7 +44,7 @@ useEffect(()=>{
 },[])
 
 
-
+console.log("data to check",editMobile)
 
 return(
      <Modal show={showBulkModal} onHide={handleBulkPhoneModalclose} centered size="lg">

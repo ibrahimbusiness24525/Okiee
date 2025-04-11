@@ -119,7 +119,7 @@ const BulkPhoneDetail = () => {
       backgroundColor: "rgba(246, 247, 252, 0.2)"
     },
     configHeader: {
-      backgroundColor: "#34495e",
+      backgroundColor: "#f39c12",
       color: "#ffffff",
       padding: "1rem",
       borderTopLeftRadius: "0.5rem",
@@ -261,6 +261,7 @@ const BulkPhoneDetail = () => {
   console.log(purchaseData);
   console.log('====================================');
 
+     
   return (
     <div style={responsiveStyles.container}>
       {/* Back button and header */}
@@ -353,7 +354,7 @@ const BulkPhoneDetail = () => {
               <div style={styles.statCard}>
                 <p style={styles.label}>Buying Price</p>
                 <p style={{...styles.value, fontSize: "1.125rem", fontWeight: "600"}}>
-                  {formatCurrency(purchaseData.prices.buyingPrice)}
+                  {formatCurrency(Number(purchaseData.prices.buyingPrice) + Number(purchaseData?.creditPaymentData?.payableAmountLater))}
                 </p>
               </div>
               
@@ -400,17 +401,17 @@ const BulkPhoneDetail = () => {
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Credit Payment Details</h2>
           <div style={responsiveStyles.grid}>
-            <div style={{...styles.statCard, backgroundColor: "#d1fae5"}}>
+            {/* <div style={{...styles.statCard, backgroundColor: "#d1fae5"}}>
               <p style={styles.label}>Paid Amount</p>
               <p style={{...styles.value, fontSize: "1.125rem", fontWeight: "600", color: "#059669"}}>
                 {formatCurrency(purchaseData.creditPaymentData.totalPaidAmount)}
               </p>
-            </div>
+            </div> */}
             
             <div style={{...styles.statCard, backgroundColor: "#fef3c7"}}>
               <p style={styles.label}>Payable Now</p>
               <p style={{...styles.value, fontSize: "1.125rem", fontWeight: "600", color: "#d97706"}}>
-                {formatCurrency(purchaseData.creditPaymentData.payableAmountNow)}
+                {formatCurrency(purchaseData.prices.buyingPrice)}
               </p>
             </div>
             
@@ -456,7 +457,8 @@ const BulkPhoneDetail = () => {
                 <div style={styles.configHeader}>
                   <h3 style={styles.configTitle}>
                     <FaMemory style={{ marginRight: "0.5rem" }} /> 
-                    Configuration #{index + 1}: {config.ramMemory}GB RAM, {config.simOption}
+                    Phone {index + 1}: {config.ramMemory}GB RAM, {config.simOption}
+                    {/* Configuration #{index + 1}: {config.ramMemory}GB RAM, {config.simOption} */}
                   </h3>
                 </div>
                 

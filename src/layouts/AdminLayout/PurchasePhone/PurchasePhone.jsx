@@ -10,9 +10,38 @@ import BulkPurchaseModal from "./BulkPurchase";
 import { useEffect } from "react";
 import { api } from "../../../../api/api";
 
-const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase" }) => {
+const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulkEdit=false }) => {
   const today = new Date().toISOString().split("T")[0]; 
-  
+  const [bulkData, setBulkData] = useState({
+    partyName: "",
+    date: today,
+    quantity: 0,
+    lp:"",
+    lifting:"",
+    promo:"",
+    activation:"",
+    dealerPrice: "",
+    buyingPrice: "",
+    paymentType:"",
+    payableAmountNow:"",
+    payableAmountLater:"",
+    paymentDate:"",
+    ramSimDetails: [
+      {
+        companyName:"",
+        modelName:"",
+        batteryHealth:"",
+        ramMemory: "",
+        simOption: "",
+        priceOfOne:"",
+        imeiNumbers: [],
+      },
+    ]
+  });
+
+  console.log('====================================');
+  console.log(editMobile);
+  console.log('====================================');
   const [showSingleModal, setShowSingleModal] = useState(false); // For Single Phone Purchase Modal
   const [showBulkModal, setShowBulkModal] = useState(false); // For Bulk Purchase Modal
   const [showWarranty, setShowWarranty] = useState(false);
@@ -67,7 +96,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase" }) =
   useEffect(() => {
     // setShowSingleModal(modal)  
 
-    if (editMobile) {
+    if (editMobile && !bulkEdit) {
       setSinglePurchase({
         accessories:{
           box: editMobile.accessories || false,
@@ -103,8 +132,39 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase" }) =
         isApprovedFromEgadgets: editMobile.isApprovedFromEgadgets || false, // Matches `isApprovedFromEgadgets`
         // eGadgetStatusPicture: editMobile.eGadgetStatusPicture || '', // Matches `eGadgetStatusPicture`
       });
-  
+  if(bulkEdit){
+    setBulkData(prevData => ({
+      ...prevData,
+      partyName: editMobile.partyName || "",
+      date: editMobile.date || today,
+      lp: editMobile.prices?.lp || "",
+      lifting: editMobile.prices?.lifting || "",
+      promo: editMobile.prices?.promo || "",
+      activation: editMobile.prices?.activation || "",
+      dealerPrice: editMobile.prices?.dealerPrice || "",
+      buyingPrice: editMobile.prices?.buyingPrice || "",
+      paymentType: editMobile.purchasePaymentType || "",
+      payableAmountNow: editMobile.creditPaymentData?.payableAmountNow || "",
+      payableAmountLater: editMobile.creditPaymentData?.payableAmountLater || "",
+      paymentDate: editMobile.creditPaymentData?.dateOfPayment || "",
+      quantity: editMobile.ramSimDetails?.length || 0,
+      ramSimDetails: editMobile.ramSimDetails?.map(detail => ({
+        companyName: detail.companyName || "",
+        modelName: detail.modelName || "",
+        batteryHealth: detail.batteryHealth || "",
+        ramMemory: detail.ramMemory || "",
+        simOption: detail.simOption || "",
+        priceOfOne: detail.priceOfOne || "",
+        imeiNumbers: detail.imeiNumbers?.map(imei => ({
+          imei1: imei.imei1 || "",
+          imei2: imei.imei2 || ""
+        })) || []
+      })) || []
+    }));
+    
+  }
     }
+
     
   }, [modal, editMobile]);
   console.log("editdata",singlePurchase);
@@ -225,7 +285,7 @@ console.log("this is the data",singlePurchase);
     if (singlePurchase.eGadgetStatusPicture) {
       formData.append("eGadgetStatusPicture", singlePurchase.eGadgetStatusPicture);
     }
-  if(editMobile){
+  if(editMobile && !bulkEdit){
     try {
     const response =   await api.put(`/api/Purchase/single-purchase-phone/${editMobile._id}`, formData)
       console.log(response, "response");
@@ -339,32 +399,7 @@ console.log("this is the data",singlePurchase);
       ],
     });
   };
-  const [bulkData, setBulkData] = useState({
-    partyName: "",
-    date: today,
-    quantity: 0,
-    lp:"",
-    lifting:"",
-    promo:"",
-    activation:"",
-    dealerPrice: "",
-    buyingPrice: "",
-    paymentType:"",
-    payableAmountNow:"",
-    payableAmountLater:"",
-    paymentDate:"",
-    ramSimDetails: [
-      {
-        companyName:"",
-        modelName:"",
-        batteryHealth:"",
-        ramMemory: "",
-        simOption: "",
-        priceOfOne:"",
-        imeiNumbers: [],
-      },
-    ]
-  });
+
   const calculateBuyingPrice = (data) => {
     return data.ramSimDetails.reduce((total, item) => {
       return total + item.imeiNumbers.length * (parseFloat(item.priceOfOne) || 0);
@@ -384,56 +419,110 @@ console.log("this is the data",singlePurchase);
     console.log("bulk data",bulkData);
     console.log('====================================');
     
-    try {
-      const payload = {
-        partyName: bulkData.partyName,
-        date: bulkData.date,
-        purchasePaymentType: bulkData.paymentType,
-        purchasePaymentStatus: bulkData.paymentType === "full-payment" ? "paid" : "pending",
-        ...(bulkData.paymentType === "credit" && {
-          creditPaymentData: {
-            payableAmountNow: bulkData.payableAmountNow,
-            payableAmountLater: bulkData.payableAmountLater,
-            dateOfPayment: bulkData.paymentDate,
+    if(bulkEdit){
+      try {
+        const payload = {
+          partyName: bulkData.partyName,
+          date: bulkData.date,
+          purchasePaymentType: bulkData.paymentType,
+          purchasePaymentStatus: bulkData.paymentType === "full-payment" ? "paid" : "pending",
+          ...(bulkData.paymentType === "credit" && {
+            creditPaymentData: {
+              payableAmountNow: bulkData.payableAmountNow,
+              payableAmountLater: bulkData.payableAmountLater,
+              dateOfPayment: bulkData.paymentDate,
+            },
+          }),
+          prices: {
+            dealerPrice: bulkData.dealerPrice,
+            buyingPrice: bulkData.buyingPrice,
+            lp: bulkData.lp,
+            lifting: bulkData.lifting,
+            promo: bulkData.promo,
+            activation: bulkData.activation,
           },
-        }),
-        prices: {
-          dealerPrice: bulkData.dealerPrice,
-          buyingPrice: bulkData.buyingPrice,
-          lp: bulkData.lp,
-          lifting: bulkData.lifting,
-          promo: bulkData.promo,
-          activation: bulkData.activation,
-        },
-        ramSimDetails: bulkData.ramSimDetails.map(item => ({
-          companyName: item.companyName,
-          modelName: item.modelName,
-          batteryHealth: item.batteryHealth,
-          ramMemory: item.ramMemory,
-          simOption: item.simOption,
-          priceOfOne: item.priceOfOne,
-          imeiNumbers: item.imeiNumbers,
-        })),
-      };
-      
-     console.log("bulk purchase payload",payload);
-     
-     
-      const response = await api.post(`/api/Purchase/bulk-phone-purchase`,payload)
-      console.log( "bulk purchase phone response",response);
-  
-      if (response) {
-        toast("Purchase bulk Record Added Successfully");
-        handleBulkPhoneModalclose();
-        handleModalClose()
+          ramSimDetails: bulkData.ramSimDetails.map(item => ({
+            companyName: item.companyName,
+            modelName: item.modelName,
+            batteryHealth: item.batteryHealth,
+            ramMemory: item.ramMemory,
+            simOption: item.simOption,
+            priceOfOne: item.priceOfOne,
+            imeiNumbers: item.imeiNumbers,
+          })),
+        };
+        
+       console.log("bulk update payload",payload);
+       
+       
+        const response = await api.put(`/api/Purchase/bulk-phone-update/${editMobile._id}`,payload)
+        console.log( "bulk update response",response);
+    
+        if (response) {
+          toast("Purchase bulk Record is updated Successfully");
+          handleBulkPhoneModalclose();
+          handleModalClose()
+        }
+      } catch (error) {
+        console.error(error);
+        console.log(error);
+        
+        toast(error?.response?.data?.message || error?.message || "Something went wrong!");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error(error);
-      console.log(error);
-      
-      toast(error?.response?.data?.message || error?.message || "Something went wrong!");
-    } finally {
-      setLoading(false);
+    }else{
+      try {
+        const payload = {
+          partyName: bulkData.partyName,
+          date: bulkData.date,
+          purchasePaymentType: bulkData.paymentType,
+          purchasePaymentStatus: bulkData.paymentType === "full-payment" ? "paid" : "pending",
+          ...(bulkData.paymentType === "credit" && {
+            creditPaymentData: {
+              payableAmountNow: bulkData.payableAmountNow,
+              payableAmountLater: bulkData.payableAmountLater,
+              dateOfPayment: bulkData.paymentDate,
+            },
+          }),
+          prices: {
+            dealerPrice: bulkData.dealerPrice,
+            buyingPrice: bulkData.buyingPrice,
+            lp: bulkData.lp,
+            lifting: bulkData.lifting,
+            promo: bulkData.promo,
+            activation: bulkData.activation,
+          },
+          ramSimDetails: bulkData.ramSimDetails.map(item => ({
+            companyName: item.companyName,
+            modelName: item.modelName,
+            batteryHealth: item.batteryHealth,
+            ramMemory: item.ramMemory,
+            simOption: item.simOption,
+            priceOfOne: item.priceOfOne,
+            imeiNumbers: item.imeiNumbers,
+          })),
+        };
+        
+       console.log("bulk purchase payload",payload);
+       
+       
+        const response = await api.post(`/api/Purchase/bulk-phone-purchase`,payload)
+        console.log( "bulk purchase phone response",response);
+    
+        if (response) {
+          toast("Purchase bulk Record Added Successfully");
+          handleBulkPhoneModalclose();
+          handleModalClose()
+        }
+      } catch (error) {
+        console.error(error);
+        console.log(error);
+        
+        toast(error?.response?.data?.message || error?.message || "Something went wrong!");
+      } finally {
+        setLoading(false);
+      }
     }
   }
   
@@ -483,8 +572,8 @@ console.log("this is the data",singlePurchase);
 
       {/* Bulk Purchase Modal */}
      
-      <BulkPurchaseModal handleBulkPhoneModalclose={handleBulkPhoneModalclose} handleSubmit={handleBulkRecordSubmit}  showBulkModal={showBulkModal} setBulkData={setBulkData} bulkData={bulkData} handleAddMorePhones={handleAddMorePhones}/>
-      <SingalPurchaseModal type="edit" handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
+      <BulkPurchaseModal type handleBulkPhoneModalclose={handleBulkPhoneModalclose} handleSubmit={handleBulkRecordSubmit}  showBulkModal={showBulkModal} setBulkData={setBulkData} bulkData={bulkData} handleAddMorePhones={handleAddMorePhones} editMobile={editMobile}/>
+      <SingalPurchaseModal type handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
     </>
   );
 };

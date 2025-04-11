@@ -19,6 +19,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { TextField } from '@mui/material';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
+import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 
 const NewMobilesList = () => {
   const [imei, setImei] = useState([]);
@@ -462,41 +463,60 @@ const handleShowPrices = (mobile) => {
         return (
           <div key={partyName} style={{ marginBottom: "2rem" }}>
            <StyledHeading>{partyName}</StyledHeading>
-
-           <p style={{ margin: "0 0 1rem 0", color: "#555" }}>
-            <strong>Paid Amount:</strong>{" "}
-            <span style={{ color: "green", fontWeight: "600", fontSize: "1rem" }}>
-              {now.toLocaleString()} PKR
-            </span>{" "}
-            | <strong>Remaining Amount:</strong>{" "}
-            <span style={{ color: "red", fontWeight: "600", fontSize: "1rem" }}>
-              {later.toLocaleString()} PKR
-            </span>
-          </p>
-
-
+              <p style={{ 
+                      margin: "0 0 1.5rem 0", 
+                      color: "#444", 
+                      fontSize: "1.1rem", 
+                      lineHeight: "1.6" 
+                    }}>
+                      <strong style={{ fontSize: "1.2rem" }}>Paid Amount:</strong>{" "}
+                      <span style={{ 
+                        color: "green", 
+                        fontWeight: "700", 
+                        fontSize: "1.2rem" 
+                      }}>
+                        {now.toLocaleString()} PKR
+                      </span>{" "}
+                      |{" "}
+                      <strong style={{ fontSize: "1.2rem" }}>Remaining Amount:</strong>{" "}
+                      <span style={{ 
+                        color: "red", 
+                        fontWeight: "700", 
+                        fontSize: "1.2rem" 
+                      }}>
+                        {later.toLocaleString()} PKR
+                      </span>
+                    </p>
             <Table
               routes={["/app/dashboard/bulkPhoneDetail"]}
               array={partyData}
-              keysToDisplay={["partyName", "prices","creditPaymentData","status", "ramSimDetails"]}
-              label={["Party Name", "Paid Amount","Remaining Amount","Status", "Quantity", "Actions"]}
+              keysToDisplay={["partyName", "actualBuyingPrice","prices","creditPaymentData","status", "ramSimDetails","purchasePaymentType"]}
+              label={["Party Name", "Buying Price","Payable Amount","Remaining Amount","Status", "Quantity","Payment Type", "Actions"]}
               customBlocks={[
+                
                 {
                   index: 1,
+                  component: (buyingPrice) => {
+                  
+                    return <span>{buyingPrice || "Not mentioned"}</span>;
+                  },
+                },
+                {
+                  index: 2,
                   component: (prices) => {
                   
                     return <span>{prices?.buyingPrice || "Not mentioned"}</span>;
                   },
                 },
                 {
-                  index: 2,
+                  index: 3,
                   component: (creditPaymentData) => {
                   
-                    return <span>{creditPaymentData?.payableAmountLater || "Not mentioned"}</span>;
+                    return <span>{creditPaymentData?.payableAmountLater || "Not Remaining"}</span>;
                   },
                 },
                 {
-                  index: 4,
+                  index: 5,
                   component: (ramSimDetails) => {
                     const totalImeiNumbers = ramSimDetails.reduce(
                       (total, ramSim) => total + (ramSim.imeiNumbers?.length || 0),
@@ -505,6 +525,21 @@ const handleShowPrices = (mobile) => {
                     return <span>{totalImeiNumbers}</span>;
                   },
                 },
+                {
+                  index: 6,
+                  component: (purchasePaymentType) => {
+                    return (
+                      <span style={{ fontWeight: 600, fontSize: "1rem" }}>
+                        {purchasePaymentType === "full-payment" ? (
+                          <span style={{ color: "green" }}>Full Payment</span>
+                        ) : (
+                          <span style={{ color: "orange" }}>Partial Payment</span>
+                        )}
+                      </span>
+                    );
+                  },
+                }
+                
               ]}
               extraColumns={[
                 (obj) => (
@@ -740,8 +775,8 @@ const handleShowPrices = (mobile) => {
     
     </> 
     }
-      <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
-
+      {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
+      <PurchasePhone type="edit" bulkEdit={true}  modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
@@ -1050,6 +1085,7 @@ const handleShowPrices = (mobile) => {
           </Button>
         </Modal.Footer>
       </Modal>
+      
     </>
   );
 };

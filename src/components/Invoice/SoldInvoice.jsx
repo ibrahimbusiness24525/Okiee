@@ -404,12 +404,11 @@ const addedImei1s = dataReceived?.addedImeis?.map((imeiPair) => {
   .map((detail, index) => (
     <tr key={index} style={styles.stripedRow}>
       <td style={styles.td}>
-        {dataReceived?.invoice?.items
-          ? dataReceived.invoice.items[0]?.mobileCompany
-          : dataReceived?.companyName ?? 'Not Available'}
+        {
+          detail?.companyName ?? 'Not Available'}
       </td>
 
-      <td style={styles.td}>{dataReceived?.modelName ?? 'Not Available'}</td>
+      <td style={styles.td}>{detail?.modelName ?? 'Not Available'}</td>
       <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
       <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
 
@@ -441,13 +440,12 @@ const addedImei1s = dataReceived?.addedImeis?.map((imeiPair) => {
   dataReceived.ramSimDetails.map((detail, index) => (
     <tr key={index} style={styles.stripedRow}>
       <td style={styles.td}>
-        {dataReceived?.invoice?.items
-          ? dataReceived?.invoice?.items[0]?.mobileCompany
-          : dataReceived?.companyName ?? 'Not Available'}
+        {
+          detail?.companyName ?? 'Not Available'}
       </td>
 
       {/* Model Name */}
-      <td style={styles.td}>{dataReceived?.modelName ?? 'Not Available'}</td>
+      <td style={styles.td}>{detail?.modelName ?? 'Not Available'}</td>
 
       {/* RAM Memory */}
       <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
@@ -505,7 +503,7 @@ const addedImei1s = dataReceived?.addedImeis?.map((imeiPair) => {
         <>
             <div style={styles.termsSection}>
            {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
-           <div style={styles.termsHeading}>Total Selected Imeis</div>
+           {/* <div style={styles.termsHeading}>Total Selected Imeis</div> */}
            <div style={styles.termsText}>
   {dataReceived?.addedImeis?.length ? (
     <div
@@ -584,7 +582,18 @@ const addedImei1s = dataReceived?.addedImeis?.map((imeiPair) => {
     // </div>
     <div>
   <div style={styles.termsSection}>
-    <strong style={styles.termsHeading}>Total IMEIs:</strong>
+   
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        maxWidth: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <span style={{ fontWeight: "bold" }}>Total IMEIs:</span>
+      </div>
     <div
       style={{
         display: "flex",
