@@ -25,18 +25,29 @@ const DispachMobilesList = () => {
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
   const[singleDispatches,setSingleDispatches] = useState([])
+  const[bulkDispatches,setBulkDispatches] = useState([])
   
 
   const navigate = useNavigate();
 
   useEffect(() => {
     getSingleDispatches();
+    getBulkDispatches()
   }, []);
 
   const getSingleDispatches = async () => {
     try{
       const response = await api.get(`/api/Purchase/single-dispatch`)
       setSingleDispatches(response.data.dispatches);
+      console.log("dispatches response", response);
+    }catch(error){
+      console.log("error",error)
+    }
+  };
+  const getBulkDispatches = async () => {
+    try{
+      const response = await api.get(`/api/Purchase/bulk-dispatch`)
+      setBulkDispatches(response.data.dispatches);
       console.log("dispatches response", response);
     }catch(error){
       console.log("error",error)
@@ -140,6 +151,18 @@ const DispachMobilesList = () => {
   };
 
 
+  
+  console.log("These are bulk dispatches",bulkDispatches);
+  const dispatchedImeisList = bulkDispatches.bulkPhonePurchaseId?.ramSimDetails
+  ?.flatMap((record) => {
+    return record.imeiNumbers
+      .filter((imei) => imei.isDispatched) // Check if the IMEI is dispatched
+      .map((item) => (
+        <strong key={item._id}>imei1: {item.imei1} / imei2: {item.imei2}</strong>
+      ));
+  }) || [];
+
+console.log("solution", dispatchedImeisList);
 
   return (
     <>
@@ -153,89 +176,53 @@ const DispachMobilesList = () => {
  
 </div>
 
-<StyledHeading>Single  phones</StyledHeading>
-<Row
- xs={1} md={2} lg={3} 
->
+<StyledHeading>Single New  phones</StyledHeading>
+<Row xs={1} md={2} lg={3} className="g-4">
   {singleDispatches.length > 0 ? (
-    singleDispatches.map((dispatch) => {
+    singleDispatches
+    .filter((phone)=> phone.purchasePhoneId.phoneCondition === "New")
+    .map((dispatch) => {
       const phone = dispatch.purchasePhoneId;
       return (
-        <Col key={dispatch._id} style={{ marginTop:"1rem"}}>
-          <Card
-            style={{
-              height: '100%',
-              borderRadius: '12px',
-              border: 'none',
-             
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Card.Body style={{ padding: '1.25rem',display:"flex" ,flexDirection:"column",}}>
+        <Col key={dispatch._id}>
+          <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+            <Card.Body style={{ padding: '1rem', display: 'flex', flexDirection: 'column' }}>
               {/* Title */}
-              <Card.Title
-                style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: '#1a1a1a',
-                  marginBottom: '1rem',
-                  borderBottom: '1px solid #ddd',
-                  paddingBottom: '0.5rem',
-                }}
-              >
+              <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
                 {phone.companyName} {phone.modelName}
               </Card.Title>
 
-              {/* Detail Grid */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '0.75rem 1.25rem',
-                  fontSize: '0.95rem',
-                  color: '#444',
-                }}
-              >
-                <div><strong>Shop:</strong> {dispatch.shopName}</div>
-                <div><strong>Receiver:</strong> {dispatch.receiverName}</div>
-                <div><strong>Battery Health:</strong> {phone.batteryHealth}%</div>
-                <div><strong>Warranty:</strong> {phone.warranty}</div>
-                <div><strong>Color:</strong> {phone.color}</div>
-                <div><strong>IMEI 1:</strong> {phone.imei1}</div>
-                {phone.imei2 && <div><strong>IMEI 2:</strong> {phone.imei2}</div>}
-                <div><strong>RAM / Storage:</strong> {phone.ramMemory}</div>
-                <div><strong>Condition:</strong> {phone.phoneCondition}</div>
-                <div><strong>Specifications:</strong> {phone.specifications}</div>
-                <div><strong>Purchase Price:</strong> {phone.price?.purchasePrice}</div>
-                <div><strong>Demand Price:</strong> S{phone.price?.demandPrice}</div>
-                <div>
-                  <strong>Final Price:</strong>{' '}
-                  {phone.price?.finalPrice || 'Not Sold'}
-                </div>
-                <div>
-                  <strong>Dispatch Date:</strong>{' '}
-                  {new Date(dispatch.dispatchDate).toLocaleDateString()}
-                </div>
-              </div>
+              {/* Details */}
+              <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Shop:</strong> {dispatch.shopName}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Receiver:</strong> {dispatch.receiverName}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Battery Health:</strong> {phone.batteryHealth}%</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Warranty:</strong> {phone.warranty}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Color:</strong> {phone.color}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 1:</strong> {phone.imei1}</div>
+                {phone.imei2 && <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 2:</strong> {phone.imei2}</div>}
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>RAM / Storage:</strong> {phone.ramMemory}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Condition:</strong> {phone.phoneCondition}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Specifications:</strong> {phone.specifications}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Purchase Price:</strong> {phone.price?.purchasePrice}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Demand Price:</strong> {phone.price?.demandPrice}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Final Price:</strong> {phone.price?.finalPrice || 'Not Sold'}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Dispatch Date:</strong> {new Date(dispatch.dispatchDate).toLocaleDateString()}</div>
+              </Card.Text>
 
-              {/* Action Buttons */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  marginTop: '1.5rem',
-                  gap: '0.75rem',
-                }}
-              >
+              {/* Buttons */}
+              <div style={{ textAlign: 'right', width: '100%' }}>
                 <Button
                   variant="outline-danger"
                   size="sm"
                   onClick={() => handleReturn(dispatch)}
-                  style={{ fontWeight: '500' }}
+                  style={{
+                    marginRight: '0.5rem',
+                    padding: '5px 10px',
+                    fontSize: '0.8rem',
+                    borderRadius: '5px',
+                    fontWeight: '500',
+                  }}
                 >
                   Return
                 </Button>
@@ -243,9 +230,12 @@ const DispachMobilesList = () => {
                   size="sm"
                   onClick={() => handleSoldClick(phone)}
                   style={{
-                    backgroundColor: '#28a745',
-                    border: 'none',
+                    backgroundColor: '#007bff',
                     color: '#fff',
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
+                    fontSize: '0.8rem',
                     fontWeight: '500',
                   }}
                 >
@@ -259,7 +249,7 @@ const DispachMobilesList = () => {
     })
   ) : (
     <Col>
-      <Card style={{ textAlign: 'center', padding: '1.5rem' }}>
+      <Card className="text-center">
         <Card.Body>
           <Card.Text>No dispatches found</Card.Text>
         </Card.Body>
@@ -267,6 +257,263 @@ const DispachMobilesList = () => {
     </Col>
   )}
 </Row>
+<div style={{marginTop:"2rem"}}></div>
+<StyledHeading>Single Used  phones</StyledHeading>
+<Row xs={1} md={2} lg={3} className="g-4">
+  {singleDispatches.length > 0 ? (
+    singleDispatches
+    .filter((phone)=> phone.purchasePhoneId.phoneCondition === "Used")
+    .map((dispatch) => {
+      const phone = dispatch.purchasePhoneId;
+      return (
+        <Col key={dispatch._id}>
+          <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+            <Card.Body style={{ padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+              {/* Title */}
+              <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
+                {phone.companyName} {phone.modelName}
+              </Card.Title>
+
+              {/* Details */}
+              <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Shop:</strong> {dispatch.shopName}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Receiver:</strong> {dispatch.receiverName}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Battery Health:</strong> {phone.batteryHealth}%</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Warranty:</strong> {phone.warranty}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Color:</strong> {phone.color}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 1:</strong> {phone.imei1}</div>
+                {phone.imei2 && <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 2:</strong> {phone.imei2}</div>}
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>RAM / Storage:</strong> {phone.ramMemory}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Condition:</strong> {phone.phoneCondition}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Specifications:</strong> {phone.specifications}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Purchase Price:</strong> {phone.price?.purchasePrice}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Demand Price:</strong> {phone.price?.demandPrice}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Final Price:</strong> {phone.price?.finalPrice || 'Not Sold'}</div>
+                <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Dispatch Date:</strong> {new Date(dispatch.dispatchDate).toLocaleDateString()}</div>
+              </Card.Text>
+
+              {/* Buttons */}
+              <div style={{ textAlign: 'right', width: '100%' }}>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => handleReturn(dispatch)}
+                  style={{
+                    marginRight: '0.5rem',
+                    padding: '5px 10px',
+                    fontSize: '0.8rem',
+                    borderRadius: '5px',
+                    fontWeight: '500',
+                  }}
+                >
+                  Return
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleSoldClick(phone)}
+                  style={{
+                    backgroundColor: '#007bff',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
+                    fontSize: '0.8rem',
+                    fontWeight: '500',
+                  }}
+                >
+                  Sold
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      );
+    })
+  ) : (
+    <Col>
+      <Card className="text-center">
+        <Card.Body>
+          <Card.Text>No used phones dispatches found</Card.Text>
+        </Card.Body>
+      </Card>
+    </Col>
+  )}
+</Row>
+<div style={{marginTop:"2rem"}}></div>
+<StyledHeading>Bulk  phones</StyledHeading>
+<Row xs={1} md={2} lg={3}>
+  {bulkDispatches.length > 0 ? (
+    bulkDispatches.map((dispatch) => {
+      const imeis =
+        dispatch.ramSimDetails?.flatMap((item) =>
+          item.imeiNumbers
+            ?.filter((i) => dispatch.dispatchedImeiIds.includes(i._id)) // ✅ match with dispatchedImeiIds
+            .map((i) => ({
+              imei1: i.imei1,
+              imei2: i.imei2,
+              brand: item.companyName,
+              model: item.modelName,
+              ram: item.ramMemory,
+              sim: item.simOption,
+            }))
+        ) || [];
+
+      return (
+        <Col key={dispatch.dispatchId} style={{ marginTop: '1rem' }}>
+          <Card
+            style={{
+              borderRadius: 10,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: 'none',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Card.Body
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                padding: 16,
+                flex: 1,
+                alignItems: 'start',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: '#333',
+                  marginBottom: 8,
+                  textAlign: 'left',
+                }}
+              >
+                Bulk Dispatch - {dispatch.shopName}
+              </div>
+
+              <div
+                style={{
+                  fontSize: 14,
+                  color: '#555',
+                  lineHeight: 1.6,
+                  textAlign: 'left',
+                }}
+              >
+                <div>
+                  <strong>Receiver:</strong> {dispatch.receiverName}
+                </div>
+                <div>
+                  <strong>Date:</strong>{' '}
+                  {new Date(dispatch.dispatchDate).toLocaleDateString()}
+                </div>
+                <div>
+                  <strong>Status:</strong> {dispatch.dispatchStatus}
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12, textAlign: 'left' }}>
+                <div
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 16,
+                    color: '#222',
+                    marginBottom: 6,
+                  }}
+                >
+                  Dispatched IMEIs ({imeis.length}):
+                </div>
+                {imeis.length > 0 ? (
+                  imeis.map((i, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: 10,
+                        backgroundColor: '#f9f9f9',
+                        border: '1px solid #ddd',
+                        borderRadius: 6,
+                        marginBottom: 8,
+                        fontSize: 13,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      <div>
+                        <strong>Brand:</strong> {i.brand}
+                      </div>
+                      <div>
+                        <strong>Model:</strong> {i.model}
+                      </div>
+                      <div>
+                        <strong>IMEI 1:</strong> {i.imei1}
+                      </div>
+                      <div>
+                        <strong>IMEI 2:</strong> {i.imei2}
+                      </div>
+                      <div>
+                        <strong>RAM / SIM:</strong> {i.ram} / {i.sim}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ color: '#888' }}>No dispatched IMEIs</div>
+                )}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 'auto',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: 8,
+                  width: '100%',
+                }}
+              >
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => handleReturn(dispatch)}
+                  style={{
+                    fontSize: 13,
+                    padding: '4px 10px',
+                    borderRadius: 4,
+                    fontWeight: 500,
+                  }}
+                >
+                  Return
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleSoldClick(dispatch)}
+                  style={{
+                    backgroundColor: '#007bff',
+                    color: '#fff',
+                    border: 'none',
+                    fontSize: 13,
+                    padding: '4px 10px',
+                    borderRadius: 4,
+                    fontWeight: 500,
+                  }}
+                >
+                  Sold
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      );
+    })
+  ) : (
+    <Col>
+      <Card style={{ padding: 16 }}>
+        <Card.Body>
+          <div style={{ fontSize: 14, color: '#888', textAlign: 'left' }}>
+            No bulk dispatches found
+          </div>
+        </Card.Body>
+      </Card>
+    </Col>
+  )}
+</Row>
+
 
 
 
