@@ -9,6 +9,7 @@ import { api } from '../../../api/api';
 import List from '../List/List'
 import Table from 'components/Table/Table';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
+import { toast } from 'react-toastify';
 
 const UsedMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
@@ -40,7 +41,7 @@ const UsedMobilesList = () => {
   const [personName, setPersonName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const[list,setList] = useState(false)
-
+  const[id,setId] = useState("")
 
 
   
@@ -95,30 +96,33 @@ const UsedMobilesList = () => {
   };
 
   const handleDispatchClick = (mobile) => {
+    setId(mobile._id)
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
   };
   
-  const handleDispatchSubmit = () => {
+  const handleDispatchSubmit = async() => {
+    try{
     if (!shopName || !personName) {
       alert('Please fill all fields');
       return;
     }
-  
-    const dispatchDetails = {
-      ...dispatchMobile,
-      shopName,
-      personName,
-    };
-  
-    // You can navigate or perform any API call here with dispatchDetails
-    console.log('Dispatch Details:', dispatchDetails);
-  
+    const response  = await   api.patch(`/api/Purchase/single-purchase-dispatch/${id}`,
+      {
+        shopName,
+        receiverName: personName,
+      }
+    )
     setShopName('');
     setPersonName('');
     setShowDispatchModal(false);
+    getMobiles()
+    console.log("dispatch response", response);
+    toast.success("Dispatch is created successfully")
+  }catch(error){
+    console.log("Error in creating a dispatch",error)
+  }
   };
-  
 
   const handleEdit = (mobile) => {
     setEditMobile(mobile);
@@ -313,7 +317,9 @@ const UsedMobilesList = () => {
       <>
       <Row xs={1} md={2} lg={3} className="g-4">
   {filteredMobiles.length > 0 ? (
-    filteredMobiles.map((mobile) => (
+    filteredMobiles
+    .filter((record) => record.dispatch === false)
+    .map((mobile) => (
       <Col key={mobile._id}>
         <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
           <FaEdit
@@ -386,7 +392,7 @@ const UsedMobilesList = () => {
                     </div>
             </Card.Text>
             <div style={{ textAlign: 'right', width: '100%' }}>
-              {/* <Button
+              <Button
                 onClick={() => handleDispatchClick(mobile)}
                 style={{
                   backgroundColor: '#FFD000',
@@ -399,7 +405,7 @@ const UsedMobilesList = () => {
                 }}
               >
                 Dispatch
-              </Button> */}
+              </Button>
                <Button
                 // onClick={() => handleSoldClick(mobile)}
                 style={{

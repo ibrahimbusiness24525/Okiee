@@ -20,6 +20,7 @@ import Select from '@mui/material/Select';
 import { TextField } from '@mui/material';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
+import { toast } from 'react-toastify';
 
 const NewMobilesList = () => {
   const [imei, setImei] = useState([]);
@@ -54,6 +55,7 @@ const NewMobilesList = () => {
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [dispatchMobile, setDispatchMobile] = useState(null);
   const [shopName, setShopName] = useState('');
+  const [id, setId] = useState('');
   const [personName, setPersonName] = useState('');
   const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
   const [addedImeis, setAddedImeis] = useState([]);
@@ -129,28 +131,58 @@ const NewMobilesList = () => {
   };
 
   const handleDispatchClick = (mobile) => {
+    const imeiList = mobile?.ramSimDetails
+    ?.filter((ramSim) => 
+      ramSim.imeiNumbers && ramSim.imeiNumbers.some(imei => imei.isDispatched === false) // Only include if any IMEI is not dispatched
+    )
+    .flatMap((ramSim) => {
+      if (!ramSim.imeiNumbers) return [];
+      return ramSim.imeiNumbers
+        .filter((imei) => imei.isDispatched === false) // Only keep IMEIs where isDispatched is false
+        .map((imei) =>
+          imei.imei2
+            ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
+            : imei.imei1 // Otherwise, just imei1
+        );
+    }) || [];
+    setImeiList(imeiList); // 
+    setId(mobile._id)
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
+
+    console.log("Bulk Id", id);
   };
-  
-  const handleDispatchSubmit = () => {
+  console.log('====================================');
+  console.log("these are selected imeis",imei);
+  console.log('====================================');
+
+  const handleDispatchSubmit = async() => {
+    try{
     if (!shopName || !personName) {
       alert('Please fill all fields');
       return;
     }
-  
-    const dispatchDetails = {
-      ...dispatchMobile,
+    console.log("selected imeis", imei)
+    const response = await api.patch(`/api/Purchase/bulk-purchase-dispatch/${id}`, {
       shopName,
-      personName,
-    };
-    
-    // You can navigate or perform any API call here with dispatchDetails
-    console.log('Dispatch Details:', dispatchDetails);
+      receiverName: personName,
+      ...(imei.length > 0 && {
+        imeiArray: imei.map(i => {
+          const [imei1, imei2] = i.split(' / ').map(part => part.trim());
+          return { imei1, imei2 };
+        })
+      })
+    });
     
     setShopName('');
     setPersonName('');
     setShowDispatchModal(false);
+    getBulkPhones()
+    console.log("Dispatch response", response);
+    toast.success("Dispatch is created successfully")
+  }catch(error){
+    console.log("Error in creating a dispatch",error)
+  }
   };
   
   
@@ -193,18 +225,22 @@ const NewMobilesList = () => {
     
     if(type==="bulk"){
       setType("bulk")
-      const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) => {
+      const imeiList = mobile?.ramSimDetails
+      ?.filter((ramSim) => 
+        ramSim.imeiNumbers && ramSim.imeiNumbers.some(imei => imei.isDispatched === false) // Only include if any IMEI is not dispatched
+      )
+      .flatMap((ramSim) => {
         if (!ramSim.imeiNumbers) return [];
-        return ramSim.imeiNumbers.map((imei) =>
-          imei.imei2
-            ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
-            : imei.imei1 // Otherwise, just imei1
-        );
+        return ramSim.imeiNumbers
+          .filter((imei) => imei.isDispatched === false) // Only keep IMEIs where isDispatched is false
+          .map((imei) =>
+            imei.imei2
+              ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
+              : imei.imei1 // Otherwise, just imei1
+          );
       }) || [];
       
-      // const imeiList = mobile?.ramSimDetails?.flatMap((ramSim) =>
-      //   ramSim.imeiNumbers?.map((imei) => imei.imei1) || []
-      // );
+   
       
       
       setImeiList(imeiList); // 
@@ -489,7 +525,7 @@ const handleShowPrices = (mobile) => {
                     </p>
             <Table
               routes={["/app/dashboard/bulkPhoneDetail"]}
-              array={partyData}
+              array={partyData.filter((record)=> record.dispatch === false)}
               keysToDisplay={["partyName", "actualBuyingPrice","prices","creditPaymentData","status", "ramSimDetails","purchasePaymentType"]}
               label={["Party Name", "Buying Price","Payable Amount","Remaining Amount","Status", "Quantity","Payment Type", "Actions"]}
               customBlocks={[
@@ -573,6 +609,7 @@ const handleShowPrices = (mobile) => {
               ]}
               extraColumns={[
                 (obj) => (
+                  <>
                   <Button
                     onClick={() => handleSoldClick(obj, "bulk")}
                     style={{
@@ -587,6 +624,22 @@ const handleShowPrices = (mobile) => {
                   >
                     Sold
                   </Button>
+                          <Button
+                          onClick={() => handleDispatchClick(obj)}
+                        style={{
+                         backgroundColor: '#FFD000',
+                         color: '#fff',
+                         border: 'none',
+                         padding: '5px 10px',
+                         borderRadius: '5px',
+                         cursor: 'pointer',
+                         fontSize: '0.8rem',
+                          marginRight: '5px',
+                        }}
+                       >
+                      Dispatch
+                      </Button>
+                  </>
                 ),
               ]}
             />
@@ -598,7 +651,9 @@ const handleShowPrices = (mobile) => {
     <>
     <Row xs={1} md={2} lg={3} className="g-4">
       {bulkMobile.length > 0 ? (
-        bulkMobile.map((mobile) => (
+        bulkMobile
+        .filter((record)=> record.dispatch === false)
+        .map((mobile) => (
           <Col key={mobile._id}>
             <Card className="h-100 shadow border-0" style={{ borderRadius: '15px', overflow: 'hidden', position: 'relative' }}>
               {/* <FaEdit
@@ -737,7 +792,7 @@ const handleShowPrices = (mobile) => {
                 {/* Action Buttons */}
               </Card.Body>
                 <div style={{ textAlign: 'right', width: '100%',padding: '1.5rem' }}>
-                  {/* <Button
+                  <Button
                  onClick={() => handleDispatchClick(mobile)}
                style={{
                 backgroundColor: '#FFD000',
@@ -751,7 +806,7 @@ const handleShowPrices = (mobile) => {
                }}
               >
              Dispatch
-             </Button> */}
+             </Button>
                     <Button
                       onClick={() => handleSoldClick(mobile,"bulk")}
                       style={{
@@ -847,6 +902,26 @@ const handleShowPrices = (mobile) => {
           placeholder="Receiver Person Name"
         />
       </Form.Group>
+      <Form.Group style={{ width: '100%' }}>
+  <InputLabel>IMEI</InputLabel>
+  <Select
+    value={imei}
+    onChange={handleChange}
+    displayEmpty
+    multiple
+    fullWidth
+    placeholder={"Select Mobile imeis"}
+  >
+    {imeiList
+      .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
+      .map((item, index) => (
+        <MenuItem key={index} value={item}>
+          {item}
+        </MenuItem>
+      ))}
+  </Select>
+</Form.Group>
+
     </Form>
   </Modal.Body>
   <Modal.Footer>
@@ -854,10 +929,10 @@ const handleShowPrices = (mobile) => {
       Cancel
     </Button>
     <Button variant="primary" onClick={handleDispatchSubmit}>
-      Dispach
+      Dispatch
     </Button>
   </Modal.Footer>
-</Modal>
+      </Modal>
 
 
       {/* Sold Modal */}

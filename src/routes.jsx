@@ -99,12 +99,12 @@ const routes = [
         path: '/app/dashboard/scanDeviceDetails',
         element: lazy(() => import('./components/mobileCards/ScanDeviceDetails')) // Mobile List
       },
-      // {
-      //   exact: 'true',
-      //   path: '/app/dashboard/availablePhones',
-        // path: '/app/dashboard/DispachmobileList',
-      //   element: lazy(() => import('./components/mobileCards/DispachMobileList')) // Dispach Mobile List
-      // },
+      {
+        exact: 'true',
+        path: '/app/dashboard/availablePhones',
+        path: '/app/dashboard/DispachmobileList',
+        element: lazy(() => import('./components/mobileCards/DispachMobileList')) // Dispach Mobile List
+      },
       {
         exact: 'true',
         path: '/app/dashboard/addLedger',

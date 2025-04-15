@@ -14,6 +14,7 @@ import { api } from '../../../api/api';
 import List from '../List/List'
 import Table from 'components/Table/Table';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
+import { toast } from 'react-toastify';
 const NewMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
@@ -47,6 +48,7 @@ const NewMobilesList = () => {
   const [personName, setPersonName] = useState('');
   const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
   const [addedImeis, setAddedImeis] = useState([]);
+  const[id,setId] = useState("");
   const[bulkData,setBulkData]= useState([])
     const[list,setList]= useState(false)
   const navigate = useNavigate();
@@ -114,30 +116,37 @@ const NewMobilesList = () => {
 
   };
 
+ 
   const handleDispatchClick = (mobile) => {
+    setId(mobile._id)
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
+
+    console.log("single Id", id);
   };
   
-  const handleDispatchSubmit = () => {
+  const handleDispatchSubmit = async() => {
+    try{
     if (!shopName || !personName) {
       alert('Please fill all fields');
       return;
     }
-  
-    const dispatchDetails = {
-      ...dispatchMobile,
-      shopName,
-      personName,
-    };
-  
-    // You can navigate or perform any API call here with dispatchDetails
-  
+    const response  = await   api.patch(`/api/Purchase/single-purchase-dispatch/${id}`,
+      {
+        shopName,
+        receiverName: personName,
+      }
+    )
     setShopName('');
     setPersonName('');
     setShowDispatchModal(false);
+    getMobiles()
+    console.log("dispatch response", response);
+    toast.success("Dispatch is created successfully")
+  }catch(error){
+    console.log("Error in creating a dispatch",error)
+  }
   };
-  
 
   const handleEdit = (mobile) => {
     setEditMobile(mobile);
@@ -377,7 +386,7 @@ useScanDetection({
       /> */}
       <Table
       // routes={["/purchase/purchaseRecords"]}
-           array={filteredMobiles}
+           array={filteredMobiles.filter((record) => record.dispatch === false)}
           //  search={"imei1"}
            keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
            label={[
@@ -412,7 +421,9 @@ useScanDetection({
     </> :<>
     <Row xs={1} md={2} lg={3} className="g-4">
         {filteredMobiles.length > 0 ? (
-          filteredMobiles.map((mobile) => (
+          filteredMobiles
+          .filter((record) => record.dispatch === false)
+          .map((mobile) => (
             <Col key={mobile._id}>
               <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
                 <FaEdit
@@ -488,7 +499,7 @@ useScanDetection({
                     </div>
                   </Card.Text>
                   <div style={{ textAlign: 'right', width: '100%' }}>
-                  {/* <Button
+                  <Button
                      onClick={() => handleDispatchClick(mobile)}
                    style={{
                     backgroundColor: '#FFD000',
@@ -502,7 +513,7 @@ useScanDetection({
                    }}
                   >
                       Dispatch
-                </Button> */}
+                </Button>
                     <Button
                                 // onClick={() => handleSoldClick(mobile)}
                                 style={{
@@ -545,6 +556,7 @@ useScanDetection({
                     >
                       Sold
                     </Button>
+                   
                   </div>
                 </Card.Body>
               </Card>
@@ -841,7 +853,7 @@ useScanDetection({
       Cancel
     </Button>
     <Button variant="primary" onClick={handleDispatchSubmit}>
-      Dispach
+      Dispatch
     </Button>
   </Modal.Footer>
 </Modal>
