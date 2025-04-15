@@ -6,6 +6,8 @@ import { jsPDF } from 'jspdf';
 import axios from 'axios';
 import { BASE_URL } from 'config/constant';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
+import { api } from '../../../api/api';
+import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 
 const DispachMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
@@ -22,18 +24,23 @@ const DispachMobilesList = () => {
   const [dispatchMobile, setDispatchMobile] = useState(null);
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
+  const[singleDispatches,setSingleDispatches] = useState([])
   
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    getMobiles();
+    getSingleDispatches();
   }, []);
 
-  const getMobiles = async () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const response = await axios.get(BASE_URL + `api/phone/getAllPhones/${user._id}`);
-    setMobiles(response.data.phones);
+  const getSingleDispatches = async () => {
+    try{
+      const response = await api.get(`/api/Purchase/single-dispatch`)
+      setSingleDispatches(response.data.dispatches);
+      console.log("dispatches response", response);
+    }catch(error){
+      console.log("error",error)
+    }
   };
 
   const deletePhone = async () => {
@@ -131,20 +138,7 @@ const DispachMobilesList = () => {
 
     doc.save('Mobile_Inventory.pdf');
   };
-  const filteredMobiles = mobiles?.filter((mobile) => {
-    // Split the search term into words
-    const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
-  
-    return searchWords.every((word) =>
-      // Check if each word exists in any of the searchable fields
-      mobile.companyName?.toLowerCase()?.includes(word) ||
-      mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
-      mobile.specs?.toLowerCase()?.includes(word) ||
-      mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
-      String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
-    );
-  });
-  
+
 
 
   return (
@@ -159,122 +153,122 @@ const DispachMobilesList = () => {
  
 </div>
 
-
-      <Row xs={1} md={2} lg={3} className="g-4">
-        {filteredMobiles.length > 0 ? (
-          filteredMobiles.map((mobile) => (
-            <Col key={mobile._id}>
-              <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                <FaEdit
-                  onClick={() => handleEdit(mobile)}
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '50px',
-                    color: '#28a745',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                  }}
-                />
-                <FaTrash
-                  onClick={() => confirmDelete(mobile._id)}
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    color: 'red',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                  }}
-                />
-                  {mobile.images[0] &&  <Card.Img
-                                  variant="top"
-                                  src={`${mobile.images[0]}`}
-                                  alt={mobile.modelSpecifications}
-                                  style={{ height: '400px', objectFit: 'cover' }}
-                                />}
-
-                <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
-                  <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
-                    {mobile.companyName} {mobile.modelSpecifications}
-                  </Card.Title>
-                  <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>
-                        Specifications:
-                      </strong>{' '}
-                      {mobile.specs}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Color:</strong>{' '}
-                      {mobile.color}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>{mobile.imei2 ? "imei 1" : "imei"}</strong>{' '}
-                      {mobile.imei}
-                    </div>
-                    {mobile.imei2 && <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>imei 2</strong>{' '}
-                      {mobile.imei2}
-                    </div>}
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
-                      {mobile.purchasePrice}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
-                      {mobile.demandPrice}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
-                      {mobile.finalPrice || 'Not Sold'}
-                    </div>
-                  </Card.Text>
-                  <div style={{ textAlign: 'right', width: '100%' }}>
-                  {/* <Button
-                 onClick={() => handleDispatchClick(mobile)}
-               style={{
-                backgroundColor: 'red',
-                color: '#fff',
-                border: 'none',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                 marginRight: '5px',
-               }}
+<StyledHeading>Single  phones</StyledHeading>
+<Row
+ xs={1} md={2} lg={3} 
+>
+  {singleDispatches.length > 0 ? (
+    singleDispatches.map((dispatch) => {
+      const phone = dispatch.purchasePhoneId;
+      return (
+        <Col key={dispatch._id} style={{ marginTop:"1rem"}}>
+          <Card
+            style={{
+              height: '100%',
+              borderRadius: '12px',
+              border: 'none',
+             
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Card.Body style={{ padding: '1.25rem',display:"flex" ,flexDirection:"column",}}>
+              {/* Title */}
+              <Card.Title
+                style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 'bold',
+                  color: '#1a1a1a',
+                  marginBottom: '1rem',
+                  borderBottom: '1px solid #ddd',
+                  paddingBottom: '0.5rem',
+                }}
               >
-             Return
-                 </Button> */}
-                    <Button
-                      onClick={() => handleSoldClick(mobile)}
-                      style={{
-                        backgroundColor: '#28a745',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Sold
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))
-        ) : (
-          <Col>
-            <Card className="text-center">
-              <Card.Body>
-                <Card.Text>No mobiles found</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        )}
-      </Row>
+                {phone.companyName} {phone.modelName}
+              </Card.Title>
+
+              {/* Detail Grid */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '0.75rem 1.25rem',
+                  fontSize: '0.95rem',
+                  color: '#444',
+                }}
+              >
+                <div><strong>Shop:</strong> {dispatch.shopName}</div>
+                <div><strong>Receiver:</strong> {dispatch.receiverName}</div>
+                <div><strong>Battery Health:</strong> {phone.batteryHealth}%</div>
+                <div><strong>Warranty:</strong> {phone.warranty}</div>
+                <div><strong>Color:</strong> {phone.color}</div>
+                <div><strong>IMEI 1:</strong> {phone.imei1}</div>
+                {phone.imei2 && <div><strong>IMEI 2:</strong> {phone.imei2}</div>}
+                <div><strong>RAM / Storage:</strong> {phone.ramMemory}</div>
+                <div><strong>Condition:</strong> {phone.phoneCondition}</div>
+                <div><strong>Specifications:</strong> {phone.specifications}</div>
+                <div><strong>Purchase Price:</strong> {phone.price?.purchasePrice}</div>
+                <div><strong>Demand Price:</strong> S{phone.price?.demandPrice}</div>
+                <div>
+                  <strong>Final Price:</strong>{' '}
+                  {phone.price?.finalPrice || 'Not Sold'}
+                </div>
+                <div>
+                  <strong>Dispatch Date:</strong>{' '}
+                  {new Date(dispatch.dispatchDate).toLocaleDateString()}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  marginTop: '1.5rem',
+                  gap: '0.75rem',
+                }}
+              >
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => handleReturn(dispatch)}
+                  style={{ fontWeight: '500' }}
+                >
+                  Return
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleSoldClick(phone)}
+                  style={{
+                    backgroundColor: '#28a745',
+                    border: 'none',
+                    color: '#fff',
+                    fontWeight: '500',
+                  }}
+                >
+                  Sold
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      );
+    })
+  ) : (
+    <Col>
+      <Card style={{ textAlign: 'center', padding: '1.5rem' }}>
+        <Card.Body>
+          <Card.Text>No dispatches found</Card.Text>
+        </Card.Body>
+      </Card>
+    </Col>
+  )}
+</Row>
+
+
 
       <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 

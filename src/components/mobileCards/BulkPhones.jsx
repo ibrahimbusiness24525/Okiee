@@ -20,6 +20,7 @@ import Select from '@mui/material/Select';
 import { TextField } from '@mui/material';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
+import { toast } from 'react-toastify';
 
 const NewMobilesList = () => {
   const [imei, setImei] = useState([]);
@@ -54,6 +55,7 @@ const NewMobilesList = () => {
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [dispatchMobile, setDispatchMobile] = useState(null);
   const [shopName, setShopName] = useState('');
+  const [id, setId] = useState('');
   const [personName, setPersonName] = useState('');
   const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
   const [addedImeis, setAddedImeis] = useState([]);
@@ -129,28 +131,34 @@ const NewMobilesList = () => {
   };
 
   const handleDispatchClick = (mobile) => {
+    setId(mobile._id)
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
+
+    console.log("Bulk Id", id);
   };
   
-  const handleDispatchSubmit = () => {
+  const handleDispatchSubmit = async() => {
+    try{
     if (!shopName || !personName) {
       alert('Please fill all fields');
       return;
     }
-  
-    const dispatchDetails = {
-      ...dispatchMobile,
-      shopName,
-      personName,
-    };
-    
-    // You can navigate or perform any API call here with dispatchDetails
-    console.log('Dispatch Details:', dispatchDetails);
-    
+    const response  = await api.patch(`/api/Purchase/bulk-purchase-dispatch/${id}`,
+      {
+        shopName,
+        receiverName: personName,
+      }
+    )
     setShopName('');
     setPersonName('');
     setShowDispatchModal(false);
+    getBulkPhones()
+    console.log("Dispatch response", response);
+    toast.success("Dispatch is created successfully")
+  }catch(error){
+    console.log("Error in creating a dispatch",error)
+  }
   };
   
   
@@ -489,7 +497,7 @@ const handleShowPrices = (mobile) => {
                     </p>
             <Table
               routes={["/app/dashboard/bulkPhoneDetail"]}
-              array={partyData}
+              array={partyData.filter((record)=> record.dispatch === false)}
               keysToDisplay={["partyName", "actualBuyingPrice","prices","creditPaymentData","status", "ramSimDetails","purchasePaymentType"]}
               label={["Party Name", "Buying Price","Payable Amount","Remaining Amount","Status", "Quantity","Payment Type", "Actions"]}
               customBlocks={[
@@ -598,7 +606,9 @@ const handleShowPrices = (mobile) => {
     <>
     <Row xs={1} md={2} lg={3} className="g-4">
       {bulkMobile.length > 0 ? (
-        bulkMobile.map((mobile) => (
+        bulkMobile
+        .filter((record)=> record.dispatch === false)
+        .map((mobile) => (
           <Col key={mobile._id}>
             <Card className="h-100 shadow border-0" style={{ borderRadius: '15px', overflow: 'hidden', position: 'relative' }}>
               {/* <FaEdit
@@ -737,7 +747,7 @@ const handleShowPrices = (mobile) => {
                 {/* Action Buttons */}
               </Card.Body>
                 <div style={{ textAlign: 'right', width: '100%',padding: '1.5rem' }}>
-                  {/* <Button
+                  <Button
                  onClick={() => handleDispatchClick(mobile)}
                style={{
                 backgroundColor: '#FFD000',
@@ -751,7 +761,7 @@ const handleShowPrices = (mobile) => {
                }}
               >
              Dispatch
-             </Button> */}
+             </Button>
                     <Button
                       onClick={() => handleSoldClick(mobile,"bulk")}
                       style={{
@@ -854,10 +864,10 @@ const handleShowPrices = (mobile) => {
       Cancel
     </Button>
     <Button variant="primary" onClick={handleDispatchSubmit}>
-      Dispach
+      Dispatch
     </Button>
   </Modal.Footer>
-</Modal>
+      </Modal>
 
 
       {/* Sold Modal */}

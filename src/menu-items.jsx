@@ -71,14 +71,13 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/scanDeviceDetails'
         },
-        // {
-          // id: 'mobile',
-          // title: 'Available Phones',
-          // type: 'item',
-          // icon: 'feather icon-server',
-          // url: '/app/dashboard/availablePhones'
-          // uclrl: '/app/dashboard/DispachmobileList'
-        // },
+        {
+          id: 'mobile',
+          title: 'Dispatch Phones',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/DispachmobileList'
+        },
       ]
     },
     {
