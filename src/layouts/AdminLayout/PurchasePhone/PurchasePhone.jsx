@@ -405,7 +405,15 @@ console.log("this is the data",singlePurchase);
       return total + item.imeiNumbers.length * (parseFloat(item.priceOfOne) || 0);
     }, 0);
   };
-  
+  const calculatePayableAmountLater = (data) => {
+    return data.payableAmountLater = data.buyingPrice - data.payableAmountNow;
+  }
+  useEffect(() => {
+    setBulkData((prev) => ({
+      ...prev,
+      payableAmountLater: calculatePayableAmountLater(prev),
+    }));
+  },[bulkData.buyingPrice, bulkData.payableAmountNow])
   // Update `buyingPrice` whenever `ramSimDetails` change
   useEffect(() => {
     setBulkData((prev) => ({

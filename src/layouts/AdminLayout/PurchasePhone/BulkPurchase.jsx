@@ -30,6 +30,13 @@ const handleShowTextBox = () => {
   setShowTextBox(true);
 };
 
+const handleRemoveTextBox = (indexToRemove) => {
+  setBulkData((prev) => ({
+    ...prev,
+    ramSimDetails: prev.ramSimDetails.filter((_, idx) => idx !== indexToRemove),
+  }));
+};
+
 const getAllPartyNames = async( ) =>{
   try{
     const response =  await api.get("/api/partyLedger/getAllNames");
@@ -314,18 +321,24 @@ return(
       required
     />
   </Form.Group>
-
+  <Button
+  variant="danger"
+  className="mt-2 mb-3"
+  onClick={() => handleRemoveTextBox(idx)}
+>
+  Remove
+</Button>
     <hr />
   </div>
 ))}
 
       <Button
-  variant="secondary"
-  className="mt-3"
-  onClick={handleShowTextBox}
->
-  Add Another Quantity
-</Button>
+        variant="secondary"
+        className="mt-3"
+        onClick={handleShowTextBox}
+      >
+        Add Another Quantity
+      </Button>
 
 
                 

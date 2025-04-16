@@ -8,6 +8,7 @@ import { BASE_URL } from 'config/constant';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import { api } from '../../../api/api';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
+import { toast } from 'react-toastify';
 
 const DispachMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
@@ -44,6 +45,25 @@ const DispachMobilesList = () => {
       console.log("error",error)
     }
   };
+  const handleReturn = async (dispatchMobile) => {
+    const confirmReturn = window.confirm("Are you sure you want to return this mobile?");
+    
+    if (!confirmReturn) return;
+  
+    try {
+      console.log("dispatchMobile", dispatchMobile._id);
+      
+      const response = await api.patch(`/api/Purchase/single-dispatch-return/${dispatchMobile._id}`);
+      console.log("return mobile response", response);
+      toast.success("Mobile returned successfully");
+      getSingleDispatches();
+    } catch (error) {
+      console.log("error", error);
+      toast.error("Failed to return the mobile");
+    }
+  };
+  
+  console.log("single dispatches",singleDispatches)
   const getBulkDispatches = async () => {
     try{
       const response = await api.get(`/api/Purchase/bulk-dispatch`)
@@ -215,7 +235,7 @@ console.log("solution", dispatchedImeisList);
                 <Button
                   variant="outline-danger"
                   size="sm"
-                  onClick={() => handleReturn(dispatch)}
+                  onClick={() => handleReturn(phone)}
                   style={{
                     marginRight: '0.5rem',
                     padding: '5px 10px',
@@ -297,7 +317,7 @@ console.log("solution", dispatchedImeisList);
                 <Button
                   variant="outline-danger"
                   size="sm"
-                  onClick={() => handleReturn(dispatch)}
+                  onClick={() => handleReturn(phone)}
                   style={{
                     marginRight: '0.5rem',
                     padding: '5px 10px',
