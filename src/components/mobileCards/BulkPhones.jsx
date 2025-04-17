@@ -41,6 +41,7 @@ const NewMobilesList = () => {
   const [accessories, setAccessories] = useState([
     { name: "", quantity: 1, price: "" }
   ]);
+  const[customerNumber,setCustomerNumber]= useState("");
   const [bulkMobile, setBulkMobiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -269,14 +270,13 @@ const NewMobilesList = () => {
       cnicBackPic,
       cnicFrontPic,
       customerName,
-      // accessoryName,
-      // accessoryPrice,
       accessories,
       bankName,
       payableAmountNow,
       payableAmountLater,
       payableAmountLaterDate,
-      exchangePhoneDetail
+      exchangePhoneDetail,
+      customerNumber,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -950,6 +950,15 @@ const handleShowPrices = (mobile) => {
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Enter Customer Name"
+                  />
+                </Form.Group>
+            <Form.Group className="mb-3">
+                  <Form.Label>Customer Number</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={customerNumber}
+                    onChange={(e) => setCustomerNumber(e.target.value)}
+                    placeholder="Enter Customer Number"
                   />
                 </Form.Group>
           
