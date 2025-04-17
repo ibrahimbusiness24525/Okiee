@@ -20,6 +20,7 @@ const UsedMobilesList = () => {
   const[exchangePhoneDetail,setExchangePhoneDetail]= useState("");
   const[cnicFrontPic,setCnicFrontPic]= useState("");
   const[cnicBackPic,setCnicBackPic]= useState("");
+  const[customerNumber,setCustomerNumber]= useState("");
   const[sellingType,setSellingType]= useState("")
   // const[accessoryName,setAccessoryName] = useState("");
   // const[accessoryPrice,setAccessoryPrice]= useState(0);
@@ -158,7 +159,8 @@ const UsedMobilesList = () => {
       payableAmountNow,
       payableAmountLater,
       payableAmountLaterDate,
-      exchangePhoneDetail
+      exchangePhoneDetail,
+      customerNumber
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -612,7 +614,15 @@ const UsedMobilesList = () => {
                   />
                 </Form.Group>
           
-        
+                <Form.Group className="mb-3">
+                  <Form.Label>Customer Number</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={customerNumber}
+                    onChange={(e) => setCustomerNumber(e.target.value)}
+                    placeholder="Enter Customer Number"
+                  />
+                </Form.Group>
 
                 {/* CNIC Front Picture */}
                 <Form.Group className="mb-3">
