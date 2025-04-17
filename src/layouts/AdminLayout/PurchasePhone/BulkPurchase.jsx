@@ -229,7 +229,7 @@ return(
       </Col>
     </Row>
 
-    {detail.imeiNumbers.length > 0 && (
+    {/* {detail.imeiNumbers.length > 0 && (
       <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
@@ -303,7 +303,119 @@ return(
 </Col>
 
       </Table>
-    )}
+    )} */}
+    {detail.imeiNumbers.length > 0 && (
+  <>
+    <Table striped bordered hover className="mt-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>IMEI 1</th>
+          {detail.simOption === "Dual SIM" && <th>IMEI 2</th>}
+          <th>Color</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {detail.imeiNumbers.map((phone, i) => (
+          <tr key={i}>
+            <td>{i + 1}</td>
+            <td>
+              <Form.Control
+                type="text"
+                value={phone.imei1}
+                onChange={(e) => {
+                  const newIMEIs = detail.imeiNumbers.map((p, j) =>
+                    j === i ? { ...p, imei1: e.target.value } : p
+                  );
+                  setBulkData((prev) => ({
+                    ...prev,
+                    ramSimDetails: prev.ramSimDetails.map((item, k) =>
+                      k === idx ? { ...item, imeiNumbers: newIMEIs } : item
+                    ),
+                  }));
+                }}
+              />
+            </td>
+            {detail.simOption === "Dual SIM" && (
+              <td>
+                <Form.Control
+                  type="text"
+                  value={phone.imei2}
+                  onChange={(e) => {
+                    const newIMEIs = detail.imeiNumbers.map((p, j) =>
+                      j === i ? { ...p, imei2: e.target.value } : p
+                    );
+                    setBulkData((prev) => ({
+                      ...prev,
+                      ramSimDetails: prev.ramSimDetails.map((item, k) =>
+                        k === idx ? { ...item, imeiNumbers: newIMEIs } : item
+                      ),
+                    }));
+                  }}
+                />
+              </td>
+            )}
+            <td>
+              <Form.Control
+                type="text"
+                value={phone.color}
+                onChange={(e) => {
+                  const newIMEIs = detail.imeiNumbers.map((p, j) =>
+                    j === i ? { ...p, color: e.target.value } : p
+                  );
+                  setBulkData((prev) => ({
+                    ...prev,
+                    ramSimDetails: prev.ramSimDetails.map((item, k) =>
+                      k === idx ? { ...item, imeiNumbers: newIMEIs } : item
+                    ),
+                  }));
+                }}
+              />
+            </td>
+            <td>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  const newIMEIs = detail.imeiNumbers.filter((_, j) => j !== i);
+                  setBulkData((prev) => ({
+                    ...prev,
+                    ramSimDetails: prev.ramSimDetails.map((item, k) =>
+                      k === idx ? { ...item, imeiNumbers: newIMEIs } : item
+                    ),
+                  }));
+                }}
+              >
+                Remove
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+
+    <Button
+      className="mt-2"
+      onClick={() => {
+        const newRow = {
+          imei1: "",
+          imei2: detail.simOption === "Dual SIM" ? "" : undefined,
+          color: "",
+        };
+        const updatedList = [...detail.imeiNumbers, newRow];
+        setBulkData((prev) => ({
+          ...prev,
+          ramSimDetails: prev.ramSimDetails.map((item, k) =>
+            k === idx ? { ...item, imeiNumbers: updatedList } : item
+          ),
+        }));
+      }}
+    >
+      Add Row
+    </Button>
+  </>
+)}
+
   <Form.Group controlId="priceOfOne">
     <Form.Label>Mobile Price (one piece)</Form.Label>
     <Form.Control

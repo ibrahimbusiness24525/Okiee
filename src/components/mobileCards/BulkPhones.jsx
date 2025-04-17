@@ -269,8 +269,6 @@ const NewMobilesList = () => {
       cnicBackPic,
       cnicFrontPic,
       customerName,
-      // accessoryName,
-      // accessoryPrice,
       accessories,
       bankName,
       payableAmountNow,

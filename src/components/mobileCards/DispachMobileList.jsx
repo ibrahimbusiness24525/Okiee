@@ -9,37 +9,83 @@ import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import { api } from '../../../api/api';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import { toast } from 'react-toastify';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 const DispachMobilesList = () => {
-  const [mobiles, setMobiles] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editMobile, setEditMobile] = useState(null);
-  const [showSoldModal, setShowSoldModal] = useState(false);
-  const [soldMobile, setSoldMobile] = useState(null);
-  const [finalPrice, setFinalPrice] = useState('');
-  const [warranty, setWarranty] = useState('');
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteMobileId, setDeleteMobileId] = useState(null);
-  const [showDispatchModal, setShowDispatchModal] = useState(false);
-  const [dispatchMobile, setDispatchMobile] = useState(null);
-  const [shopName, setShopName] = useState('');
-  const [personName, setPersonName] = useState('');
+  const[mobiles, setMobiles] = useState([]);
+  const[searchTerm, setSearchTerm] = useState('');
+  const[showModal, setShowModal] = useState(false);
+  const[editMobile, setEditMobile] = useState(null);
+  const[showSoldModal, setShowSoldModal] = useState(false);
+  const[soldMobile, setSoldMobile] = useState(null);
+  const[finalPrice, setFinalPrice] = useState('');
+  const[warranty, setWarranty] = useState('');
+  const[cnicFrontPic,setCnicFrontPic]= useState("");
+  const[cnicBackPic,setCnicBackPic]= useState("");
+  const[bankName,setBankName]= useState("");
+  const[type, setType] = useState("");
+  const[payableAmountNow,setPayableAmountNow]= useState("")
+  const[payableAmountLater,setPayableAmountLater]= useState("");
+  const[payableAmountLaterDate,setPayableAmountLaterDate]=useState("");
+  const[exchangePhoneDetail,setExchangePhoneDetail]= useState("");
+  const[showDeleteModal, setShowDeleteModal] = useState(false);
+  const[deleteMobileId, setDeleteMobileId] = useState(null);
+  const[showDispatchModal, setShowDispatchModal] = useState(false);
+  const[dispatchMobile, setDispatchMobile] = useState(null);
+  const[shopName, setShopName] = useState('');
+  const[personName, setPersonName] = useState('');
   const[singleDispatches,setSingleDispatches] = useState([])
   const[bulkDispatches,setBulkDispatches] = useState([])
-  
-
+  const[imeiList, setImeiList] = useState([]);
+  const[selectedImeis, setSelectedImeis] = useState([]);
+  const[imeiInput, setImeiInput] = useState(""); 
+  const[addedImeis, setAddedImeis] = useState([]);
+  const[sellingType,setSellingType]= useState("")
+  const[customerName,setCustomerName] = useState("");
+  const[search, setSearch] = useState("");
+  const[accessories, setAccessories] = useState([
+    { name: "", quantity: 1, price: "" }
+  ]);
+  const [imei, setImei] = useState([]);
   const navigate = useNavigate();
+  const [imeis, setImeis] = useState([]);
 
+  const addAccessory = () => {
+    setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
+  };
+  const handleAddImei = () => {
+    if (imeiInput.trim() !== "" && !imeis.includes(imeiInput)) {
+      setAddedImeis([...addedImeis, imeiInput]);
+      setImeiInput(""); // Clear input after adding
+    }
+  };
+
+  const handleRemoveImei = (imeiToRemove) => {
+    setAddedImeis(imeis.filter(imei => imei !== imeiToRemove));
+  };
   useEffect(() => {
     getSingleDispatches();
     getBulkDispatches()
   }, []);
-
+  const handleAccessoryChange = (index, field, value) => {
+    const updatedAccessories = [...accessories];
+    updatedAccessories[index][field] = value;
+    setAccessories(updatedAccessories);
+  };
+  
   const getSingleDispatches = async () => {
     try{
       const response = await api.get(`/api/Purchase/single-dispatch`)
       setSingleDispatches(response.data.dispatches);
+      console.log("dispatches response", response);
+    }catch(error){
+      console.log("error",error)
+    }
+  };
+  const getBulkDispatches = async () => {
+    try{
+      const response = await api.get(`/api/Purchase/bulk-dispatch`)
+      setBulkDispatches(response.data.dispatches);
       console.log("dispatches response", response);
     }catch(error){
       console.log("error",error)
@@ -62,21 +108,29 @@ const DispachMobilesList = () => {
       toast.error("Failed to return the mobile");
     }
   };
+  const handleReturnBulkDispatch = async (dispatchMobile) => {
+    setDispatchMobile(dispatchMobile)
+    setShowDispatchModal(true);
+    setImeiList(
+      dispatchMobile.ramSimDetails.flatMap((ramSim) => {
+        if (!ramSim.imeiNumbers) return [];
+        return ramSim.imeiNumbers
+          .filter((imei) => dispatchMobile.dispatchedImeiIds.includes(imei._id))
+          .map((imei) =>
+            imei.imei2 ? `${imei.imei1} / ${imei.imei2}` : imei.imei1
+          );
+      }) || []
+    );
+    
+    console.log("dispatchMobile", dispatchMobile);
+    
+  }
   
   console.log("single dispatches",singleDispatches)
-  const getBulkDispatches = async () => {
-    try{
-      const response = await api.get(`/api/Purchase/bulk-dispatch`)
-      setBulkDispatches(response.data.dispatches);
-      console.log("dispatches response", response);
-    }catch(error){
-      console.log("error",error)
-    }
-  };
 
   const deletePhone = async () => {
     try {
-      await axios.delete(`${BASE_URL}api/phone/deletePhone/${deleteMobileId}`);
+      await axios.delete(`${BASE_URL}api/phone/deletePhone/${dispatchMobile}`);
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
       console.log('Phone deleted successfully');
     } catch (error) {
@@ -85,62 +139,99 @@ const DispachMobilesList = () => {
       setShowDeleteModal(false);
     }
   };
+  const handleChange = (event) => {
+    const selectedImeis = event.target.value; 
+    setImei(selectedImeis); 
+    setAddedImeis((prevImeis) => Array.from(new Set([...prevImeis, ...selectedImeis])));
+    // setAddedImeis((prevImeis) => Array.from(new Set([...prevImeis, ...selectedImeis]))); // Ensure uniqueness
 
+    // setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); 
+  };
+  console.log(imei);
+  
   const handleDispatchClick = (mobile) => {
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
   };
   
-  const handleDispatchSubmit = () => {
-    if (!shopName || !personName) {
-      alert('Please fill all fields');
-      return;
+  const handleBulkReturnSubmit = async() => {
+    try {
+      console.log("dispatchMobile", dispatchMobile._id);
+      
+      const response = await api.patch(`/api/Purchase/bulk-dispatch-return/${dispatchMobile.dispatchId}`, {
+        imeiArray: selectedImeis.map((imei) => {
+          const [imei1, imei2] = imei.split(' / ');
+          return { imei1, imei2 };
+        }),
+      }
+        ,);
+      console.log("return mobile response", response);
+      toast.success("Bulk Mobile returned successfully");
+      getBulkDispatches();
+    } catch (error) {
+      console.log("error", error);
+      toast.error("Failed to return the mobile");
     }
-  
-    const dispatchDetails = {
-      ...dispatchMobile,
-      shopName,
-      personName,
-    };
-  
-    // You can navigate or perform any API call here with dispatchDetails
-    console.log('Dispatch Details:', dispatchDetails);
-  
-    setShopName('');
-    setPersonName('');
-    setShowDispatchModal(false);
   };
   
 
-  const handleEdit = (mobile) => {
-    setEditMobile(mobile);
-    setShowModal(true);
-  };
-
+ 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSoldClick = (mobile) => {
+  const handleSoldClick = (mobile,type) => {
+    console.log("this is type", type);
+    
+    if(type==="bulk"){
+      setType("bulk")
+      const imeiList = mobile?.ramSimDetails.flatMap((ramSim) => {
+        if (!ramSim.imeiNumbers) return [];
+        return ramSim.imeiNumbers
+          .filter((imei) => dispatchMobile.dispatchedImeiIds.includes(imei._id))
+          .map((imei) =>
+            imei.imei2 ? `${imei.imei1} / ${imei.imei2}` : imei.imei1
+          );
+      }) || [];
+      
+   
+      
+      
+      setImeiList(imeiList); // 
+    }
+    if(type==="single"){
+      setType("single")
+    }
+    
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
 
   const handleSoldSubmit = async () => {
-    if (!finalPrice || !warranty) {
-      alert('Please fill all fields');
-      return;
-    }
-
+    // if (!finalPrice || !warranty) {
+    //   alert('Please fill all fields');
+    //   return;
+    // }
+    
     const updatedMobile = {
       ...soldMobile,
       finalPrice,
+      sellingType,
       warranty,
+      addedImeis,
+      cnicBackPic,
+      cnicFrontPic,
+      customerName,
+      accessories,
+      bankName,
+      payableAmountNow,
+      payableAmountLater,
+      payableAmountLaterDate,
+      exchangePhoneDetail
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
     setFinalPrice('');
-    setWarranty('');
     setShowSoldModal(false);
   };
 
@@ -149,26 +240,7 @@ const DispachMobilesList = () => {
     setShowDeleteModal(true);
   };
 
-  const handleShareInventory = () => {
-    const doc = new jsPDF();
-    doc.text('Mobile Inventory', 10, 10);
 
-    mobiles.forEach((mobile, index) => {
-      const { images, companyName, modelSpecifications , specs, color } = mobile;
-      const imgData = `data:image/jpeg;base64,${images[0]}`;
-      const y = 20 + index * 50;
-
-      if (imgData) {
-        doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
-      }
-      doc.text(`Company: ${companyName}`, 50, y + 5);
-      doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
-      doc.text(`Specification: ${specs}`, 50, y + 25);
-      doc.text(`Color: ${color}`, 50, y + 35);
-    });
-
-    doc.save('Mobile_Inventory.pdf');
-  };
 
 
   
@@ -200,7 +272,7 @@ console.log("solution", dispatchedImeisList);
 <Row xs={1} md={2} lg={3} className="g-4">
   {singleDispatches.length > 0 ? (
     singleDispatches
-    .filter((phone)=> phone.purchasePhoneId.phoneCondition === "New")
+    .filter((phone)=> phone?.purchasePhoneId?.phoneCondition === "New")
     .map((dispatch) => {
       const phone = dispatch.purchasePhoneId;
       return (
@@ -248,7 +320,7 @@ console.log("solution", dispatchedImeisList);
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => handleSoldClick(phone)}
+                  onClick={() => handleSoldClick(phone,"single")}
                   style={{
                     backgroundColor: '#007bff',
                     color: '#fff',
@@ -282,7 +354,7 @@ console.log("solution", dispatchedImeisList);
 <Row xs={1} md={2} lg={3} className="g-4">
   {singleDispatches.length > 0 ? (
     singleDispatches
-    .filter((phone)=> phone.purchasePhoneId.phoneCondition === "Used")
+    .filter((phone)=> phone.purchasePhoneId?.phoneCondition === "Used")
     .map((dispatch) => {
       const phone = dispatch.purchasePhoneId;
       return (
@@ -330,7 +402,7 @@ console.log("solution", dispatchedImeisList);
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => handleSoldClick(phone)}
+                  onClick={() => handleSoldClick(phone,"single")}
                   style={{
                     backgroundColor: '#007bff',
                     color: '#fff',
@@ -490,7 +562,7 @@ console.log("solution", dispatchedImeisList);
                 <Button
                   variant="outline-danger"
                   size="sm"
-                  onClick={() => handleReturn(dispatch)}
+                  onClick={() => handleReturnBulkDispatch(dispatch)}
                   style={{
                     fontSize: 13,
                     padding: '4px 10px',
@@ -502,7 +574,7 @@ console.log("solution", dispatchedImeisList);
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => handleSoldClick(dispatch)}
+                  onClick={() => handleSoldClick(dispatch,"bulk")}
                   style={{
                     backgroundColor: '#007bff',
                     color: '#fff',
@@ -557,87 +629,273 @@ console.log("solution", dispatchedImeisList);
 
       <Modal show={showDispatchModal} onHide={() => setShowDispatchModal(false)}>
   <Modal.Header closeButton>
-    <Modal.Title>Dispatch Mobile</Modal.Title>
+    <Modal.Title>Return Mobile</Modal.Title>
   </Modal.Header>
   <Modal.Body>
+    <Modal.Body>Make select the imeis or make overall bulk return:</Modal.Body>
     <Form>
-      <Form.Group className="mb-3">
-        <Form.Label>Shop Name</Form.Label>
-        <Form.Control
-          type="text"
-          value={shopName}
-          onChange={(e) => setShopName(e.target.value)}
-          placeholder="Enter Shop Name"
-        />
-      </Form.Group>
-      <Form.Group className="mb-3">
-        <Form.Label>Receiver Person Name</Form.Label>
-        <Form.Control
-          type="text"
-          value={personName}
-          onChange={(e) => setPersonName(e.target.value)}
-          placeholder="Receiver Person Name"
-        />
-      </Form.Group>
+    <FormControl fullWidth variant="outlined" className="mb-3">
+     <InputLabel>IMEI</InputLabel>
+        <Select value={imei} onChange={handleChange} displayEmpty multiple>
+        {imeiList
+         .filter((item) => item.toLowerCase())
+         .map((item, index) => (
+           <MenuItem key={index} value={item}>
+             {item}
+           </MenuItem>
+         ))}
+        </Select>
+    </FormControl>
     </Form>
-  </Modal.Body>
-  <Modal.Footer>
+    </Modal.Body>
+    <Modal.Footer>
     <Button variant="secondary" onClick={() => setShowDispatchModal(false)}>
       Cancel
     </Button>
-    <Button variant="primary" onClick={handleDispatchSubmit}>
-      Dispach
+    <Button variant="primary" onClick={handleBulkReturnSubmit}>
+      Return
     </Button>
   </Modal.Footer>
 </Modal>
 
 
       {/* Sold Modal */}
-      <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Sell Mobile</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Sold Price</Form.Label>
+  <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Sell Mobile</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <div>
+              <Form.Group className="mb-3">
+                    <Form.Label>Customer Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="Enter Customer Name"
+                    />
+                  </Form.Group>
+            
+          
+  
+                  {/* CNIC Front Picture */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>CNIC Front Picture</Form.Label>
+                    <Form.Control
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setCnicFrontPic(e.target.files[0]?.name)}
+                    />
+                  </Form.Group>
+  
+                  {/* CNIC Back Picture */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>CNIC Back Picture</Form.Label>
+                    <Form.Control
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
+                    />
+                  </Form.Group>
+                 
+                  <div>
+        {accessories.map((accessory, index) => (
+          <div key={index} className="mb-3 p-3 border rounded">
+            <Form.Group>
+              <Form.Label>Accessory Name</Form.Label>
               <Form.Control
-                type="number"
-                value={finalPrice}
-                onChange={(e) => setFinalPrice(e.target.value)}
-                placeholder="Enter Sold price"
+                type="text"
+                value={accessory.name}
+                onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+                placeholder="Enter accessory name"
               />
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Company Warranty</Form.Label>
-              <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
-                <option value="">Select warranty</option>
-                <option value="No Warranty">No Warranty</option>
-                <option value="1 Month">1 Month</option>
-                <option value="2 Months">2 Months</option>
-                <option value="3 Months">3 Months</option>
-                <option value="4 Months">4 Months</option>
-                <option value="5 Months">5 Months</option>
-                <option value="6 Months">6 Months</option>
-                <option value="7 Months">7 Months</option>
-                <option value="8 Months">8 Months</option>
-                <option value="9 Months">9 Months</option>
-                <option value="10 Months">10 Months</option>
-                <option value="11 Months">11 Months</option>
-                <option value="12 Months">12 Months</option>
-              </Form.Select>
+  
+            <Form.Group>
+              <Form.Label>Quantity</Form.Label>
+              <Form.Control
+                type="number"
+                value={accessory.quantity}
+                onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
+                min="1"
+              />
             </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowSoldModal(false)}>
-            Cancel
+  
+            <Form.Group>
+              <Form.Label>Accessory Price</Form.Label>
+              <Form.Control
+                type="number"
+                value={accessory.price}
+                onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
+                placeholder="Enter price"
+              />
+            </Form.Group>
+  
+            <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
+              Remove
+            </Button>
+          </div>
+        ))}
+          <Button variant="primary" onClick={addAccessory} style={{marginBottom:"20px"}}>
+            Add Another Accessory
           </Button>
-          <Button variant="primary" onClick={handleSoldSubmit}>
-            Submit
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        {type === "bulk" && (
+              <FormControl fullWidth variant="outlined" className="mb-3">
+      
+              <InputLabel>IMEI</InputLabel>
+        <Select value={imei} onChange={handleChange} displayEmpty multiple>
+          {imeiList
+            .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
+            .map((item, index) => (
+              <MenuItem key={index} value={item}>
+                {item}
+              </MenuItem>
+            ))}
+        </Select>
+            </FormControl>
+        )}
+       
+      </div>
+              <Form.Group>
+                  <Form.Label>Selling Type</Form.Label>
+                  <Form.Select
+                    as="select"
+                    value={sellingType}
+                    onChange={(e) => setSellingType(e.target.value)}
+                  >
+                    <option value="">Select Selling Type</option>
+                    <option value="Bank">Bank</option>
+                    <option value="Exchange">Exchange</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Credit">Credit</option>
+                  </Form.Select>
+                </Form.Group>
+  
+                {/* Conditional Fields Based on Selling Type */}
+                {sellingType === "Bank" && (
+                  <Form.Group>
+                    <Form.Label>Bank Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter Bank Name"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                    />
+                  </Form.Group>
+                )}
+  
+                {sellingType === "Credit" && (
+                    <>
+                      <Form.Group>
+                        <Form.Label>Payable Amount Now</Form.Label>
+                        <Form.Control
+                          type="number"
+                          placeholder="Enter amount payable now"
+                          value={payableAmountNow}
+                          onChange={(e) => setPayableAmountNow(e.target.value)}
+                        />
+                      </Form.Group>
+                              
+                      <Form.Group>
+                        <Form.Label>Payable Amount Later</Form.Label>
+                        <Form.Control
+                          type="number"
+                          placeholder="Enter amount payable later"
+                          value={payableAmountLater}
+                          onChange={(e) => setPayableAmountLater(e.target.value)}
+                        />
+                      </Form.Group>
+                              
+                      <Form.Group>
+                        <Form.Label>When will it be paid?</Form.Label>
+                        <Form.Control
+                          type="date"
+                          value={payableAmountLaterDate}
+                          onChange={(e) => setPayableAmountLaterDate(e.target.value)}
+                        />
+                      </Form.Group>
+                    </>
+                  )}
+  
+                {sellingType === "Exchange" && (
+                  <Form.Group>
+                    <Form.Label>Exchange Phone Details</Form.Label>
+                    <Form.Control
+                    as={"textarea"}
+                    rows={4} //
+                      type="text"
+                      placeholder="Enter exchange phone details"
+                      value={exchangePhoneDetail}
+                      onChange={(e) => setExchangePhoneDetail(e.target.value)}
+                    />
+                  </Form.Group>
+                )}
+  
+                <Form.Group className="mb-3">
+                    <Form.Label>Sold Price</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={finalPrice}
+                      onChange={(e) => setFinalPrice(e.target.value)}
+                      placeholder="Enter Sold price"
+                    />
+                   </Form.Group>
+              </div>
+            
+         
+          {type === "bulk" && (
+              <>
+                 {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
+                  <BarcodeReader />
+                </div> */}
+  
+                <Form.Group className="mb-3">
+                  <Form.Label>IMEI Number</Form.Label>
+  
+                  <div className="d-flex">
+                    <Form.Control
+                      type="text"
+                      value={imeiInput}
+                      onChange={(e) => setImeiInput(e.target.value)}
+                      placeholder="Enter IMEI number"
+                    />
+                    <Button variant="success" onClick={handleAddImei} backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)" className="ms-2">
+                      Add
+                    </Button>
+                  </div>
+                </Form.Group>
+  
+                {/* Display added IMEIs */}
+                {addedImeis.length > 0 && (
+                  <div className="mt-3">
+                    <h6>Added IMEIs:</h6>
+                    <ul className="list-group">
+                      {addedImeis.map((imei, index) => (
+                        <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                          {imei}
+                          <Button variant="danger" size="sm" onClick={() => handleRemoveImei(imei)}>
+                            Remove
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+     
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowSoldModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleSoldSubmit}>
+              Submit
+            </Button>
+          </Modal.Footer>
+        </Modal>
     </>
   );
 };
