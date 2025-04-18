@@ -53,6 +53,11 @@ const DispachMobilesList = () => {
   const addAccessory = () => {
     setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
   };
+    // Remove Accessory
+    const removeAccessory = (index) => {
+      const updatedAccessories = accessories.filter((_, i) => i !== index);
+      setAccessories(updatedAccessories);
+    };
   const handleAddImei = () => {
     if (imeiInput.trim() !== "" && !imeis.includes(imeiInput)) {
       setAddedImeis([...addedImeis, imeiInput]);
@@ -182,31 +187,37 @@ const DispachMobilesList = () => {
 
   const handleSoldClick = (mobile,type) => {
     console.log("this is type", type);
+    console.log("this is the mobile", mobile);
+    
     
     if(type==="bulk"){
       setType("bulk")
-      const imeiList = mobile?.ramSimDetails.flatMap((ramSim) => {
+    setImeiList(
+      mobile?.ramSimDetails.flatMap((ramSim) => {
         if (!ramSim.imeiNumbers) return [];
-        return ramSim.imeiNumbers
-          .filter((imei) => dispatchMobile.dispatchedImeiIds.includes(imei._id))
+        return ramSim?.imeiNumbers
+          .filter((imei) => dispatchMobile?.dispatchedImeiIds?.includes(imei._id))
           .map((imei) =>
             imei.imei2 ? `${imei.imei1} / ${imei.imei2}` : imei.imei1
           );
-      }) || [];
+      }) || []
+    );
       
-   
-      
-      
-      setImeiList(imeiList); // 
     }
     if(type==="single"){
       setType("single")
+    }
+    if(type==="singleUsed"){
+      setType("singleUsed")
+
     }
     
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
-
+  console.log("sold Mobile",soldMobile);
+  console.log("This is the imei list" , imeiList);
+  
   const handleSoldSubmit = async () => {
     // if (!finalPrice || !warranty) {
     //   alert('Please fill all fields');
@@ -217,7 +228,7 @@ const DispachMobilesList = () => {
       ...soldMobile,
       finalPrice,
       sellingType,
-      warranty,
+      ...(type === "singleUsed" && { warranty }),
       addedImeis,
       cnicBackPic,
       cnicFrontPic,
@@ -402,7 +413,7 @@ console.log("solution", dispatchedImeisList);
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => handleSoldClick(phone,"single")}
+                  onClick={() => handleSoldClick(phone,"singleUsed")}
                   style={{
                     backgroundColor: '#007bff',
                     color: '#fff',
@@ -741,22 +752,55 @@ console.log("solution", dispatchedImeisList);
             Add Another Accessory
           </Button>
         {type === "bulk" && (
-              <FormControl fullWidth variant="outlined" className="mb-3">
+        //       <FormControl fullWidth variant="outlined" className="mb-3">
       
+        //       <InputLabel>IMEI</InputLabel>
+        // <Select value={imei} onChange={handleChange} displayEmpty multiple>
+        //   {imeiList
+        //     .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
+        //     .map((item, index) => (
+        //       <MenuItem key={index} value={item}>
+        //         {item}
+        //       </MenuItem>
+        //     ))}
+        // </Select>
+        //     </FormControl>
+          <FormControl fullWidth variant="outlined" className="mb-3">
               <InputLabel>IMEI</InputLabel>
-        <Select value={imei} onChange={handleChange} displayEmpty multiple>
-          {imeiList
-            .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
-            .map((item, index) => (
-              <MenuItem key={index} value={item}>
-                {item}
-              </MenuItem>
-            ))}
-        </Select>
-            </FormControl>
+                <Select value={imei} onChange={handleChange} displayEmpty multiple>
+                {imeiList
+                 .filter((item) => item.toLowerCase())
+                 .map((item, index) => (
+                   <MenuItem key={index} value={item}>
+                     {item}
+                   </MenuItem>
+                 ))}
+                </Select>
+          </FormControl>
         )}
        
       </div>
+    {type === "singleUsed" && (
+        <Form.Group className="mb-3">
+        <Form.Label>Company Warranty</Form.Label>
+              <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
+                <option value="">Select Warranty</option>
+                <option value="No Warranty">No Warranty</option>
+                <option value="1 Month">1 Month</option>
+                <option value="2 Months">2 Months</option>
+                <option value="3 Months">3 Months</option>
+                <option value="4 Months">4 Months</option>
+                <option value="5 Months">5 Months</option>
+                <option value="6 Months">6 Months</option>
+                <option value="7 Months">7 Months</option>
+                <option value="8 Months">8 Months</option>
+                <option value="9 Months">9 Months</option>
+                <option value="10 Months">10 Months</option>
+                <option value="11 Months">11 Months</option>
+                <option value="12 Months">12 Months</option>
+              </Form.Select>
+      </Form.Group>
+    )}
               <Form.Group>
                   <Form.Label>Selling Type</Form.Label>
                   <Form.Select
