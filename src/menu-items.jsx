@@ -78,6 +78,13 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/DispachmobileList'
         },
+        {
+          id: 'mobile',
+          title: 'Get Customer Sales',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/getCustomerSaleRecord'
+        },
       ]
     },
     {
