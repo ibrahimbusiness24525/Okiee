@@ -625,7 +625,7 @@ const UsedMobilesList = () => {
                 </Form.Group>
 
                 {/* CNIC Front Picture */}
-                <Form.Group className="mb-3">
+                {/* <Form.Group className="mb-3">
                   <Form.Label>CNIC Front Picture</Form.Label>
                   <Form.Control
                     type="file"
@@ -634,7 +634,6 @@ const UsedMobilesList = () => {
                   />
                 </Form.Group>
 
-                {/* CNIC Back Picture */}
                 <Form.Group className="mb-3">
                   <Form.Label>CNIC Back Picture</Form.Label>
                   <Form.Control
@@ -642,7 +641,7 @@ const UsedMobilesList = () => {
                     accept="image/*"
                     onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
                   />
-                </Form.Group>
+                </Form.Group> */}
                 <div>
       {accessories.map((accessory, index) => (
         <div key={index} className="mb-3 p-3 border rounded">

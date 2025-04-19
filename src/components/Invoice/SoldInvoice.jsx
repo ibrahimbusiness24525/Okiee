@@ -373,8 +373,8 @@ console.log(addedImei1s, 'added imei 1s');
 
   {/* Right Side */}
       <div style={{ textAlign: 'right' }}>
-        <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.customerName}</p>
-        {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.modelName}</p> */}
+        <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer name:</strong> {dataReceived?.customerName}</p>
+        {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.contactNumber}</p> */}
         { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
       </div>
       </section>
@@ -797,7 +797,7 @@ console.log(addedImei1s, 'added imei 1s');
   {/* Right Side */}
   <div style={{ textAlign: 'right' }}>
     <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Name:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerName : dataReceived?.customerName ?? 'Not Available'}</p>
-    {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p> */}
+    <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p>
    { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
   </div>
 </section>

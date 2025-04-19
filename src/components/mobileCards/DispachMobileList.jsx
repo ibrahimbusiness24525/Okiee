@@ -691,7 +691,7 @@ console.log("solution", dispatchedImeisList);
           
   
                   {/* CNIC Front Picture */}
-                  <Form.Group className="mb-3">
+                  {/* <Form.Group className="mb-3">
                     <Form.Label>CNIC Front Picture</Form.Label>
                     <Form.Control
                       type="file"
@@ -700,7 +700,6 @@ console.log("solution", dispatchedImeisList);
                     />
                   </Form.Group>
   
-                  {/* CNIC Back Picture */}
                   <Form.Group className="mb-3">
                     <Form.Label>CNIC Back Picture</Form.Label>
                     <Form.Control
@@ -708,7 +707,7 @@ console.log("solution", dispatchedImeisList);
                       accept="image/*"
                       onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
                     />
-                  </Form.Group>
+                  </Form.Group> */}
                  
                   <div>
         {accessories.map((accessory, index) => (

@@ -52,13 +52,6 @@ const menuItems = {
         },
         {
           id: 'mobile',
-          title: 'Bulk Phones',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/app/dashboard/bulkPhones'
-        },
-        {
-          id: 'mobile',
           title: 'Used Phones',
           type: 'item',
           icon: 'feather icon-server',
@@ -66,10 +59,10 @@ const menuItems = {
         },
         {
           id: 'mobile',
-          title: 'Scan Device Details',
+          title: 'Bulk Phones',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/scanDeviceDetails'
+          url: '/app/dashboard/bulkPhones'
         },
         {
           id: 'mobile',
@@ -77,6 +70,13 @@ const menuItems = {
           type: 'item',
           icon: 'feather icon-server',
           url: '/app/dashboard/DispachmobileList'
+        },
+        {
+          id: 'mobile',
+          title: 'Scan Device Details',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/scanDeviceDetails'
         },
       ]
     },
