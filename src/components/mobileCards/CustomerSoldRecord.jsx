@@ -129,36 +129,87 @@ const CustomerSoldRecord = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h3 style={{ marginBottom: "10px" }}>Customer Sold Record</h3>
+   <div
+  style={{
+    maxWidth: "500px",
+    margin: "0 auto",
+    padding: "24px",
+    backgroundColor: "#f9f9f9",
+    border: "1px solid #e0e0e0",
+    borderRadius: "10px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.03)",
+    fontFamily: "Segoe UI, sans-serif",
+  }}
+>
+  <h3
+    style={{
+      fontSize: "20px",
+      fontWeight: "normal",
+      marginBottom: "8px",
+      color: "#2c3e50",
+    }}
+  >
+    Get Sold Details of Customer
+  </h3>
 
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          placeholder="Enter Customer Number"
-          value={customerNumber}
-          onChange={(e) => setCustomerNumber(e.target.value)}
-          style={{
-            padding: "10px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-            marginRight: "10px",
-            width: "250px",
-          }}
-        />
-        <button
-          onClick={getSoldRecord}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Get Sold Record
-        </button>
-      </div>
+  <p
+    style={{
+      fontSize: "14px",
+      color: "#555",
+      marginBottom: "20px",
+      lineHeight: "1.5",
+    }}
+  >
+    Enter the customer's phone number below to view the record of all phones they have purchased. This helps in tracking their order history efficiently.
+  </p>
+
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      flexWrap: "wrap",
+    }}
+  >
+    <input
+      type="text"
+      placeholder="Customer Phone Number"
+      value={customerNumber}
+      onChange={(e) => setCustomerNumber(e.target.value)}
+      style={{
+        flex: "1 1 220px",
+        padding: "10px 14px",
+        borderRadius: "6px",
+        border: "1px solid #ccc",
+        fontSize: "14px",
+        color: "#333",
+      }}
+    />
+
+    <button
+      onClick={getSoldRecord}
+      style={{
+        padding: "10px 18px",
+        backgroundColor: "#007BFF",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        fontSize: "14px",
+        cursor: "pointer",
+        transition: "background-color 0.2s ease",
+      }}
+      onMouseOver={(e) =>
+        (e.currentTarget.style.backgroundColor = "#0069d9")
+      }
+      onMouseOut={(e) =>
+        (e.currentTarget.style.backgroundColor = "#007BFF")
+      }
+    >
+      Get Sold Record
+    </button>
+  </div>
+</div>
+
 
       {/* Render Single Phone Sales */}
       {soldRecord.filter(isSingleSale).length > 0 && (
