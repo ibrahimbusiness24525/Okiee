@@ -384,7 +384,44 @@ const printBulkBarcode = (data) => {
             height: 30,
         });
     }
+    
+    // body { 
+    //  font-family: Arial, sans-serif; 
+    //  display: flex; 
+    //  align-items: center; 
+    //  justify-content: center; 
+    //  width: 50.8mm;
+    //  height: 25.4mm;
+    //  margin: 0;
+    //  }
 
+    //  .container {
+    //  display: flex;
+    //  align-items: center;
+    //  justify-content: center;
+    //  width: 100%;
+    //  height: 5rem;
+    //  border: 1px solid black;
+    //  }
+
+    //  .barcode-section {
+    //  text-align: center;
+    //  line-height: 1.0;
+    //  padding-right: 18px;
+    //  padding-bottom:3px
+    //  }
+
+    //  .barcode-img { 
+    //  width: 36mm;
+    //  height: 8mm;
+    //  margin-top: 2px;
+    //  }
+
+    //  p {
+    //  margin: 2px 0;
+    //  font-size: 8px;
+    //  font-weight: 800;
+    //  }
     // Create a hidden iframe for printing
     let iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -400,50 +437,84 @@ const printBulkBarcode = (data) => {
         <head>
             <title>Print Barcode</title>
             <style>
-               body { 
-                font-family: Arial, sans-serif; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-                width: 50.8mm;
-                height: 25.4mm;
-                margin: 0;
+              @page { 
+                    size: portrait; /* Keep portrait */
+                    margin: 0;
+                }
+
+                body { 
+                    font-family: Arial, sans-serif; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    width: 70mm;  /* Increase width */
+                    height: 40mm; /* Increase height */
+                    margin: 0;
                 }
 
                 .container {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 5rem;
-                border: 1px solid black;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    width: 100%;
+                    height: 100%;
+                    padding: 1mm; /* Slightly more padding */
+                }
+
+                .company-name {
+                    writing-mode: vertical-rl;
+                    transform: rotate(180deg);
+                    font-size: 40px;  /* Bigger text */
+                    font-weight: bold;
+                    text-align: center;
+                    white-space: nowrap;
+                }
+
+                .battery-health {
+                    writing-mode: vertical-rl;
+                    transform: rotate(180deg);
+                    font-size: 100px;  /* Bigger text */
+                    font-weight: bold;
+                    text-align: left;
+                    white-space: nowrap;
+                        margin-right: 40mm;  /* Add margin to move it to the right */
+
+                }
+
+                .shop-name {
+                    writing-mode: vertical-rl;
+                    transform: rotate(180deg);
+                    font-size: 12px;  /* Bigger text */
+                    font-weight: bold;
+                    text-align: center;
+                    white-space: nowrap;
                 }
 
                 .barcode-section {
-                text-align: center;
-                line-height: 1.0;
-                padding-right: 18px;
-                padding-bottom:3px
+                margin-left: 4mm;
+                    text-align: center;
+                    line-height: 1.2;
+                        transform: rotate(360deg);
                 }
 
                 .barcode-img { 
-                width: 36mm;
-                height: 8mm;
-                margin-top: 2px;
+                    width: 60mm;  /* Bigger barcode */
+                    height: 10mm; 
                 }
 
                 p {
-                margin: 2px 0;
-                font-size: 8px;
-                font-weight: 800;
+                    margin: 2px 0;
+                    font-size: 12px;  /* Bigger text */
+                    font-weight: bold;
                 }
+
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="barcode-section">
                     <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                    <p>${modelName} New</p>
+                     <p>${modelName} New</p>
                     ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
                 </div>
             </div>

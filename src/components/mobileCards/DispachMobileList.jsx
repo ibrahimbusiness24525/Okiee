@@ -19,7 +19,7 @@ const DispachMobilesList = () => {
   const[showSoldModal, setShowSoldModal] = useState(false);
   const[soldMobile, setSoldMobile] = useState(null);
   const[finalPrice, setFinalPrice] = useState('');
-  const[warranty, setWarranty] = useState('');
+  const [warranty, setWarranty] = useState('12 months');
   const[cnicFrontPic,setCnicFrontPic]= useState("");
   const[cnicBackPic,setCnicBackPic]= useState("");
   const[bankName,setBankName]= useState("");
@@ -219,10 +219,10 @@ const DispachMobilesList = () => {
   console.log("This is the imei list" , imeiList);
   
   const handleSoldSubmit = async () => {
-    // if (!finalPrice || !warranty) {
-    //   alert('Please fill all fields');
-    //   return;
-    // }
+    if (!finalPrice || !warranty) {
+      alert('Please fill all fields');
+      return;
+    }
     
     const updatedMobile = {
       ...soldMobile,
@@ -231,6 +231,7 @@ const DispachMobilesList = () => {
       ...(type === "singleUsed" && { warranty }),
       addedImeis,
       cnicBackPic,
+      warranty,
       cnicFrontPic,
       customerName,
       accessories,
@@ -256,6 +257,10 @@ const DispachMobilesList = () => {
 
   
   console.log("These are bulk dispatches",bulkDispatches);
+  console.log("WARRANTY price",warranty);
+  console.log("-------------------------------");
+  
+  console.log("final price",finalPrice);
   const dispatchedImeisList = bulkDispatches.bulkPhonePurchaseId?.ramSimDetails
   ?.flatMap((record) => {
     return record.imeiNumbers
@@ -281,7 +286,7 @@ console.log("solution", dispatchedImeisList);
 
 <StyledHeading>Single New  phones</StyledHeading>
 <Row xs={1} md={2} lg={3} className="g-4">
-  {singleDispatches.length > 0 ? (
+  {!singleDispatches.every(item => item.purchasePhoneId === null) ? (
     singleDispatches
     .filter((phone)=> phone?.purchasePhoneId?.phoneCondition === "New")
     .map((dispatch) => {
@@ -363,7 +368,7 @@ console.log("solution", dispatchedImeisList);
 <div style={{marginTop:"2rem"}}></div>
 <StyledHeading>Single Used  phones</StyledHeading>
 <Row xs={1} md={2} lg={3} className="g-4">
-  {singleDispatches.length > 0 ? (
+  {!singleDispatches.every(item => item.purchasePhoneId === null) ? (
     singleDispatches
     .filter((phone)=> phone.purchasePhoneId?.phoneCondition === "Used")
     .map((dispatch) => {

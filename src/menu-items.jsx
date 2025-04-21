@@ -80,10 +80,10 @@ const menuItems = {
         },
         {
           id: 'mobile',
-          title: 'Get Customer Sales',
+          title: 'Get Customer Record',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/getCustomerSaleRecord'
+          url: '/app/dashboard/getCustomerRecord'
         },
       ]
     },

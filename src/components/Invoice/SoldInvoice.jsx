@@ -200,9 +200,9 @@ const SoldInvoice = () => {
   const imeiOneList =dataReceived?.addedImeis?.length !== 0 && dataReceived?.addedImeis?.map((imei) => imei.split(" / ")[0]) || [];
   console.log("this is the imeiOneList",imeiOneList);
   const handleSubmit = async (type) => {
-    if(dataReceived?.prices?.buyingPrice){
+    if(dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId){
       const payload = {
-        bulkPhonePurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId, // Get from first object
+        bulkPhonePurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId || dataReceived?.bulkPhonePurchaseId, // Get from first object
         imeiNumbers: dataReceived?.addedImeis?.length === 0 
         ? imeis.map(item => item?.imei1)  // Extract imei1 properly
         : imeiOneList, 
@@ -259,6 +259,7 @@ const SoldInvoice = () => {
           customerName:dataReceived?.customerName,
           cnicFrontPic:"/file",
           cnicBackPic:"/file",
+          purchasePrice: dataReceived?.purchasePrice,
           sellingPaymentType:dataReceived.sellingType,
           customerNumber: dataReceived?.customerNumber,
           accessories:dataReceived?.accessories,
@@ -351,7 +352,7 @@ console.log(addedImei1s, 'added imei 1s');
         )}
       </div>
 
-     {dataReceived?.prices?.buyingPrice ? 
+     {dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId ? 
        <>
           <div id="invoice" style={styles.container}>
             {/* <h1>Bulk Mobile Invoice</h1> */}
