@@ -584,13 +584,17 @@ const handleShowPrices = (mobile) => {
                 {
                   index: 5,
                   component: (ramSimDetails) => {
-                    const totalImeiNumbers = ramSimDetails.reduce(
-                      (total, ramSim) => total + (ramSim.imeiNumbers?.length || 0),
-                      0
-                    );
+                    const totalImeiNumbers = ramSimDetails.reduce((total, ramSim) => {
+                      const imeis = Array.isArray(ramSim.imeiNumbers)
+                        ? ramSim.imeiNumbers.filter(imei => imei.isDispatched === false)
+                        : [];
+                      return total + imeis.length;
+                    }, 0);
+                
                     return <span>{totalImeiNumbers}</span>;
                   },
                 },
+                
                 {
                   index: 6,
                   component: (purchasePaymentType) => {

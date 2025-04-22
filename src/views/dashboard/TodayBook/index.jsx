@@ -10,35 +10,28 @@ import { dataset, valueFormatter } from '../../../constant/weather';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { api } from "../../../../api/api";
 import { useNavigate } from "react-router-dom";
-const chartSetting = {
-  yAxis: [
-    {
-      label: 'rainfall (mm)',
-    },
-  ],
-  width: 500,
-  height: 300,
-  sx: {
-    [`.${axisClasses.left} .${axisClasses.label}`]: {
-      transform: 'translate(-20px, 0)',
-    },
-  },
-};
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const TodayBook = () => {
 const[todayBookData,setTodayBookData] = useState([]);
+const[date,setDate ] = useState("")
   const getTodayBook = async() => {
     try{
-      const response = await api.get(`/api/dayBook/todayBook`);
+      const response = await api.get(`/api/dayBook/todayBook`, {
+        params: { date }
+      });
+      
       setTodayBookData(response?.data?.data || []);
     }catch(error){
       console.log("Error in getting the field", error);
     }
   } 
-
+  console.log("this is the date" , date);
+  
   useEffect(() => {
     getTodayBook();
   },[]); 
+
 
   console.log("Today Book Data",todayBookData);
   const totalPurchasePrice = 
@@ -75,9 +68,68 @@ const[todayBookData,setTodayBookData] = useState([]);
   const navigation = useNavigate()
   return (
 <div style={{ padding: "20px", minHeight: "100vh" }}>
-            <h1 style={{ fontSize: "24px", marginBottom:"33px",fontWeight: "600", color: "#333", marginBottom: "16px" }}>
-               Today Book
-            </h1>
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "24px",
+    padding: "12px 16px",
+    borderRadius: "8px",
+    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)"
+  }}
+>
+  <h1
+    style={{
+      fontSize: "24px",
+      fontWeight: "600",
+      color: "#333",
+      margin: 0,
+      flex: 1
+    }}
+  >
+    Today Book
+  </h1>
+
+  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+    <input
+      onChange={(e) => setDate(e.target.value)}
+      type="date"
+      value={date}
+      name="date"
+      style={{
+        padding: "8px 12px",
+        fontSize: "14px",
+        border: "1px solid #ccc",
+        borderRadius: "6px",
+        outline: "none",
+        backgroundColor: "#fff",
+        color: "#333",
+        cursor: "pointer",
+        minWidth: "160px"
+      }}
+    />
+    <button
+      onClick={getTodayBook}
+      style={{
+        padding: "8px 16px",
+        backgroundColor: "#1976d2",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        fontSize: "14px",
+        cursor: "pointer",
+        transition: "background 0.3s ease"
+      }}
+      onMouseOver={(e) => (e.target.style.backgroundColor = "#115293")}
+      onMouseOut={(e) => (e.target.style.backgroundColor = "#1976d2")}
+    >
+      Get
+    </button>
+  </div>
+</div>
+
+
             <div style={{display:"flex", alignItems:"center",justifyContent:"space-between"}}>
             <Card 
               onClick={()=>navigation("/todayBook/pruchaseDetail/:id")}

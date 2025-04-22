@@ -114,6 +114,7 @@ const DispachMobilesList = () => {
     }
   };
   const handleReturnBulkDispatch = async (dispatchMobile) => {
+    
     setDispatchMobile(dispatchMobile)
     setShowDispatchModal(true);
     setImeiList(
@@ -159,12 +160,15 @@ const DispachMobilesList = () => {
     setShowDispatchModal(true);
   };
   
+  console.log("This is the selected imei", imei);
+
   const handleBulkReturnSubmit = async() => {
     try {
       console.log("dispatchMobile", dispatchMobile._id);
+      console.log("This is the selected imeisasasasas", imei);
       
       const response = await api.patch(`/api/Purchase/bulk-dispatch-return/${dispatchMobile.dispatchId}`, {
-        imeiArray: selectedImeis.map((imei) => {
+        imeiArray: imei.map((imei) => {
           const [imei1, imei2] = imei.split(' / ');
           return { imei1, imei2 };
         }),
@@ -187,8 +191,9 @@ const DispachMobilesList = () => {
 
   const handleSoldClick = (mobile,type) => {
     console.log("this is type", type);
-    console.log("this is the mobile", mobile);
+    console.log("this is the mobile-------------", mobile);
     
+ 
     
     if(type==="bulk"){
       setType("bulk")
@@ -196,13 +201,13 @@ const DispachMobilesList = () => {
       mobile?.ramSimDetails.flatMap((ramSim) => {
         if (!ramSim.imeiNumbers) return [];
         return ramSim?.imeiNumbers
-          .filter((imei) => dispatchMobile?.dispatchedImeiIds?.includes(imei._id))
+          .filter((imei) => soldMobile?.dispatchedImeiIds?.includes(imei._id))
           .map((imei) =>
             imei.imei2 ? `${imei.imei1} / ${imei.imei2}` : imei.imei1
           );
       }) || []
     );
-      
+
     }
     if(type==="single"){
       setType("single")

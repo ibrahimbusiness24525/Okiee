@@ -3,6 +3,7 @@ import { useState } from "react";
 import { api } from "../../../api/api";
 import { StyledHeading } from "components/StyledHeading/StyledHeading";
 import styled from "styled-components";
+import { dateFormatter } from "utils/dateFormatter";
 
 const Card = styled.div`
   border: 1px solid #d0d7de;
@@ -150,7 +151,7 @@ const CustomerRecord = () => {
 </div>
 <>
     {/* Sold Records */}
-    {soldRecord.filter(r => r.type === "sold").length > 0 && (
+    {soldRecord.filter(r => r.type === "sold").length > 0 ? (
       <RecordSection>
         <StyledHeading>Sold Phone Records</StyledHeading>
         {soldRecord.filter(r => r.type === "sold").map((record, index) => {
@@ -190,6 +191,7 @@ const CustomerRecord = () => {
     {doc.warranty && <InfoItem><strong>Warranty:</strong> {doc.warranty}</InfoItem>}
     {doc.specifications && <InfoItem><strong>Specifications:</strong> {doc.specifications}</InfoItem>}
     {doc.phoneCondition && <InfoItem><strong>Condition:</strong> {doc.phoneCondition}</InfoItem>}
+    {doc.createdAt && <InfoItem><strong>Sold at: </strong> {dateFormatter(doc.createdAt)}</InfoItem>}
   </InfoGrid>
 
   {doc.accessories?.length > 0 && (
@@ -209,10 +211,15 @@ const CustomerRecord = () => {
           );
         })}
       </RecordSection>
-    )}
+    ) : 
+    <RecordSection>
+    <StyledHeading>Sold Phone Records</StyledHeading>
+    <p>No sold phone records found.</p>
+  </RecordSection>
+    }
 
     {/* Purchased Records */}
-    {soldRecord.filter(r => r.type === "purchase").length > 0 && (
+    {soldRecord.filter(r => r.type === "purchase").length > 0 ? (
       <RecordSection>
         <StyledHeading>Purchased Phone Records</StyledHeading>
         {soldRecord.filter(r => r.type === "purchase").map((record, index) => {
@@ -234,6 +241,8 @@ const CustomerRecord = () => {
                 {doc.specifications && <InfoItem><strong>Specifications:</strong> {doc.specifications}</InfoItem>}
                 {doc.phoneCondition && <InfoItem><strong>Condition:</strong> {doc.phoneCondition}</InfoItem>}
                 {doc.batteryHealth && <InfoItem><strong>Battery Health:</strong> {doc.batteryHealth}</InfoItem>}
+                {doc.createdAt && <InfoItem><strong>
+                  Purchased at: </strong> {dateFormatter(doc.createdAt)}</InfoItem>}
               </InfoGrid>
               {doc.accessories && typeof doc.accessories === "object" && (
                 <div style={{ marginTop: "12px" }}>
@@ -249,7 +258,12 @@ const CustomerRecord = () => {
           );
         })}
       </RecordSection>
-    )}
+    ): 
+    <RecordSection>
+      <StyledHeading>Purchased Phone Records</StyledHeading>
+      <p>No purchased phone records found.</p>
+    </RecordSection>
+    }
   </>
 
   </div>
