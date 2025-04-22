@@ -200,9 +200,9 @@ const SoldInvoice = () => {
   const imeiOneList =dataReceived?.addedImeis?.length !== 0 && dataReceived?.addedImeis?.map((imei) => imei.split(" / ")[0]) || [];
   console.log("this is the imeiOneList",imeiOneList);
   const handleSubmit = async (type) => {
-    if(dataReceived?.prices?.buyingPrice){
+    if(dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId){
       const payload = {
-        bulkPhonePurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId, // Get from first object
+        bulkPhonePurchaseId: dataReceived?.ramSimDetails?.[0]?.bulkPhonePurchaseId || dataReceived?.bulkPhonePurchaseId, // Get from first object
         imeiNumbers: dataReceived?.addedImeis?.length === 0 
         ? imeis.map(item => item?.imei1)  // Extract imei1 properly
         : imeiOneList, 
@@ -259,6 +259,7 @@ const SoldInvoice = () => {
           customerName:dataReceived?.customerName,
           cnicFrontPic:"/file",
           cnicBackPic:"/file",
+          purchasePrice: dataReceived?.purchasePrice,
           sellingPaymentType:dataReceived.sellingType,
           customerNumber: dataReceived?.customerNumber,
           accessories:dataReceived?.accessories,
@@ -351,7 +352,7 @@ console.log(addedImei1s, 'added imei 1s');
         )}
       </div>
 
-     {dataReceived?.prices?.buyingPrice ? 
+     {dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId ? 
        <>
           <div id="invoice" style={styles.container}>
             {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -568,22 +569,6 @@ console.log(addedImei1s, 'added imei 1s');
         <>
        {
   dataReceived.ramSimDetails?.length>0 ? (
-    // <div>
-    //   <div style={styles.termsSection} >
-    //     <strong style={styles.termsHeading}>Total IMEIs:</strong>
-    //     {dataReceived.ramSimDetails.map((detail, index) =>
-    //       detail.imeiNumbers?.length ? (
-    //         <div key={index} style={{ display: "flex", gap: "10px" }}>
-    //           {detail.imeiNumbers.map((imeiObj, i) => (
-    //             <p key={i}>{imeiObj.imei1}</p>
-    //           ))}
-    //         </div>
-    //       ) : (
-    //         <p key={index}>N/A</p>
-    //       )
-    //     )}
-    //   </div>
-    // </div>
     <div>
   <div style={styles.termsSection}>
    
@@ -607,48 +592,7 @@ console.log(addedImei1s, 'added imei 1s');
         padding: "5px 0",
       }}
     >
-     {/* {dataReceived.ramSimDetails.map((detail, index) => (
-  <div key={index} style={{ marginBottom: "8px" , display:"flex", alignItems:"center"}}>
-    <strong style={{ fontSize: "14px", color: "#333" }}>
-      Phone {index + 1}:
-    </strong>
-    {detail.imeiNumbers?.length ? (
-      <div
-        style={{
-          display: "flex",
-   
-          flexWrap: "wrap",
-          gap: "6px",
-          marginTop: "4px",
-        }}
-      >
-        {detail.imeiNumbers.map((imeiObj, i) => (
-          <div
-            key={i}
-            style={{
-              background: "#f0f0f0",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              fontSize: "12px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <strong>IMEI 1:</strong> {imeiObj.imei1}{" "}
-            {imeiObj.imei2 ? (
-              <>
-                | <strong>IMEI 2:</strong> {imeiObj.imei2}
-              </>
-            ) : null}
-          </div>
-        ))}
-      </div>
-    ) : (
-      <span style={{ fontSize: "12px", color: "#888", marginLeft: "10px" }}>
-        Not Available
-      </span>
-    )}
-  </div>
-))} */}
+    
 {dataReceived?.ramSimDetails?.map((detail, detailIndex) => (
   <div key={detailIndex} style={{ marginBottom: "16px" }}>
     <StyledHeading>Ram Memory: {detail?.ramMemory}</StyledHeading>
@@ -711,25 +655,7 @@ console.log(addedImei1s, 'added imei 1s');
 
         </>
         }
-        {/* Terms & Conditions Section */}
-        {/* <div style={styles.termsSection}>
-          <h3 style={styles.termsHeading}>Terms & Conditions</h3>
-          <p style={styles.termsText}>1. All sales are final once the invoice is generated.</p>
-          <p style={styles.termsText}>2. Warranty is valid only for products with a valid invoice.</p>
-          <p style={styles.termsText}>3. The company is not responsible for any damages caused by misuse of the product.</p>
-          <p style={styles.termsText}>4. Payment must be made in full before the invoice is considered complete.</p>
-          <p style={styles.termsText}>5. Terms and conditions are subject to change without prior notice.</p>
-        </div> */}
-      {/* {dataReceived.accessoryName && <>
-        <div style={styles.termsSection}>
-              <div style={styles.termsHeading}>Accessory Details</div>
-              <div style={styles.termsText}>
-              <p><strong>Accessory Name: </strong>{dataReceived.accessoryName}</p>
-              <p>Accessory Sold Price: {dataReceived.accessoryPrice}</p>
-              </div>
-             
-          </div>
-      </>} */}
+       
  
 
 
@@ -737,31 +663,7 @@ console.log(addedImei1s, 'added imei 1s');
            {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
            <div style={styles.termsHeading}>Terms & conditions</div>
            <div style={styles.termsText}>
-           {/* {
-           dataReceived.sellingType === "Bank" ? (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Bank</p>
-               <p>{dataReceived.bankName}</p>
-             </div>
-           ) : dataReceived.sellingType === "Credit" ? (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Credit</p>
-               <p><strong>Payable Amount:</strong> {dataReceived.payableAmountNow}</p>
-               <p><strong>Payable Amount Later:</strong> {dataReceived.payableAmountLater}</p>
-               <p><strong>Due Date:</strong> {dataReceived.payableAmountLaterDate}</p>
-             </div>
-           ) : dataReceived.sellingType === "Exchange" ? (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Exchange</p>
-               <p><strong>Exchange Detail:</strong> {dataReceived.exchangePhoneDetail}</p>
-             </div>
-           ) : (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Cash</p>
-               <p><strong>Total Cash:</strong> {price}</p>
-             </div>
-           )
-         } */}
+          
          
              {shop?.termsCondition.map((item, index) => (
                <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
@@ -839,52 +741,18 @@ console.log(addedImei1s, 'added imei 1s');
         </div>
 
  
-      {/* {dataReceived.accessoryName && <>
-        <div style={styles.termsSection}>
-              <div style={styles.termsHeading}>Accessory Details</div>
-              <div style={styles.termsText}>
-              <p><strong>Accessory Name: </strong>{dataReceived.accessoryName}</p>
-              <p>Accessory Sold Price: {dataReceived.accessoryPrice}</p>
-              </div>
-             
-          </div>
-      </>} */}
- 
+    
 
       
         <div style={styles.termsSection}>
            {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
            <div style={styles.termsHeading}>Terms and conditions</div>
            <div style={styles.termsText}>
-           {/* {
-           dataReceived.sellingType === "Bank" ? (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Bank</p>
-               <p>{dataReceived.bankName}</p>
-             </div>
-           ) : dataReceived.sellingType === "Credit" ? (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Credit</p>
-               <p><strong>Payable Amount:</strong> {dataReceived.payableAmountNow}</p>
-               <p><strong>Payable Amount Later:</strong> {dataReceived.payableAmountLater}</p>
-               <p><strong>Due Date:</strong> {dataReceived.payableAmountLaterDate}</p>
-             </div>
-           ) : dataReceived.sellingType === "Exchange" ? (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Exchange</p>
-               <p><strong>Exchange Detail:</strong> {dataReceived.exchangePhoneDetail}</p>
-             </div>
-           ) : (
-             <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
-               <p><strong>Selling Type:</strong> Cash</p>
-               <p><strong>Total Cash:</strong> {price}</p>
-             </div>
-           )
-         } */}
-         
+
              {shop?.termsCondition.map((item, index) => (
                <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
              ))}
+
            </div>
      </div>
         <footer style={styles.footer}>

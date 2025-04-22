@@ -73,10 +73,17 @@ const menuItems = {
         },
         {
           id: 'mobile',
+<<<<<<< HEAD
           title: 'Scan Device Details',
           type: 'item',
           icon: 'feather icon-server',
           url: '/app/dashboard/scanDeviceDetails'
+=======
+          title: 'Get Customer Record',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/getCustomerRecord'
+>>>>>>> 3007473e37334b35d68ca8e9bdbe256f334fcc84
         },
       ]
     },

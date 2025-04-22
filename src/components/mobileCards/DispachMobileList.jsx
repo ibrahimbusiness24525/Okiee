@@ -19,7 +19,7 @@ const DispachMobilesList = () => {
   const[showSoldModal, setShowSoldModal] = useState(false);
   const[soldMobile, setSoldMobile] = useState(null);
   const[finalPrice, setFinalPrice] = useState('');
-  const[warranty, setWarranty] = useState('');
+  const [warranty, setWarranty] = useState('12 months');
   const[cnicFrontPic,setCnicFrontPic]= useState("");
   const[cnicBackPic,setCnicBackPic]= useState("");
   const[bankName,setBankName]= useState("");
@@ -114,6 +114,7 @@ const DispachMobilesList = () => {
     }
   };
   const handleReturnBulkDispatch = async (dispatchMobile) => {
+    
     setDispatchMobile(dispatchMobile)
     setShowDispatchModal(true);
     setImeiList(
@@ -159,12 +160,15 @@ const DispachMobilesList = () => {
     setShowDispatchModal(true);
   };
   
+  console.log("This is the selected imei", imei);
+
   const handleBulkReturnSubmit = async() => {
     try {
       console.log("dispatchMobile", dispatchMobile._id);
+      console.log("This is the selected imeisasasasas", imei);
       
       const response = await api.patch(`/api/Purchase/bulk-dispatch-return/${dispatchMobile.dispatchId}`, {
-        imeiArray: selectedImeis.map((imei) => {
+        imeiArray: imei.map((imei) => {
           const [imei1, imei2] = imei.split(' / ');
           return { imei1, imei2 };
         }),
@@ -187,8 +191,9 @@ const DispachMobilesList = () => {
 
   const handleSoldClick = (mobile,type) => {
     console.log("this is type", type);
-    console.log("this is the mobile", mobile);
+    console.log("this is the mobile-------------", mobile);
     
+ 
     
     if(type==="bulk"){
       setType("bulk")
@@ -196,13 +201,13 @@ const DispachMobilesList = () => {
       mobile?.ramSimDetails.flatMap((ramSim) => {
         if (!ramSim.imeiNumbers) return [];
         return ramSim?.imeiNumbers
-          .filter((imei) => dispatchMobile?.dispatchedImeiIds?.includes(imei._id))
+          .filter((imei) => soldMobile?.dispatchedImeiIds?.includes(imei._id))
           .map((imei) =>
             imei.imei2 ? `${imei.imei1} / ${imei.imei2}` : imei.imei1
           );
       }) || []
     );
-      
+
     }
     if(type==="single"){
       setType("single")
@@ -219,10 +224,10 @@ const DispachMobilesList = () => {
   console.log("This is the imei list" , imeiList);
   
   const handleSoldSubmit = async () => {
-    // if (!finalPrice || !warranty) {
-    //   alert('Please fill all fields');
-    //   return;
-    // }
+    if (!finalPrice || !warranty) {
+      alert('Please fill all fields');
+      return;
+    }
     
     const updatedMobile = {
       ...soldMobile,
@@ -231,6 +236,7 @@ const DispachMobilesList = () => {
       ...(type === "singleUsed" && { warranty }),
       addedImeis,
       cnicBackPic,
+      warranty,
       cnicFrontPic,
       customerName,
       accessories,
@@ -256,6 +262,10 @@ const DispachMobilesList = () => {
 
   
   console.log("These are bulk dispatches",bulkDispatches);
+  console.log("WARRANTY price",warranty);
+  console.log("-------------------------------");
+  
+  console.log("final price",finalPrice);
   const dispatchedImeisList = bulkDispatches.bulkPhonePurchaseId?.ramSimDetails
   ?.flatMap((record) => {
     return record.imeiNumbers
@@ -281,7 +291,7 @@ console.log("solution", dispatchedImeisList);
 
 <StyledHeading>Single New  phones</StyledHeading>
 <Row xs={1} md={2} lg={3} className="g-4">
-  {singleDispatches.length > 0 ? (
+  {!singleDispatches.every(item => item.purchasePhoneId === null) ? (
     singleDispatches
     .filter((phone)=> phone?.purchasePhoneId?.phoneCondition === "New")
     .map((dispatch) => {
@@ -363,7 +373,7 @@ console.log("solution", dispatchedImeisList);
 <div style={{marginTop:"2rem"}}></div>
 <StyledHeading>Single Used  phones</StyledHeading>
 <Row xs={1} md={2} lg={3} className="g-4">
-  {singleDispatches.length > 0 ? (
+  {!singleDispatches.every(item => item.purchasePhoneId === null) ? (
     singleDispatches
     .filter((phone)=> phone.purchasePhoneId?.phoneCondition === "Used")
     .map((dispatch) => {
