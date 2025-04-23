@@ -49,28 +49,26 @@ const BarcodePrinter = ({ obj,type}) => {
                     <title>Print Barcode</title>
                     <style>
                        @page { 
-    size: portrait; /* Keep portrait */
-    margin: 0;
-}
+                        size: 78mm 25mm; /* Keep portrait */
+                        margin: 0;
+                    }
+                                
+                     html, body {
+                    margin: 0;
+                    padding: 0;
+                    width: 70mm;
+                    height: 25mm;
+                    overflow: hidden;
+                }
 
-body { 
-    font-family: Arial, sans-serif; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    width: 70mm;  /* Increase width */
-    height: 40mm; /* Increase height */
-    margin: 0;
-}
-
-.container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    height: 100%;
-    padding: 1mm; /* Slightly more padding */
-}
+            .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 70mm;
+                height: 25mm;
+                padding: 1mm; /* Slightly more padding */
+            }
 
 .company-name {
     writing-mode: vertical-rl;
@@ -145,79 +143,7 @@ p {
             }
             
         };
-        // <html>
-        // <head>
-        //     <title>Print Barcode</title>
-        //     <style>
-        //        body { 
-        //             font-family: Arial, sans-serif; 
-        //             display: flex; 
-        //             align-items: center; 
-        //             justify-content: center; 
-        //             width: 50.8mm;
-        //             height: 25.4mm;
-        //             margin: 0;
-        //         }
-
-        //         .container {
-        //             display: flex;
-
-        //             align-items: center;
-        //             justify-content: center;
-        //             width: 100%;
-        //             height: 5rem;
-        //             border: 1px solid black; /* Optional: for visualization */
-        //         }
-
-        //         .company-name {
-        //             writing-mode: vertical-rl;
-        //             transform: rotate(180deg);
-        //             font-size: 8px; /* Adjusted for better fit */
-        //             font-weight: bold;
-        //             padding: 2px;
-        //             text-align: center;
-        //             white-space: nowrap;
-        //         }
-
-        //         .barcode-section {
-        //             text-align: center;
-        //             line-height: 1.0;
-        //             padding-right: 18px;
-        //             padding-bottom:3px
-        //         }
-
-        //         .barcode-img { 
-        //             width: 36mm;  /* Adjusted for scale */
-        //             height: 8mm; /* Adjusted for scale */
-        //             margin-top: 2px;
-        //         }
-
-        //         p {
-        //             margin: 2px 0;
-        //             font-size: 8px;
-        //             font-weight: 800;
-        //         }
-
-        //     </style>
-        //         </head>
-        //             <body>
-        //                 <div class="container">
-        //                     <div class="company-name">${shopName}</div>
-        //                      <div class="barcode-section">
-        //                         <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-        //                             <p>${companyName || ""}  ${color || ""}  ${ramMemory || ""} ${phoneCondition || ""}</p>
-        //                                     ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
-        //                             </div>
-        //                             <div class="company-name">${batteryHealth ? `<p>${batteryHealth}</p>` : ""}</div>
-        //                     </div>
-        //         <script>
-        //         window.onload = function() {
-        //             window.print();
-        //             setTimeout(() => window.close(), 500);
-        //         };
-        //     </script>
-        // </body>
-        // </html>
+        
 
     const printBulkPhoneBarcode = () =>{
         setModal(true)
@@ -249,115 +175,7 @@ const handleSelectImei = (imei) => {
     });
 };
 
-// const printBulkBarcode = (data) =>{
-//     console.log("this is the data", data);
-    
-//    const imei = data.imei1 ? data.imei1.toString() : null;
-//     const imei2 = data.imei2 ? data.imei2.toString() : null;
-//     const modelName = data.modelName || "Unknown Model"; // Fallback value
-//     const batteryHealth = data?.batteryHealth; // Fallback value
-//     const partyName = data.partyName || "Unknown Party Name"; // Fallback value
-//     // Create barcodes for available IMEIs
-//     const canvas1 = document.createElement("canvas");
-//     JsBarcode(canvas1, imei || "N/A", {
-//         format: "CODE128",
-//         displayValue: true,
-//         width: 2,
-//         height: 30,
-//     });
 
-//     let canvas2;
-//     if (imei2) {
-//         canvas2 = document.createElement("canvas");
-//         JsBarcode(canvas2, imei2, {
-//             format: "CODE128",
-//             displayValue: true,
-//             width: 2,
-//             height: 30,
-//         });
-//     }
-
-//     // Open a new print window
-//     const printWindow = window.open("", "_blank");
-//     if (printWindow) {
-//         printWindow.document.write(`
-//             <html>
-//             <head>
-//                 <title>Print Barcode</title>
-//                 <style>
-//                    body { 
-//                     font-family: Arial, sans-serif; 
-//                     display: flex; 
-//                     align-items: center; 
-//                     justify-content: center; 
-//                     width: 50.8mm;
-//                     height: 25.4mm;
-//                     margin: 0;
-//                     }
-
-//                     .container {
-//                     display: flex;
-
-//                     align-items: center;
-//                     justify-content: center;
-//                     width: 100%;
-//                     height: 5rem;
-//                     border: 1px solid black; /* Optional: for visualization */
-//                     }
-
-//                     .company-name {
-//                     writing-mode: vertical-rl;
-//                     transform: rotate(180deg);
-//                     font-size: 8px; /* Adjusted for better fit */
-//                     font-weight: bold;
-//                     padding: 2px;
-//                     text-align: center;
-//                     white-space: nowrap;
-//                     }
-
-//                     .barcode-section {
-//                     text-align: center;
-//                     line-height: 1.0;
-//                     padding-right: 18px;
-//                     padding-bottom:3px
-//                     }
-
-//                     .barcode-img { 
-//                     width: 36mm;  /* Adjusted for scale */
-//                     height: 8mm; /* Adjusted for scale */
-//                     margin-top: 2px;
-//                     }
-
-//                     p {
-//                     margin: 2px 0;
-//                     font-size: 8px;
-//                     font-weight: 800;
-//                     }
-
-//                 </style>
-//             </head>
-//             <body>
-//                 <div class="container">
-//                     <div class="barcode-section">
-//                      <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-//                       <p>${modelName || ""}   ${ "New"}</p>
-//                             ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
-//                             </div>
-
-//                         </div>
-//                     </div>
-//                 <script>
-//                     window.onload = function() {
-//                         window.print();
-//                         setTimeout(() => window.close(), 500);
-//                     };
-//                 </script>
-//             </body>
-//             </html>
-//         `);
-//         printWindow.document.close();
-//     }
-// }
 const printBulkBarcode = (data) => {
     console.log("this is the data", data);
 
@@ -385,44 +203,7 @@ const printBulkBarcode = (data) => {
         });
     }
     
-    // body { 
-    //  font-family: Arial, sans-serif; 
-    //  display: flex; 
-    //  align-items: center; 
-    //  justify-content: center; 
-    //  width: 50.8mm;
-    //  height: 25.4mm;
-    //  margin: 0;
-    //  }
-
-    //  .container {
-    //  display: flex;
-    //  align-items: center;
-    //  justify-content: center;
-    //  width: 100%;
-    //  height: 5rem;
-    //  border: 1px solid black;
-    //  }
-
-    //  .barcode-section {
-    //  text-align: center;
-    //  line-height: 1.0;
-    //  padding-right: 18px;
-    //  padding-bottom:3px
-    //  }
-
-    //  .barcode-img { 
-    //  width: 36mm;
-    //  height: 8mm;
-    //  margin-top: 2px;
-    //  }
-
-    //  p {
-    //  margin: 2px 0;
-    //  font-size: 8px;
-    //  font-weight: 800;
-    //  }
-    // Create a hidden iframe for printing
+    
     let iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
     iframe.style.width = "0";
@@ -437,68 +218,39 @@ const printBulkBarcode = (data) => {
         <head>
             <title>Print Barcode</title>
             <style>
-              @page { 
-                    size: portrait; /* Keep portrait */
-                    margin: 0;
-                }
 
-                body { 
-                    font-family: Arial, sans-serif; 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    width: 70mm;  /* Increase width */
-                    height: 40mm; /* Increase height */
-                    margin: 0;
-                }
+                 @page {
+    width: 70mm;
+                     height: 25mm;
+    margin: 0;
+}
 
-                .container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    width: 100%;
-                    height: 100%;
-                    padding: 1mm; /* Slightly more padding */
+                 body,html { 
+                     font-family: Arial, sans-serif; 
+                     display: flex; 
+                     align-items: center; 
+                     justify-content: center; 
+                     width: 70mm;
+                     height: 25mm;
+                     margin: 0;
                 }
+        
+                 .container {
+                         margin: 0;
+                         display: flex;
+                         align-items: center;
+                         justify-content: space-between;
+                     }
 
-                .company-name {
-                    writing-mode: vertical-rl;
-                    transform: rotate(180deg);
-                    font-size: 40px;  /* Bigger text */
-                    font-weight: bold;
-                    text-align: center;
-                    white-space: nowrap;
-                }
 
-                .battery-health {
-                    writing-mode: vertical-rl;
-                    transform: rotate(180deg);
-                    font-size: 100px;  /* Bigger text */
-                    font-weight: bold;
-                    text-align: left;
-                    white-space: nowrap;
-                        margin-right: 40mm;  /* Add margin to move it to the right */
-
-                }
-
-                .shop-name {
-                    writing-mode: vertical-rl;
-                    transform: rotate(180deg);
-                    font-size: 12px;  /* Bigger text */
-                    font-weight: bold;
-                    text-align: center;
-                    white-space: nowrap;
-                }
+              
 
                 .barcode-section {
-                margin-left: 4mm;
                     text-align: center;
                     line-height: 1.2;
-                        transform: rotate(360deg);
                 }
 
                 .barcode-img { 
-                    width: 60mm;  /* Bigger barcode */
                     height: 10mm; 
                 }
 
