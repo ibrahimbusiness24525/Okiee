@@ -188,6 +188,8 @@ const NewMobilesList = () => {
   
   
   const handleEdit = (mobile) => {
+    console.log("This is mobile to be edit", mobile);
+    
     setEditMobile(mobile);
     setShowModal(true);
   };
@@ -614,6 +616,9 @@ const handleShowPrices = (mobile) => {
               extraColumns={[
                 (obj) => (
                   <>
+                      <div>
+               
+                 </div>
                   <Button
                     onClick={() => handleSoldClick(obj, "bulk")}
                     style={{
@@ -627,6 +632,20 @@ const handleShowPrices = (mobile) => {
                     }}
                   >
                     Sold
+                  </Button>
+                  <Button
+                    onClick={() => handleEdit(obj)}
+                    style={{
+                      backgroundColor: "#28a745",
+                      color: "#fff",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    Edit
                   </Button>
                           <Button
                           onClick={() => handleDispatchClick(obj)}
@@ -643,6 +662,8 @@ const handleShowPrices = (mobile) => {
                        >
                       Dispatch
                       </Button>
+             
+                      
                   </>
                 ),
               ]}
@@ -660,7 +681,7 @@ const handleShowPrices = (mobile) => {
         .map((mobile) => (
           <Col key={mobile._id}>
             <Card className="h-100 shadow border-0" style={{ borderRadius: '15px', overflow: 'hidden', position: 'relative' }}>
-              {/* <FaEdit
+              <FaEdit
                 onClick={() => handleEdit(mobile)}
                 style={{
                   position: 'absolute',
@@ -670,7 +691,7 @@ const handleShowPrices = (mobile) => {
                   cursor: 'pointer',
                   fontSize: '1.5rem',
                 }}
-              /> */}
+              />
               <FaTrash
                 onClick={() => handleBulkDelete(mobile._id)}
                 style={{
