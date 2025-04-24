@@ -95,7 +95,8 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
 
   useEffect(() => {
     // setShowSingleModal(modal)  
-
+    console.log("editMobile",editMobile);
+    console.log("bulkEdit",bulkEdit);
     if (editMobile && !bulkEdit) {
       setSinglePurchase({
         accessories:{
@@ -132,43 +133,44 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
         isApprovedFromEgadgets: editMobile.isApprovedFromEgadgets || false, // Matches `isApprovedFromEgadgets`
         // eGadgetStatusPicture: editMobile.eGadgetStatusPicture || '', // Matches `eGadgetStatusPicture`
       });
-  if(bulkEdit){
-    setBulkData(prevData => ({
-      ...prevData,
-      partyName: editMobile.partyName || "",
-      date: editMobile.date || today,
-      lp: editMobile.prices?.lp || "",
-      lifting: editMobile.prices?.lifting || "",
-      promo: editMobile.prices?.promo || "",
-      activation: editMobile.prices?.activation || "",
-      dealerPrice: editMobile.prices?.dealerPrice || "",
-      buyingPrice: editMobile.prices?.buyingPrice || "",
-      paymentType: editMobile.purchasePaymentType || "",
-      payableAmountNow: editMobile.creditPaymentData?.payableAmountNow || "",
-      payableAmountLater: editMobile.creditPaymentData?.payableAmountLater || "",
-      paymentDate: editMobile.creditPaymentData?.dateOfPayment || "",
-      quantity: editMobile.ramSimDetails?.length || 0,
-      ramSimDetails: editMobile.ramSimDetails?.map(detail => ({
-        companyName: detail.companyName || "",
-        modelName: detail.modelName || "",
-        batteryHealth: detail.batteryHealth || "",
-        ramMemory: detail.ramMemory || "",
-        simOption: detail.simOption || "",
-        priceOfOne: detail.priceOfOne || "",
-        imeiNumbers: detail.imeiNumbers?.map(imei => ({
-          imei1: imei.imei1 || "",
-          imei2: imei.imei2 || ""
-        })) || []
-      })) || []
-    }));
-    
-  }
     }
+    if(editMobile && bulkEdit){
+     setBulkData(prevData => ({
+       ...prevData,
+       partyName: editMobile.partyName || "",
+       date: editMobile.date || today,
+       lp: editMobile.prices?.lp || "",
+       lifting: editMobile.prices?.lifting || "",
+       promo: editMobile.prices?.promo || "",
+       activation: editMobile.prices?.activation || "",
+       dealerPrice: editMobile.prices?.dealerPrice || "",
+       buyingPrice: editMobile.prices?.buyingPrice || "",
+       paymentType: editMobile.purchasePaymentType || "",
+       payableAmountNow: editMobile.creditPaymentData?.payableAmountNow || "",
+       payableAmountLater: editMobile.creditPaymentData?.payableAmountLater || "",
+       paymentDate: editMobile.creditPaymentData?.dateOfPayment || "",
+       quantity: editMobile.ramSimDetails?.length || 0,
+       ramSimDetails: editMobile.ramSimDetails?.map(detail => ({
+         companyName: detail.companyName || "",
+         modelName: detail.modelName || "",
+         batteryHealth: detail.batteryHealth || "",
+         ramMemory: detail.ramMemory || "",
+         simOption: detail.simOption || "",
+         priceOfOne: detail.priceOfOne || "",
+         imeiNumbers: detail.imeiNumbers?.map(imei => ({
+           imei1: imei.imei1 || "",
+           imei2: imei.imei2 || ""
+         })) || []
+       })) || []
+     }));
+     
+   }
 
     
-  }, [modal, editMobile]);
+  }, [modal, editMobile,bulkEdit]);
   console.log("editdata",singlePurchase);
   
+  console.log("bulkData",bulkData);
   
 
     const handleChange = (e) => {
