@@ -48,6 +48,7 @@ const NewMobilesList = () => {
   const [editMobile, setEditMobile] = useState(null);
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [soldMobile, setSoldMobile] = useState(null);
+  const[saleDate,setSaleDate] = useState("")
   const[customerName,setCustomerName] = useState("");
   const [finalPrice, setFinalPrice] = useState('');
   const [warranty, setWarranty] = useState('12 months');
@@ -268,6 +269,7 @@ const NewMobilesList = () => {
       finalPrice,
       sellingType,
       warranty,
+      saleDate,
       addedImeis,
       cnicBackPic,
       cnicFrontPic,
@@ -433,6 +435,8 @@ const handleShowPrices = (mobile) => {
 
     return { now, later };
   };
+  console.log("This is the sale date" , saleDate);
+  
   return (
     <>
      <InputGroup className="mb-3">
@@ -986,9 +990,18 @@ const handleShowPrices = (mobile) => {
                     placeholder="Enter Customer Number"
                   />
                 </Form.Group>
-          
-        
 
+                <Form.Group controlId="saleDate">
+                    <Form.Label>Sale Date</Form.Label>
+                    <Form.Control
+                      type="Date"
+                      placeholder="Enter Sale Date"
+                      value={saleDate}
+                      onChange={(e) => setSaleDate(e.target.value)}
+                      required
+                      
+                    />
+                  </Form.Group>
                 {/* CNIC Front Picture */}
                 <Form.Group className="mb-3">
                   <Form.Label>CNIC Front Picture</Form.Label>

@@ -33,7 +33,8 @@ const BulkSalesDetail = () => {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-
+ console.log("sale detail", saleDetail);
+ 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <StyledHeading>Bulk Sale Details</StyledHeading>
@@ -48,7 +49,7 @@ const BulkSalesDetail = () => {
             <p><strong>Warranty:</strong> {formatValue(saleDetail.warranty)}</p>
             <p><strong>Sale Price:</strong> {formatValue(saleDetail.salePrice)} PKR</p>
             <p><strong>Total Invoice:</strong> {formatValue(saleDetail.totalInvoice)} PKR</p>
-            <p><strong>Date Sold:</strong> {new Date(saleDetail.dateSold).toLocaleString()}</p>
+            <p><strong>Date Sold:</strong> {new Date(saleDetail?.dateSold).toLocaleString()}</p>
           </div>
 
           {/* Sale Type Block */}

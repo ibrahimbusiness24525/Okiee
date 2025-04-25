@@ -100,15 +100,14 @@ const BarcodePrinter = ({ obj,type}) => {
 }
 
 .barcode-section {
-margin-left: 4mm;
+margin-left: 18mm;
     text-align: center;
     line-height: 1.2;
         transform: rotate(360deg);
 }
 
 .barcode-img { 
-    width: 60mm;  /* Bigger barcode */
-    height: 10mm; 
+    height: 8mm; 
 }
 
 p {
@@ -144,22 +143,34 @@ p {
             
         };
         
+console.log("this is bulk object" , obj);
 
     const printBulkPhoneBarcode = () =>{
         setModal(true)
     }
+    // const imeiList = obj?.ramSimDetails?.map(item => {
+    //     return item.imeiNumbers?.map(num => ({
+    //         imei1: num.imei1 || null,
+    //         imei2: num.imei2 || null, 
+    //         modelName: item?.ramSimDetails?.modelName || "N/A",
+    //         batteryHealth: obj?.batteryHealth || "N/A",
+    //         partyName: obj?.partyName || "N/A",
+    //         prices: obj?.prices || {},
+    //         simType: num.imei2 ? "Dual SIM" : "Single SIM", 
+    //     }));
+    // }).flat() || []; 
+    
     const imeiList = obj?.ramSimDetails?.map(item => {
         return item.imeiNumbers?.map(num => ({
             imei1: num.imei1 || null,
-            imei2: num.imei2 || null, // Include IMEI2 only if present
-            modelName: obj?.modelName || "N/A",
-            batteryHealth: obj?.batteryHealth || "N/A",
+            imei2: num.imei2 || null,
+            modelName: item?.modelName || "N/A",
+            batteryHealth: item?.batteryHealth || obj?.batteryHealth || "N/A",
             partyName: obj?.partyName || "N/A",
             prices: obj?.prices || {},
-            simType: num.imei2 ? "Dual SIM" : "Single SIM", // Identify Single or Dual SIM
+            simType: num.imei2 ? "Dual SIM" : "Single SIM",
         }));
-    }).flat() || []; // Flatten the array to remove nesting
-    
+    }).flat() || [];
     
 console.log("Extracted IMEIs:", imeiList);
 console.log("This is the object:", obj);
@@ -181,7 +192,9 @@ const printBulkBarcode = (data) => {
 
     const imei = data.imei1 ? data.imei1.toString() : null;
     const imei2 = data.imei2 ? data.imei2.toString() : null;
-    const modelName = data.modelName || "Unknown Model";
+    const modelName = data?.modelName || "Unknown Model";
+    const shop = JSON.parse(localStorage.getItem("shop") || "{}"); // Ensure it's an object
+    const { shopName } = shop;
 
     // Create barcodes for available IMEIs
     const canvas1 = document.createElement("canvas");
@@ -251,7 +264,7 @@ const printBulkBarcode = (data) => {
                 }
 
                 .barcode-img { 
-                    height: 10mm; 
+                      height: 7mm; 
                 }
 
                 p {
@@ -267,6 +280,7 @@ const printBulkBarcode = (data) => {
                 <div class="barcode-section">
                     <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
                      <p>${modelName} New</p>
+                     <p>${shopName}</p>
                     ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
                 </div>
             </div>
