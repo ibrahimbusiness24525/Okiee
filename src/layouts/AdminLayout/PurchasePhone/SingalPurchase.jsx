@@ -1,20 +1,40 @@
 import { text } from "d3";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Button, Row, Col, Table , Image } from "react-bootstrap";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { BASE_URL } from 'config/constant';
 import { FaBarcode } from "react-icons/fa";
+import { api } from "../../../../api/api";
 
 const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSinglePurchase, showSingleModal, modal,editMobile,handleAccessoriesCheck, handleImageChange, handleModalClose , handleSubmit , handleChange , singlePurchase , today }) => {
-
+  const [banks, setBanks] = useState([]);
       const [showWarranty, setShowWarranty] = useState(false);
         const [loading, setLoading] = useState(false);
+        const[showBankModal, setShowBankModal] = useState(false)
         // const todayDate = new Date().toISOString().split("T")[0]; 
-        
+        const getAllBanks = async () => {
+          try {
+            const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
+            console.log('All banks:', response?.data?.banks);
+            setBanks(response?.data?.banks); // Set the banks state with the fetched data
+          } catch (error) {
+            console.error('Error fetching banks:', error);
+            toast.error('Error fetching banks!');
+          }
+        }
+      
+        useEffect(() => {
+          getAllBanks(); // Fetch all banks when the component mounts
+        }
+        , []);
+      
+      console.log("These are the banks", banks);
+console.log("got", banks);
 
     return(
          
+           <>
                 <Modal show={showSingleModal} onHide={handleSinglePhoneModalclose} centered size="lg">
                 <Modal.Header closeButton>
                   <Modal.Title style={{ textAlign: "center", width: "100%" }}>{type==="edit" ? "Edit Phone": "Purchase Phone Slip"}</Modal.Title>
@@ -384,7 +404,10 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSi
           </Col>
         </Row>
                     </div>
-              
+                    <div style={{marginTop:"1rem"}}>
+
+     </div>
+      {!editMobile && <Button variant="secondary" onClick={()=> setShowBankModal(!showBankModal)}>Pay Through Wallet?</Button>}
                     <div
                       style={{
                         marginTop: "20px",
@@ -395,6 +418,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSi
                     >
                       نوٹ: ادارہ ہذا نے یہ موبائل سمیت نیک نیتی کی بنیاد پر خریدا کیا ہے۔
                     </div>
+                 
                     <Modal.Footer>
                   <Button variant="secondary" onClick={handleSinglePhoneModalclose}>
                     Cancel
@@ -405,8 +429,57 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSi
                 </Modal.Footer>
                   </Form>
                 </Modal.Body>
-                
               </Modal>
+              <Modal toggleModal={() => setShowBankModal(!showBankModal)} size="md" show={showBankModal}>
+  <div style={{ padding: '30px', textAlign: 'center' }}>
+    <h2 style={{ marginBottom: '10px', fontSize: '26px', fontWeight: 'bold' }}>Select Bank</h2>
+    <p style={{ marginBottom: '25px', fontSize: '16px', color: '#555' }}>
+      The cash will be deducted from your selected bank.
+    </p>
+
+    <div style={{ marginBottom: '0px', maxWidth: '400px', margin: '0 auto' }}>
+      <Form.Group controlId="purchasePhoneBank">
+        <Form.Label style={{ fontWeight: 'bold', marginBottom: '8px' }}>Bank Account</Form.Label>
+        <Form.Select
+          value={singlePurchase.bankAccountUsed || ""}
+          onChange={(e) =>
+            setSinglePurchase({ ...singlePurchase, bankAccountUsed: e.target.value })
+          }
+          style={{ padding: '10px', borderRadius: '6px', fontSize: '15px' }}
+        >
+          <option value="">-- Select Bank --</option>
+          {Array.isArray(banks) &&
+            banks.map((bank) => (
+              <option key={bank._id} value={bank._id}>
+                {bank.bankName} - {bank.accountType}
+              </option>
+            ))}
+        </Form.Select>
+      </Form.Group>
+    </div>
+
+    <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '30px' }}>
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={() => setShowBankModal(false)}
+        style={{ minWidth: '100px', padding: '8px 0', fontSize: '14px', borderRadius: '6px' }}
+      >
+        Save
+      </Button>
+      <Button
+        variant="danger"
+        size="sm"
+        onClick={() => setShowBankModal(false)}
+        style={{ minWidth: '100px', padding: '8px 0', fontSize: '14px', borderRadius: '6px' }}
+      >
+        Cancel
+      </Button>
+    </div>
+  </div>
+</Modal>
+           </>
+              
               
               
               )}

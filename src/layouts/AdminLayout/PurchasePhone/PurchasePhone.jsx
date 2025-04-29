@@ -12,6 +12,7 @@ import { api } from "../../../../api/api";
 
 const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulkEdit=false }) => {
   const today = new Date().toISOString().split("T")[0]; 
+  const [banks, setBanks] = useState([]);
   const [bulkData, setBulkData] = useState({
     partyName: "",
     date: today,
@@ -39,9 +40,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
     ]
   });
 
-  console.log('====================================');
-  console.log(editMobile);
-  console.log('====================================');
   const [showSingleModal, setShowSingleModal] = useState(false); // For Single Phone Purchase Modal
   const [showBulkModal, setShowBulkModal] = useState(false); // For Bulk Purchase Modal
   const [showWarranty, setShowWarranty] = useState(false);
@@ -61,6 +59,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
        }, // Matches `accessories` array
       phoneCondition: '', // Matches `phoneCondition`
       specifications: '', // Matches `specifications`
+      bankAccountUsed:"",
       ramMemory: '', // Matches `ramMemory`
       color: '', // Matches `color`
       imei1: '', // Matches `imei1`
@@ -91,12 +90,9 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
     }
   };
 
-  console.log(editMobile, 'editMobile')
 
   useEffect(() => {
     // setShowSingleModal(modal)  
-    console.log("editMobile",editMobile);
-    console.log("bulkEdit",bulkEdit);
     if (editMobile && !bulkEdit) {
       setSinglePurchase({
         accessories:{
@@ -168,9 +164,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
 
     
   }, [modal, editMobile,bulkEdit]);
-  console.log("editdata",singlePurchase);
   
-  console.log("bulkData",bulkData);
   
 
     const handleChange = (e) => {
@@ -188,7 +182,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
     showSingleModal(false);
     showBulkModal(false);
   };
-console.log("this is the data",singlePurchase);
 
 
   const handleSinglePhoneModalOpen = () => {
@@ -220,7 +213,6 @@ console.log("this is the data",singlePurchase);
       }));
     }
   };
-  console.log("editMobile",editMobile);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -246,6 +238,7 @@ console.log("this is the data",singlePurchase);
     formData.append("purchasePrice", singlePurchase.purchasePrice);
     formData.append("finalPrice", singlePurchase.finalPrice);
     formData.append("demandPrice", singlePurchase.demandPrice);
+    formData.append("bankAccountUsed", singlePurchase.bankAccountUsed);
 
     formData.append("companyName", singlePurchase.companyName);
     formData.append("specifications", singlePurchase.specifications);
@@ -462,11 +455,9 @@ console.log("this is the data",singlePurchase);
           })),
         };
         
-       console.log("bulk update payload",payload);
        
        
         const response = await api.put(`/api/Purchase/bulk-phone-update/${editMobile._id}`,payload)
-        console.log( "bulk update response",response);
     
         if (response) {
           toast("Purchase bulk Record is updated Successfully");
@@ -514,11 +505,9 @@ console.log("this is the data",singlePurchase);
           })),
         };
         
-       console.log("bulk purchase payload",payload);
        
        
         const response = await api.post(`/api/Purchase/bulk-phone-purchase`,payload)
-        console.log( "bulk purchase phone response",response);
     
         if (response) {
           toast("Purchase bulk Record Added Successfully");
@@ -535,7 +524,23 @@ console.log("this is the data",singlePurchase);
       }
     }
   }
-  
+  const getAllBanks = async () => {
+    try {
+      const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
+      console.log('All banks:', response?.data?.banks);
+      setBanks(response?.data?.banks); // Set the banks state with the fetched data
+    } catch (error) {
+      console.error('Error fetching banks:', error);
+      toast.error('Error fetching banks!');
+    }
+  }
+
+  useEffect(() => {
+    getAllBanks(); // Fetch all banks when the component mounts
+  }
+  , []);
+
+console.log("These are the banks", banks);
 
 
   return (
@@ -582,8 +587,8 @@ console.log("this is the data",singlePurchase);
 
       {/* Bulk Purchase Modal */}
      
-      <BulkPurchaseModal type handleBulkPhoneModalclose={handleBulkPhoneModalclose} handleSubmit={handleBulkRecordSubmit}  showBulkModal={showBulkModal} setBulkData={setBulkData} bulkData={bulkData} handleAddMorePhones={handleAddMorePhones} editMobile={editMobile}/>
-      <SingalPurchaseModal type handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
+      <BulkPurchaseModal  type handleBulkPhoneModalclose={handleBulkPhoneModalclose} handleSubmit={handleBulkRecordSubmit}  showBulkModal={showBulkModal} setBulkData={setBulkData} bulkData={bulkData} handleAddMorePhones={handleAddMorePhones} editMobile={editMobile}/>
+      <SingalPurchaseModal  type handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
     </>
   );
 };

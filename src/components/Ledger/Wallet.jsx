@@ -13,13 +13,15 @@ const Wallet = () => {
     const [formData,setFormData] = useState({
         bankName: '',
         accountType: '',
-        sourceOfAmount:'',
+        sourceOfAmountAddition:'',
+        sourceOfAmountDeduction:'',
         accountCash:'',
     });
     const [banks, setBanks] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedBank, setSelectedBank] = useState(null);
     const [showRemovalModal, setShowRemovalModal] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(null);
 
   const handleCreateBank = async (e) => {
     e.preventDefault();
@@ -57,6 +59,10 @@ const handleRemoveCash = (bank) =>{
       setSelectedBank(bank); 
       setShowRemovalModal(true); // Show the modal when the button is clicked
   }
+const handleDeleteProceed = (bank) =>{
+      setSelectedBank(bank); 
+      setShowDeleteModal(true); // Show the modal when the button is clicked
+  }
   const handleConfirmAddCash = async (e) => {
     e.preventDefault(); // Prevent default form submission
     try {
@@ -64,7 +70,7 @@ const handleRemoveCash = (bank) =>{
             '/api/banks/addCash',
             {
                 bankId: selectedBank._id, // Use the selected bank's ID
-                sourceOfAmount: formData.sourceOfAmount, // Get the source of amount from the form data
+                sourceOfAmountAddition: formData.sourceOfAmountAddition, // Get the source of amount from the form data
                 accountCash: formData.accountCash, // Get the account cash from the form data
             } // your add cash endpoint
             )
@@ -83,7 +89,7 @@ const handleRemoveCash = (bank) =>{
             '/api/banks/removeCash',
             {
                 bankId: selectedBank._id, // Use the selected bank's ID
-                sourceOfAmount: formData.sourceOfAmount, // Get the source of amount from the form data
+                sourceOfAmountDeduction: formData.sourceOfAmountDeduction, // Get the source of amount from the form data
                 accountCash: formData.accountCash, // Get the account cash from the form data
             } // your add cash endpoint
             )
@@ -95,11 +101,22 @@ const handleRemoveCash = (bank) =>{
         toast.error('Error removed cash!');
     }
     }
+
+    const handleDeleteBank = async () =>{
+      try{
+        const response = api.delete(`/api/banks/delete/${selectedBank._id}`)
+        toast.success("Bank Deleted Successfully")
+        getAllBanks()
+      }catch(error){
+        console.log("error", error)
+        toast.success("Error in deleting bank")
+
+      }
+    }
   useEffect(() => {
     getAllBanks(); // Fetch all banks when the component mounts
   }
-, []);
-console.log("banks", banks);
+  , []);
 
 
   return (
@@ -181,7 +198,7 @@ console.log("banks", banks);
                       <Button onClick={()=> handleRemoveCash(obj)} variant="warning" size="sm" style={{ marginRight: '5px', color: 'white' }}>
                         Remove Cash
                       </Button>
-                      <Button variant="danger" size="sm">
+                      <Button onClick={()=>handleDeleteProceed(obj)} variant="danger" size="sm">
                         Delete
                       </Button>
                     </>
@@ -196,8 +213,8 @@ console.log("banks", banks);
                 <input
                     type="text"
                     placeholder="Enter Source of Amount"
-                    value={formData.sourceOfAmount}
-                    onChange={(e) => setFormData({ ...formData, sourceOfAmount: e.target.value })}
+                    value={formData.sourceOfAmountAddition}
+                    onChange={(e) => setFormData({ ...formData, sourceOfAmountAddition: e.target.value })}
                     style={styles.input}
                     required
                 />
@@ -220,8 +237,8 @@ console.log("banks", banks);
                 <input
                     type="text"
                     placeholder="Enter Source"
-                    value={formData.sourceOfAmount}
-                    onChange={(e) => setFormData({ ...formData, sourceOfAmount: e.target.value })}
+                    value={formData.sourceOfAmountDeduction}
+                    onChange={(e) => setFormData({ ...formData, sourceOfAmountDeduction: e.target.value })}
                     style={styles.input}
                     required
                 />
@@ -238,6 +255,31 @@ console.log("banks", banks);
                 </button>
             </form>
         </Modal>
+        <Modal toggleModal={() => setShowDeleteModal(!showDeleteModal)} size="md" show={showDeleteModal}>
+  <div style={{ padding: '20px', textAlign: 'center' }}>
+    <h2 style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>Confirm it</h2>
+    <p style={{ marginBottom: '30px', fontSize: '16px' }}>Do you really want to delete the bank?</p>
+    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+      <Button
+        variant="success"
+        onClick={() => setShowDeleteModal(false)}
+        size="sm"
+        style={{ minWidth: '80px', padding: '8px 12px', fontSize: '14px' }}
+      >
+        No
+      </Button>
+      <Button
+        variant="danger"
+        onClick={handleDeleteBank}
+        size="sm"
+        style={{ minWidth: '80px', padding: '8px 12px', fontSize: '14px' }}
+      >
+        Yes
+      </Button>
+    </div>
+  </div>
+</Modal>
+
     </>
   );
 };
