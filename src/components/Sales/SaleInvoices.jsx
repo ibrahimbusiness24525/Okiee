@@ -29,7 +29,8 @@ const SaleInvoices = () => {
       // const response = await axios.get(`${BASE_URL}api/invoice/invoices/getAll/${user._id}`);
       console.log(response);
 
-      setAllInvoices(response.data.soldPhones);
+      setAllInvoices(response.data.soldPhones.slice().reverse());
+
     } catch (error) {
       console.error('Error fetching invoices:', error);
     }

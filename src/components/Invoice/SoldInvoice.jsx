@@ -212,6 +212,7 @@ const SoldInvoice = () => {
         // salePrice: dataReceived?.finalPrice,
         warranty: dataReceived?.warranty, 
         customerName:dataReceived?.customerName,
+        dateSold: dataReceived?.saleDate,
         customerNumber: dataReceived?.customerNumber,
         cnicFrontPic:"/file",
         cnicBackPic:"/file",
@@ -257,6 +258,7 @@ const SoldInvoice = () => {
           totalInvoice: Number(totalInvoice),
           warranty: dataReceived?.warranty,
           customerName:dataReceived?.customerName,
+          saleDate: dataReceived?.saleDate,
           cnicFrontPic:"/file",
           cnicBackPic:"/file",
           purchasePrice: dataReceived?.purchasePrice,
@@ -303,7 +305,7 @@ const SoldInvoice = () => {
       // }
     }
   };
-console.log("this is the type",dataReceived?.type);
+console.log("this is the date",dataReceived?.saleDate);
 console.log("this is the dataReceived",dataReceived);
 const totalAccessoriesPrice = dataReceived?.accessories?.reduce(
   (total, item) => total + Number(item.price || 0) * Number(item.quantity || 1),

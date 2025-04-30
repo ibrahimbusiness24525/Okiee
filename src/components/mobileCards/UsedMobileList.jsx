@@ -21,6 +21,7 @@ const UsedMobilesList = () => {
   const[cnicFrontPic,setCnicFrontPic]= useState("");
   const[cnicBackPic,setCnicBackPic]= useState("");
   const[customerNumber,setCustomerNumber]= useState("");
+  const[saleDate,setSaleDate] = useState("")
   const[sellingType,setSellingType]= useState("")
   // const[accessoryName,setAccessoryName] = useState("");
   // const[accessoryPrice,setAccessoryPrice]= useState(0);
@@ -152,6 +153,7 @@ const UsedMobilesList = () => {
       cnicBackPic,
       cnicFrontPic,
       customerName,
+      saleDate,
       accessories,
       // accessoryName,
       // accessoryPrice,
@@ -623,7 +625,17 @@ const UsedMobilesList = () => {
                     placeholder="Enter Customer Number"
                   />
                 </Form.Group>
-
+                <Form.Group controlId="saleDate">
+                    <Form.Label>Sale Date</Form.Label>
+                    <Form.Control
+                      type="Date"
+                      placeholder="Enter Sale Date"
+                      value={saleDate}
+                      onChange={(e) => setSaleDate(e.target.value)}
+                      required
+                      
+                    />
+                  </Form.Group>
                 {/* CNIC Front Picture */}
                 {/* <Form.Group className="mb-3">
                   <Form.Label>CNIC Front Picture</Form.Label>

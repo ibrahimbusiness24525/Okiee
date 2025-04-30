@@ -32,6 +32,8 @@ const TodaySales = () => {
       console.error('Error fetching invoices:', error);
     }
   };
+  console.log("all invoices", allInvoices);
+  
   const getAllBulkSales = async () => {
     try {
       const response = await api.get(`api/Purchase/all-sales`);

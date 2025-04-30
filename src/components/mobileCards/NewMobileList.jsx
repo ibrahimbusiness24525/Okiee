@@ -28,6 +28,7 @@ const NewMobilesList = () => {
   const[sellingType,setSellingType]= useState("")
   const[accessoryName,setAccessoryName] = useState("");
   const[accessoryPrice,setAccessoryPrice]= useState(0);
+  const[saleDate,setSaleDate] = useState("")
   const [accessories, setAccessories] = useState([
     { name: "", quantity: 1, price: "" }
   ]);
@@ -209,6 +210,7 @@ const NewMobilesList = () => {
       addedImeis,
       cnicBackPic,
       cnicFrontPic,
+      saleDate,
       customerName,
       // accessoryName,
       // accessoryPrice,
@@ -887,7 +889,17 @@ useScanDetection({
                     placeholder="Enter Customer Number"
                   />
                 </Form.Group>
-        
+                <Form.Group controlId="saleDate">
+                    <Form.Label>Sale Date</Form.Label>
+                    <Form.Control
+                      type="Date"
+                      placeholder="Enter Sale Date"
+                      value={saleDate}
+                      onChange={(e) => setSaleDate(e.target.value)}
+                      required
+                      
+                    />
+                  </Form.Group>
 
                 {/* CNIC Front Picture */}
                 {/* <Form.Group className="mb-3">

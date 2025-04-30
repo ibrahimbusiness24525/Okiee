@@ -112,6 +112,16 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/wallet',
+        element: lazy(() => import('./components/Ledger/Wallet')) // Mobile List
+      },
+      {
+        exact: 'true',
+        path: '/app/dashboard/pocketCash',
+        element: lazy(() => import('./components/Ledger/PocketCash')) // Mobile List
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/addLedger',
         element: lazy(() => import('./components/Ledger/AddLedger')) // Ledger
       },
@@ -150,6 +160,7 @@ const routes = [
         path: '/app/dashboard/addShop',
         element: lazy(() => import('./layouts/AdminLayout/add-shop/add-shop')) // Mobile List
       },
+    
       {
         exact: 'true',
         path: '/app/dashboard/mobile-details', // Updated path for mobile details
