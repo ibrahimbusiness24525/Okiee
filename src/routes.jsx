@@ -117,6 +117,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/pocketCash',
+        element: lazy(() => import('./components/Ledger/PocketCash')) // Mobile List
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/addLedger',
         element: lazy(() => import('./components/Ledger/AddLedger')) // Ledger
       },

@@ -122,6 +122,7 @@ const handleDeleteProceed = (bank) =>{
   return (
     <>
     <div style={styles.container}>
+      
       <h1 style={styles.heading}>Wallet</h1>
       <form onSubmit={handleCreateBank} style={styles.form}>
         <input
@@ -251,7 +252,7 @@ const handleDeleteProceed = (bank) =>{
                     required
                 />
                 <button type="submit" style={styles.button}>
-                    Add Cash
+                    Deduct Cash
                 </button>
             </form>
         </Modal>

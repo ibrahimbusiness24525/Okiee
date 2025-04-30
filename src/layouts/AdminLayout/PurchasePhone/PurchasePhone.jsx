@@ -46,6 +46,9 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
     const [loading, setLoading] = useState(false);
     const [singlePurchase, setSinglePurchase] = useState({
       name: '', // Matches `name` from the backend
+      bankAccountUsed:"",
+      amountFromBank:"",
+      amountFromPocket:"",
       warranty: '12 Months',
       companyName: '', // Matches `companyName`
       modelName: '', // Matches `modelName`
@@ -59,7 +62,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
        }, // Matches `accessories` array
       phoneCondition: '', // Matches `phoneCondition`
       specifications: '', // Matches `specifications`
-      bankAccountUsed:"",
       ramMemory: '', // Matches `ramMemory`
       color: '', // Matches `color`
       imei1: '', // Matches `imei1`
@@ -239,6 +241,8 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
     formData.append("finalPrice", singlePurchase.finalPrice);
     formData.append("demandPrice", singlePurchase.demandPrice);
     formData.append("bankAccountUsed", singlePurchase.bankAccountUsed);
+    formData.append("pocketCash", singlePurchase.amountFromPocket);
+    formData.append("accountCash", singlePurchase.amountFromBank);
 
     formData.append("companyName", singlePurchase.companyName);
     formData.append("specifications", singlePurchase.specifications);

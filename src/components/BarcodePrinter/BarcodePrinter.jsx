@@ -48,8 +48,8 @@ const BarcodePrinter = ({ obj,type}) => {
                 <head>
                     <title>Print Barcode</title>
                     <style>
-                       @page { 
-                        size: 78mm 25mm; /* Keep portrait */
+                    @page { 
+                        // size: 78mm 25mm; 
                         margin: 0;
                     }
                                 
@@ -107,7 +107,8 @@ margin-left: 18mm;
 }
 
 .barcode-img { 
-    height: 8mm; 
+    // height: 8mm; 
+    height: 12mm; 
 }
 
 p {
@@ -233,8 +234,8 @@ const printBulkBarcode = (data) => {
             <style>
 
                  @page {
-    width: 70mm;
-                     height: 25mm;
+    // width: 70mm;
+    //                  height: 25mm;
     margin: 0;
 }
 
@@ -264,6 +265,7 @@ const printBulkBarcode = (data) => {
                 }
 
                 .barcode-img { 
+
                       height: 7mm; 
                 }
 
