@@ -457,7 +457,7 @@ const BulkPhoneDetail = () => {
                 <div style={styles.configHeader}>
                   <h3 style={styles.configTitle}>
                     <FaMemory style={{ marginRight: "0.5rem" }} /> 
-                    Phone {index + 1}: {config.ramMemory}GB RAM, {config.simOption}
+                   {config?.companyName} = {config.modelName} = {config.ramMemory}GB RAM = {config.simOption}
                     {/* Configuration #{index + 1}: {config.ramMemory}GB RAM, {config.simOption} */}
                   </h3>
                 </div>

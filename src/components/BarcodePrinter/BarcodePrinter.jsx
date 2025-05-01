@@ -48,27 +48,29 @@ const BarcodePrinter = ({ obj,type}) => {
                 <head>
                     <title>Print Barcode</title>
                     <style>
-                    @page { 
-                        // size: 78mm 25mm; 
-                        margin: 0;
-                    }
-                                
-                     html, body {
-                    margin: 0;
-                    padding: 0;
-                    width: 70mm;
-                    height: 25mm;
-                    overflow: hidden;
-                }
+                       @page { 
+    size: portrait; /* Keep portrait */
+    margin: 0;
+}
 
-            .container {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                width: 70mm;
-                height: 25mm;
-                padding: 1mm; /* Slightly more padding */
-            }
+body { 
+    font-family: Arial, sans-serif; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 70mm;  /* Increase width */
+    height: 40mm; /* Increase height */
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 1mm; /* Slightly more padding */
+}
 
 .company-name {
     writing-mode: vertical-rl;
@@ -91,6 +93,7 @@ const BarcodePrinter = ({ obj,type}) => {
 }
 
 .shop-name {
+
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-size: 12px;  /* Bigger text */
@@ -100,15 +103,14 @@ const BarcodePrinter = ({ obj,type}) => {
 }
 
 .barcode-section {
-margin-left: 18mm;
     text-align: center;
     line-height: 1.2;
         transform: rotate(360deg);
 }
 
 .barcode-img { 
-    // height: 8mm; 
-    height: 12mm; 
+    width: 60mm;  /* Bigger barcode */
+    height: 10mm; 
 }
 
 p {
@@ -166,6 +168,7 @@ console.log("this is bulk object" , obj);
             imei1: num.imei1 || null,
             imei2: num.imei2 || null,
             modelName: item?.modelName || "N/A",
+            ramMemory: item?.ramMemory || "N/A",
             batteryHealth: item?.batteryHealth || obj?.batteryHealth || "N/A",
             partyName: obj?.partyName || "N/A",
             prices: obj?.prices || {},
@@ -194,6 +197,7 @@ const printBulkBarcode = (data) => {
     const imei = data.imei1 ? data.imei1.toString() : null;
     const imei2 = data.imei2 ? data.imei2.toString() : null;
     const modelName = data?.modelName || "Unknown Model";
+    const ramMemory = data?.ramMemory || "Unknown Ram";
     const shop = JSON.parse(localStorage.getItem("shop") || "{}"); // Ensure it's an object
     const { shopName } = shop;
 
@@ -231,57 +235,85 @@ const printBulkBarcode = (data) => {
         <html>
         <head>
             <title>Print Barcode</title>
-            <style>
-
-                 @page {
-    // width: 70mm;
-    //                  height: 25mm;
+             <style>
+                       @page { 
+    size: portrait; /* Keep portrait */
     margin: 0;
 }
 
-                 body,html { 
-                     font-family: Arial, sans-serif; 
-                     display: flex; 
-                     align-items: center; 
-                     justify-content: center; 
-                     width: 70mm;
-                     height: 25mm;
-                     margin: 0;
-                }
-        
-                 .container {
-                         margin: 0;
-                         display: flex;
-                         align-items: center;
-                         justify-content: space-between;
-                     }
+body { 
+    font-family: Arial, sans-serif; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 70mm;  /* Increase width */
+    height: 40mm; /* Increase height */
+    margin: 0;
+}
 
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 1mm; /* Slightly more padding */
+}
 
-              
+.company-name {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 40px;  /* Bigger text */
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+}
 
-                .barcode-section {
-                    text-align: center;
-                    line-height: 1.2;
-                }
+.battery-health {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 100px;  /* Bigger text */
+    font-weight: bold;
+    text-align: left;
+    white-space: nowrap;
+        margin-right: 40mm;  /* Add margin to move it to the right */
 
-                .barcode-img { 
+}
 
-                      height: 7mm; 
-                }
+.shop-name {
 
-                p {
-                    margin: 2px 0;
-                    font-size: 12px;  /* Bigger text */
-                    font-weight: bold;
-                }
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 12px;  /* Bigger text */
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+}
 
-            </style>
+.barcode-section {
+    text-align: center;
+    line-height: 1.2;
+        transform: rotate(360deg);
+}
+
+.barcode-img { 
+    width: 60mm;  /* Bigger barcode */
+    height: 10mm; 
+}
+
+p {
+    margin: 2px 0;
+    font-size: 12px;  /* Bigger text */
+    font-weight: bold;
+}
+
+                    </style>
         </head>
         <body>
             <div class="container">
                 <div class="barcode-section">
                     <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                     <p>${modelName} New</p>
+                     <p>${modelName} ${ramMemory}</p>
                      <p>${shopName}</p>
                     ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ""}
                 </div>

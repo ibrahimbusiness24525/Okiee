@@ -146,7 +146,7 @@ const handleScan = (value) => {
   Change Record Design
 </button> */}
 
-      <BarcodeReader onScan={handleScan} />
+      {/* <BarcodeReader onScan={handleScan} /> */}
       <div>
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700" }}>Single Purchases</h3>
       </div>

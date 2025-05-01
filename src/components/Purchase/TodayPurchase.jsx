@@ -121,7 +121,7 @@ const handleScan = (value) => {
   return (
     <div style={styles.container}>
       <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Today Purchase Records</h2>
-      <BarcodeReader onScan={handleScan} />
+      {/* <BarcodeReader onScan={handleScan} /> */}
       <div>
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700" }}>Single Purchases</h3>
       </div>

@@ -493,9 +493,8 @@ const handleShowPrices = (mobile) => {
 >
   Change Record Design
 </button>
-
-      
-      <h3 style={{marginTop:"5rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
+ 
+      <h3 style={{marginTop:"rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
       {list?
     <>
     
