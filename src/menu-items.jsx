@@ -93,13 +93,13 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/wallet'
         },
-        {
-          id: 'mobile',
-          title: 'Pocket Cash',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/app/dashboard/pocketCash'
-        },
+        // {
+        //   id: 'mobile',
+        //   title: 'Pocket Cash',
+        //   type: 'item',
+        //   icon: 'feather icon-server',
+        //   url: '/app/dashboard/pocketCash'
+        // },
         {
           id: 'mobile',
           title: 'Shop Ledger',

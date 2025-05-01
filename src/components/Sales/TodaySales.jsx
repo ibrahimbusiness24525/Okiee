@@ -119,9 +119,9 @@ console.log('====================================');
       <h2 style={{ width: '100%' }}>Today Sales Invoices</h2>
       <div style={styles.tableWrapper}>
       
-<BarcodeReader onScan={handleScan} />
+{/* <BarcodeReader onScan={handleScan} /> */}
       <div>
-        <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700" }}>Single Invoices</h3>
+        <h3 style={{ textAlign: 'start', marginBottom: '40px',marginTop:"33px",fontWeight:"700" }}>Single Invoices</h3>
       </div>
       {/* <StyledHeading>New Phones</StyledHeading> */}
   

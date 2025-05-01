@@ -207,6 +207,10 @@ const handleScan = (value) => {
                                 }
                             }
                         ]}
+                        extraColumns={[
+                          (obj) => <BarcodePrinter type='bulk' obj={obj}/>
+                      ]}
+                      
                        
                     />
  

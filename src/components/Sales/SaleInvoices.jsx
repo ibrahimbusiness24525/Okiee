@@ -235,7 +235,7 @@ const handleScan = (value) => {
           </tbody>
         </table> */}
     <div>
-      <BarcodeReader onScan={handleScan} />
+      {/* <BarcodeReader onScan={handleScan} /> */}
     </div>
     <div>
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"2rem" }}>Single Invoice</h3>
