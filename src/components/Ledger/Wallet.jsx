@@ -10,20 +10,52 @@ import Modal from 'components/Modal/Modal';
 
 
 const Wallet = () => {
-    const [formData,setFormData] = useState({
-        bankName: '',
-        accountType: '',
-        sourceOfAmountAddition:'',
-        sourceOfAmountDeduction:'',
-        accountCash:'',
-    });
-    const [banks, setBanks] = useState([]);
-    const [showModal, setShowModal] = useState(false);
-    const [selectedBank, setSelectedBank] = useState(null);
-    const [showRemovalModal, setShowRemovalModal] = useState(null);
-    const [showDeleteModal, setShowDeleteModal] = useState(null);
+    
+  const [formData,setFormData] = useState({
+    bankName: '',
+    accountType: '',
+    sourceOfAmountAddition:'',
+    sourceOfAmountDeduction:'',
+    accountCash:'',
+});
+const [banks, setBanks] = useState([]);
+const [showModal, setShowModal] = useState(false);
+const [selectedBank, setSelectedBank] = useState(null);
+const [showRemovalModal, setShowRemovalModal] = useState(null);
+const [showDeleteModal, setShowDeleteModal] = useState(null);
+const [totalCash, setTotalCash] = useState(0);
+  
+const fetchTotalCash = async () => {
+      try {
+        const res = await api.get('/api/pocketCash/total');
+        setTotalCash(res.data.total);
+        console.log("total", res)
+      } catch (error) {
+        console.error('Failed to fetch total cash:', error);
+      }
+};
+  
+const handleTransaction = async (type) => {
+      const amount = Number(prompt(`Enter amount to ${type}:`));
+      if (!amount || amount <= 0) return alert('Enter a valid amount');
+  
+      try {
+        const endpoint =
+          type === 'add' ? '/api/pocketCash/add' : '/api/pocketCash/deduct';
+        await api.post(endpoint, {
+          amount,
+        });
+        toast.success("transation is successful!")
+        fetchTotalCash();
+      } catch (error) {
+          toast.error("Error in making transaction!")
+        console.error(`Failed to ${type} cash:`, error);
+      }
+};
 
-  const handleCreateBank = async (e) => {
+
+
+const handleCreateBank = async (e) => {
     e.preventDefault();
     try {
       const response = await api.post(
@@ -38,9 +70,9 @@ const Wallet = () => {
         console.error('Error creating bank:', error);
         toast.error('error creating bank!');
     }
-  };
+};
 
-  const getAllBanks = async () => {
+const getAllBanks = async () => {
     try {
       const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
       console.log('All banks:', response?.data?.banks);
@@ -49,9 +81,9 @@ const Wallet = () => {
       console.error('Error fetching banks:', error);
       toast.error('Error fetching banks!');
     }
-  }
+}
 
-  const handleAddCash = (bank) => {
+const handleAddCash = (bank) => {
     setSelectedBank(bank); 
     setShowModal(true); // Show the modal when the button is clicked
 };
@@ -63,7 +95,7 @@ const handleDeleteProceed = (bank) =>{
       setSelectedBank(bank); 
       setShowDeleteModal(true); // Show the modal when the button is clicked
   }
-  const handleConfirmAddCash = async (e) => {
+const handleConfirmAddCash = async (e) => {
     e.preventDefault(); // Prevent default form submission
     try {
         const response = await api.post(
@@ -81,8 +113,9 @@ const handleDeleteProceed = (bank) =>{
         console.error('Error adding cash:', error);
         toast.error('Error adding cash!');
     }
-    }
-  const handleConfirmRemoveCash = async (e) => {
+}
+
+const handleConfirmRemoveCash = async (e) => {
     e.preventDefault(); // Prevent default form submission
     try {
         const response = await api.post(
@@ -100,9 +133,9 @@ const handleDeleteProceed = (bank) =>{
         console.error('Error removed cash:', error);
         toast.error('Error removed cash!');
     }
-    }
+}
 
-    const handleDeleteBank = async () =>{
+const handleDeleteBank = async () =>{
       try{
         const response = api.delete(`/api/banks/delete/${selectedBank._id}`)
         toast.success("Bank Deleted Successfully")
@@ -112,18 +145,34 @@ const handleDeleteProceed = (bank) =>{
         toast.success("Error in deleting bank")
 
       }
-    }
+}
+
   useEffect(() => {
     getAllBanks(); // Fetch all banks when the component mounts
+    fetchTotalCash();
   }
   , []);
 
-
+  
   return (
     <>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
+    <div style={styles.cardStyle} onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.target.style.transform = 'scale(1)'} >
+    <h2>Pocket Cash 💸</h2>
+    <h3 style={{ fontSize: '36px', margin: '20px 0', fontWeight: 'bold' }}>₹ {totalCash}</h3>
+
+    <div>
+      <button style={addButtonStyle} onClick={() => handleTransaction('add')}>
+        Add Cash
+      </button>
+      <button style={removeButtonStyle} onClick={() => handleTransaction('deduct')}>
+        Remove Cash
+      </button>
+    </div>
+  </div>
     <div style={styles.container}>
+      <h1 style={styles.heading}>Add Bank</h1>
       
-      <h1 style={styles.heading}>Wallet</h1>
       <form onSubmit={handleCreateBank} style={styles.form}>
         <input
           type="text"
@@ -146,15 +195,20 @@ const handleDeleteProceed = (bank) =>{
         </button>
       </form>
     </div>
+   
+    </div>
+
     <Table
             // routes={["/app/dashboard/ledgerRecords"]}
             array={banks}
             // search={"ban"}
-            keysToDisplay={["bankName", "accountType", "accountCash","createdAt" ]}
+            keysToDisplay={["bankName", "accountType", "accountCash","cashIn","cashOut","createdAt" ]}
             label={[
                 "Bank Name",
                 "Account Type",
                 "Account Cash",
+                "Cash In",
+                "Cash Out",
                 "Created At",
                 "Actions"
             ]}
@@ -182,7 +236,16 @@ const handleDeleteProceed = (bank) =>{
                     },
                   },
                 {
-                    index: 3,
+                    index: 4,
+                    component: (cashout) => {
+                      return (
+                       
+                          <p style={{display:"flex", alignItems:"center",justifyContent:"center",marginTop:"12px"}}>-{cashout}</p>
+                      );
+                    },
+                  },
+                {
+                    index: 5,
                     component: (date) => {
                         return dateFormatter(date)
                     }
@@ -286,9 +349,11 @@ const handleDeleteProceed = (bank) =>{
 };
 
 const styles = {
+  
     container: {
-      maxWidth: '500px',
+      width:'450px',
       margin: '60px auto',
+      minHeight: '310px',
       padding: '30px 25px',
       border: '1px solid #e0e0e0',
       borderRadius: '12px',
@@ -334,6 +399,46 @@ const styles = {
       color: '#3498db',
       fontSize: '16px',
     },
+  cardStyle : {
+      border: '1px solid #ccc',
+      borderRadius: '20px',
+      padding: '40px 30px',
+      maxWidth: '500px',
+      margin: '50px auto',
+      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+      textAlign: 'center',
+      background: 'linear-gradient(135deg, #00c6ff, #0072ff)', // Updated gradient
+      color: '#fff',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      boxSizing: 'border-box',
+      transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease',
+    },
+  
+    
+     buttonStyle : {
+      padding: '15px 30px',
+      margin: '15px 10px',
+      borderRadius: '8px',
+      border: 'none',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      fontSize: '16px',
+      transition: 'transform 0.2s ease, background-color 0.3s',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    }
+    
+  };
+  const addButtonStyle = {
+    ...styles.buttonStyle,
+    backgroundColor: '#00C851',
+    color: 'white',
+  };
+  
+  const removeButtonStyle = {
+    ...styles.buttonStyle,
+    backgroundColor: '#ff4444',
+    color: 'white',
   };
   
 export default Wallet;

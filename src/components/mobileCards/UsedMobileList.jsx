@@ -198,10 +198,28 @@ const UsedMobilesList = () => {
     doc.save('Mobile_Inventory.pdf');
   };
 
-  const filteredMobiles = mobiles.filter(mobile => 
-    mobile.phoneCondition === "Used" &&
-    (searchTerm === "" || mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
-  );
+  // const filteredMobiles = mobiles.filter(mobile => 
+  //   mobile.phoneCondition === "Used" &&
+  //   (searchTerm === "" || mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
+  // );
+  const filteredMobiles = mobiles?.filter((mobile) => {
+    // Exclude sold phones
+    if (mobile.isSold) return false;
+    if(mobile.phoneCondition==="New") return false
+    if(mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
+  
+    // Split the search term into words
+    const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
+  
+    return searchWords.every((word) =>
+      // Check if each word exists in any of the searchable fields
+      mobile.companyName?.toLowerCase()?.includes(word) ||
+      mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
+      mobile.specs?.toLowerCase()?.includes(word) ||
+      mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
+      String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
+    );
+  });
   const handleAccessoryChange = (index, field, value) => {
     const updatedAccessories = [...accessories];
     updatedAccessories[index][field] = value;
