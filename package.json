@@ -20,7 +20,7 @@
     "@mui/material": "^6.4.11",
     "@mui/styled-engine-sc": "^6.1.1",
     "@mui/x-charts": "^7.27.1",
-    "@mui/x-date-pickers": "^8.0.0",
+    "@mui/x-date-pickers": "^8.2.0",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@react-google-maps/api": "^2.19.3",
     "@reduxjs/toolkit": "^2.2.7",
