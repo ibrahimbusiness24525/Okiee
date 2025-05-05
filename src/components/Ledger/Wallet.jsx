@@ -199,7 +199,7 @@ const handleDeleteBank = async () =>{
     </div>
 
     <Table
-            // routes={["/app/dashboard/ledgerRecords"]}
+            routes={["/app/dashboard/bankTransaction"]}
             array={banks}
             // search={"ban"}
             keysToDisplay={["bankName", "accountType", "accountCash","cashIn","cashOut","createdAt" ]}

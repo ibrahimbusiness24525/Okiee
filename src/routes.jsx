@@ -115,6 +115,11 @@ const routes = [
         path: '/app/dashboard/wallet',
         element: lazy(() => import('./components/Ledger/Wallet')) // Mobile List
       },
+      {
+        exact: 'true',
+        path: '/app/dashboard/bankTransaction/:id',
+        element: lazy(() => import('./components/Ledger/BankTransations')) // Mobile List
+      },
       // {
       //   exact: 'true',
       //   path: '/app/dashboard/pocketCash',
