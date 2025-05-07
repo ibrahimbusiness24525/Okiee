@@ -10,6 +10,7 @@ import List from '../List/List'
 import Table from 'components/Table/Table';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import { toast } from 'react-toastify';
+import { MoonLoader } from 'react-spinners';
 
 const UsedMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
@@ -296,6 +297,14 @@ const UsedMobilesList = () => {
 >
   Change Record Design
 </button>   
+{!filteredMobiles.length> 0 ? 
+(
+  <div className="w-full h-full flex items-center justify-center">
+  <MoonLoader size={60} color="#4f46e5" />
+</div>
+)
+: 
+<>
 {list? <>
     {/* <List items={filteredMobiles}
     displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
@@ -486,6 +495,8 @@ const UsedMobilesList = () => {
   )}
 </Row>;
       </>
+}
+</>
 }
            {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
      

@@ -5,6 +5,7 @@ import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import axios from 'axios';
 import { BASE_URL } from 'config/constant';
+import { ClipLoader, MoonLoader, PulseLoader } from "react-spinners";
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import bulkMobileImage from "../../assets/images/phoneBoxes.jpg"
 import BarcodeScannerComponent from 'react-webcam-barcode-scanner';
@@ -324,6 +325,8 @@ useScanDetection({
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
+
+  
   return (
     <>
      <InputGroup className="mb-3">
@@ -381,17 +384,17 @@ useScanDetection({
   Change Record Design
 </button>
 <h3 style={{marginTop:"1rem",marginBottom:"1rem"}}>New Single Phones</h3>
+     {!filteredMobiles.length > 0 ? 
+ <div className="w-full h-full flex items-center justify-center">
+ <MoonLoader size={60} color="#3f4d67" />
+</div>
+     :
+     <>
       {list? 
     <>
-      {/* <List items={filteredMobiles}
-      displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
-      descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
-      onRowClick={"handleClick"}
-      /> */}
+      
       <Table
-      // routes={["/purchase/purchaseRecords"]}
            array={filteredMobiles.filter((record) => record.dispatch === false)}
-          //  search={"imei1"}
            keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
            label={[
                "Model Name",
@@ -399,7 +402,6 @@ useScanDetection({
                "Final Price",
                "Condition",
                "Warranty",
-       
                "Actions",
            ]}
            
@@ -422,7 +424,9 @@ useScanDetection({
          ]}
        />
     
-    </> :<>
+    </> 
+    :
+    <>
     <Row xs={1} md={2} lg={3} className="g-4">
         {filteredMobiles.length > 0 ? (
           filteredMobiles
@@ -452,19 +456,6 @@ useScanDetection({
                     fontSize: '1.2rem',
                   }}
                 />
-                  {/* <Card.Img
-                                 variant="top"
-                                 src={`https://media.johnlewiscontent.com/i/JohnLewis/mobiles-nav-card-apple-v3-130924?fmt=auto`}
-                                 alt={mobile.modelSpecifications}
-                                 style={{ height: '400px', objectFit: 'cover' }}
-                               /> */}
-                 {/* {mobile.images[0] &&  <Card.Img
-                                 variant="top"
-                                 src={`${mobile.images[0]}`}
-                                 alt={mobile.modelSpecifications}
-                                 style={{ height: '400px', objectFit: 'cover' }}
-                               />} */}
-
                 <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
                   <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
                     {mobile.companyName} {mobile.modelSpecifications}
@@ -578,6 +569,8 @@ useScanDetection({
       </Row>
     </> 
     }
+     </>
+     }
       
       {/* <h3 style={{marginTop:"5rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
       {list?

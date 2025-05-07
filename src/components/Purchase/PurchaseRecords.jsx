@@ -254,9 +254,10 @@ const handleScan = (value) => {
       <div>
         <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"5rem" }}>Bulk Purchases</h3>
       </div>
-      <Table
+               <Table
                  routes={["/purchase/purchaseRecords/bulkPurchase"]}
-                        array={purchasedPhones?.bulkPhones}
+                 array={purchasedPhones?.bulkPhones ? [...purchasedPhones.bulkPhones].reverse() : []}
+          
                         search={"imeiNumbers"}
                         keysToDisplay={["partyName", "totalQuantity","status","date"]}
                         label={[
@@ -267,7 +268,6 @@ const handleScan = (value) => {
                             "Actions",
                         ]}
                         customBlocks={[
-                           
                             {
                                 index: 3,
                                 component: (date) => {
@@ -276,10 +276,41 @@ const handleScan = (value) => {
                             }
                         ]}
                         extraColumns={[
-                          (obj) => <BarcodePrinter type='bulk' obj={obj}/>
+                          (obj) => <>
+                       <div style={{marginRight:"1rem"}}>
+                        <select
+                          style={{
+                            padding: '7px 16px',
+                            borderRadius: '5px',
+                            border: '1px solid #d1d5db',
+                            backgroundColor: '#ffffff',
+                            color: '#111827',
+                            minWidth: '100px',
+                            fontSize: '15px',
+                            fontWeight: 500,
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                            outline: 'none',
+                            width: '100%',
+                            marginRight:'20px',
+                            appearance: 'none', // hides default arrow
+                            backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23666\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 12px center',
+                            backgroundSize: '18px 18px',
+                          }}
+                        >
+                          {obj?.ramSimDetails?.map((item) => (
+      <option key={item._id} value={item._id}>
+        {item.modelName}
+      </option>
+                          ))}
+                        </select>
+                        </div>
+
+                          <BarcodePrinter type='bulk' obj={obj}/>
+                          </>
                       ]}
-                      
-                    />
+                />
  
     </div>
   );
