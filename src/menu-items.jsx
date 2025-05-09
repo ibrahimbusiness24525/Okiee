@@ -86,13 +86,7 @@ const menuItems = {
       type: 'group',
       icon: 'icon-navigation',
       children: [
-        {
-          id: 'mobile',
-          title: 'My Wallet',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/app/dashboard/wallet'
-        },
+       
         // {
         //   id: 'mobile',
         //   title: 'Pocket Cash',
@@ -193,7 +187,14 @@ const menuItems = {
           type: 'item',
           icon: 'feather icon-server',
           url: '/sales/saleInvoices'
-        }
+        },
+        {
+          id: 'mobile',
+          title: 'My Wallet',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/wallet'
+        },
       ]
     },
     {

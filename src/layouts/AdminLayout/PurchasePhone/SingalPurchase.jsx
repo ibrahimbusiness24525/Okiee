@@ -6,12 +6,14 @@ import { toast } from 'react-toastify';
 import { BASE_URL } from 'config/constant';
 import { FaBarcode } from "react-icons/fa";
 import { api } from "../../../../api/api";
+import WalletTransactionModal from "components/WalletTransaction/WalletTransactionModal";
 
 const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSinglePurchase, showSingleModal, modal,editMobile,handleAccessoriesCheck, handleImageChange, handleModalClose , handleSubmit , handleChange , singlePurchase , today }) => {
   const [banks, setBanks] = useState([]);
+  const[showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
   const[showBankModal, setShowBankModal] = useState(false)
   const[showPocketCashModal,setShowPocketCashModal] = useState(false)
-      const [showWarranty, setShowWarranty] = useState(false);
+       const [showWarranty, setShowWarranty] = useState(false);
         const [loading, setLoading] = useState(false);
         // const todayDate = new Date().toISOString().split("T")[0]; 
         const getAllBanks = async () => {
@@ -21,7 +23,6 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSi
             setBanks(response?.data?.banks); // Set the banks state with the fetched data
           } catch (error) {
             console.error('Error fetching banks:', error);
-            toast.error('Error fetching banks!');
           }
         }
       
@@ -36,6 +37,7 @@ console.log("got", banks);
     return(
          
            <>
+
                 <Modal show={showSingleModal} onHide={handleSinglePhoneModalclose} centered size="lg">
                 <Modal.Header closeButton>
                   <Modal.Title style={{ textAlign: "center", width: "100%" }}>{type==="edit" ? "Edit Phone": "Purchase Phone Slip"}</Modal.Title>
@@ -411,8 +413,9 @@ console.log("got", banks);
       {!editMobile &&
       <>
             
-            <Button variant="secondary" onClick={()=> setShowBankModal(!showBankModal)}>Pay Through Wallet (optional)</Button>
-            <Button variant="secondary" onClick={()=> setShowPocketCashModal(!showPocketCashModal)}>Pay Through Pocket (optional)</Button>
+          <Button variant="secondary" onClick={()=> setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
+            {/* <Button variant="secondary" onClick={()=> setShowBankModal(!showBankModal)}>Pay Through Wallet (optional)</Button>
+            <Button variant="secondary" onClick={()=> setShowPocketCashModal(!showPocketCashModal)}>Pay Through Pocket (optional)</Button> */}
       </>
       }
                     <div
@@ -425,7 +428,12 @@ console.log("got", banks);
                     >
                       نوٹ: ادارہ ہذا نے یہ موبائل سمیت نیک نیتی کی بنیاد پر خریدا کیا ہے۔
                     </div>
-                 
+                    <WalletTransactionModal
+                      show={showWalletTransactionModal}
+                      toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+                      singlePurchase={singlePurchase}
+                      setSinglePurchase={setSinglePurchase}
+                    />
                     <Modal.Footer>
                   <Button variant="secondary" onClick={handleSinglePhoneModalclose}>
                     Cancel
@@ -436,6 +444,7 @@ console.log("got", banks);
                 </Modal.Footer>
                   </Form>
                 </Modal.Body>
+
               </Modal>
               <Modal toggleModal={() => setShowBankModal(!showBankModal)} size="md" show={showBankModal}>
   <div style={{ padding: '30px', textAlign: 'center' }}>
@@ -562,6 +571,7 @@ console.log("got", banks);
       </Button>
     </div>
   </div>
+  
 </Modal>
 
            </>

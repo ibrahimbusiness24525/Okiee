@@ -535,7 +535,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
       setBanks(response?.data?.banks); // Set the banks state with the fetched data
     } catch (error) {
       console.error('Error fetching banks:', error);
-      toast.error('Error fetching banks!');
     }
   }
 
