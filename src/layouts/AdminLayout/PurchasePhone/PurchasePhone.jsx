@@ -240,9 +240,11 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
     formData.append("purchasePrice", singlePurchase.purchasePrice);
     formData.append("finalPrice", singlePurchase.finalPrice);
     formData.append("demandPrice", singlePurchase.demandPrice);
-    formData.append("bankAccountUsed", singlePurchase.bankAccountUsed);
-    formData.append("pocketCash", singlePurchase.amountFromPocket);
-    formData.append("accountCash", singlePurchase.amountFromBank);
+     if(!editMobile && !bulkEdit){
+       formData.append("bankAccountUsed", singlePurchase.bankAccountUsed);
+       formData.append("pocketCash", singlePurchase.amountFromPocket);
+       formData.append("accountCash", singlePurchase.amountFromBank);
+     }
 
     formData.append("companyName", singlePurchase.companyName);
     formData.append("specifications", singlePurchase.specifications);
@@ -591,7 +593,7 @@ console.log("These are the banks", banks);
       {/* Bulk Purchase Modal */}
      
       <BulkPurchaseModal  type handleBulkPhoneModalclose={handleBulkPhoneModalclose} handleSubmit={handleBulkRecordSubmit}  showBulkModal={showBulkModal} setBulkData={setBulkData} bulkData={bulkData} handleAddMorePhones={handleAddMorePhones} editMobile={editMobile}/>
-      <SingalPurchaseModal  type handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
+      <SingalPurchaseModal  type={type} handleAccessoriesCheck={handleAccessoriesCheck} handleSinglePhoneModalclose={handleSinglePhoneModalclose} setSinglePurchase={setSinglePurchase} showSingleModal={showSingleModal}  handleSubmit={handleSubmit}  handleChange={handleChange} singlePurchase={singlePurchase} handleImageChange={handleImageChange} today={today}/>
     </>
   );
 };

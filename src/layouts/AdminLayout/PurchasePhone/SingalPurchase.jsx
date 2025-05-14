@@ -31,8 +31,8 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSi
         }
         , []);
       
-      console.log("These are the banks", banks);
-console.log("got", banks);
+      console.log("This is the single purchase", singlePurchase);
+console.log("edit mobile", editMobile);
 
     return(
          
@@ -410,7 +410,7 @@ console.log("got", banks);
                     <div style={{marginTop:"1rem"}}>
 
      </div>
-      {!editMobile &&
+      {type === "purchase" &&
       <>
             
           <Button variant="secondary" onClick={()=> setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>

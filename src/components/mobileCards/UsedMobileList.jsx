@@ -45,12 +45,13 @@ const UsedMobilesList = () => {
   const [customerName, setCustomerName] = useState('');
   const[list,setList] = useState(false)
   const[id,setId] = useState("")
-
+  const[companies,setCompanies]= useState([])
+  const [selectedCompany, setSelectedCompany] = useState(null);
 
   
 
   const navigate = useNavigate();
-
+    
   useEffect(() => {
     getMobiles();
   }, []);
@@ -221,6 +222,23 @@ const UsedMobilesList = () => {
       String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
     );
   });
+  useEffect(() => {
+  if (!filteredMobiles || filteredMobiles.length === 0) return;
+
+  const uniqueCompaniesMap = new Map();
+
+  filteredMobiles
+    .filter((record) => record.dispatch === false)
+    .forEach((record) => {
+      const normalizedName = record.companyName.trim().toLowerCase();
+      if (!uniqueCompaniesMap.has(normalizedName)) {
+        uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
+      }
+    });
+
+  const uniqueCompanies = Array.from(uniqueCompaniesMap.values());
+  setCompanies(uniqueCompanies);
+  }, [filteredMobiles]);
   const handleAccessoryChange = (index, field, value) => {
     const updatedAccessories = [...accessories];
     updatedAccessories[index][field] = value;
@@ -255,7 +273,59 @@ const UsedMobilesList = () => {
           onChange={handleSearch}
         />
       </InputGroup>
+      <div
+  style={{
+    display: "flex",
+    gap: "12px",
+    flexWrap: "wrap",
+    marginBottom: "1rem",
+    justifyContent: "flex-start",
+  }}
+>
+  {/* Optional "Show All" button */}
+  <button
+    onClick={() => setSelectedCompany(null)}
+    style={{
+      padding: "8px 18px",
+      borderRadius: "20px",
+      border: "2px solid #007bff",
+      backgroundColor: selectedCompany === null ? "#007bff" : "transparent",
+      color: selectedCompany === null ? "#fff" : "#007bff",
+      cursor: "pointer",
+      fontWeight: "500",
+      transition: "all 0.3s ease",
+      boxShadow:
+        selectedCompany === null ? "0 4px 12px rgba(0, 123, 255, 0.2)" : "none",
+    }}
+  >
+    Show All
+  </button>
 
+  {companies.map((company, index) => {
+    const isSelected = selectedCompany === company;
+    return (
+      <button
+        key={index}
+        onClick={() => setSelectedCompany(company)}
+        style={{
+          padding: "8px 18px",
+          borderRadius: "20px",
+          border: `2px solid ${isSelected ? "#28a745" : "#ccc"}`,
+          backgroundColor: isSelected ? "#28a745" : "transparent",
+          color: isSelected ? "#fff" : "#333",
+          fontWeight: "500",
+          cursor: "pointer",
+          transition: "all 0.3s ease",
+          boxShadow: isSelected
+            ? "0 4px 12px rgba(40, 167, 69, 0.2)"
+            : "none",
+        }}
+      >
+        {company}
+      </button>
+    );
+  })}
+</div>
       <div className="d-flex justify-content-between align-items-center mb-3">
   {/* Total Stock Amount */}
   <div>
@@ -313,7 +383,18 @@ const UsedMobilesList = () => {
      /> */}
      <Table
            // routes={["/purchase/purchaseRecords"]}
-                array={filteredMobiles}
+            array={filteredMobiles.filter((record) => {
+  if (record.dispatch !== false) return false;
+
+  if (!selectedCompany) return true;
+
+  const normalize = (str) =>
+    str.toLowerCase().replace(/\s+/g, "");
+
+  return (
+    normalize(record.companyName) === normalize(selectedCompany)
+  );
+})}
                //  search={"imei1"}
                 keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
                 label={[
@@ -347,9 +428,14 @@ const UsedMobilesList = () => {
       </>:
       <>
       <Row xs={1} md={2} lg={3} className="g-4">
-  {filteredMobiles.length > 0 ? (
-    filteredMobiles
+   {filteredMobiles.length > 0 ? (
+  filteredMobiles
     .filter((record) => record.dispatch === false)
+    .filter((record) => {
+      if (!selectedCompany) return true; // ✅ Show all if no company selected
+      const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
+      return normalize(record.companyName) === normalize(selectedCompany);
+    })
     .map((mobile) => (
       <Col key={mobile._id}>
         <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
