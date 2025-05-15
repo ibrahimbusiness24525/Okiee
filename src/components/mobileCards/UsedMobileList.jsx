@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Row, Col, Form, InputGroup, Modal, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
@@ -222,23 +222,28 @@ const UsedMobilesList = () => {
       String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
     );
   });
-  useEffect(() => {
-  if (!filteredMobiles || filteredMobiles.length === 0) return;
+const updatedFilteredMobiles = useMemo(() => {
+  return filteredMobiles.filter(record => record.dispatch === false);
+}, [filteredMobiles]);
+useEffect(() => {
+  if (!updatedFilteredMobiles || updatedFilteredMobiles.length === 0) return;
 
   const uniqueCompaniesMap = new Map();
 
-  filteredMobiles
-    .filter((record) => record.dispatch === false)
-    .forEach((record) => {
-      const normalizedName = record.companyName.trim().toLowerCase();
-      if (!uniqueCompaniesMap.has(normalizedName)) {
-        uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
-      }
-    });
+  updatedFilteredMobiles.forEach((record) => {
+    const normalizedName = record.companyName.trim().toLowerCase();
+    if (!uniqueCompaniesMap.has(normalizedName)) {
+      uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
+    }
+  });
 
   const uniqueCompanies = Array.from(uniqueCompaniesMap.values());
-  setCompanies(uniqueCompanies);
-  }, [filteredMobiles]);
+
+  // Only update if companies have changed
+  if (JSON.stringify(companies) !== JSON.stringify(uniqueCompanies)) {
+    setCompanies(uniqueCompanies);
+  }
+}, [filteredMobiles]);
   const handleAccessoryChange = (index, field, value) => {
     const updatedAccessories = [...accessories];
     updatedAccessories[index][field] = value;
@@ -255,9 +260,21 @@ const UsedMobilesList = () => {
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
-  
+  const visibleMobiles = filteredMobiles
+  .filter((record) => record.dispatch === false)
+  .filter((record) => {
+    if (!selectedCompany) return true;
+    const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
+    return normalize(record.companyName) === normalize(selectedCompany);
+  });
+
+  const totalPurchasePrice = visibleMobiles.reduce(
+  (total, mobile) => total + (Number(mobile.purchasePrice) || 0),
+  0
+);
   console.log("all mobiles", mobiles);
   console.log("all filtered data is here ", filteredMobiles);
+  console.log("These are the companies  ", companies);
 
   return (
     <>
@@ -332,10 +349,16 @@ const UsedMobilesList = () => {
     <h5 style={{fontSize: 30}}>
       Total Stock Amount : 
       <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {filteredMobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)}
+        {/* {filteredMobiles.reduce((total, mobile) => Number(total) + Number(mobile.purchasePrice || 0), 0)} */}
+              {totalPurchasePrice}
       </span>
     </h5>
   </div>
+<h5 style={{ fontSize: '1.5rem', margin: '1rem 0' }}>
+  Stock: <span style={{ fontWeight: 'bold', color: '#007bff' }}>{visibleMobiles.length}</span> Mobile(s)
+</h5>
+
+
 
   {/* Share Inventory Button */}
   <Button

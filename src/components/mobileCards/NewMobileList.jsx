@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Row, Col, Form, InputGroup, Modal, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
@@ -295,23 +295,48 @@ const NewMobilesList = () => {
   
 //   setCompanies(uniqueCompanies);
   },[])
-  useEffect(() => {
-  if (!filteredMobiles || filteredMobiles.length === 0) return;
+//   useEffect(() => {
+//   if (!filteredMobiles || filteredMobiles.length === 0) return;
+
+//   const uniqueCompaniesMap = new Map();
+
+//   filteredMobiles
+//     .filter((record) => record.dispatch === false)
+//     .forEach((record) => {
+//       const normalizedName = record.companyName.trim().toLowerCase();
+//       if (!uniqueCompaniesMap.has(normalizedName)) {
+//         uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
+//       }
+//     });
+
+//   const uniqueCompanies = Array.from(uniqueCompaniesMap.values());
+//   setCompanies(uniqueCompanies);
+// }, [filteredMobiles,]);
+
+const updatedFilteredMobiles = useMemo(() => {
+  return filteredMobiles.filter(record => record.dispatch === false);
+}, [filteredMobiles]);
+useEffect(() => {
+  if (!updatedFilteredMobiles || updatedFilteredMobiles.length === 0) return;
 
   const uniqueCompaniesMap = new Map();
 
-  filteredMobiles
-    .filter((record) => record.dispatch === false)
-    .forEach((record) => {
-      const normalizedName = record.companyName.trim().toLowerCase();
-      if (!uniqueCompaniesMap.has(normalizedName)) {
-        uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
-      }
-    });
+  updatedFilteredMobiles.forEach((record) => {
+    const normalizedName = record.companyName.trim().toLowerCase();
+    if (!uniqueCompaniesMap.has(normalizedName)) {
+      uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
+    }
+  });
 
   const uniqueCompanies = Array.from(uniqueCompaniesMap.values());
-  setCompanies(uniqueCompanies);
+
+  // Only update if companies have changed
+  if (JSON.stringify(companies) !== JSON.stringify(uniqueCompanies)) {
+    setCompanies(uniqueCompanies);
+  }
 }, [filteredMobiles]);
+
+
   const [showPrices, setShowPrices] = useState(false);
   const [selectedMobile, setSelectedMobile] = useState(null);
   const [imeis, setImeis] = useState([]);
@@ -364,10 +389,20 @@ console.log(
   "these are the filtered new mobiles",
   filteredMobiles.filter((record) => record.dispatch === false)
 );
+const visibleMobiles = filteredMobiles
+  .filter((record) => record.dispatch === false)
+  .filter((record) => {
+    if (!selectedCompany) return true;
+    const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
+    return normalize(record.companyName) === normalize(selectedCompany);
+  });
 
 
   console.log("These are the selected companies", selectedCompany);
-
+const totalPurchasePrice = visibleMobiles.reduce(
+  (total, mobile) => total + (Number(mobile.purchasePrice) || 0),
+  0
+);
   
   return (
     <>
@@ -443,10 +478,15 @@ console.log(
       {/* Total Stock Amount:  */}
       Total Stock Amount : 
       <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)}
+        {/* {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)} */}
+        {totalPurchasePrice}
       </span>
     </h5>
   </div>
+  <h5 style={{ fontSize: '1.5rem', margin: '1rem 0' }}>
+    Stock: <span style={{ fontWeight: 'bold', color: '#007bff' }}>{visibleMobiles.length}</span> Mobile(s)
+  </h5>
+
 
   {/* Share Inventory Button */}
   <Button

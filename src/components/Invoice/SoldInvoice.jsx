@@ -371,7 +371,7 @@ console.log(addedImei1s, 'added imei 1s');
          <div>
          <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
          <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
-          <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Date of Sale:</strong> {invoiceData.invoiceDate}</p>
+          <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Date of Sale:</strong> {dataReceived?.saleDate}</p>
         </div>
 
   {/* Right Side */}
@@ -695,7 +695,7 @@ console.log(addedImei1s, 'added imei 1s');
   <div>
     <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
     <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
-    <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Date of Sale:</strong> {invoiceData.invoiceDate}</p>
+    <p style={{fontSize: "15px" , fontWeight: "bold"}}><strong>Date of Sale:</strong> {dataReceived?.saleDate}</p>
   </div>
 
   {/* Right Side */}
