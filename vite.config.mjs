@@ -63,3 +63,18 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), jsconfigPaths()]
   };
 });
+
+// import { defineConfig } from 'vite'
+// import react from '@vitejs/plugin-react'
+
+// export default defineConfig({
+//   plugins: [ react({
+//       eslint: {
+//         // Disable build fail on lint error
+//         failOnError: false,
+//       }
+//     })],
+//   server: {
+//     historyApiFallback: true, // for dev server
+//   },
+// })
