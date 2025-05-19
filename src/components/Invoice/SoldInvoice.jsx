@@ -377,6 +377,7 @@ console.log(addedImei1s, 'added imei 1s');
   {/* Right Side */}
       <div style={{ textAlign: 'right' }}>
         <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer name:</strong> {dataReceived?.customerName}</p>
+                <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.customerNumber}</p>
         {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.contactNumber}</p> */}
         { dataReceived.customerCNIC && <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
       </div>
@@ -394,7 +395,7 @@ console.log(addedImei1s, 'added imei 1s');
               {/* <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
               {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>} */}
               <th style={styles.th}>Price</th>
-              <th style={styles.th}>Warranty</th>
+              {/* <th style={styles.th}>Warranty</th> */}
             </tr>
           </thead>
           <tbody>
@@ -433,11 +434,11 @@ console.log(addedImei1s, 'added imei 1s');
                          : dataReceived?.finalPrice ?? 'Not Available'}
                      </td>
 
-                     <td style={styles.td}>
+                     {/* <td style={styles.td}>
                        {dataReceived?.invoice?.items
                          ? dataReceived.invoice.items[0]?.warranty
                          : dataReceived?.warranty ?? 'Not Available'}
-                     </td>
+                     </td> */}
                    </tr>
                 ))}
               </>
