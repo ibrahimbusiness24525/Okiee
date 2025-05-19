@@ -231,7 +231,267 @@ const[date,setDate ] = useState("")
     height={250}
   />
 </div>
+{/* Add these cards between your existing cards and pie chart */}
+<div style={{ 
+  display: "flex", 
+  flexWrap: "wrap", 
+  justifyContent: "space-between", 
+  gap: "20px", 
+  margin: "30px 0" 
+}}>
+  {/* Total Profit Today Card */}
+  <div style={{
+    flex: "1 1 250px",
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
+    padding: "20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    cursor: "pointer",
+  }}
+  onMouseOver={(e) => {
+    e.currentTarget.style.transform = "translateY(-5px)";
+    e.currentTarget.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.15)";
+  }}
+  onMouseOut={(e) => {
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.1)";
+  }}>
+    <div style={{
+      width: "60px",
+      height: "60px",
+      borderRadius: "50%",
+      backgroundColor: "rgba(46, 213, 115, 0.15)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2ed573" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+    </div>
+    <div>
+      <h3 style={{ fontSize: "16px", color: "#555", margin: "0 0 5px 0" }}>Total Profit Today</h3>
+      <p style={{ fontSize: "24px", fontWeight: "700", margin: 0, color: "#2ed573" }}>
+        {(() => {
+          const totalSales = totalInvoices || 0;
+          const totalPurchase = totalPurchasePrice || 0;
+          const profit = totalSales - totalPurchase;
+          return `${profit.toLocaleString()} PKR`;
+        })()}
+      </p>
+      <p style={{ fontSize: "12px", color: "#888", margin: "5px 0 0 0" }}>
+        {(() => {
+          const totalSales = totalInvoices || 0;
+          const totalPurchase = totalPurchasePrice || 0;
+          const profit = totalSales - totalPurchase;
+          const margin = totalSales > 0 ? (profit / totalSales * 100).toFixed(1) : 0;
+          return `${margin}% Profit Margin`;
+        })()}
+      </p>
+    </div>
+  </div>
 
+  {/* Total Purchased Mobiles Today Card */}
+  <div style={{
+    flex: "1 1 250px",
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
+    padding: "20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    cursor: "pointer",
+  }}
+  onMouseOver={(e) => {
+    e.currentTarget.style.transform = "translateY(-5px)";
+    e.currentTarget.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.15)";
+  }}
+  onMouseOut={(e) => {
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.1)";
+  }}>
+    <div style={{
+      width: "60px",
+      height: "60px",
+      borderRadius: "50%",
+      backgroundColor: "rgba(54, 162, 235, 0.15)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#36a2eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="3" y1="9" x2="21" y2="9"></line>
+        <line x1="9" y1="21" x2="9" y2="9"></line>
+      </svg>
+    </div>
+    <div>
+      <h3 style={{ fontSize: "16px", color: "#555", margin: "0 0 5px 0" }}>Purchased Mobiles</h3>
+      <p style={{ fontSize: "24px", fontWeight: "700", margin: 0, color: "#36a2eb" }}>
+        {(() => {
+          const singlePhones = todayBookData?.purchasedSinglePhone?.length || 0;
+          const bulkPhones = todayBookData?.purchaseBulkPhone?.reduce(
+            (acc, phone) => acc + (Number(phone.quantity) || 0), 
+            0
+          ) || 0;
+          return `${(singlePhones + bulkPhones).toLocaleString()} Units`;
+        })()}
+      </p>
+      <p style={{ fontSize: "12px", color: "#888", margin: "5px 0 0 0" }}>
+        {(() => {
+          const singlePhones = todayBookData?.purchasedSinglePhone?.length || 0;
+          const bulkPhones = todayBookData?.purchaseBulkPhone?.reduce(
+            (acc, phone) => acc + (Number(phone.quantity) || 0), 
+            0
+          ) || 0;
+          const total = singlePhones + bulkPhones;
+          return `${singlePhones} Single, ${bulkPhones} Bulk`;
+        })()}
+      </p>
+    </div>
+  </div>
+
+  {/* Total Sold Mobiles Today Card */}
+  <div style={{
+    flex: "1 1 250px",
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
+    padding: "20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    cursor: "pointer",
+  }}
+  onMouseOver={(e) => {
+    e.currentTarget.style.transform = "translateY(-5px)";
+    e.currentTarget.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.15)";
+  }}
+  onMouseOut={(e) => {
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.1)";
+  }}>
+    <div style={{
+      width: "60px",
+      height: "60px",
+      borderRadius: "50%",
+      backgroundColor: "rgba(255, 159, 64, 0.15)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ff9f40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+    </div>
+    <div>
+      <h3 style={{ fontSize: "16px", color: "#555", margin: "0 0 5px 0" }}>Sold Mobiles</h3>
+      <p style={{ fontSize: "24px", fontWeight: "700", margin: 0, color: "#ff9f40" }}>
+        {(() => {
+          const singlePhones = todayBookData?.soldSinglePhone?.length || 0;
+          const bulkPhones = todayBookData?.soldBulkPhone?.reduce(
+            (acc, phone) => acc + (Number(phone.quantity) || 0), 
+            0
+          ) || 0;
+          return `${(singlePhones + bulkPhones).toLocaleString()} Units`;
+        })()}
+      </p>
+      <p style={{ fontSize: "12px", color: "#888", margin: "5px 0 0 0" }}>
+        {(() => {
+          const singlePhones = todayBookData?.soldSinglePhone?.length || 0;
+          const bulkPhones = todayBookData?.soldBulkPhone?.reduce(
+            (acc, phone) => acc + (Number(phone.quantity) || 0), 
+            0
+          ) || 0;
+          return `${singlePhones} Single, ${bulkPhones} Bulk`;
+        })()}
+      </p>
+    </div>
+  </div>
+
+  {/* Average Price Card */}
+  <div style={{
+    flex: "1 1 250px",
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
+    padding: "20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    cursor: "pointer",
+  }}
+  onMouseOver={(e) => {
+    e.currentTarget.style.transform = "translateY(-5px)";
+    e.currentTarget.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.15)";
+  }}
+  onMouseOut={(e) => {
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.1)";
+  }}>
+    <div style={{
+      width: "60px",
+      height: "60px",
+      borderRadius: "50%",
+      backgroundColor: "rgba(153, 102, 255, 0.15)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9966ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="20" x2="12" y2="10"></line>
+        <line x1="18" y1="20" x2="18" y2="4"></line>
+        <line x1="6" y1="20" x2="6" y2="16"></line>
+      </svg>
+    </div>
+    <div>
+      <h3 style={{ fontSize: "16px", color: "#555", margin: "0 0 5px 0" }}>Average Prices</h3>
+      <p style={{ fontSize: "18px", fontWeight: "700", margin: 0, color: "#9966ff" }}>
+        {(() => {
+          const totalPurchased = todayBookData?.purchasedSinglePhone?.length || 0 + 
+            (todayBookData?.purchaseBulkPhone?.reduce(
+              (acc, phone) => acc + (Number(phone.quantity) || 0), 
+              0
+            ) || 0);
+          
+          const avgPurchase = totalPurchased > 0 ? 
+            Math.round(totalPurchasePrice / totalPurchased) : 0;
+          
+          return `${avgPurchase.toLocaleString()} PKR/Unit`;
+        })()}
+      </p>
+      <p style={{ fontSize: "12px", color: "#888", margin: "5px 0 0 0" }}>
+        {(() => {
+          const totalSold = todayBookData?.soldSinglePhone?.length || 0 + 
+            (todayBookData?.soldBulkPhone?.reduce(
+              (acc, phone) => acc + (Number(phone.quantity) || 0), 
+              0
+            ) || 0);
+          
+          const avgSale = totalSold > 0 ? 
+            Math.round(totalInvoices / totalSold) : 0;
+          
+          return `Avg. Sale: ${avgSale.toLocaleString()} PKR/Unit`;
+        })()}
+      </p>
+    </div>
+  </div>
+</div>
 
             <div style={{ marginTop: "50px" }}></div>
             <StyledHeading>Today Ledger</StyledHeading>
