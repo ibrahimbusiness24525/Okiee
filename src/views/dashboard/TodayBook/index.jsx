@@ -16,6 +16,8 @@ const TodayBook = () => {
 const[todayBookData,setTodayBookData] = useState([]);
 const[bankData,setBankData]= useState([])
 const[date,setDate ] = useState("")
+const [totalCash, setTotalCash] = useState(0);
+
   const getTodayBook = async() => {
     try{
       const response = await api.get(`/api/dayBook/todayBook`, {
@@ -27,7 +29,17 @@ const[date,setDate ] = useState("")
       console.log("Error in getting the field", error);
     }
   } 
-  console.log("this is the date" , date);
+  const fetchTotalCash = async () => {
+      try {
+        const res = await api.get('/api/pocketCash/total');
+        setTotalCash(res.data.total);
+        console.log("total", res)
+      } catch (error) {
+        console.error('Failed to fetch total cash:', error);
+      }
+};
+  
+  console.log("this is the date" , totalCash);
   const getAllBanks = async () => {
     try {
       const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
@@ -39,8 +51,8 @@ const[date,setDate ] = useState("")
 }
   useEffect(() => {
         getAllBanks(); // Fetch all banks when the component mounts
-
-    getTodayBook();
+        fetchTotalCash();
+        getTodayBook();
   },[]); 
 console.log("these are required banks", bankData)
 
@@ -108,11 +120,12 @@ console.log("these are required banks", bankData)
     }, 0) || 0)
 
   // Calculate opening balance from banks
-  const openingBalance = bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) || 0
+  const openingBalance = bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) + totalCash || 0 + totalCash
+  const bankTotalBalance = bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0)  || 0 
 
   // Calculate cash amount from ledger
   const cashAmount = todayBookData?.ledger?.reduce((acc, entry) => acc + (Number(entry.openingCash) || 0), 0) || 0
-
+  const pocketCash  = totalCash;
   // Calculate expenses from ledger
   const totalExpenses = todayBookData?.ledger?.reduce((acc, entry) => acc + (Number(entry.expense) || 0), 0) || 0
 
@@ -162,7 +175,7 @@ console.log("these are required banks", bankData)
   },
   {
     title: "Cash Amount",
-    value: formatCurrency(cashAmount),
+    value: formatCurrency(pocketCash),
     icon: DollarSign,
     color: "#16a34a", // green-600
     bgColor: "#f0fdf4", // green-50
@@ -170,7 +183,7 @@ console.log("these are required banks", bankData)
   },
   {
     title: "Bank Amount",
-    value: formatCurrency(openingBalance),
+    value: formatCurrency(bankTotalBalance),
     icon: CreditCard,
     color: "#2563eb", // blue-600
     bgColor: "#eff6ff", // blue-50
