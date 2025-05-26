@@ -235,26 +235,8 @@ const NewMobilesList = () => {
     setType("single");
   };
 
-  const handleShareInventory = () => {
-    const doc = new jsPDF();
-    doc.text('Mobile Inventory', 10, 10);
 
-    mobiles.forEach((mobile, index) => {
-      const { images, companyName, modelSpecifications , specs, color } = mobile;
-      const imgData = `data:image/jpeg;base64,${images[0]}`;
-      const y = 20 + index * 50;
 
-      if (imgData) {
-        doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
-      }
-      doc.text(`Company: ${companyName}`, 50, y + 5);
-      doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
-      doc.text(`Specification: ${specs}`, 50, y + 25);
-      doc.text(`Color: ${color}`, 50, y + 35);
-    });
-
-    doc.save('Mobile_Inventory.pdf');
-  };
   const filteredMobiles = mobiles?.filter((mobile) => {
     // Exclude sold phones
     if (mobile.isSold) return false;
@@ -403,7 +385,37 @@ const totalPurchasePrice = visibleMobiles.reduce(
   (total, mobile) => total + (Number(mobile.purchasePrice) || 0),
   0
 );
-  
+
+
+ const handleShareInventory = () => {
+  const doc = new jsPDF();
+  doc.text('Mobile Inventory', 10, 10);
+
+  let y = 20;
+
+  visibleMobiles.forEach((mobile, index) => {
+    const { images, companyName, modelSpecifications, specs, color } = mobile;
+    const imgData = `data:image/jpeg;base64,${images[0]}`;
+
+    // Check if next item will exceed page height
+    if (y + 50 > 280) {  // 280 leaves a margin from the bottom of A4
+      doc.addPage();
+      y = 20; // reset y for new page
+    }
+
+    if (imgData) {
+      doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
+    }
+    doc.text(`Company: ${companyName}`, 50, y + 5);
+    doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
+    doc.text(`Specification: ${specs}`, 50, y + 25);
+    doc.text(`Color: ${color}`, 50, y + 35);
+
+    y += 50; // move y for the next entry
+  });
+
+  doc.save('Mobile_Inventory.pdf');
+}; 
   return (
     <>
      <InputGroup className="mb-3">
