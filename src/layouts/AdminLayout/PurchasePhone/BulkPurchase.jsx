@@ -51,7 +51,8 @@ useEffect(()=>{
 },[])
 
 
-console.log("data to check",editMobile)
+console.log("color  to check",editMobile?.ramSimDetails?.imeiNumbers?.color);
+console.log("data  to check",editMobile)
 
 return(
      <Modal show={showBulkModal} onHide={handleBulkPhoneModalclose} centered size="lg">
@@ -278,7 +279,7 @@ return(
             <td>
               <Form.Control
                 type="text"
-                value={phone.color}
+                value={phone.color || ""}
                 onChange={(e) => {
                   const newIMEIs = detail.imeiNumbers.map((p, j) =>
                     j === i ? { ...p, color: e.target.value } : p

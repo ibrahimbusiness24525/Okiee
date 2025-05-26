@@ -7,6 +7,7 @@ import { dateFormatter } from 'utils/dateFormatter';
 import Table from 'components/Table/Table';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
+import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
 
 const SaleInvoices = () => {
   const [search, setSearch] = useState('');
@@ -259,7 +260,7 @@ const handleScan = (value) => {
     "Purchase Price",
     "Sale Price",
     "Date Sold",
-    "Profit/Loss",
+"Profit/Loss & Barcode Generator",
   ]}
   customBlocks={[
        
@@ -288,7 +289,29 @@ const handleScan = (value) => {
             const purchasePrice = Number(obj.purchasePrice) || 0;
             const profitOrLoss = salePrice - purchasePrice;
         
-            return <p>{profitOrLoss < 0 ? `Loss of ${-profitOrLoss}` : profitOrLoss}</p>;
+            return <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "8px 16px",
+    borderRadius: "8px",
+    backgroundColor: profitOrLoss < 0 ? "#ffe6e6" : "#e6ffe6",
+    color: profitOrLoss < 0 ? "#cc0000" : "#006600",
+    fontWeight: "bold",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    width: "300px", // You can adjust this value as needed
+    justifyContent: "space-between"
+  }}
+>
+  <p style={{ margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+    {profitOrLoss < 0 ? `Loss of ₹${-profitOrLoss}` : `Profit of ₹${profitOrLoss}`}
+  </p>
+  <BarcodePrinter obj={obj} />
+</div>
+
+
+                                 
           },
         ]}
         
@@ -322,6 +345,7 @@ const handleScan = (value) => {
     "Selling Payment Type",
     "Warranty",
     "Invoice Date",
+    // "Barcode Generator"
   ]}
   customBlocks={[
     {
@@ -337,6 +361,22 @@ const handleScan = (value) => {
            }
          }
         ]}
+//          extraColumns={[
+//           (obj) => {
+          
+//             return <div
+//   style={{
+    
+//   }}
+// >
+  
+//   <BarcodePrinter obj={obj} />
+// </div>
+
+
+                                 
+//           },
+//         ]}
       />
     </div>
   );
