@@ -143,7 +143,7 @@ const UsedMobilesList = () => {
   };
 
   const handleSoldSubmit = async () => {
-    if (!finalPrice || !warranty || !customerName ) {
+ if ( !warranty || !customerName || !customerNumber || !saleDate || sellingType === ""|| !finalPrice) {
       alert('Please fill all fields');
       return;
     }

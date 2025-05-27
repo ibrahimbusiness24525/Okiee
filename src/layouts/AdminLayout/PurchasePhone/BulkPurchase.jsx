@@ -51,8 +51,7 @@ useEffect(()=>{
 },[])
 
 
-console.log("color  to check",editMobile?.ramSimDetails?.imeiNumbers?.color);
-console.log("data  to check",editMobile)
+console.log("data  to check",bulkData)
 
 return(
      <Modal show={showBulkModal} onHide={handleBulkPhoneModalclose} centered size="lg">
@@ -101,7 +100,12 @@ return(
           
 
 
-                {bulkData.ramSimDetails.map((detail, idx) => (
+                {bulkData.ramSimDetails.map((detail, idx) => {
+                  
+                  return(
+                    (
+                  
+                  
   <div key={idx}>
     <Row className="mt-4">
       <Col>
@@ -238,6 +242,7 @@ return(
       </thead>
       <tbody>
         {detail.imeiNumbers.map((phone, i) => (
+          
           <tr key={i}>
             <td>{i + 1}</td>
             <td>
@@ -259,6 +264,7 @@ return(
             </td>
             {detail.simOption === "Dual SIM" && (
               <td>
+  
                 <Form.Control
                   type="text"
                   value={phone.imei2}
@@ -276,6 +282,7 @@ return(
                 />
               </td>
             )}
+           
             <td>
               <Form.Control
                 type="text"
@@ -293,6 +300,8 @@ return(
                 }}
               />
             </td>
+  
+
             <td>
               <Form.Control
                 type="text"
@@ -379,7 +388,9 @@ return(
 </Button>
     <hr />
   </div>
-))}
+)
+                  )
+                })}
 
       <Button
         variant="secondary"

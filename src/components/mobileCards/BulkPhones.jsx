@@ -260,7 +260,7 @@ const NewMobilesList = () => {
   console.log(imei);
 
   const handleSoldSubmit = async () => {
-    if (!finalPrice || !warranty) {
+  if (!finalPrice || !warranty || !customerName || !customerNumber || !saleDate || sellingType === "") {
       alert('Please fill all fields');
       return;
     }

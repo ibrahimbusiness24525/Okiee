@@ -1,4 +1,4 @@
-import { text } from "d3";
+import { color, text } from "d3";
 import React, { useState } from "react";
 import { Modal, Form, Button, Row, Col, Table , Image } from "react-bootstrap";
 import axios from 'axios';
@@ -157,7 +157,9 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
          priceOfOne: detail.priceOfOne || "",
          imeiNumbers: detail.imeiNumbers?.map(imei => ({
            imei1: imei.imei1 || "",
-           imei2: imei.imei2 || ""
+           imei2: imei.imei2 || "",
+           color: imei.color || "",
+           batteryHealth: imei.batteryHealth || "",
          })) || []
        })) || []
      }));

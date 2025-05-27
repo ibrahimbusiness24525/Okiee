@@ -187,23 +187,23 @@ const [data, setData] = useState({
   })
 
   // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setData((prevData) => {
-        const newSold = prevData.totalSold + Math.floor(Math.random() * 3)
-        const newPurchased = prevData.totalPurchased + (Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0)
-        const newRemaining = newPurchased - newSold
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setData((prevData) => {
+  //       const newSold = prevData.totalSold + Math.floor(Math.random() * 3)
+  //       const newPurchased = prevData.totalPurchased + (Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0)
+  //       const newRemaining = newPurchased - newSold
 
-        return {
-          totalPurchased: newPurchased,
-          totalSold: newSold,
-          totalRemaining: Math.max(0, newRemaining),
-        }
-      })
-    }, 3000) // Update every 3 seconds
+  //       return {
+  //         totalPurchased: newPurchased,
+  //         totalSold: newSold,
+  //         totalRemaining: Math.max(0, newRemaining),
+  //       }
+  //     })
+  //   }, 3000) // Update every 3 seconds
 
-    return () => clearInterval(interval)
-  }, [])
+  //   return () => clearInterval(interval)
+  // }, [])
 
   const cardStyle = {
     backgroundColor: "#ffffff",
@@ -239,6 +239,7 @@ const [data, setData] = useState({
     minHeight: "20vh",
     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     padding: "24px",
+    borderRadius: "12px",
     fontFamily: "system-ui, -apple-system, sans-serif",
   }
 
@@ -265,7 +266,7 @@ const [data, setData] = useState({
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
     gap: "24px",
-    maxWidth: "1200px",
+    width: "1200px",
     margin: "0 auto",
   }
 
@@ -479,7 +480,14 @@ const [data, setData] = useState({
               color: "#3b82f6",
             }}
           >
-            {data.totalPurchased.toLocaleString()}
+ <div>
+  <p>Purchased Single Phones: {todayBookData?.purchasedSinglePhone?.length ?? 0}</p>
+  <p>Purchased Bulk Phones: {todayBookData?.purchaseBulkPhone?.length ?? 0}</p>
+</div>
+
+
+
+            {/* {data.totalPurchased.toLocaleString()} */}
           </div>
           <div style={labelStyle}>Total Purchased Mobiles</div>
           <div
@@ -518,7 +526,11 @@ const [data, setData] = useState({
               color: "#10b981",
             }}
           >
-            {data.totalSold.toLocaleString()}
+          <div>
+             <p>Sold Single Phones: {todayBookData?.soldSinglePhone?.length ?? 0}</p>
+             <p>Sold Bulk Phones: {todayBookData?.soldBulkPhone?.length ?? 0}</p>
+          </div>
+
           </div>
           <div style={labelStyle}>Total Sold Mobiles</div>
           <div
@@ -557,9 +569,47 @@ const [data, setData] = useState({
               color: data.totalRemaining < 100 ? "#ef4444" : "#f59e0b",
             }}
           >
-            {data.totalRemaining.toLocaleString()}
+            {(todayBookData?.purchaseBulkPhone?.length ?? 0) + (todayBookData?.purchasedSinglePhone?.length ?? 0)}
           </div>
-          <div style={labelStyle}>Total Remaining Phones</div>
+          <div style={labelStyle}>Total Remaing</div>
+          <div
+            style={{
+              marginTop: "12px",
+              fontSize: "0.75rem",
+              color: "#9ca3af",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor: data.totalRemaining < 100 ? "#ef4444" : "#f59e0b",
+                marginRight: "6px",
+              }}
+            ></span>
+            {data.totalRemaining < 100 ? "Low Stock Alert" : "Available Stock"}
+          </div>
+        </div>
+        <div
+          className="card"
+          style={{
+            ...cardStyle,
+            borderLeft: `4px solid ${data.totalRemaining < 100 ? "#ef4444" : "#f59e0b"}`,
+          }}
+        >
+          <div
+            style={{
+              ...numberStyle,
+              color: data.totalRemaining < 100 ? "#ef4444" : "#f59e0b",
+            }}
+          >
+            
+            {totalPurchasePrice}
+          </div>
+          <div style={labelStyle}>Total Stock Amount</div>
           <div
             style={{
               marginTop: "12px",
@@ -689,7 +739,7 @@ const [data, setData] = useState({
  
   
 </div>
-  <div style={{display:"flex", alignItems:"center",justifyContent:"space-between"}}>
+  {/* <div style={{display:"flex", alignItems:"center",justifyContent:"space-between"}}>
             <Card 
               onClick={()=>navigation("/todayBook/pruchaseDetail/:id")}
               className="text-center shadow-lg p-3" 
@@ -739,7 +789,7 @@ const [data, setData] = useState({
                 </span>
               </Card.Body>
             </Card>
-            </div>
+            </div> */}
             <div
   style={{
     width: "80%", // Adjust width

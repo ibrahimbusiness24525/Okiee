@@ -128,15 +128,23 @@ const SoldInvoice = () => {
 
   const location = useLocation();
   const dataReceived = location?.state ?? {};
+const getValidDate = (inputDate) => {
+  const date = new Date(inputDate);
+  return isNaN(date.getTime()) 
+    ? new Date().toISOString().split('T')[0] // fallback to today's date
+    : date.toISOString().split('T')[0];
+};
 
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(dataReceived.invoice?.totalAmount ?? dataReceived?.finalPrice ?? dataReceived?.demandPrice ?? 0);
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
     invoiceNumber:  dataReceived?.invoice?.invoiceNumber?? dataReceived.invoice ? dataReceived.invoice?.invoiceNumber : `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    invoiceDate: dataReceived.invoice 
-    ? new Date(dataReceived.invoice?.invoiceDate).toISOString().split('T')[0] 
-    : new Date().toISOString().split('T')[0],
+    // invoiceDate: dataReceived?.invoice 
+    // ? new Date(dataReceived?.invoice?.invoiceDate).toISOString().split('T')[0] 
+    // : new Date().toISOString().split('T')[0],
+    invoiceDate: getValidDate(dataReceived?.invoice?.invoiceDate),
+
     items: dataReceived.invoice ? dataReceived.invoice?.items : [],
     totalAmount: dataReceived.invoice ? dataReceived.invoice?.totalAmount : 0,
     imei: dataReceived.imei,

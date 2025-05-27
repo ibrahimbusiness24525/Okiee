@@ -198,7 +198,7 @@ const NewMobilesList = () => {
   };
 
   const handleSoldSubmit = async () => {
-    if (!finalPrice || !warranty) {
+    if (!warranty || !customerName || !customerNumber || !saleDate || sellingType === ""|| !finalPrice) {
       alert('Please fill all fields');
       return;
     }
