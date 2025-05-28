@@ -7,6 +7,8 @@ import { dateFormatter } from 'utils/dateFormatter';
 import Table from 'components/Table/Table';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
+import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
+import { Button } from 'react-bootstrap';
 
 const SaleInvoices = () => {
   const [search, setSearch] = useState('');
@@ -77,10 +79,36 @@ const SaleInvoices = () => {
   //   setFilteredInvoices(filtered);
   //   setIsPopupOpen(false);
   // };
+  
+const handlePrintClick = (invoice) => {
+  console.log('Printing invoice:', invoice);
 
-  const handlePrintClick = (invoice) => {
-    navigate('/invoice/shop', { state: { invoice } }); // Pass invoice data to the route
+  const formattedInvoice = {
+    companyName: invoice.companyName,
+    modelName: invoice.modelName,
+    imei1: invoice.imei1,
+    imei2: invoice.imei2 ? invoice.imei2 : undefined,
+    customerNumber: invoice.customerNumber,
+    finalPrice: invoice.finalPrice,
+    sellingType: invoice.sellingPaymentType,
+    warranty: invoice.warranty,
+
+    cnicBackPic: invoice.cnicBackPic,
+    cnicFrontPic: invoice.cnicFrontPic,
+    saleDate: invoice.saleDate,
+    customerName: invoice.customerName,
+    accessories: invoice.accessories || [],
+    bankName: invoice.bankName || '', // provide fallback if missing
+    payableAmountNow: invoice.payableAmountNow || 0,
+    payableAmountLater: invoice.payableAmountLater || 0,
+    payableAmountLaterDate: invoice.payableAmountLaterDate || null,
+    exchangePhoneDetail: invoice.exchangePhoneDetail || null,
+    customerNumber: invoice.customerNumber,
   };
+
+  navigate('/invoice/shop', { state: formattedInvoice });
+};
+
 
   const styles = {
     container: {
@@ -259,7 +287,7 @@ const handleScan = (value) => {
     "Purchase Price",
     "Sale Price",
     "Date Sold",
-    "Profit/Loss",
+"Profit/Loss & Barcode Generator",
   ]}
   customBlocks={[
        
@@ -288,7 +316,31 @@ const handleScan = (value) => {
             const purchasePrice = Number(obj.purchasePrice) || 0;
             const profitOrLoss = salePrice - purchasePrice;
         
-            return <p>{profitOrLoss < 0 ? `Loss of ${-profitOrLoss}` : profitOrLoss}</p>;
+            return <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "8px 16px",
+    borderRadius: "8px",
+    backgroundColor: profitOrLoss < 0 ? "#ffe6e6" : "#e6ffe6",
+    color: profitOrLoss < 0 ? "#cc0000" : "#006600",
+    fontWeight: "bold",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    width: "300px", // You can adjust this value as needed
+    justifyContent: "space-between"
+  }}
+>
+  <p style={{ margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+    {profitOrLoss < 0 ? `Loss of ₹${-profitOrLoss}` : `Profit of ₹${profitOrLoss}`}
+  </p>
+  <Button onClick={() => handlePrintClick(obj)} style={{ backgroundColor: "#007bff", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "4px", cursor: "pointer" }}>
+    <FaPrint style={{ marginRight: "8px" }} />Get Invoice
+  </Button>
+</div>
+
+
+                                 
           },
         ]}
         
@@ -322,6 +374,7 @@ const handleScan = (value) => {
     "Selling Payment Type",
     "Warranty",
     "Invoice Date",
+    // "Barcode Generator"
   ]}
   customBlocks={[
     {
@@ -337,6 +390,22 @@ const handleScan = (value) => {
            }
          }
         ]}
+//          extraColumns={[
+//           (obj) => {
+          
+//             return <div
+//   style={{
+    
+//   }}
+// >
+  
+//   <BarcodePrinter obj={obj} />
+// </div>
+
+
+                                 
+//           },
+//         ]}
       />
     </div>
   );
