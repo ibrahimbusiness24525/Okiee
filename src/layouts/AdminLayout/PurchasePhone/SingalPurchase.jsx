@@ -428,12 +428,14 @@ console.log("edit mobile", editMobile);
                     >
                       نوٹ: ادارہ ہذا نے یہ موبائل سمیت نیک نیتی کی بنیاد پر خریدا کیا ہے۔
                     </div>
+
                     <WalletTransactionModal
                       show={showWalletTransactionModal}
                       toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
-                      singlePurchase={singlePurchase}
-                      setSinglePurchase={setSinglePurchase}
+                      singleTransaction={singlePurchase}
+                      setSingleTransaction={setSinglePurchase}
                     />
+                    
                     <Modal.Footer>
                   <Button variant="secondary" onClick={handleSinglePhoneModalclose}>
                     Cancel

@@ -11,8 +11,16 @@ import Table from 'components/Table/Table';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import { toast } from 'react-toastify';
 import { MoonLoader } from 'react-spinners';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 
 const UsedMobilesList = () => {
+    const[showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
+    const[walletTransaction, setWalletTransaction] = useState({
+      bankAccountUsed: "",
+      amountFromBank: "",
+      amountFromPocket: "",
+    })
+    console.log("this is sold wallet data", walletTransaction);
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
   const[payableAmountNow,setPayableAmountNow]= useState("")
@@ -149,6 +157,7 @@ const UsedMobilesList = () => {
     }
     const updatedMobile = {
       ...soldMobile,
+       walletTransaction,
       finalPrice,
       sellingType,
       warranty,
@@ -961,6 +970,13 @@ useEffect(() => {
         
    
           </Form>
+            <Button variant="secondary" onClick={()=> setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
+            <WalletTransactionModal
+                      show={showWalletTransactionModal}
+                      toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+                      singleTransaction={walletTransaction}
+                      setSingleTransaction={setWalletTransaction}
+                    />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSoldModal(false)}>

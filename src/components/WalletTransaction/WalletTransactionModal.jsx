@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap"; // Assuming you are using react-bootstrap
 import { api } from "../../../api/api";
 
-const WalletTransactionModal = ({ show, toggleModal, singlePurchase, setSinglePurchase }) => {
+const WalletTransactionModal = ({ show, toggleModal, singleTransaction, setSingleTransaction,type="purchase" }) => {
   const [banks, setBanks] = useState([]);
   const [transactionType, setTransactionType] = useState(""); // wallet | bank | both
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ const WalletTransactionModal = ({ show, toggleModal, singlePurchase, setSinglePu
   };
 
   const handleCancel = () => {
-    setSinglePurchase(prev => ({
+    setSingleTransaction(prev => ({
       ...prev,
       bankAccountUsed: "",
       amountFromBank: "",
@@ -64,9 +64,9 @@ const WalletTransactionModal = ({ show, toggleModal, singlePurchase, setSinglePu
             <Form.Group controlId="bankAccount">
               <Form.Label style={{ fontWeight: 'bold', marginBottom: '8px' }}>Select Bank Account</Form.Label>
               <Form.Select
-                value={singlePurchase.bankAccountUsed || ""}
+                value={singleTransaction.bankAccountUsed || ""}
                 onChange={(e) =>
-                  setSinglePurchase({ ...singlePurchase, bankAccountUsed: e.target.value })
+                  setSingleTransaction({ ...singleTransaction, bankAccountUsed: e.target.value })
                 }
                 style={{ padding: '10px', borderRadius: '6px', fontSize: '15px', marginBottom: '10px' }}
               >
@@ -79,9 +79,9 @@ const WalletTransactionModal = ({ show, toggleModal, singlePurchase, setSinglePu
               </Form.Select>
 
               <Form.Control
-                value={singlePurchase.amountFromBank || ""}
+                value={singleTransaction.amountFromBank || ""}
                 name="amountFromBank"
-                onChange={(e) => setSinglePurchase({ ...singlePurchase, amountFromBank: e.target.value })}
+                onChange={(e) => setSingleTransaction({ ...singleTransaction, amountFromBank: e.target.value })}
                 type="number"
                 placeholder="Enter Amount From Bank"
                 style={{
@@ -101,9 +101,9 @@ const WalletTransactionModal = ({ show, toggleModal, singlePurchase, setSinglePu
             <Form.Group controlId="pocketCash">
               <Form.Label style={{ fontWeight: 'bold', marginBottom: '8px' }}>Enter Pocket Cash Amount</Form.Label>
               <Form.Control
-                value={singlePurchase.amountFromPocket || ""}
+                value={singleTransaction.amountFromPocket || ""}
                 name="amountFromPocket"
-                onChange={(e) => setSinglePurchase({ ...singlePurchase, amountFromPocket: e.target.value })}
+                onChange={(e) => setSingleTransaction({ ...singleTransaction, amountFromPocket: e.target.value })}
                 type="number"
                 placeholder="Enter Amount From Pocket Cash"
                 style={{

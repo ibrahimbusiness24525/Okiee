@@ -253,6 +253,9 @@ const SoldInvoice = () => {
     }else{
       try {
         const payload = { 
+          bankAccountUsed: dataReceived?.walletTransaction?.bankAccountUsed,
+          accountCash: dataReceived?.walletTransaction?.amountFromBank,
+          pocketCash: dataReceived?.walletTransaction?.amountFromPocket,
           purchasePhoneId: dataReceived._id,
           salePrice: Number(dataReceived.finalPrice),
           totalInvoice: Number(totalInvoice),

@@ -16,7 +16,16 @@ import List from '../List/List'
 import Table from 'components/Table/Table';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { toast } from 'react-toastify';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 const NewMobilesList = () => {
+    const[showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
+    const[walletTransaction, setWalletTransaction] = useState({
+      bankAccountUsed: "",
+      amountFromBank: "",
+      amountFromPocket: "",
+    })
+    console.log("this is sold wallet data", walletTransaction);
+    
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
   const[payableAmountNow,setPayableAmountNow]= useState("")
@@ -205,6 +214,7 @@ const NewMobilesList = () => {
 
     const updatedMobile = {
       ...soldMobile,
+      walletTransaction,
       finalPrice,
       sellingType,
       warranty,
@@ -1236,6 +1246,13 @@ const totalPurchasePrice = visibleMobiles.reduce(
           )}
    
           </Form>
+            <Button variant="secondary" onClick={()=> setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
+            <WalletTransactionModal
+                      show={showWalletTransactionModal}
+                      toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+                      singleTransaction={walletTransaction}
+                      setSingleTransaction={setWalletTransaction}
+                    />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSoldModal(false)}>
