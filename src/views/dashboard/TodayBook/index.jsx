@@ -11,7 +11,7 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { api } from "../../../../api/api";
 import { useNavigate } from "react-router-dom";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DollarSign, Smartphone, TrendingUp, Wallet, CreditCard, Receipt, ShoppingCart, Package } from "lucide-react"
+import { DollarSign, Smartphone, TrendingUp, Wallet, CreditCard, Receipt, ShoppingCart, Package,ShoppingBag,Boxes } from "lucide-react"
 const TodayBook = () => {
 const[todayBookData,setTodayBookData] = useState([]);
 const[bankData,setBankData]= useState([])
@@ -179,7 +179,69 @@ console.log("these are required banks", bankData)
     bgColor: "#ecfdf5", // emerald-50
     route: "/reports/total",
   },
+
+
+
+  {
+    title: "Sale Track",
+    icon: ShoppingBag, // 🛍️ For tracking sales
+    color: "#059669", // emerald-600
+    bgColor: "#ecfdf5", // emerald-50
+    route: "/reports/total",
+    extraInfo: [
+      {
+        label: "Sold Single Phones",
+        value: todayBookData?.soldSinglePhone?.length ?? 0,
+      },
+      {
+        label: "Sold Bulk Phones",
+        value: todayBookData?.soldBulkPhone?.length ?? 0,
+      },
+    ],
+  },
+  {
+    title: "Purchase Track",
+    icon: ShoppingCart, // 🛒 For tracking purchases
+    color: "#059669",
+    bgColor: "#ecfdf5",
+    route: "/reports/total",
+    extraInfo: [
+      {
+        label: "Purchased Single Phones",
+        value: todayBookData?.purchasedSinglePhone?.length ?? 0,
+      },
+      {
+        label: "Purchased Bulk Phones",
+        value: todayBookData?.purchaseBulkPhone?.length ?? 0,
+      },
+    ],
+  },
+  {
+    title: "Total Stock",
+    icon: Boxes, // 📦 Represents total inventory/stock
+    // value: formatCurrency(
+    //   (todayBookData?.purchaseBulkPhone?.length ?? 0) +
+    //   (todayBookData?.purchasedSinglePhone?.length ?? 0)
+    // ),
+    value: formatCurrency(
+     todayBookData?.totalStockCount || 0
+    ),
+    color: "#059669",
+    bgColor: "#ecfdf5",
+    route: "/reports/total",
+  },
+  {
+    title: "Total Stock Amount",
+    icon: Wallet, // 👛 For total financial value of the stock
+    color: "#059669",
+    // value: formatCurrency(totalPurchasePrice),
+    value: formatCurrency(todayBookData?.totalStockAmount || 0),
+    bgColor: "#ecfdf5",
+    route: "/reports/total",
+  },
 ];
+
+
 const [data, setData] = useState({
     totalPurchased: 1250,
     totalSold: 890,
@@ -367,79 +429,96 @@ const [data, setData] = useState({
           
 {/* Add these cards between your existing cards and pie chart */}
 <div className="responsive-grid">
-  {metrics.map((metric, index) => {
-    const Icon = metric.icon;
+{metrics.map((metric, index) => {
+  const Icon = metric.icon;
 
-    return (
-      <div
-        key={index}
-        style={{
-          backgroundColor: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-          padding: "24px",
-          cursor: "pointer",
-          border: "1px solid #e5e7eb",
-          transition: "transform 0.3s ease, box-shadow 0.3s ease",
-        }}
-        onClick={() => (window.location.href = metric.route)}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform = "scale(1.05)";
-          e.currentTarget.style.boxShadow = "0 10px 25px rgba(0, 0, 0, 0.15)";
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <p
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  color: "#4b5563",
-                  marginBottom: "8px",
-                }}
-              >
-                {metric.title}
-              </p>
-              <p
-                style={{
-                  fontSize: "18px",
-                  fontWeight: "700",
-                  color: metric.color,
-                  wordBreak: "break-word",
-                }}
-              >
-                {metric.value}
-              </p>
-            </div>
-            <div
+  return (
+    <div
+      key={index}
+      style={{
+        backgroundColor: "#fff",
+        borderRadius: "12px",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        padding: "24px",
+        cursor: "pointer",
+        border: "1px solid #e5e7eb",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+      }}
+      onClick={() => (window.location.href = metric.route)}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = "scale(1.05)";
+        e.currentTarget.style.boxShadow = "0 10px 25px rgba(0, 0, 0, 0.15)";
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+      }}
+    >
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <p
               style={{
-                padding: "12px",
-                borderRadius: "9999px",
-                backgroundColor: metric.bgColor,
-                marginLeft: "12px",
-                flexShrink: 0,
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#4b5563",
+                marginBottom: "8px",
               }}
             >
-              <Icon style={{ height: "24px", width: "24px", color: metric.color }} />
-            </div>
+              {metric.title}
+            </p>
+            <p
+              style={{
+                fontSize: "18px",
+                fontWeight: "700",
+                color: metric.color,
+                wordBreak: "break-word",
+              }}
+            >
+              {metric.value}
+            </p>
+
+            {/* Optional Extra Info */}
+            {metric.extraInfo?.length > 0 &&
+              metric.extraInfo.map((info, idx) => (
+                <p
+                  key={idx}
+                  style={{
+                    fontSize: "10px",
+                    color: "#6b7280",
+                    marginTop: "4px",
+                  }}
+                >
+                  {info.label}: {info.value}
+                </p>
+              ))}
+          </div>
+
+          <div
+            style={{
+              padding: "12px",
+              borderRadius: "9999px",
+              backgroundColor: metric.bgColor,
+              marginLeft: "12px",
+              flexShrink: 0,
+            }}
+          >
+            <Icon style={{ height: "24px", width: "24px", color: metric.color }} />
           </div>
         </div>
       </div>
-    );
-  })}
+    </div>
+  );
+})}
+
 </div>
- <div style={containerStyle}>
+ {/* <div style={containerStyle}>
       <style jsx>{`
         @keyframes pulse {
           0%, 100% {
@@ -454,19 +533,18 @@ const [data, setData] = useState({
           transform: translateY(-2px);
           box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-      `}</style>
+      `}</style> */}
 
-      <div style={headerStyle}>
+      {/* <div style={headerStyle}>
         <h1 style={titleStyle}>Mobile Inventory</h1>
         <p style={subtitleStyle}>Real-time mobile phone stock monitoring</p>
         <div style={liveIndicatorStyle}>
           <span style={statusDotStyle}></span>
           Live Updates
         </div>
-      </div>
+      </div> */}
 
-      <div style={gridStyle}>
-        {/* Total Purchased */}
+      {/* <div style={gridStyle}>
         <div
           className="card"
           style={{
@@ -487,7 +565,6 @@ const [data, setData] = useState({
 
 
 
-            {/* {data.totalPurchased.toLocaleString()} */}
           </div>
           <div style={labelStyle}>Total Purchased Mobiles</div>
           <div
@@ -512,7 +589,6 @@ const [data, setData] = useState({
           </div>
         </div>
 
-        {/* Total Sold */}
         <div
           className="card"
           style={{
@@ -555,7 +631,6 @@ const [data, setData] = useState({
           </div>
         </div>
 
-        {/* Total Remaining */}
         <div
           className="card"
           style={{
@@ -631,10 +706,10 @@ const [data, setData] = useState({
             {data.totalRemaining < 100 ? "Low Stock Alert" : "Available Stock"}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Additional Stats Row */}
-      <div
+      {/* <div
         style={{
           maxWidth: "1200px",
           margin: "32px auto 0",
@@ -642,7 +717,7 @@ const [data, setData] = useState({
           gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
           gap: "16px",
         }}
-      >
+      > */}
         {/* <div
           style={{
             ...cardStyle,
@@ -726,8 +801,8 @@ const [data, setData] = useState({
             Stock Status
           </div>
         </div> */}
-      </div>
-    </div>
+      {/* </div> */}
+    {/* </div> */}
 
 <div style={{ 
   display: "flex", 
