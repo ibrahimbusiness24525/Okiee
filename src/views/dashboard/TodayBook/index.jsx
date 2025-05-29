@@ -57,41 +57,127 @@ const [totalCash, setTotalCash] = useState(0);
 console.log("these are required banks", bankData)
 
   
-
+const uniqueSoldBulkPhones = todayBookData?.soldBulkPhone
+  ? Object.values(
+      todayBookData.soldBulkPhone.reduce((acc, phone) => {
+        acc[phone.bulkPhonePurchaseId] = phone; // override duplicates
+        return acc;
+      }, {} )
+    )
+  : [];
 
   const totalPurchasePrice =
     (todayBookData?.purchasedSinglePhone?.reduce(
       (acc, phone) => acc + (Number(phone.price?.purchasePrice) || Number(phone.purchasePrice) || 0),
       0,
     ) || 0) +
-    (todayBookData?.purchaseBulkPhone?.reduce((price, phone) => price + (Number(phone.prices?.buyingPrice) || 0), 0) ||
-      0)
+    (todayBookData?.purchaseBulkPhone?.reduce((price, phone) => {
+  const phoneCount = phone?.ramSimDetails?.reduce((sum, ramSim) => {
+    return sum + (ramSim?.imeiNumbers?.length || 0);
+  }, 0);
 
-  const totalInvoices =
-    (todayBookData?.soldSinglePhone?.reduce((acc, phone) => acc + (phone.totalInvoice || 0), 0) || 0) +
-    (todayBookData?.soldBulkPhone?.reduce((acc, phone) => acc + (phone.totalInvoice || 0), 0) || 0)
+  const perPhonePrice = Number(phone.prices?.buyingPrice) || 0;
+
+  return price + (perPhonePrice * phoneCount);
+}, 0) || 0)
+
+
+const uniqueBulkSales = new Map();
+
+const totalBulkSalePrice = todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
+  if (!phone.bulkPhonePurchaseId) return acc;
+  
+  if (!uniqueBulkSales.has(phone.bulkPhonePurchaseId)) {
+    uniqueBulkSales.set(phone.bulkPhonePurchaseId, true);
+    return acc + (phone.salePrice || 0);
+  }
+  
+  return acc;
+}, 0) || 0;
+const totalInvoicesWithoutAccessory = 
+(todayBookData?.soldSinglePhone?.reduce((acc, phone) => acc + (phone.salePrice || 0), 0) || 0) +
+  (todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
+  if (!phone.bulkPhonePurchaseId) return acc;
+  
+  if (!uniqueBulkSales.has(phone.bulkPhonePurchaseId)) {
+    uniqueBulkSales.set(phone.bulkPhonePurchaseId, true);
+    return acc + (phone.salePrice || 0);
+  }
+  
+  return acc;
+}, 0) || 0)
+const totalInvoices =
+  (todayBookData?.soldSinglePhone?.reduce((acc, phone) => acc + (phone.totalInvoice || 0), 0) || 0) +
+  (todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
+  if (!phone.bulkPhonePurchaseId) return acc;
+  
+  if (!uniqueBulkSales.has(phone.bulkPhonePurchaseId)) {
+    uniqueBulkSales.set(phone.bulkPhonePurchaseId, true);
+    return acc + (phone.totalInvoice || 0);
+  }
+  
+  return acc;
+}, 0) || 0)
+  // (todayBookData?.soldBulkPhone?.reduce((acc, phone) => acc + (phone.totalInvoice || 0), 0) || 0)
+
+const totalSingleSalePrice = todayBookData?.soldSinglePhone?.reduce(
+  (acc, phone) => acc + (phone.salePrice || 0),
+  0
+) || 0;
+
+const totalSalesPrice = totalSingleSalePrice + totalBulkSalePrice;
+console.log("Total Purchase Price:", totalPurchasePrice, "Total Invoices:", totalInvoices, "Total Sales Price:", totalSalesPrice);
+
+    const extractedAccessoriesTotalProfile = totalSalesPrice > totalPurchasePrice ? "Profit" : "Loss";
+    // const extractedAccessoriesTotalProfile = Math.max(0, (totalSalesPrice - totalPurchasePrice));
+
 
   // Calculate all metrics properly
   const totalProfit = totalInvoices - totalPurchasePrice
 
   // Calculate accessories sales (from sold phones accessories)
+  // const accessoriesSales =
+  //   (todayBookData?.soldSinglePhone?.reduce((acc, phone) => {
+  //     return (
+  //       acc +
+  //       (phone.accessories?.reduce((accAcc, accessory) => {
+  //         return accAcc + (Number(accessory.price) || 0)
+  //       }, 0) || 0)
+  //     )
+  //   }, 0) || 0) +
+  //   (todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
+  //     return (
+  //       acc +
+  //       (phone.accessories?.reduce((accAcc, accessory) => {
+  //         return accAcc + (Number(accessory.price) || 0)
+  //       }, 0) || 0)
+  //     )
+  //   }, 0) || 0)
+
   const accessoriesSales =
-    (todayBookData?.soldSinglePhone?.reduce((acc, phone) => {
-      return (
-        acc +
-        (phone.accessories?.reduce((accAcc, accessory) => {
-          return accAcc + (Number(accessory.price) || 0)
-        }, 0) || 0)
-      )
-    }, 0) || 0) +
-    (todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
-      return (
-        acc +
-        (phone.accessories?.reduce((accAcc, accessory) => {
-          return accAcc + (Number(accessory.price) || 0)
-        }, 0) || 0)
-      )
-    }, 0) || 0)
+  // Single phone sales
+  (todayBookData?.soldSinglePhone?.reduce((acc, phone) => {
+    const phoneTotal = phone.accessories?.reduce((accAcc, accessory) => {
+      return accAcc + (Number(accessory.price || 0) * Number(accessory.quantity || 1));
+    }, 0) || 0;
+    return acc + phoneTotal;
+  }, 0) || 0) +
+
+  // Bulk phone sales (with unique bulkPhonePurchaseId check)
+  (() => {
+    const seenBulkIds = new Set();
+    return todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
+      if (seenBulkIds.has(phone.bulkPhonePurchaseId)) return acc;
+      seenBulkIds.add(phone.bulkPhonePurchaseId);
+
+      const phoneTotal = phone.accessories?.reduce((accAcc, accessory) => {
+        return accAcc + (Number(accessory.price || 0) * Number(accessory.quantity || 1));
+      }, 0) || 0;
+
+      return acc + phoneTotal;
+    }, 0) || 0;
+  })();
+
 
   // Calculate opening balance from banks
   const openingBalance = bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) + totalCash || 0 + totalCash
@@ -106,8 +192,8 @@ console.log("these are required banks", bankData)
   // Calculate total amount (sales + opening balance - expenses)
   const totalAmount = totalInvoices + openingBalance - totalExpenses
 
-  const formatCurrency = (amount) => {
-    return `${amount.toLocaleString()} PKR`
+  const formatCurrency = (amount, pkr = true) => {
+    return `${amount.toLocaleString()}${pkr ? " PKR" : ""}`;
   }
 
   const formatDate = (dateString) => {
@@ -117,7 +203,7 @@ console.log("these are required banks", bankData)
   const metrics = [
   {
     title: "Sales Profit",
-    value: formatCurrency(totalProfit),
+    value: formatCurrency(extractedAccessoriesTotalProfile, false),
     icon: TrendingUp,
     color: totalProfit >= 0 ? "#16a34a" : "#dc2626", // green-600 or red-600
     bgColor: totalProfit >= 0 ? "#f0fdf4" : "#fef2f2", // green-50 or red-50
@@ -125,7 +211,7 @@ console.log("these are required banks", bankData)
   },
   {
     title: "Mobile Sales",
-    value: formatCurrency(totalInvoices),
+    value: formatCurrency(totalInvoicesWithoutAccessory),
     icon: Smartphone,
     color: "#2563eb", // blue-600
     bgColor: "#eff6ff", // blue-50
@@ -212,7 +298,12 @@ console.log("these are required banks", bankData)
       },
       {
         label: "Purchased Bulk Phones",
-        value: todayBookData?.purchaseBulkPhone?.length ?? 0,
+        value: todayBookData?.purchaseBulkPhone?.reduce((total, bulk) => {
+  const count = bulk?.ramSimDetails?.reduce((sum, ramSim) => {
+    return sum + (ramSim?.imeiNumbers?.length || 0);
+  }, 0);
+  return total + count;
+}, 0) ?? 0,
       },
     ],
   },
@@ -224,7 +315,7 @@ console.log("these are required banks", bankData)
     //   (todayBookData?.purchasedSinglePhone?.length ?? 0)
     // ),
     value: formatCurrency(
-     todayBookData?.totalStockCount || 0
+     todayBookData?.totalStockCount || 0,false
     ),
     color: "#059669",
     bgColor: "#ecfdf5",
