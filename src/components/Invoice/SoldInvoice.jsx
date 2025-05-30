@@ -4,6 +4,22 @@ import { useLocation } from 'react-router-dom';
 import { api } from '../../../api/api';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 const SoldInvoice = () => {
+    const [selectedColor, setSelectedColor] = useState('#004B87'); 
+
+   const colorOptions = [
+    { name: 'Dark Blue', code: '#004B87' },
+    { name: 'Sky Blue', code: '#87CEEB' },
+    { name: 'Emerald Green', code: '#28a745' },
+    { name: 'Bright Orange', code: '#fd7e14' },
+    { name: 'Cherry Red', code: '#dc3545' },
+    { name: 'Royal Purple', code: '#6f42c1' },
+    { name: 'Golden Yellow', code: '#ffc107' },
+    { name: 'Black', code: '#000000' },
+    { name: 'Soft Grey', code: '#6c757d' },
+    { name: 'Slate Grey', code: '#708090' },
+    { name: 'Teal Tint', code: '#20c997' },
+    { name: 'Lavender', code: '#b57edc' }
+  ];
   const styles = {
     container: {
       width: '210mm',
@@ -23,13 +39,13 @@ const SoldInvoice = () => {
       alignItems: 'center',
       marginBottom: '40px',
       paddingBottom: '1px',
-      borderBottom: '3px solid #004B87',
-      color: '#004B87',
+      borderBottom: `3px solid  ${selectedColor}`,
+      color: `${selectedColor}`,
     },
     logo: {
       fontSize: '28px',
       fontWeight: 'bold',
-      color: '#004B87',
+      color:  `${selectedColor}`,
       letterSpacing: '1px',
     },
     infoSection: {
@@ -46,7 +62,7 @@ const SoldInvoice = () => {
     },
     th: {
       padding: '15px',
-      backgroundColor: '#004B87',
+      backgroundColor:  `${selectedColor}`,
       color: '#fff',
       textAlign: 'center',
       fontWeight: 'bold',
@@ -69,7 +85,7 @@ const SoldInvoice = () => {
       textAlign: 'right',
       fontSize: '20px',
       fontWeight: 'bold',
-      color: '#004B87',
+      color:  `${selectedColor}`
     },
     button: {
       margin: '10px',
@@ -100,7 +116,7 @@ const SoldInvoice = () => {
     footer: {
       marginTop: '15px',
       paddingTop: '10px',
-      borderTop: '3px solid #004B87',
+      borderTop: `3px solid  ${selectedColor}`,
       textAlign: 'center',
       fontSize: '14px',
       color: '#666',
@@ -117,7 +133,7 @@ const SoldInvoice = () => {
       fontSize: '20px',
       fontWeight: 'bold',
       marginBottom: '15px',
-      color: '#004B87',
+      color:  `${selectedColor}`,
     },
     termsText: {
       fontSize: '14px',
@@ -336,6 +352,50 @@ console.log(addedImei1s, 'added imei 1s');
 
   return (
     <div>
+      <div style={{ padding: '20px' }}>
+      <label style={{ fontWeight: 'bold', marginRight: '10px' }}>Select Color:</label>
+      <select
+        value={selectedColor}
+        onChange={(e) => setSelectedColor(e.target.value)}
+        style={{
+          padding: '8px',
+          borderRadius: '4px',
+          border: '1px solid #ccc',
+          backgroundColor: selectedColor,
+          color: selectedColor === '#000000' ? '#fff' : '#000',
+          cursor: 'pointer'
+        }}
+      >
+        <option value="">-- Choose Color --</option>
+        {colorOptions.map((color, index) => (
+          <option key={index} value={color.code}>
+            {color.name}
+          </option>
+        ))}
+      </select>
+
+      {/* Color Preview */}
+      {/* {selectedColor && (
+        <div
+          style={{
+            marginTop: '20px',
+            width: '100px',
+            height: '30px',
+            backgroundColor: selectedColor,
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: selectedColor === '#000000' ? '#fff' : '#000',
+            fontWeight: 'bold'
+          }}
+        >
+          {selectedColor}
+        </div>
+      )} */}
+    </div>
+
       <div style={{ textAlign: 'right', marginBottom: '20px' }}>
         <button
           style={{ ...styles.button, ...styles.printBtn }}
@@ -374,7 +434,7 @@ console.log(addedImei1s, 'added imei 1s');
             <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
             <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
           </div>
-          <h2 style={{ color: '#004B87' }}>Okiiee</h2>
+          <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
         </header>
 
         <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -699,7 +759,7 @@ console.log(addedImei1s, 'added imei 1s');
             <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
             <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
           </div>
-          <h2 style={{ color: '#004B87' }}>Okiiee</h2>
+          <h2 style={{ color:  `${selectedColor}`}}>Okiiee</h2>
         </header>
 
         <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

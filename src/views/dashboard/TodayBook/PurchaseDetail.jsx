@@ -120,7 +120,7 @@ const Card = ({ title, value, style = {} }) => {
       >
         {value.toLocaleString()}
       </p>
-    </div>
+     </div>
   );
 };
 
