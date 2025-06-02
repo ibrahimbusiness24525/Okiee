@@ -209,11 +209,12 @@ const Wallet = () => {
         routes={["/app/dashboard/bankTransaction"]}
         array={banks}
         // search={"ban"}
-        keysToDisplay={["bankName", "accountType", "accountCash", "cashIn", "cashOut", "createdAt"]}
+        keysToDisplay={["bankName", "accountType", "accountCash","accountNumber", "cashIn", "cashOut", "createdAt"]}
         label={[
           "Bank Name",
           "Account Type",
           "Account Cash",
+          "Account Number",
           "Cash In",
           "Cash Out",
           "Created At",
@@ -243,7 +244,42 @@ const Wallet = () => {
             },
           },
           {
-            index: 4,
+  index: 3,
+  component: (accountNumber) => {
+    return accountNumber ? (
+      <h4
+        style={{
+          fontSize: '18px',
+          color: '#2c3e50',
+          fontWeight: '600',
+          backgroundColor: '#ecf0f1',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          display: 'inline-block',
+          minWidth: '80px',
+          textAlign: 'center',
+        }}
+      >
+        {accountNumber}
+      </h4>
+    ) : (
+      <h4
+        style={{
+          fontSize: '18px',
+          color: '#e74c3c',
+          fontWeight: '600',
+          padding: '8px 12px',
+          display: 'inline-block',
+        }}
+      >
+        Not Available
+      </h4>
+    );
+  },
+},
+
+          {
+            index: 5,
             component: (cashout) => {
               return (
 
@@ -252,7 +288,7 @@ const Wallet = () => {
             },
           },
           {
-            index: 5,
+            index: 6,
             component: (date) => {
               return dateFormatter(date)
             }

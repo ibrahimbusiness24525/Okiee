@@ -1,9 +1,11 @@
-"use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "react-toastify"
+import { api } from "../../../api/api"
 
 const AddLedger = () => {
+  const [entities, setAllEntities] = useState([])
+  const [allEntitiesRecords, setAllEntitiesRecords] = useState([])
   const [entitiesWithLedger, setEntitiesWithLedger] = useState([
     {
       _id: "1",
@@ -48,9 +50,31 @@ const AddLedger = () => {
   ])
 
   const [showModal, setShowModal] = useState(false)
+  const [showExpenseModal, setShowExpenseModal] = useState(false)
+  const [showCashPaidModal, setShowCashPaidModal] = useState(false)
+  const [showCashReceivedModal, setShowCashReceivedModal] = useState(false)
+
   const [formData, setFormData] = useState({
     name: "",
     reference: "",
+  })
+
+  const [expenseData, setExpenseData] = useState({
+    entityId: "",
+    expense: "",
+    description: "",
+  })
+
+  const [cashPaidData, setCashPaidData] = useState({
+    entityId: "",
+    cashPaid: "",
+    description: "",
+  })
+
+  const [cashReceivedData, setCashReceivedData] = useState({
+    entityId: "",
+    cashReceived: "",
+    description: "",
   })
 
   const createEntity = async () => {
@@ -60,16 +84,93 @@ const AddLedger = () => {
         reference: formData.reference,
       }
 
-      // Simulate API call
+      const response = await api.post("/api/entity/add", payload)
       console.log("Creating entity:", payload)
       setShowModal(false)
       setFormData({ name: "", reference: "" })
+      getAllEntities() // Refresh entities list
       toast.success("Entity created successfully!")
     } catch (error) {
       toast.error("Entity creation failed. Please try again.")
       console.log("Error in creating entity:", error)
     }
   }
+
+  const createExpense = async () => {
+    try {
+      const payload = {
+        expense: Number.parseFloat(expenseData.expense),
+      }
+
+      const response = await api.post(`/api/entity/expense/${expenseData?.entityId}`, payload)
+      console.log("Creating expense:", payload)
+      setShowExpenseModal(false)
+      setExpenseData({ entityId: "", expense: "", description: "" })
+      toast.success("Expense recorded successfully!")
+    } catch (error) {
+      toast.error("Failed to record expense. Please try again.")
+      console.log("Error in creating expense:", error)
+    }
+  }
+
+  const createCashPaid = async () => {
+    try {
+      const payload = {
+        cashPaid: Number.parseFloat(cashPaidData.cashPaid),
+      }
+
+      const response = await api.post(`/api/entity/cash-payment/${cashPaidData?.entityId}`, payload)
+      console.log("Creating cash paid:", payload)
+      setShowCashPaidModal(false)
+      setCashPaidData({ entityId: "", cashPaid: "", description: "" })
+      toast.success("Cash payment recorded successfully!")
+    } catch (error) {
+      toast.error("Failed to record cash payment. Please try again.")
+      console.log("Error in creating cash paid:", error)
+    }
+  }
+
+  const createCashReceived = async () => {
+    try {
+      const payload = {
+        receiveCash: Number.parseFloat(cashReceivedData.cashReceived),
+      }
+
+      const response = await api.post(`/api/entity/cash-receive/${cashReceivedData?.entityId}`, payload)
+      console.log("Creating cash received:", payload)
+      setShowCashReceivedModal(false)
+      setCashReceivedData({ entityId: "", cashReceived: "", description: "" })
+      toast.success("Cash receipt recorded successfully!")
+    } catch (error) {
+      toast.error("Failed to record cash receipt. Please try again.")
+      console.log("Error in creating cash received:", error)
+    }
+  }
+
+  const getAllEntities = async () => {
+    try {
+      const response = await api.get("/api/entity/all")
+      setAllEntities(response?.data)
+    } catch (error) {
+      console.log("Error in getting entity:", error)
+    }
+  }
+  const getAllEntitiesRecords = async() =>{
+    try {
+      const response = await api.get("/api/entity/records/all")
+      setAllEntitiesRecords(response?.data)
+    } catch (error) {
+      console.log("Error in getting entity records:", error)
+    }
+}
+  useEffect(() => {
+    getAllEntities()
+    getAllEntitiesRecords()
+  }, [])
+
+  console.log("====================================")
+  console.log("these are all entities", allEntitiesRecords)
+  console.log("====================================")
 
   const getTotalsByType = () => {
     const totals = { CashPaid: 0, CashReceived: 0, Expense: 0 }
@@ -146,6 +247,12 @@ const AddLedger = () => {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M18 6L6 18" />
       <path d="M6 6l12 12" />
+    </svg>
+  )
+
+  const ChevronDownIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 
@@ -292,6 +399,7 @@ const AddLedger = () => {
               Record payments made to suppliers, vendors, or advance payments for services and goods.
             </p>
             <button
+              onClick={() => setShowCashPaidModal(true)}
               style={{
                 width: "100%",
                 borderColor: "#ef4444",
@@ -383,6 +491,7 @@ const AddLedger = () => {
               Track money received from customers, refunds, or any incoming cash transactions.
             </p>
             <button
+              onClick={() => setShowCashReceivedModal(true)}
               style={{
                 width: "100%",
                 borderColor: "#10b981",
@@ -442,7 +551,7 @@ const AddLedger = () => {
                 </div>
                 <div>
                   <h3 style={{ fontSize: "20px", fontWeight: "600", color: "#1e293b", margin: "0" }}>
-                    Business Expenses
+                     Expenses
                   </h3>
                   <p style={{ fontSize: "14px", color: "#64748b", margin: "4px 0 0 0" }}>
                     Operating costs and expenditures
@@ -476,6 +585,7 @@ const AddLedger = () => {
               Log business expenses including materials, services, utilities, and operational costs.
             </p>
             <button
+              onClick={() => setShowExpenseModal(true)}
               style={{
                 width: "100%",
                 borderColor: "#f59e0b",
@@ -631,16 +741,7 @@ const AddLedger = () => {
                               ${entry.amount.toLocaleString()}
                             </span>
                           </div>
-                          <p
-                            style={{
-                              fontSize: "14px",
-                              color: "#64748b",
-                              margin: "0",
-                              lineHeight: "1.4",
-                            }}
-                          >
-                            {entry.description}
-                          </p>
+                         
                         </div>
                       </div>
                     ))}
@@ -895,6 +996,650 @@ const AddLedger = () => {
                 }}
               >
                 Create Entity
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expense Modal */}
+      {showExpenseModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: "0",
+            left: "0",
+            right: "0",
+            bottom: "0",
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowExpenseModal(false)}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "1px solid #e2e8f0",
+              maxWidth: "500px",
+              width: "90%",
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                padding: "24px",
+                borderBottom: "1px solid #e2e8f0",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <h2
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "#1e293b",
+                    margin: "0 0 8px 0",
+                  }}
+                >
+                  Record Business Expense
+                </h2>
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    lineHeight: "1.5",
+                    margin: "0",
+                  }}
+                >
+                  Add a new expense transaction for the selected entity.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowExpenseModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "8px",
+                  borderRadius: "8px",
+                  color: "#64748b",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div style={{ padding: "24px" }}>
+              <div style={{ display: "grid", gap: "20px" }}>
+                <div>
+                  <label
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#374151",
+                      marginBottom: "8px",
+                      display: "block",
+                    }}
+                  >
+                    Select Entity
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <select
+                      value={expenseData.entityId}
+                      onChange={(e) => setExpenseData({ ...expenseData, entityId: e.target.value })}
+                      style={{
+                        width: "100%",
+                        borderRadius: "8px",
+                        border: "1px solid #d1d5db",
+                        padding: "12px",
+                        fontSize: "14px",
+                        outline: "none",
+                        transition: "border-color 0.2s ease",
+                        boxSizing: "border-box",
+                        appearance: "none",
+                        background: "white",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <option value="">Choose an entity...</option>
+                      {entities.map((entity) => (
+                        <option key={entity._id} value={entity._id}>
+                          {entity.name} ({entity.reference})
+                        </option>
+                      ))}
+                    </select>
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: "12px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        pointerEvents: "none",
+                        color: "#64748b",
+                      }}
+                    >
+                      <ChevronDownIcon />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#374151",
+                      marginBottom: "8px",
+                      display: "block",
+                    }}
+                  >
+                    Expense Amount
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={expenseData.expense}
+                    onChange={(e) => setExpenseData({ ...expenseData, expense: e.target.value })}
+                    style={{
+                      width: "100%",
+                      borderRadius: "8px",
+                      border: "1px solid #d1d5db",
+                      padding: "12px",
+                      fontSize: "14px",
+                      outline: "none",
+                      transition: "border-color 0.2s ease",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "24px",
+                borderTop: "1px solid #e2e8f0",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "12px",
+              }}
+            >
+              <button
+                onClick={() => setShowExpenseModal(false)}
+                style={{
+                  borderRadius: "8px",
+                  padding: "12px 24px",
+                  fontWeight: "600",
+                  border: "1px solid #d1d5db",
+                  background: "white",
+                  color: "#374151",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createExpense}
+                disabled={!expenseData.entityId || !expenseData.expense }
+                style={{
+                  background:
+                    !expenseData.entityId || !expenseData.expense 
+                      ? "#9ca3af"
+                      : "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "12px 24px",
+                  fontWeight: "600",
+                  color: "white",
+                  cursor:
+                    !expenseData.entityId || !expenseData.expense 
+                      ? "not-allowed"
+                      : "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Record Expense
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Paid Modal */}
+      {showCashPaidModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: "0",
+            left: "0",
+            right: "0",
+            bottom: "0",
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowCashPaidModal(false)}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "1px solid #e2e8f0",
+              maxWidth: "500px",
+              width: "90%",
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                padding: "24px",
+                borderBottom: "1px solid #e2e8f0",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <h2
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "#1e293b",
+                    margin: "0 0 8px 0",
+                  }}
+                >
+                  Record Cash Payment
+                </h2>
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    lineHeight: "1.5",
+                    margin: "0",
+                  }}
+                >
+                  Record a cash payment made to the selected entity.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCashPaidModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "8px",
+                  borderRadius: "8px",
+                  color: "#64748b",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div style={{ padding: "24px" }}>
+              <div style={{ display: "grid", gap: "20px" }}>
+                <div>
+                  <label
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#374151",
+                      marginBottom: "8px",
+                      display: "block",
+                    }}
+                  >
+                    Select Entity
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <select
+                      value={cashPaidData.entityId}
+                      onChange={(e) => setCashPaidData({ ...cashPaidData, entityId: e.target.value })}
+                      style={{
+                        width: "100%",
+                        borderRadius: "8px",
+                        border: "1px solid #d1d5db",
+                        padding: "12px",
+                        fontSize: "14px",
+                        outline: "none",
+                        transition: "border-color 0.2s ease",
+                        boxSizing: "border-box",
+                        appearance: "none",
+                        background: "white",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <option value="">Choose an entity...</option>
+                      {entities.map((entity) => (
+                        <option key={entity._id} value={entity._id}>
+                          {entity.name} ({entity.reference})
+                        </option>
+                      ))}
+                    </select>
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: "12px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        pointerEvents: "none",
+                        color: "#64748b",
+                      }}
+                    >
+                      <ChevronDownIcon />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#374151",
+                      marginBottom: "8px",
+                      display: "block",
+                    }}
+                  >
+                    Cash Paid Amount
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={cashPaidData.cashPaid}
+                    onChange={(e) => setCashPaidData({ ...cashPaidData, cashPaid: e.target.value })}
+                    style={{
+                      width: "100%",
+                      borderRadius: "8px",
+                      border: "1px solid #d1d5db",
+                      padding: "12px",
+                      fontSize: "14px",
+                      outline: "none",
+                      transition: "border-color 0.2s ease",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+                
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "24px",
+                borderTop: "1px solid #e2e8f0",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "12px",
+              }}
+            >
+              <button
+                onClick={() => setShowCashPaidModal(false)}
+                style={{
+                  borderRadius: "8px",
+                  padding: "12px 24px",
+                  fontWeight: "600",
+                  border: "1px solid #d1d5db",
+                  background: "white",
+                  color: "#374151",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createCashPaid}
+                disabled={!cashPaidData.entityId || !cashPaidData.cashPaid }
+                style={{
+                  background:
+                    !cashPaidData.entityId || !cashPaidData.cashPaid 
+                      ? "#9ca3af"
+                      : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "12px 24px",
+                  fontWeight: "600",
+                  color: "white",
+                  cursor:
+                    !cashPaidData.entityId || !cashPaidData.cashPaid 
+                      ? "not-allowed"
+                      : "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Record Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Received Modal */}
+      {showCashReceivedModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: "0",
+            left: "0",
+            right: "0",
+            bottom: "0",
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowCashReceivedModal(false)}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "1px solid #e2e8f0",
+              maxWidth: "500px",
+              width: "90%",
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                padding: "24px",
+                borderBottom: "1px solid #e2e8f0",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <h2
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "#1e293b",
+                    margin: "0 0 8px 0",
+                  }}
+                >
+                  Record Cash Receipt
+                </h2>
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    lineHeight: "1.5",
+                    margin: "0",
+                  }}
+                >
+                  Record cash received from the selected entity.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCashReceivedModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "8px",
+                  borderRadius: "8px",
+                  color: "#64748b",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div style={{ padding: "24px" }}>
+              <div style={{ display: "grid", gap: "20px" }}>
+                <div>
+                  <label
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#374151",
+                      marginBottom: "8px",
+                      display: "block",
+                    }}
+                  >
+                    Select Entity
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <select
+                      value={cashReceivedData.entityId}
+                      onChange={(e) => setCashReceivedData({ ...cashReceivedData, entityId: e.target.value })}
+                      style={{
+                        width: "100%",
+                        borderRadius: "8px",
+                        border: "1px solid #d1d5db",
+                        padding: "12px",
+                        fontSize: "14px",
+                        outline: "none",
+                        transition: "border-color 0.2s ease",
+                        boxSizing: "border-box",
+                        appearance: "none",
+                        background: "white",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <option value="">Choose an entity...</option>
+                      {entities.map((entity) => (
+                        <option key={entity._id} value={entity._id}>
+                          {entity.name} ({entity.reference})
+                        </option>
+                      ))}
+                    </select>
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: "12px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        pointerEvents: "none",
+                        color: "#64748b",
+                      }}
+                    >
+                      <ChevronDownIcon />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#374151",
+                      marginBottom: "8px",
+                      display: "block",
+                    }}
+                  >
+                    Cash Received Amount
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={cashReceivedData.cashReceived}
+                    onChange={(e) => setCashReceivedData({ ...cashReceivedData, cashReceived: e.target.value })}
+                    style={{
+                      width: "100%",
+                      borderRadius: "8px",
+                      border: "1px solid #d1d5db",
+                      padding: "12px",
+                      fontSize: "14px",
+                      outline: "none",
+                      transition: "border-color 0.2s ease",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+               
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "24px",
+                borderTop: "1px solid #e2e8f0",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "12px",
+              }}
+            >
+              <button
+                onClick={() => setShowCashReceivedModal(false)}
+                style={{
+                  borderRadius: "8px",
+                  padding: "12px 24px",
+                  fontWeight: "600",
+                  border: "1px solid #d1d5db",
+                  background: "white",
+                  color: "#374151",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createCashReceived}
+                disabled={!cashReceivedData.entityId || !cashReceivedData.cashReceived }
+                style={{
+                  background:
+                    !cashReceivedData.entityId || !cashReceivedData.cashReceived 
+                      ? "#9ca3af"
+                      : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "12px 24px",
+                  fontWeight: "600",
+                  color: "white",
+                  cursor:
+                    !cashReceivedData.entityId || !cashReceivedData.cashReceived 
+                      ? "not-allowed"
+                      : "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Record Receipt
               </button>
             </div>
           </div>
