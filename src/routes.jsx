@@ -155,11 +155,11 @@ const routes = [
         path: '/app/dashboard/commetyLedger',
         element: lazy(() => import('./components/Ledger/CommetyLedger')) // Ledger
       },
-      // {
-      //   exact: 'true',
-      //   path: '/app/dashboard/ledgerRecords',
-      //   element: lazy(() => import('./components/Ledger/LedgerRecords')) // Ledger Records
-      // },
+      {
+        exact: 'true',
+        path: '/app/dashboard/ledgerRecords',
+        element: lazy(() => import('./components/Ledger/LedgerRecords')) // Ledger Records
+      },
       {
         exact: 'true',
         path: '/app/dashboard/ledgerRecords/:id',
