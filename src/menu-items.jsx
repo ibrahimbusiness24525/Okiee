@@ -103,7 +103,14 @@ const menuItems = {
         },
         {
           id: 'mobile',
-          title: 'Shop Ledger',
+          title: 'Payables and Receivables',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/PayablesAndReceivables'
+        },
+        {
+          id: 'mobile',
+          title: 'Expense',
           type: 'item',
           icon: 'feather icon-server',
           url: '/app/dashboard/addLedger'
@@ -122,13 +129,13 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/commetyLedger'
         },
-        {
-          id: 'mobile',
-          title: 'Ledger Records',
-          type: 'item',
-          icon: 'feather icon-file-text',
-          url: '/app/dashboard/ledgerRecords'
-        },
+        // {
+        //   id: 'mobile',
+        //   title: 'Ledger Records',
+        //   type: 'item',
+        //   icon: 'feather icon-file-text',
+        //   url: '/app/dashboard/ledgerRecords'
+        // },
       ]
     },
     {

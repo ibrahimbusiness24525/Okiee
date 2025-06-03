@@ -117,6 +117,16 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/PayablesAndReceivables',
+        element: lazy(() => import('./components/Ledger/PayablesAndReceivables')) // Mobile List
+      },
+      {
+        exact: 'true',
+        path: '/app/dashboard/PayablesAndReceivables/:id',
+        element: lazy(() => import('./components/Ledger/PayablesAndReceivablesRecords')) // Mobile List
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/bankTransaction/:id',
         element: lazy(() => import('./components/Ledger/BankTransations')) // Mobile List
       },
@@ -145,11 +155,11 @@ const routes = [
         path: '/app/dashboard/commetyLedger',
         element: lazy(() => import('./components/Ledger/CommetyLedger')) // Ledger
       },
-      {
-        exact: 'true',
-        path: '/app/dashboard/ledgerRecords',
-        element: lazy(() => import('./components/Ledger/LedgerRecords')) // Ledger Records
-      },
+      // {
+      //   exact: 'true',
+      //   path: '/app/dashboard/ledgerRecords',
+      //   element: lazy(() => import('./components/Ledger/LedgerRecords')) // Ledger Records
+      // },
       {
         exact: 'true',
         path: '/app/dashboard/ledgerRecords/:id',

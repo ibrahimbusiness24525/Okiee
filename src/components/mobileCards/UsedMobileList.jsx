@@ -557,6 +557,10 @@ const handleShareInventory = () => {
                 </div>
               )}
                <div>
+                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Battery Health:</strong>{' '}
+                      {mobile.batteryHealth ? mobile.batteryHealth : 'N/A'}
+                    </div>
+               <div>
                       <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
                       {mobile.purchasePrice}
                     </div>

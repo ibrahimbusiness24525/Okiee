@@ -287,8 +287,8 @@ const AddLedger = () => {
               margin: "0 0 8px 0",
             }}
           >
-            Financial Ledger Management
-          </h1>
+          Expenses          
+        </h1>
           <p
             style={{
               fontSize: "16px",
