@@ -66,6 +66,13 @@ const menuItems = {
         },
         {
           id: 'mobile',
+          title: 'Add Accessory',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/app/dashboard/addAccessory'
+        },
+        {
+          id: 'mobile',
           title: 'Dispatch Phones',
           type: 'item',
           icon: 'feather icon-server',

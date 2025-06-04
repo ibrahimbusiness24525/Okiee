@@ -6,48 +6,7 @@ import { api } from "../../../api/api"
 const AddLedger = () => {
   const [entities, setAllEntities] = useState([])
   const [allEntitiesRecords, setAllEntitiesRecords] = useState([])
-  const [entitiesWithLedger, setEntitiesWithLedger] = useState([
-    {
-      _id: "1",
-      name: "ABC Suppliers Ltd.",
-      reference: "SUP001",
-      entries: [
-        {
-          type: "Expense",
-          amount: 5000,
-          description: "Raw materials purchase for Q1 production",
-        },
-        {
-          type: "CashPaid",
-          amount: 3000,
-          description: "Advance payment for bulk order",
-        },
-        {
-          type: "CashReceived",
-          amount: 2000,
-          description: "Refund for damaged goods",
-        },
-      ],
-    },
-    {
-      _id: "2",
-      name: "Tech Solutions Inc.",
-      reference: "TECH002",
-      entries: [
-        {
-          type: "Expense",
-          amount: 1500,
-          description: "Software licensing and maintenance fees",
-        },
-      ],
-    },
-    {
-      _id: "3",
-      name: "Marketing Agency Pro",
-      reference: "MKT003",
-      entries: [],
-    },
-  ])
+  const [entitiesWithLedger, setEntitiesWithLedger] = useState([])
 
   const [showModal, setShowModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
@@ -255,6 +214,7 @@ const AddLedger = () => {
       <polyline points="6 9 12 15 18 9" />
     </svg>
   )
+console.log("entities", entities);
 
   return (
     <div
@@ -649,7 +609,7 @@ const AddLedger = () => {
             gap: "16px",
           }}
         >
-          {entitiesWithLedger.map((entity) => (
+          {entities.map((entity) => (
             <div
               key={entity._id}
               style={{
@@ -667,6 +627,9 @@ const AddLedger = () => {
                     <p style={{ fontSize: "14px", color: "#64748b", margin: "4px 0 0 0" }}>
                       Reference: {entity.reference}
                     </p>
+                    <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0" }}>
+                      Status: {entity.status}
+                    </p>
                   </div>
                   <span
                     style={{
@@ -677,95 +640,60 @@ const AddLedger = () => {
                       borderRadius: "8px",
                     }}
                   >
-                    {entity.entries.length} transactions
+                    Total: ${(Number(entity.cashPaid) + Number(entity.expense) + Number(entity.receiveCash)).toLocaleString()}
                   </span>
                 </div>
               </div>
               <div style={{ padding: "0 24px 24px 24px" }}>
-                {entity.entries.length > 0 ? (
-                  <div style={{ display: "grid", gap: "12px" }}>
-                    {entity.entries.map((entry, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          padding: "12px",
-                          background: "white",
-                          borderRadius: "8px",
-                          border: "1px solid #e2e8f0",
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                            <span
-                              style={{
-                                fontSize: "12px",
-                                padding: "2px 8px",
-                                borderRadius: "8px",
-                                fontWeight: "500",
-                                background:
-                                  entry.type === "CashReceived"
-                                    ? "#f0fdf4"
-                                    : entry.type === "CashPaid"
-                                      ? "#fef2f2"
-                                      : "#f8fafc",
-                                color:
-                                  entry.type === "CashReceived"
-                                    ? "#16a34a"
-                                    : entry.type === "CashPaid"
-                                      ? "#dc2626"
-                                      : "#64748b",
-                                border:
-                                  entry.type === "CashReceived"
-                                    ? "1px solid #bbf7d0"
-                                    : entry.type === "CashPaid"
-                                      ? "1px solid #fecaca"
-                                      : "1px solid #e2e8f0",
-                              }}
-                            >
-                              {entry.type === "CashReceived"
-                                ? "Cash In"
-                                : entry.type === "CashPaid"
-                                  ? "Cash Out"
-                                  : "Expense"}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: "16px",
-                                fontWeight: "600",
-                                color: entry.type === "CashReceived" ? "#16a34a" : "#dc2626",
-                              }}
-                            >
-                              ${entry.amount.toLocaleString()}
-                            </span>
-                          </div>
-                         
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p
+                <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                  <div
                     style={{
-                      fontSize: "14px",
-                      color: "#94a3b8",
+                      background: "#fef2f2",
+                      color: "#dc2626",
+                      border: "1px solid #fecaca",
+                      borderRadius: "8px",
+                      padding: "8px 16px",
+                      minWidth: "120px",
                       textAlign: "center",
-                      padding: "24px",
-                      margin: "0",
                     }}
                   >
-                    No transactions recorded yet
-                  </p>
-                )}
+                    <div style={{ fontSize: "13px", fontWeight: "500" }}>Cash Paid</div>
+                    <div style={{ fontSize: "16px", fontWeight: "700" }}>${Number(entity.cashPaid).toLocaleString()}</div>
+                  </div>
+                  <div
+                    style={{
+                      background: "#fffbeb",
+                      color: "#d97706",
+                      border: "1px solid #fed7aa",
+                      borderRadius: "8px",
+                      padding: "8px 16px",
+                      minWidth: "120px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div style={{ fontSize: "13px", fontWeight: "500" }}>Expense</div>
+                    <div style={{ fontSize: "16px", fontWeight: "700" }}>${Number(entity.expense).toLocaleString()}</div>
+                  </div>
+                  <div
+                    style={{
+                      background: "#f0fdf4",
+                      color: "#16a34a",
+                      border: "1px solid #bbf7d0",
+                      borderRadius: "8px",
+                      padding: "8px 16px",
+                      minWidth: "120px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div style={{ fontSize: "13px", fontWeight: "500" }}>Cash Received</div>
+                    <div style={{ fontSize: "16px", fontWeight: "700" }}>${Number(entity.receiveCash).toLocaleString()}</div>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Create Entity Modal */}
       {showModal && (
         <div
           style={{

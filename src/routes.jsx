@@ -91,6 +91,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/addAccessory',
+        element: lazy(() => import('./components/mobileCards/AddAccessory')) // Mobile List
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/getCustomerRecord',
         element: lazy(() => import('./components/mobileCards/CustomerRecord')) // Mobile List
       },

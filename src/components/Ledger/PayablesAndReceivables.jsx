@@ -1,11 +1,11 @@
 
 
 import { useState, useEffect } from "react"
-import { FaPlus, FaUser, FaPhone, FaFileAlt, FaDollarSign, FaArrowUp, FaArrowDown, FaEye } from "react-icons/fa"
+import { FaPlus, FaUser, FaPhone, FaFileAlt, FaDollarSign, FaArrowUp, FaArrowDown, FaEye, FaStickyNote } from "react-icons/fa"
 import { api } from "../../../api/api"
 import { useNavigate } from "react-router-dom"
 import Modal from "components/Modal/Modal"
-
+import {  FaEyeSlash } from "react-icons/fa";
 // Types
 
 
@@ -18,7 +18,11 @@ const PayablesAndReceivables = () => {
   const [showTakeCreditModal, setShowTakeCreditModal] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+const [showTakingCredit, setShowTakingCredit] = useState(false);
+  const [showGivingCredit, setShowGivingCredit] = useState(false);
+  
+  const takingCreditTotal = persons.reduce((acc, person) => acc + person.takingCredit, 0);
+  const givingCreditTotal = persons.reduce((acc, person) => acc + person.givingCredit, 0);
   // Form states
   const [createPersonData, setCreatePersonData] = useState({
     name: "",
@@ -29,6 +33,7 @@ const PayablesAndReceivables = () => {
   const [creditData, setCreditData] = useState({
     personId: "",
     amount: "",
+    description:"",
   })
 
  
@@ -91,6 +96,7 @@ const PayablesAndReceivables = () => {
       await api.post("/api/person/give-credit", {
         personId: creditData.personId,
         amount: Number.parseFloat(creditData.amount),
+        description: creditData.description || "",
       })
 
       setShowGiveCreditModal(false)
@@ -118,6 +124,7 @@ const PayablesAndReceivables = () => {
       await api.post("/api/person/take-credit", {
         personId: creditData.personId,
         amount: Number.parseFloat(creditData.amount),
+        description: creditData.description || "",
       })
 
       setShowTakeCreditModal(false)
@@ -177,6 +184,7 @@ const PayablesAndReceivables = () => {
   useEffect(() => {
     fetchPersons()
   }, [])
+console.log("Persons:", persons);
 
 //   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
 
@@ -222,6 +230,7 @@ const PayablesAndReceivables = () => {
               >
                 Manage your credit transactions and track outstanding amounts
               </p>
+              
             </div>
 
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -293,7 +302,135 @@ const PayablesAndReceivables = () => {
             </div>
           </div>
         </div>
+<div style={{
+      display: "flex",
+      gap: "16px",
+      flexWrap: "wrap",
+         marginBottom:"1rem",
 
+    }}>
+      {/* Taking Credit Button */}
+      <div style={{
+        position: "relative",
+        borderRadius: "12px",
+        overflow: "hidden",
+        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+      }}>
+        <button
+          onClick={() => setShowTakingCredit(!showTakingCredit)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            backgroundColor: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "12px",
+            padding: "16px 24px",
+            fontSize: "15px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            minWidth: "220px"
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#dc2626")}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ef4444")}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ 
+              backgroundColor: "rgba(255, 255, 255, 0.2)", 
+              borderRadius: "50%", 
+              width: "36px", 
+              height: "36px", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center" 
+            }}>
+              <FaArrowUp style={{ fontSize: "16px" }} />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: "13px", opacity: 0.9, marginBottom: "4px" }}>Taking Credit</div>
+              <div style={{ 
+                fontFamily: "monospace", 
+                letterSpacing: "0.5px" 
+              }}>
+                {showTakingCredit 
+                  ? `${takingCreditTotal.toLocaleString()} PKR` 
+                  : "••••••••"}
+              </div>
+            </div>
+          </div>
+          
+          {showTakingCredit ? (
+            <FaEyeSlash style={{ fontSize: "18px", opacity: 0.8 }} />
+          ) : (
+            <FaEye style={{ fontSize: "18px", opacity: 0.8 }} />
+          )}
+        </button>
+      </div>
+
+      {/* Giving Credit Button */}
+      <div style={{
+        position: "relative",
+        borderRadius: "12px",
+        overflow: "hidden",
+        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+      }}>
+        <button
+          onClick={() => setShowGivingCredit(!showGivingCredit)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            backgroundColor: "#10b981",
+            color: "white",
+            border: "none",
+            borderRadius: "12px",
+            padding: "16px 24px",
+            fontSize: "15px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            minWidth: "220px"
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#059669")}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#10b981")}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ 
+              backgroundColor: "rgba(255, 255, 255, 0.2)", 
+              borderRadius: "50%", 
+              width: "36px", 
+              height: "36px", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center" 
+            }}>
+              <FaArrowDown style={{ fontSize: "16px" }} />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: "13px", opacity: 0.9, marginBottom: "4px" }}>Giving Credit</div>
+              <div style={{ 
+                fontFamily: "monospace", 
+                letterSpacing: "0.5px" 
+              }}>
+                {showGivingCredit 
+                  ? `${givingCreditTotal.toLocaleString()} PKR` 
+                  : "••••••••"}
+              </div>
+            </div>
+          </div>
+          
+          {showGivingCredit ? (
+            <FaEyeSlash style={{ fontSize: "18px", opacity: 0.8 }} />
+          ) : (
+            <FaEye style={{ fontSize: "18px", opacity: 0.8 }} />
+          )}
+        </button>
+      </div>
+    </div>
         {/* Summary Cards */}
         {/* <div
           style={{
@@ -897,6 +1034,50 @@ const PayablesAndReceivables = () => {
                       />
                     </div>
                   </div>
+                  <div style={{ marginBottom: "32px" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "8px",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#374151",
+                      }}
+                    >
+                      Desciption *
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <FaStickyNote
+                        style={{
+                          position: "absolute",
+                          left: "12px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          color: "#9ca3af",
+                          fontSize: "16px",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={creditData.description}
+                        onChange={(e) => setCreditData({ ...creditData, description: e.target.value })}
+                        placeholder="Enter description"
+                        style={{
+                          width: "100%",
+                          padding: "12px 12px 12px 40px",
+                          border: "2px solid #e5e7eb",
+                          borderRadius: "8px",
+                          fontSize: "16px",
+                          outline: "none",
+                          transition: "border-color 0.2s",
+                          boxSizing: "border-box",
+                        }}
+                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                        required
+                      />
+                    </div>
+                  </div>
 
                   <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                     <button
@@ -1034,6 +1215,50 @@ const PayablesAndReceivables = () => {
                         placeholder="Enter amount"
                         min="0"
                         step="0.01"
+                        style={{
+                          width: "100%",
+                          padding: "12px 12px 12px 40px",
+                          border: "2px solid #e5e7eb",
+                          borderRadius: "8px",
+                          fontSize: "16px",
+                          outline: "none",
+                          transition: "border-color 0.2s",
+                          boxSizing: "border-box",
+                        }}
+                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                        required
+                      />
+                    </div>
+                  </div>
+                    <div style={{ marginBottom: "32px" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "8px",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#374151",
+                      }}
+                    >
+                      Desciption *
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <FaStickyNote
+                        style={{
+                          position: "absolute",
+                          left: "12px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          color: "#9ca3af",
+                          fontSize: "16px",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={creditData.description}
+                        onChange={(e) => setCreditData({ ...creditData, description: e.target.value })}
+                        placeholder="Enter description"
                         style={{
                           width: "100%",
                           padding: "12px 12px 12px 40px",
