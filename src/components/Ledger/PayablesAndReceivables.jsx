@@ -5,7 +5,9 @@ import { FaPlus, FaUser, FaPhone, FaFileAlt, FaDollarSign, FaArrowUp, FaArrowDow
 import { api } from "../../../api/api"
 import { useNavigate } from "react-router-dom"
 import Modal from "components/Modal/Modal"
-import {  FaEyeSlash } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
+import WalletTransactionModal from "components/WalletTransaction/WalletTransactionModal"
+import { Button } from "react-bootstrap"
 // Types
 
 
@@ -18,9 +20,11 @@ const PayablesAndReceivables = () => {
   const [showTakeCreditModal, setShowTakeCreditModal] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-const [showTakingCredit, setShowTakingCredit] = useState(false);
+  const [showTakingCredit, setShowTakingCredit] = useState(false);
   const [showGivingCredit, setShowGivingCredit] = useState(false);
-  
+  const [showWalletTransactionModal, setShowWalletTransactionModal] = useState(false);
+  const [giveCredit, setGiveCredit] = useState([]);
+  const [takeCredit, setTakeCredit] = useState([]);
   const takingCreditTotal = persons.reduce((acc, person) => acc + person.takingCredit, 0);
   const givingCreditTotal = persons.reduce((acc, person) => acc + person.givingCredit, 0);
   // Form states
@@ -33,10 +37,10 @@ const [showTakingCredit, setShowTakingCredit] = useState(false);
   const [creditData, setCreditData] = useState({
     personId: "",
     amount: "",
-    description:"",
+    description: "",
   })
 
- 
+
 
   // API call helper
 
@@ -97,6 +101,7 @@ const [showTakingCredit, setShowTakingCredit] = useState(false);
         personId: creditData.personId,
         amount: Number.parseFloat(creditData.amount),
         description: creditData.description || "",
+        giveCredit: giveCredit,
       })
 
       setShowGiveCreditModal(false)
@@ -110,6 +115,7 @@ const [showTakingCredit, setShowTakingCredit] = useState(false);
       setIsSubmitting(false)
     }
   }
+  console.log("give credit", giveCredit);
 
   // Take credit
   const handleTakeCredit = async (e) => {
@@ -125,6 +131,7 @@ const [showTakingCredit, setShowTakingCredit] = useState(false);
         personId: creditData.personId,
         amount: Number.parseFloat(creditData.amount),
         description: creditData.description || "",
+        takeCredit: takeCredit,
       })
 
       setShowTakeCreditModal(false)
@@ -173,23 +180,23 @@ const [showTakingCredit, setShowTakingCredit] = useState(false);
   }
 
   // Calculate totals
-//   const calculateTotals = () => {
-//     const totalPayable = persons.reduce((sum, person) => sum + person.takingCredit, 0)
-//     const totalReceivable = persons.reduce((sum, person) => sum + person.givingCredit, 0)
-//     const netAmount = totalReceivable - totalPayable
+  //   const calculateTotals = () => {
+  //     const totalPayable = persons.reduce((sum, person) => sum + person.takingCredit, 0)
+  //     const totalReceivable = persons.reduce((sum, person) => sum + person.givingCredit, 0)
+  //     const netAmount = totalReceivable - totalPayable
 
-//     return { totalPayable, totalReceivable, netAmount }
-//   }
+  //     return { totalPayable, totalReceivable, netAmount }
+  //   }
 
   useEffect(() => {
     fetchPersons()
   }, [])
-console.log("Persons:", persons);
+  console.log("Persons:", persons);
 
-//   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
+  //   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
 
   return (
-    <div style={{backgroundColor: "#f8fafc", padding: "24px" }}>
+    <div style={{ backgroundColor: "#f8fafc", padding: "24px" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         {/* Header */}
         <div
@@ -230,7 +237,7 @@ console.log("Persons:", persons);
               >
                 Manage your credit transactions and track outstanding amounts
               </p>
-              
+
             </div>
 
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -302,135 +309,135 @@ console.log("Persons:", persons);
             </div>
           </div>
         </div>
-<div style={{
-      display: "flex",
-      gap: "16px",
-      flexWrap: "wrap",
-         marginBottom:"1rem",
+        <div style={{
+          display: "flex",
+          gap: "16px",
+          flexWrap: "wrap",
+          marginBottom: "1rem",
 
-    }}>
-      {/* Taking Credit Button */}
-      <div style={{
-        position: "relative",
-        borderRadius: "12px",
-        overflow: "hidden",
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-      }}>
-        <button
-          onClick={() => setShowTakingCredit(!showTakingCredit)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            backgroundColor: "#ef4444",
-            color: "white",
-            border: "none",
+        }}>
+          {/* Taking Credit Button */}
+          <div style={{
+            position: "relative",
             borderRadius: "12px",
-            padding: "16px 24px",
-            fontSize: "15px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            minWidth: "220px"
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#dc2626")}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ef4444")}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ 
-              backgroundColor: "rgba(255, 255, 255, 0.2)", 
-              borderRadius: "50%", 
-              width: "36px", 
-              height: "36px", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center" 
-            }}>
-              <FaArrowUp style={{ fontSize: "16px" }} />
-            </div>
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: "13px", opacity: 0.9, marginBottom: "4px" }}>Taking Credit</div>
-              <div style={{ 
-                fontFamily: "monospace", 
-                letterSpacing: "0.5px" 
-              }}>
-                {showTakingCredit 
-                  ? `${takingCreditTotal.toLocaleString()} PKR` 
-                  : "••••••••"}
+            overflow: "hidden",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+          }}>
+            <button
+              onClick={() => setShowTakingCredit(!showTakingCredit)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                backgroundColor: "#ef4444",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                padding: "16px 24px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                minWidth: "220px"
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#dc2626")}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ef4444")}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "50%",
+                  width: "36px",
+                  height: "36px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}>
+                  <FaArrowUp style={{ fontSize: "16px" }} />
+                </div>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: "13px", opacity: 0.9, marginBottom: "4px" }}>Taking Credit</div>
+                  <div style={{
+                    fontFamily: "monospace",
+                    letterSpacing: "0.5px"
+                  }}>
+                    {showTakingCredit
+                      ? `${takingCreditTotal.toLocaleString()} PKR`
+                      : "••••••••"}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          {showTakingCredit ? (
-            <FaEyeSlash style={{ fontSize: "18px", opacity: 0.8 }} />
-          ) : (
-            <FaEye style={{ fontSize: "18px", opacity: 0.8 }} />
-          )}
-        </button>
-      </div>
 
-      {/* Giving Credit Button */}
-      <div style={{
-        position: "relative",
-        borderRadius: "12px",
-        overflow: "hidden",
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-      }}>
-        <button
-          onClick={() => setShowGivingCredit(!showGivingCredit)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            backgroundColor: "#10b981",
-            color: "white",
-            border: "none",
-            borderRadius: "12px",
-            padding: "16px 24px",
-            fontSize: "15px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            minWidth: "220px"
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#059669")}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#10b981")}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ 
-              backgroundColor: "rgba(255, 255, 255, 0.2)", 
-              borderRadius: "50%", 
-              width: "36px", 
-              height: "36px", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center" 
-            }}>
-              <FaArrowDown style={{ fontSize: "16px" }} />
-            </div>
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: "13px", opacity: 0.9, marginBottom: "4px" }}>Giving Credit</div>
-              <div style={{ 
-                fontFamily: "monospace", 
-                letterSpacing: "0.5px" 
-              }}>
-                {showGivingCredit 
-                  ? `${givingCreditTotal.toLocaleString()} PKR` 
-                  : "••••••••"}
-              </div>
-            </div>
+              {showTakingCredit ? (
+                <FaEyeSlash style={{ fontSize: "18px", opacity: 0.8 }} />
+              ) : (
+                <FaEye style={{ fontSize: "18px", opacity: 0.8 }} />
+              )}
+            </button>
           </div>
-          
-          {showGivingCredit ? (
-            <FaEyeSlash style={{ fontSize: "18px", opacity: 0.8 }} />
-          ) : (
-            <FaEye style={{ fontSize: "18px", opacity: 0.8 }} />
-          )}
-        </button>
-      </div>
-    </div>
+
+          {/* Giving Credit Button */}
+          <div style={{
+            position: "relative",
+            borderRadius: "12px",
+            overflow: "hidden",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+          }}>
+            <button
+              onClick={() => setShowGivingCredit(!showGivingCredit)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                backgroundColor: "#10b981",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                padding: "16px 24px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                minWidth: "220px"
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#059669")}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#10b981")}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "50%",
+                  width: "36px",
+                  height: "36px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}>
+                  <FaArrowDown style={{ fontSize: "16px" }} />
+                </div>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: "13px", opacity: 0.9, marginBottom: "4px" }}>Giving Credit</div>
+                  <div style={{
+                    fontFamily: "monospace",
+                    letterSpacing: "0.5px"
+                  }}>
+                    {showGivingCredit
+                      ? `${givingCreditTotal.toLocaleString()} PKR`
+                      : "••••••••"}
+                  </div>
+                </div>
+              </div>
+
+              {showGivingCredit ? (
+                <FaEyeSlash style={{ fontSize: "18px", opacity: 0.8 }} />
+              ) : (
+                <FaEye style={{ fontSize: "18px", opacity: 0.8 }} />
+              )}
+            </button>
+          </div>
+        </div>
         {/* Summary Cards */}
         {/* <div
           style={{
@@ -728,604 +735,617 @@ console.log("Persons:", persons);
         </div>
 
         {/* Create Person Modal */}
-            <Modal
-              show={showCreateModal}
-              size="sm"
-              onClick={() => setShowCreateModal(false)}
-            >
-              
-                <h2
+        <Modal
+          show={showCreateModal}
+          size="sm"
+          onClick={() => setShowCreateModal(false)}
+        >
+
+          <h2
+            style={{
+              margin: "0 0 24px 0",
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#1f2937",
+            }}
+          >
+            Create New Person
+          </h2>
+
+          <form onSubmit={handleCreatePerson}>
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Name *
+              </label>
+              <div style={{ position: "relative" }}>
+                <FaUser
                   style={{
-                    margin: "0 0 24px 0",
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#1f2937",
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#9ca3af",
+                    fontSize: "16px",
                   }}
-                >
-                  Create New Person
-                </h2>
+                />
+                <input
+                  type="text"
+                  value={createPersonData.name}
+                  onChange={(e) => setCreatePersonData({ ...createPersonData, name: e.target.value })}
+                  placeholder="Enter person name"
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  required
+                />
+              </div>
+            </div>
 
-                <form onSubmit={handleCreatePerson}>
-                  <div style={{ marginBottom: "20px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Name *
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <FaUser
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#9ca3af",
-                          fontSize: "16px",
-                        }}
-                      />
-                      <input
-                        type="text"
-                        value={createPersonData.name}
-                        onChange={(e) => setCreatePersonData({ ...createPersonData, name: e.target.value })}
-                        placeholder="Enter person name"
-                        style={{
-                          width: "100%",
-                          padding: "12px 12px 12px 40px",
-                          border: "2px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          outline: "none",
-                          transition: "border-color 0.2s",
-                          boxSizing: "border-box",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                        required
-                      />
-                    </div>
-                  </div>
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Phone Number *
+              </label>
+              <div style={{ position: "relative" }}>
+                <FaPhone
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#9ca3af",
+                    fontSize: "16px",
+                  }}
+                />
+                <input
+                  type="tel"
+                  value={createPersonData.number}
+                  onChange={(e) => setCreatePersonData({ ...createPersonData, number: e.target.value })}
+                  placeholder="Enter phone number"
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  required
+                />
+              </div>
+            </div>
 
-                  <div style={{ marginBottom: "20px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Phone Number *
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <FaPhone
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#9ca3af",
-                          fontSize: "16px",
-                        }}
-                      />
-                      <input
-                        type="tel"
-                        value={createPersonData.number}
-                        onChange={(e) => setCreatePersonData({ ...createPersonData, number: e.target.value })}
-                        placeholder="Enter phone number"
-                        style={{
-                          width: "100%",
-                          padding: "12px 12px 12px 40px",
-                          border: "2px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          outline: "none",
-                          transition: "border-color 0.2s",
-                          boxSizing: "border-box",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                        required
-                      />
-                    </div>
-                  </div>
+            <div style={{ marginBottom: "32px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Reference *
+              </label>
+              <div style={{ position: "relative" }}>
+                <FaFileAlt
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#9ca3af",
+                    fontSize: "16px",
+                  }}
+                />
+                <input
+                  type="text"
+                  value={createPersonData.reference}
+                  onChange={(e) => setCreatePersonData({ ...createPersonData, reference: e.target.value })}
+                  placeholder="Enter reference"
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  required
+                />
+              </div>
+            </div>
 
-                  <div style={{ marginBottom: "32px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Reference *
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <FaFileAlt
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#9ca3af",
-                          fontSize: "16px",
-                        }}
-                      />
-                      <input
-                        type="text"
-                        value={createPersonData.reference}
-                        onChange={(e) => setCreatePersonData({ ...createPersonData, reference: e.target.value })}
-                        placeholder="Enter reference"
-                        style={{
-                          width: "100%",
-                          padding: "12px 12px 12px 40px",
-                          border: "2px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          outline: "none",
-                          transition: "border-color 0.2s",
-                          boxSizing: "border-box",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                        required
-                      />
-                    </div>
-                  </div>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                style={{
+                  padding: "12px 24px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "8px",
+                  backgroundColor: "white",
+                  color: "#6b7280",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  padding: "12px 24px",
+                  border: "none",
+                  borderRadius: "8px",
+                  backgroundColor: isSubmitting ? "#9ca3af" : "#3b82f6",
+                  color: "white",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.backgroundColor = "#2563eb"
+                }}
+                onMouseOut={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.backgroundColor = "#3b82f6"
+                }}
+              >
+                {isSubmitting ? "Creating..." : "Create Person"}
+              </button>
+            </div>
+          </form>
+        </Modal>
 
-                  <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateModal(false)}
-                      style={{
-                        padding: "12px 24px",
-                        border: "2px solid #e5e7eb",
-                        borderRadius: "8px",
-                        backgroundColor: "white",
-                        color: "#6b7280",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      style={{
-                        padding: "12px 24px",
-                        border: "none",
-                        borderRadius: "8px",
-                        backgroundColor: isSubmitting ? "#9ca3af" : "#3b82f6",
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        cursor: isSubmitting ? "not-allowed" : "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => {
-                        if (!isSubmitting) e.currentTarget.style.backgroundColor = "#2563eb"
-                      }}
-                      onMouseOut={(e) => {
-                        if (!isSubmitting) e.currentTarget.style.backgroundColor = "#3b82f6"
-                      }}
-                    >
-                      {isSubmitting ? "Creating..." : "Create Person"}
-                    </button>
-                  </div>
-                </form>
-            </Modal>
-       
 
         {/* Give Credit Modal */}
-     
-            <Modal
-            size="sm"
-             show={showGiveCreditModal}
-              toggleModal={() => setShowGiveCreditModal(false)}
-            >
-              
-                <h2
+
+        <Modal
+          size="sm"
+          show={showGiveCreditModal}
+          toggleModal={() => setShowGiveCreditModal(false)}
+        >
+
+          <h2
+            style={{
+              margin: "0 0 24px 0",
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#1f2937",
+            }}
+          >
+            Give Credit
+          </h2>
+
+          <form onSubmit={handleGiveCredit}>
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Select Person *
+              </label>
+              <select
+                value={creditData.personId}
+                onChange={(e) => setCreditData({ ...creditData, personId: e.target.value })}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  outline: "none",
+                  transition: "border-color 0.2s",
+                  boxSizing: "border-box",
+                  backgroundColor: "white",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                required
+              >
+                <option value="">Select a person</option>
+                {persons.map((person) => (
+                  <option key={person._id} value={person._id}>
+                    {person.name} - {person.number}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "32px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Amount (PKR) *
+              </label>
+              <div style={{ position: "relative" }}>
+                <FaDollarSign
                   style={{
-                    margin: "0 0 24px 0",
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#1f2937",
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#9ca3af",
+                    fontSize: "16px",
                   }}
-                >
-                  Give Credit
-                </h2>
+                />
+                <input
+                  type="number"
+                  value={creditData.amount}
+                  onChange={(e) => setCreditData({ ...creditData, amount: e.target.value })}
+                  placeholder="Enter amount"
+                  min="0"
+                  step="0.01"
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  required
+                />
+              </div>
+            </div>
+            <div style={{ marginBottom: "32px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Desciption *
+              </label>
+              <div style={{ position: "relative" }}>
+                <FaStickyNote
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#9ca3af",
+                    fontSize: "16px",
+                  }}
+                />
+                <input
+                  type="text"
+                  value={creditData.description}
+                  onChange={(e) => setCreditData({ ...creditData, description: e.target.value })}
+                  placeholder="Enter description"
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  required
+                />
+              </div>
+            </div>
+            <Button variant="secondary" onClick={() => setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
+            <WalletTransactionModal
+              show={showWalletTransactionModal}
+              toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+              singleTransaction={giveCredit}
+              setSingleTransaction={setGiveCredit}
+            />
 
-                <form onSubmit={handleGiveCredit}>
-                  <div style={{ marginBottom: "20px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Select Person *
-                    </label>
-                    <select
-                      value={creditData.personId}
-                      onChange={(e) => setCreditData({ ...creditData, personId: e.target.value })}
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        border: "2px solid #e5e7eb",
-                        borderRadius: "8px",
-                        fontSize: "16px",
-                        outline: "none",
-                        transition: "border-color 0.2s",
-                        boxSizing: "border-box",
-                        backgroundColor: "white",
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                      onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                      required
-                    >
-                      <option value="">Select a person</option>
-                      {persons.map((person) => (
-                        <option key={person._id} value={person._id}>
-                          {person.name} - {person.number}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => setShowGiveCreditModal(false)}
+                style={{
+                  padding: "12px 24px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "8px",
+                  backgroundColor: "white",
+                  color: "#6b7280",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  padding: "12px 24px",
+                  border: "none",
+                  borderRadius: "8px",
+                  backgroundColor: isSubmitting ? "#9ca3af" : "#10b981",
+                  color: "white",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.backgroundColor = "#059669"
+                }}
+                onMouseOut={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.backgroundColor = "#10b981"
+                }}
+              >
+                {isSubmitting ? "Processing..." : "Give Credit"}
+              </button>
+            </div>
+          </form>
+        </Modal>
 
-                  <div style={{ marginBottom: "32px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Amount (PKR) *
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <FaDollarSign
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#9ca3af",
-                          fontSize: "16px",
-                        }}
-                      />
-                      <input
-                        type="number"
-                        value={creditData.amount}
-                        onChange={(e) => setCreditData({ ...creditData, amount: e.target.value })}
-                        placeholder="Enter amount"
-                        min="0"
-                        step="0.01"
-                        style={{
-                          width: "100%",
-                          padding: "12px 12px 12px 40px",
-                          border: "2px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          outline: "none",
-                          transition: "border-color 0.2s",
-                          boxSizing: "border-box",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div style={{ marginBottom: "32px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Desciption *
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <FaStickyNote
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#9ca3af",
-                          fontSize: "16px",
-                        }}
-                      />
-                      <input
-                        type="text"
-                        value={creditData.description}
-                        onChange={(e) => setCreditData({ ...creditData, description: e.target.value })}
-                        placeholder="Enter description"
-                        style={{
-                          width: "100%",
-                          padding: "12px 12px 12px 40px",
-                          border: "2px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          outline: "none",
-                          transition: "border-color 0.2s",
-                          boxSizing: "border-box",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowGiveCreditModal(false)}
-                      style={{
-                        padding: "12px 24px",
-                        border: "2px solid #e5e7eb",
-                        borderRadius: "8px",
-                        backgroundColor: "white",
-                        color: "#6b7280",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      style={{
-                        padding: "12px 24px",
-                        border: "none",
-                        borderRadius: "8px",
-                        backgroundColor: isSubmitting ? "#9ca3af" : "#10b981",
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        cursor: isSubmitting ? "not-allowed" : "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => {
-                        if (!isSubmitting) e.currentTarget.style.backgroundColor = "#059669"
-                      }}
-                      onMouseOut={(e) => {
-                        if (!isSubmitting) e.currentTarget.style.backgroundColor = "#10b981"
-                      }}
-                    >
-                      {isSubmitting ? "Processing..." : "Give Credit"}
-                    </button>
-                  </div>
-                </form>
-            </Modal>
-   
 
         {/* Take Credit Modal */}
-            <Modal
-            size="sm"
-              show={showTakeCreditModal}
-              toggleModal={() => setShowTakeCreditModal(false)}
-            >
-              
-                <h2
+        <Modal
+          size="sm"
+          show={showTakeCreditModal}
+          toggleModal={() => setShowTakeCreditModal(false)}
+        >
+
+          <h2
+            style={{
+              margin: "0 0 24px 0",
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#1f2937",
+            }}
+          >
+            Take Credit
+          </h2>
+
+          <form onSubmit={handleTakeCredit}>
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Select Person *
+              </label>
+              <select
+                value={creditData.personId}
+                onChange={(e) => setCreditData({ ...creditData, personId: e.target.value })}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  outline: "none",
+                  transition: "border-color 0.2s",
+                  boxSizing: "border-box",
+                  backgroundColor: "white",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                required
+              >
+                <option value="">Select a person</option>
+                {persons.map((person) => (
+                  <option key={person._id} value={person._id}>
+                    {person.name} - {person.number}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "32px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Amount (PKR) *
+              </label>
+              <div style={{ position: "relative" }}>
+                <FaDollarSign
                   style={{
-                    margin: "0 0 24px 0",
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#1f2937",
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#9ca3af",
+                    fontSize: "16px",
                   }}
-                >
-                  Take Credit
-                </h2>
+                />
+                <input
+                  type="number"
+                  value={creditData.amount}
+                  onChange={(e) => setCreditData({ ...creditData, amount: e.target.value })}
+                  placeholder="Enter amount"
+                  min="0"
+                  step="0.01"
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  required
+                />
+              </div>
+            </div>
+            <div style={{ marginBottom: "32px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Desciption *
+              </label>
+              <div style={{ position: "relative" }}>
+                <FaStickyNote
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#9ca3af",
+                    fontSize: "16px",
+                  }}
+                />
+                <input
+                  type="text"
+                  value={creditData.description}
+                  onChange={(e) => setCreditData({ ...creditData, description: e.target.value })}
+                  placeholder="Enter description"
+                  style={{
+                    width: "100%",
+                    padding: "12px 12px 12px 40px",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  required
+                />
+              </div>
+            </div>
+            <Button variant="secondary" onClick={() => setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Get Payment</Button>
+            <WalletTransactionModal
+              show={showWalletTransactionModal}
+              toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+              singleTransaction={takeCredit}
+              setSingleTransaction={setTakeCredit}
+            />
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => setShowTakeCreditModal(false)}
+                style={{
+                  padding: "12px 24px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "8px",
+                  backgroundColor: "white",
+                  color: "#6b7280",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  padding: "12px 24px",
+                  border: "none",
+                  borderRadius: "8px",
+                  backgroundColor: isSubmitting ? "#9ca3af" : "#f59e0b",
+                  color: "white",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.backgroundColor = "#d97706"
+                }}
+                onMouseOut={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.backgroundColor = "#f59e0b"
+                }}
+              >
+                {isSubmitting ? "Processing..." : "Take Credit"}
+              </button>
+            </div>
+          </form>
+        </Modal>
 
-                <form onSubmit={handleTakeCredit}>
-                  <div style={{ marginBottom: "20px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Select Person *
-                    </label>
-                    <select
-                      value={creditData.personId}
-                      onChange={(e) => setCreditData({ ...creditData, personId: e.target.value })}
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        border: "2px solid #e5e7eb",
-                        borderRadius: "8px",
-                        fontSize: "16px",
-                        outline: "none",
-                        transition: "border-color 0.2s",
-                        boxSizing: "border-box",
-                        backgroundColor: "white",
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                      onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                      required
-                    >
-                      <option value="">Select a person</option>
-                      {persons.map((person) => (
-                        <option key={person._id} value={person._id}>
-                          {person.name} - {person.number}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div style={{ marginBottom: "32px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Amount (PKR) *
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <FaDollarSign
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#9ca3af",
-                          fontSize: "16px",
-                        }}
-                      />
-                      <input
-                        type="number"
-                        value={creditData.amount}
-                        onChange={(e) => setCreditData({ ...creditData, amount: e.target.value })}
-                        placeholder="Enter amount"
-                        min="0"
-                        step="0.01"
-                        style={{
-                          width: "100%",
-                          padding: "12px 12px 12px 40px",
-                          border: "2px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          outline: "none",
-                          transition: "border-color 0.2s",
-                          boxSizing: "border-box",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                        required
-                      />
-                    </div>
-                  </div>
-                    <div style={{ marginBottom: "32px" }}>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: "8px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                      }}
-                    >
-                      Desciption *
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <FaStickyNote
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#9ca3af",
-                          fontSize: "16px",
-                        }}
-                      />
-                      <input
-                        type="text"
-                        value={creditData.description}
-                        onChange={(e) => setCreditData({ ...creditData, description: e.target.value })}
-                        placeholder="Enter description"
-                        style={{
-                          width: "100%",
-                          padding: "12px 12px 12px 40px",
-                          border: "2px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          outline: "none",
-                          transition: "border-color 0.2s",
-                          boxSizing: "border-box",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                        onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowTakeCreditModal(false)}
-                      style={{
-                        padding: "12px 24px",
-                        border: "2px solid #e5e7eb",
-                        borderRadius: "8px",
-                        backgroundColor: "white",
-                        color: "#6b7280",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      style={{
-                        padding: "12px 24px",
-                        border: "none",
-                        borderRadius: "8px",
-                        backgroundColor: isSubmitting ? "#9ca3af" : "#f59e0b",
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        cursor: isSubmitting ? "not-allowed" : "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseOver={(e) => {
-                        if (!isSubmitting) e.currentTarget.style.backgroundColor = "#d97706"
-                      }}
-                      onMouseOut={(e) => {
-                        if (!isSubmitting) e.currentTarget.style.backgroundColor = "#f59e0b"
-                      }}
-                    >
-                      {isSubmitting ? "Processing..." : "Take Credit"}
-                    </button>
-                  </div>
-                </form>
-            </Modal>
-   
       </div>
 
-      
+
     </div>
   )
 }

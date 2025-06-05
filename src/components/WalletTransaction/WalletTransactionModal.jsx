@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap"; // Assuming you are using react-bootstrap
 import { api } from "../../../api/api";
 
-const WalletTransactionModal = ({ show, toggleModal, singleTransaction, setSingleTransaction,type="purchase" }) => {
+const WalletTransactionModal = ({ show, toggleModal, singleTransaction, setSingleTransaction, type = "purchase" }) => {
   const [banks, setBanks] = useState([]);
   const [transactionType, setTransactionType] = useState(""); // wallet | bank | both
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,13 @@ const WalletTransactionModal = ({ show, toggleModal, singleTransaction, setSingl
   };
 
   return (
-    <Modal size="md" show={show} onHide={toggleModal}>
+    <Modal size="md" show={show} onHide={toggleModal} backdrop="static"
+      modalClassName="z-top-modal"
+      Zindex={1000000}
+      style={{
+        zIndex: 1000000,
+      }}
+    >
       <div style={{ padding: '30px', textAlign: 'center' }}>
         <h2 style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>Wallet Transaction</h2>
 

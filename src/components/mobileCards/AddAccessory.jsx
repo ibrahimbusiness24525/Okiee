@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "components/Modal/Modal";
-import { FaTools, FaHashtag, FaDollarSign } from "react-icons/fa";
+import axios from "axios";
+import { api } from "../../../api/api";
+import { toast } from "react-toastify";
 
 const AddAccessory = () => {
   const [showModal, setShowModal] = useState(false);
@@ -11,57 +13,61 @@ const AddAccessory = () => {
   });
   const [accessoryList, setAccessoryList] = useState([]);
 
-  const handleSubmit = (e) => {
+  // 🔄 Fetch Accessories on Mount
+  // useEffect(() => {
+  //   const fetchAccessories = async () => {
+  //     try {
+  //       const res = await api.get("/api/accessory");
+  //       setAccessoryList(res.data);
+  //     } catch (error) {
+  //       console.error("Error fetching accessories", error);
+  //     }
+  //   };
+
+  //   fetchAccessories();
+  // }, []);
+
+  // ➕ Handle Add Accessory Submit
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setAccessoryList([...accessoryList, accessoryData]);
-    setAccessoryData({ name: "", quantity: "", price: "" });
-    setShowModal(false);
+    try {
+      const totalPrice = Number(accessoryData.quantity) * Number(accessoryData.price);
+      const res = await api.post(
+        "/api/accessory/create",
+        {
+          accessoryName: accessoryData.name,
+          quantity: Number(accessoryData.quantity),
+          perPiecePrice: Number(accessoryData.price),
+          totalPrice,
+          stock: Number(accessoryData.quantity),
+        },
+
+      );
+
+      setAccessoryList([...accessoryList, res.data]);
+      toast.success("Accessory added successfully!");
+      setAccessoryData({ name: "", quantity: "", price: "" });
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error adding accessory", error);
+    }
   };
 
   return (
-    <div
-      style={{
-        padding: "40px",
-        maxWidth: "700px",
-        margin: "0 auto",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        backgroundColor: "#ffffff",
-        borderRadius: "12px",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
-      }}
-    >
-      <h2 style={{ fontSize: "30px", fontWeight: "700", marginBottom: "24px", color: "#111827" }}>
-        🎯 Accessories Manager
-      </h2>
+    <div style={wrapperStyle}>
+      <h2 style={headingStyle}>🎯 Accessories Manager</h2>
 
-      <button
-        onClick={() => setShowModal(true)}
-        style={{
-          padding: "14px 28px",
-          background: "linear-gradient(to right, #2563eb, #3b82f6)",
-          color: "white",
-          fontSize: "16px",
-          fontWeight: "600",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer",
-          boxShadow: "0 4px 12px rgba(59,130,246,0.4)",
-          marginBottom: "30px",
-        }}
-      >
+      <button onClick={() => setShowModal(true)} style={addButtonStyle}>
         + Add Accessory
       </button>
 
       {/* Modal */}
       <Modal size="sm" show={showModal} toggleModal={() => setShowModal(false)}>
-        <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "24px", color: "#111827" }}>
-          Add New Accessory
-        </h2>
+        <h2 style={modalHeadingStyle}>Add New Accessory</h2>
         <form onSubmit={handleSubmit}>
           {/* Name */}
-          <div style={{ marginBottom: "20px", position: "relative" }}>
+          <div style={{ marginBottom: "20px" }}>
             <label style={labelStyle}>Accessory Name *</label>
-            {/* <FaTools style={iconStyle} /> */}
             <input
               type="text"
               value={accessoryData.name}
@@ -73,9 +79,8 @@ const AddAccessory = () => {
           </div>
 
           {/* Quantity */}
-          <div style={{ marginBottom: "20px", position: "relative" }}>
+          <div style={{ marginBottom: "20px" }}>
             <label style={labelStyle}>Quantity *</label>
-            {/* <FaHashtag style={iconStyle} /> */}
             <input
               type="number"
               value={accessoryData.quantity}
@@ -88,9 +93,8 @@ const AddAccessory = () => {
           </div>
 
           {/* Price */}
-          <div style={{ marginBottom: "32px", position: "relative" }}>
+          <div style={{ marginBottom: "32px" }}>
             <label style={labelStyle}>Per Piece Price *</label>
-            {/* <FaDollarSign style={iconStyle} /> */}
             <input
               type="number"
               value={accessoryData.price}
@@ -103,13 +107,8 @@ const AddAccessory = () => {
             />
           </div>
 
-          {/* Buttons */}
           <div style={{ display: "flex", gap: "14px", justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              onClick={() => setShowModal(false)}
-              style={cancelButtonStyle}
-            >
+            <button type="button" onClick={() => setShowModal(false)} style={cancelButtonStyle}>
               Cancel
             </button>
             <button type="submit" style={submitButtonStyle}>
@@ -119,12 +118,12 @@ const AddAccessory = () => {
         </form>
       </Modal>
 
-      {/* List Display */}
+      {/* Accessory List */}
       <div style={{ marginTop: "40px" }}>
         <h3 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "16px" }}>
           📋 Accessory List
         </h3>
-        {accessoryList.length === 0 ? (
+        {/* {accessoryList.length === 0 ? (
           <p style={{ color: "#6b7280" }}>No accessories added yet.</p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0 }}>
@@ -140,13 +139,12 @@ const AddAccessory = () => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
                 }}
               >
                 <div>
-                  <strong>{item.name}</strong>
+                  <strong>{item.accessoryName}</strong>
                   <div style={{ fontSize: "14px", color: "#4b5563" }}>
-                    {item.quantity} pcs × ${item.price}
+                    {item.quantity} pcs × PKR{item.perPiecePrice}
                   </div>
                 </div>
                 <span
@@ -159,20 +157,55 @@ const AddAccessory = () => {
                     fontWeight: "600",
                   }}
                 >
-                  ${item.quantity * item.price}
+                  ${item.totalPrice}
                 </span>
               </li>
             ))}
           </ul>
-        )}
+        )} */}
       </div>
     </div>
   );
 };
 
 export default AddAccessory;
+const wrapperStyle = {
+  padding: "40px",
+  maxWidth: "700px",
+  margin: "0 auto",
+  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  backgroundColor: "#ffffff",
+  borderRadius: "12px",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+};
 
-// 🔧 Inline Style Definitions
+const headingStyle = {
+  fontSize: "30px",
+  fontWeight: "700",
+  marginBottom: "24px",
+  color: "#111827",
+};
+
+const modalHeadingStyle = {
+  fontSize: "24px",
+  fontWeight: "700",
+  marginBottom: "24px",
+  color: "#111827",
+};
+
+const addButtonStyle = {
+  padding: "14px 28px",
+  background: "linear-gradient(to right, #2563eb, #3b82f6)",
+  color: "white",
+  fontSize: "16px",
+  fontWeight: "600",
+  border: "none",
+  borderRadius: "10px",
+  cursor: "pointer",
+  boxShadow: "0 4px 12px rgba(59,130,246,0.4)",
+  marginBottom: "30px",
+};
+
 const labelStyle = {
   display: "block",
   marginBottom: "8px",
@@ -183,22 +216,13 @@ const labelStyle = {
 
 const inputStyle = {
   width: "100%",
-  padding: "12px 12px 12px 42px",
+  padding: "12px",
   border: "2px solid #d1d5db",
   borderRadius: "10px",
   fontSize: "16px",
   outline: "none",
   boxSizing: "border-box",
   transition: "border-color 0.2s, box-shadow 0.2s",
-};
-
-const iconStyle = {
-  position: "absolute",
-  left: "14px",
-  top: "50%",
-  transform: "translateY(-50%)",
-  color: "#9ca3af",
-  fontSize: "18px",
 };
 
 const cancelButtonStyle = {
@@ -210,7 +234,6 @@ const cancelButtonStyle = {
   fontSize: "14px",
   fontWeight: "500",
   cursor: "pointer",
-  transition: "background-color 0.2s",
 };
 
 const submitButtonStyle = {
@@ -222,5 +245,4 @@ const submitButtonStyle = {
   fontSize: "14px",
   fontWeight: "600",
   cursor: "pointer",
-  transition: "background 0.3s ease-in-out",
 };
