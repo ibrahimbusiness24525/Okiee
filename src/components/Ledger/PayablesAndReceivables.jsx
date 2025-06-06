@@ -17,6 +17,7 @@ const PayablesAndReceivables = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showGiveCreditModal, setShowGiveCreditModal] = useState(false)
+  const [showGiveCreditChildModal, setShowGiveCreditChildModal] = useState(false)
   const [showTakeCreditModal, setShowTakeCreditModal] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -86,15 +87,17 @@ const PayablesAndReceivables = () => {
       setIsSubmitting(false)
     }
   }
-
-  // Give credit
-  const handleGiveCredit = async (e) => {
-    e.preventDefault()
-    if (!creditData.personId || !creditData.amount) {
-      alert("Please fill all fields")
-      return
-    }
-
+console.log('====================================');
+console.log('====================================');
+// Give credit
+const handleGiveCredit = async (e) => {
+  e.preventDefault()
+  if (!creditData.personId || !creditData.amount) {
+    alert("Please fill all fields")
+    return
+  }
+  
+  console.log("give credit", giveCredit);
     try {
       setIsSubmitting(true)
       await api.post("/api/person/give-credit", {
@@ -1085,10 +1088,10 @@ const PayablesAndReceivables = () => {
                 />
               </div>
             </div>
-            <Button variant="secondary" onClick={() => setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
+            <Button variant="secondary" onClick={() => setShowGiveCreditChildModal(!showGiveCreditChildModal)}>Proceed To Pay</Button>
             <WalletTransactionModal
-              show={showWalletTransactionModal}
-              toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+              show={showGiveCreditChildModal}
+              toggleModal={() => setShowGiveCreditChildModal(!showGiveCreditChildModal)}
               singleTransaction={giveCredit}
               setSingleTransaction={setGiveCredit}
             />

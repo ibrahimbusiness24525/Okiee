@@ -17,14 +17,17 @@ import Table from 'components/Table/Table';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { toast } from 'react-toastify';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import { useGetAccessories } from 'hooks/accessory';
+import { Eye, EyeOff } from 'lucide-react';
 const NewMobilesList = () => {
+  const{data}= useGetAccessories()
     const[showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
     const[walletTransaction, setWalletTransaction] = useState({
       bankAccountUsed: "",
       amountFromBank: "",
       amountFromPocket: "",
     })
-    console.log("this is sold wallet data", walletTransaction);
+    console.log("this is the data", data);
     
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
@@ -426,6 +429,7 @@ const totalPurchasePrice = visibleMobiles.reduce(
 
   doc.save('Mobile_Inventory.pdf');
 }; 
+const [showAmount, setShowAmount] = useState(false)
   return (
     <>
      <InputGroup className="mb-3">
@@ -493,32 +497,133 @@ const totalPurchasePrice = visibleMobiles.reduce(
     );
   })}
 </div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-   {/* Total Stock Amount */}
-   <div>
-    <h5 style={{fontSize: 30}}>
-      {/* Total Stock Amount:  */}
-      Total Stock Amount : 
-      <span style={{ fontWeight: 'bold', color: '#007bff' , fontSize: 30 }}>
-        {/* {mobiles.reduce((total, mobile) => total + (mobile.purchasePrice || 0), 0)} */}
-        {totalPurchasePrice}
-      </span>
+  <div className="d-flex justify-content-between align-items-center mb-3" style={{
+  background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+  padding: "20px",
+  borderRadius: "15px",
+  boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
+  border: "1px solid #dee2e6"
+}}>
+  {/* Total Stock Amount Box */}
+  <div style={{ 
+    display: "flex", 
+    alignItems: "center", 
+    gap: "15px",
+    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+    padding: "20px 25px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
+    border: "2px solid #e3f2fd",
+    minWidth: "350px"
+  }}>
+    <div>
+      <h5 style={{ 
+        fontSize: 28, 
+        margin: 0,
+        color: "#2c3e50",
+        textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+      }}>
+        Total Stock Amount :
+        <span style={{ 
+          fontWeight: "bold", 
+          color: "#007bff", 
+          fontSize: 32,
+          marginLeft: "8px",
+          textShadow: "0 2px 4px rgba(0,123,255,0.2)"
+        }}>
+          {showAmount ? totalPurchasePrice : "••••••"}
+        </span>
+      </h5>
+    </div>
+    <button
+      onClick={() => setShowAmount(!showAmount)}
+      style={{
+        background: "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
+        border: "none",
+        cursor: "pointer",
+        color: "white",
+        padding: "12px",
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.3s ease",
+        boxShadow: "0 4px 12px rgba(0,123,255,0.3)",
+        width: "45px",
+        height: "45px"
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.background = "linear-gradient(135deg, #0056b3 0%, #004085 100%)";
+        e.target.style.transform = "scale(1.15) rotate(5deg)";
+        e.target.style.boxShadow = "0 6px 20px rgba(0,123,255,0.5)";
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.background = "linear-gradient(135deg, #007bff 0%, #0056b3 100%)";
+        e.target.style.transform = "scale(1) rotate(0deg)";
+        e.target.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)";
+      }}
+      title={showAmount ? "Hide amount" : "Show amount"}
+    >
+      {showAmount ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+  </div>
+
+  {/* Stock Count Box */}
+  <div style={{
+    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+    padding: "20px 30px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
+    border: "2px solid #e3f2fd",
+    textAlign: "center",
+    minWidth: "200px"
+  }}>
+    <h5 style={{ 
+      fontSize: "1.8rem", 
+      margin: 0,
+      color: "#2c3e50",
+      textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+    }}>
+      Stock: <span style={{ 
+        fontWeight: "bold", 
+        color: "#007bff",
+        fontSize: "2rem",
+        textShadow: "0 2px 4px rgba(0,123,255,0.2)"
+      }}>{visibleMobiles.length}</span> 
+      <span style={{ color: "#6c757d", fontSize: "1.4rem" }}>Mobile(s)</span>
     </h5>
   </div>
-  <h5 style={{ fontSize: '1.5rem', margin: '1rem 0' }}>
-    Stock: <span style={{ fontWeight: 'bold', color: '#007bff' }}>{visibleMobiles.length}</span> Mobile(s)
-  </h5>
-
 
   {/* Share Inventory Button */}
   <Button
-     variant="primary"
-     onClick={handleShareInventory}
-     style={{ backgroundColor: '#007bff', border: 'none' }}
-   >
-     Share Inventory
-   </Button>
-
+    variant="primary"
+    onClick={handleShareInventory}
+    style={{ 
+      background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+      border: "none", 
+      color: "white",
+      padding: "15px 30px",
+      borderRadius: "12px",
+      fontWeight: "600",
+      fontSize: "1.1rem",
+      boxShadow: "0 6px 20px rgba(40,167,69,0.3)",
+      transition: "all 0.3s ease",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px"
+    }}
+    onMouseEnter={(e) => {
+      e.target.style.background = "linear-gradient(135deg, #218838 0%, #1e7e34 100%)";
+      e.target.style.transform = "translateY(-3px) scale(1.05)";
+      e.target.style.boxShadow = "0 10px 30px rgba(40,167,69,0.5)";
+    }}
+    onMouseLeave={(e) => {
+      e.target.style.background = "linear-gradient(135deg, #28a745 0%, #20c997 100%)";
+      e.target.style.transform = "translateY(0) scale(1)";
+      e.target.style.boxShadow = "0 6px 20px rgba(40,167,69,0.3)";
+    }}
+  >
+    Share Inventory
+  </Button>
 </div>
 <button
   onClick={() => setList(!list)}
@@ -1094,15 +1199,19 @@ const totalPurchasePrice = visibleMobiles.reduce(
       {accessories.map((accessory, index) => (
         <div key={index} className="mb-3 p-3 border rounded">
           <Form.Group>
-            <Form.Label>Accessory Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={accessory.name}
-              onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
-              placeholder="Enter accessory name"
-            />
-          </Form.Group>
-
+  <Form.Label>Accessory Name</Form.Label>
+  <Form.Select
+    value={accessory.name} // this holds the id now
+    onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+  >
+    <option value="">Select accessory</option>
+    {data?.data?.map((item) => (
+      <option key={item._id} value={item._id}>
+        {item.accessoryName}
+      </option>
+    ))}
+  </Form.Select>
+</Form.Group>
           <Form.Group>
             <Form.Label>Quantity</Form.Label>
             <Form.Control
