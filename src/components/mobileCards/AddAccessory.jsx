@@ -3,9 +3,11 @@ import Modal from "components/Modal/Modal";
 import { api } from "../../../api/api";
 import { toast } from "react-toastify";
 import { useGetAccessories } from "hooks/accessory";
+import { Button, Toast } from "react-bootstrap";
 
 const AddAccessory = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showAccessoryModal, setShowAccessoryModal] = useState(false);
   const { data } = useGetAccessories();
   const [accessoryData, setAccessoryData] = useState({
     name: "",
@@ -26,9 +28,9 @@ const AddAccessory = () => {
 
     fetchAccessories();
   }, []);
-console.log('====================================');
-console.log("Accessories list", accessoryList);
-console.log('====================================');
+  console.log('====================================');
+  console.log("Accessories list", accessoryList);
+  console.log('====================================');
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -47,6 +49,44 @@ console.log('====================================');
       setShowModal(false);
     } catch (error) {
       console.error("Error adding accessory", error);
+    }
+  };
+  const [formData, setFormData] = useState({
+    accessoryName: "",
+    quantity: "",
+    perPiecePrice: "",
+    accessoryId: "",
+  });
+  const handleSaleAccessory = async (accessory) => {
+    console.log("Accessory to sell:", accessory);
+    setFormData({
+
+      accessoryId: accessory._id,
+    });
+    setShowAccessoryModal(true);
+  }
+  const handleConfirmSale = async () => {
+    try {
+      if (!formData.accessoryId || !formData.quantity || !formData.perPiecePrice) {
+        toast.error("Please fill all fields");
+      }
+      const res = await api.post("/api/accessory/sell", {
+        accessoryId: formData.accessoryId,
+        quantity: Number(formData.quantity),
+        perPiecePrice: Number(formData.perPiecePrice),
+      });
+      setFormData({
+        accessoryName: "",
+        quantity: "",
+        perPiecePrice: "",
+        accessoryId: "",
+      })
+
+      toast.success("Accessory sold successfully!");
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error selling accessory", error);
+      toast.error("Failed to sell accessory");
     }
   };
 
@@ -194,176 +234,233 @@ console.log('====================================');
 
       {/* Layout */}
       <div
-  style={{
-    flex: "1",
-    minWidth: "280px",
-    backgroundColor: "white",
-    borderRadius: "20px",
-    padding: "30px",
-    boxShadow:
-      "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-    border: "1px solid #e2e8f0",
-    height: "fit-content",
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      marginBottom: "24px",
-      paddingBottom: "16px",
-      borderBottom: "2px solid #f1f5f9",
-    }}
-  >
-    <span style={{ fontSize: "24px", marginRight: "12px" }}>🗂</span>
-    <h3
-      style={{
-        fontSize: "24px",
-        fontWeight: "700",
-        color: "#1e293b",
-        margin: 0,
-      }}
-    >
-      Accessory Categories
-    </h3>
-  </div>
-
-  {data?.data?.length > 0 ? (
-    <div style={{ display: "grid", gap: "16px" }}>
-      {data.data.map((accessory, index) => (
+        style={{
+          flex: "1",
+          minWidth: "280px",
+          backgroundColor: "white",
+          borderRadius: "20px",
+          padding: "30px",
+          boxShadow:
+            "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+          border: "1px solid #e2e8f0",
+          height: "fit-content",
+        }}
+      >
         <div
-          key={index}
           style={{
-            padding: "20px",
-            border: "1px solid #e2e8f0",
-            borderRadius: "16px",
-            backgroundColor: "#fefefe",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            transition: "all 0.3s ease",
-            position: "relative",
-            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "24px",
+            paddingBottom: "16px",
+            borderBottom: "2px solid #f1f5f9",
           }}
         >
-          {/* Gradient accent */}
+          <span style={{ fontSize: "24px", marginRight: "12px" }}>🗂</span>
+          <h3
+            style={{
+              fontSize: "24px",
+              fontWeight: "700",
+              color: "#1e293b",
+              margin: 0,
+            }}
+          >
+            Accessory Categories
+          </h3>
+        </div>
+
+        {data?.data?.length > 0 ? (
+          <div style={{ display: "grid", gap: "16px" }}>
+            {data.data.map((accessory, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: "20px",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "16px",
+                  backgroundColor: "#fefefe",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  transition: "all 0.3s ease",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Gradient accent */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "0",
+                    left: "0",
+                    right: "0",
+                    height: "4px",
+                    background: "linear-gradient(90deg, #3b82f6 0%, #9333ea 100%)",
+                  }}
+                />
+
+                <div style={{ marginBottom: "12px" }}>
+                  <h4
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: "#1e293b",
+                      margin: "0 0 4px 0",
+                    }}
+                  >
+                    {accessory.accessoryName}
+                  </h4>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#475569",
+                    }}
+                  >
+                    Category ID: {accessory.id}
+                  </div>
+                </div>
+
+                {/* Optional Stock Info if applicable */}
+                {accessory.stock !== undefined && (
+                  <div
+                    style={{
+                      borderTop: "1px solid #f1f5f9",
+                      paddingTop: "12px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          color: "#64748b",
+                          textTransform: "uppercase",
+                          marginBottom: "4px",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        Stock Available
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "16px",
+                          fontWeight: "600",
+                          color:
+                            accessory.stock < 10 ? "#ef4444" : "#059669",
+                        }}
+                      >
+                        {accessory.stock} units
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <Button onClick={() => handleSaleAccessory(accessory)}>Sale</Button>
+                      <div
+                        style={{
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          backgroundColor:
+                            accessory.stock < 10 ? "#ef4444" : "#10b981",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "500",
+                          color:
+                            accessory.stock < 10 ? "#ef4444" : "#059669",
+                        }}
+                      >
+                        {accessory.stock < 10 ? "Low Stock" : "In Stock"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
           <div
             style={{
-              position: "absolute",
-              top: "0",
-              left: "0",
-              right: "0",
-              height: "4px",
-              background: "linear-gradient(90deg, #3b82f6 0%, #9333ea 100%)",
+              textAlign: "center",
+              padding: "40px 20px",
+              color: "#64748b",
+            }}
+          >
+            <div style={{ fontSize: "40px", marginBottom: "12px" }}>❌</div>
+            <p style={{ fontSize: "16px", fontStyle: "italic" }}>
+              No categories found.
+            </p>
+          </div>
+        )}
+      </div>
+      <Modal
+        size="md"
+        show={showAccessoryModal}
+        toggleModal={() => setShowAccessoryModal(!showAccessoryModal)}
+      >
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Sell Accessory</h2>
+
+
+
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={formData.quantity}
+            onChange={(e) =>
+              setFormData({ ...formData, quantity: e.target.value })
+            }
+            style={{
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              fontSize: '16px',
             }}
           />
 
-          <div style={{ marginBottom: "12px" }}>
-            <h4
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                color: "#1e293b",
-                margin: "0 0 4px 0",
-              }}
-            >
-              {accessory.accessoryName}
-            </h4>
-            <div
-              style={{
-                fontSize: "14px",
-                fontWeight: "500",
-                color: "#475569",
-              }}
-            >
-              Category ID: {accessory.id}
-            </div>
-          </div>
+          <input
+            type="number"
+            placeholder="Per Piece Price"
+            value={formData.perPiecePrice}
+            onChange={(e) =>
+              setFormData({ ...formData, perPiecePrice: e.target.value })
+            }
+            style={{
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              fontSize: '16px',
+            }}
+          />
 
-          {/* Optional Stock Info if applicable */}
-          {accessory.stock !== undefined && (
-            <div
-              style={{
-                borderTop: "1px solid #f1f5f9",
-                paddingTop: "12px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    color: "#64748b",
-                    textTransform: "uppercase",
-                    marginBottom: "4px",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  Stock Available
-                </div>
-                <div
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    color:
-                      accessory.stock < 10 ? "#ef4444" : "#059669",
-                  }}
-                >
-                  {accessory.stock} units
-                </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    backgroundColor:
-                      accessory.stock < 10 ? "#ef4444" : "#10b981",
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    color:
-                      accessory.stock < 10 ? "#ef4444" : "#059669",
-                  }}
-                >
-                  {accessory.stock < 10 ? "Low Stock" : "In Stock"}
-                </span>
-              </div>
-            </div>
-          )}
+          <Button
+            onClick={handleConfirmSale}
+            style={{
+              marginTop: '10px',
+              padding: '12px',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              fontWeight: 'bold',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
+          >
+            Sell Accessory
+          </Button>
         </div>
-      ))}
-    </div>
-  ) : (
-    <div
-      style={{
-        textAlign: "center",
-        padding: "40px 20px",
-        color: "#64748b",
-      }}
-    >
-      <div style={{ fontSize: "40px", marginBottom: "12px" }}>❌</div>
-      <p style={{ fontSize: "16px", fontStyle: "italic" }}>
-        No categories found.
-      </p>
-    </div>
-  )}
-</div>
+      </Modal>
 
     </div>
   );
 };
 
 export default AddAccessory;
-  
