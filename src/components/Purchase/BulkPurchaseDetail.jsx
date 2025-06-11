@@ -12,7 +12,6 @@ const PurchaseDetail = () => {
         try {
             const response = await fetch(`${BASE_URL}api/Purchase/bulk-phone-purchase/${id}`);
             const result = await response.json();
-            console.log("bulk result", result);
             setPurchase(result);
         } catch (err) {
             setError("Network error");

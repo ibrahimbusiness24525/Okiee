@@ -30,13 +30,12 @@ const CommetyLedger = () => {
       myComitteeNameNumber: formData.myComitteeNameNumber,
       headName: formData.headName,
     }
-    console.log("Committee payload", payload)
+    console.error("Committee payload", payload)
     try {
       const response = await api.post("/api/committee/createCommittee", payload)
-      console.log("Committee created", response)
       toast.success("Committee Created Successfully")
     } catch (error) {
-      console.log("Error in creating committee", error)
+      console.error("Error in creating committee", error)
     }
   }
 

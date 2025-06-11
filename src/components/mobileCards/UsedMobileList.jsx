@@ -22,7 +22,6 @@ const UsedMobilesList = () => {
       amountFromBank: "",
       amountFromPocket: "",
     })
-    console.log("this is sold wallet data", walletTransaction);
   const [mobiles, setMobiles] = useState([]);
   const[bankName,setBankName]= useState("");
   const[payableAmountNow,setPayableAmountNow]= useState("")
@@ -78,30 +77,25 @@ const UsedMobilesList = () => {
         return;
       }
   
-      console.log("Shop ID being sent:", shop.shopId);
   
       // Make the API call with the valid shopid
       const response = await api.get("/api/Purchase/purchase-phone")
       // const response = await axios.get(BASE_URL + `api/purchase/purchase-phone?shopid=${shop.shopId}`);
-      console.log(response, 'responce')
       // Update state with the response data
       setMobiles(response.data.phones);
     } catch (error) {
-      // Log error details for debugging
       console.error("Error fetching mobiles:", error.response?.data || error.message);
     }
   };
   
   
 
-  console.log(mobiles, 'single mobiles')
 
 
   const deletePhone = async () => {
     try {
      await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
-      console.log('Phone deleted successfully');
     } catch (error) {
       console.error('Error deleting phone:', error);
     } finally {
@@ -131,10 +125,8 @@ const UsedMobilesList = () => {
     setPersonName('');
     setShowDispatchModal(false);
     getMobiles()
-    console.log("dispatch response", response);
     toast.success("Dispatch is created successfully")
   }catch(error){
-    console.log("Error in creating a dispatch",error)
   }
   };
 
@@ -284,9 +276,6 @@ useEffect(() => {
   (total, mobile) => total + (Number(mobile.purchasePrice) || 0),
   0
 );
-  console.log("all mobiles", mobiles);
-  console.log("all filtered data is here ", filteredMobiles);
-  console.log("These are the companies  ", companies);
 const handleShareInventory = () => {
   const doc = new jsPDF();
   doc.text('Mobile Inventory', 10, 10);
@@ -331,32 +320,55 @@ const [showAmount, setShowAmount] = useState(false)
           onChange={handleSearch}
         />
       </InputGroup>
-      <div
+     <div
   style={{
     display: "flex",
-    gap: "12px",
+    gap: "16px",
     flexWrap: "wrap",
-    marginBottom: "1rem",
+    marginBottom: "1.5rem",
     justifyContent: "flex-start",
+    alignItems: "center",
   }}
 >
-  {/* Optional "Show All" button */}
+  {/* Enhanced "Show All" button */}
   <button
     onClick={() => setSelectedCompany(null)}
     style={{
-      padding: "8px 18px",
-      borderRadius: "20px",
-      border: "2px solid #007bff",
-      backgroundColor: selectedCompany === null ? "#007bff" : "transparent",
-      color: selectedCompany === null ? "#fff" : "#007bff",
+      padding: "12px 24px",
+      borderRadius: "25px",
+      border: "none",
+      background: selectedCompany === null 
+        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        : "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+      color: selectedCompany === null ? "#fff" : "#495057",
       cursor: "pointer",
-      fontWeight: "500",
-      transition: "all 0.3s ease",
-      boxShadow:
-        selectedCompany === null ? "0 4px 12px rgba(0, 123, 255, 0.2)" : "none",
+      fontWeight: "600",
+      fontSize: "14px",
+      letterSpacing: "0.5px",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      boxShadow: selectedCompany === null 
+        ? "0 8px 25px rgba(102, 126, 234, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
+        : "0 2px 8px rgba(0, 0, 0, 0.1)",
+      transform: selectedCompany === null ? "translateY(-2px)" : "translateY(0)",
+      position: "relative",
+      overflow: "hidden",
+    }}
+    onMouseEnter={(e) => {
+      if (selectedCompany !== null) {
+        e.target.style.background = "linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%)";
+        e.target.style.transform = "translateY(-1px)";
+        e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.15)";
+      }
+    }}
+    onMouseLeave={(e) => {
+      if (selectedCompany !== null) {
+        e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
+        e.target.style.transform = "translateY(0)";
+        e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
+      }
     }}
   >
-    Show All
+    <span style={{ position: "relative", zIndex: 1 }}>Show All</span>
   </button>
 
   {companies.map((company, index) => {
@@ -366,24 +378,73 @@ const [showAmount, setShowAmount] = useState(false)
         key={index}
         onClick={() => setSelectedCompany(company)}
         style={{
-          padding: "8px 18px",
-          borderRadius: "20px",
-          border: `2px solid ${isSelected ? "#28a745" : "#ccc"}`,
-          backgroundColor: isSelected ? "#28a745" : "transparent",
-          color: isSelected ? "#fff" : "#333",
-          fontWeight: "500",
+          padding: "12px 24px",
+          borderRadius: "25px",
+          border: "none",
+          background: isSelected 
+            ? "linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%)"
+            : "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+          color: isSelected ? "#fff" : "#495057",
+          fontWeight: "600",
+          fontSize: "14px",
+          letterSpacing: "0.5px",
           cursor: "pointer",
-          transition: "all 0.3s ease",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           boxShadow: isSelected
-            ? "0 4px 12px rgba(40, 167, 69, 0.2)"
-            : "none",
+            ? "0 8px 25px rgba(86, 171, 47, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
+          transform: isSelected ? "translateY(-2px)" : "translateY(0)",
+          position: "relative",
+          overflow: "hidden",
+          border: isSelected ? "2px solid rgba(255, 255, 255, 0.3)" : "2px solid #e9ecef",
+        }}
+        onMouseEnter={(e) => {
+          if (!isSelected) {
+            e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
+            e.target.style.transform = "translateY(-1px)";
+            e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.12)";
+            e.target.style.borderColor = "#dee2e6";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isSelected) {
+            e.target.style.background = "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)";
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.08)";
+            e.target.style.borderColor = "#e9ecef";
+          }
         }}
       >
-        {company}
+        <span style={{ position: "relative", zIndex: 1 }}>
+          {company}
+        </span>
+        {/* Subtle shine effect for selected buttons */}
+        {isSelected && (
+          <div
+            style={{
+              position: "absolute",
+              top: "0",
+              left: "-100%",
+              width: "100%",
+              height: "100%",
+              background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+              animation: "shine 2s infinite",
+              zIndex: 0,
+            }}
+          />
+        )}
       </button>
     );
   })}
 </div>
+
+{/* Add this CSS animation if you want the shine effect */}
+<style jsx>{`
+  @keyframes shine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+`}</style>
 <div className="d-flex justify-content-between align-items-center mb-3" style={{
   background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
   padding: "20px",
@@ -513,26 +574,89 @@ const [showAmount, setShowAmount] = useState(false)
   </Button>
 </div>
 
-
 <button
   onClick={() => setList(!list)}
   style={{
-    padding: "10px 16px",
-    backgroundColor: "#2563EB",
+    padding: "14px 28px",
+    background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
     color: "white",
-    marginBottom:"20px",
+    marginBottom: "24px",
     fontWeight: "600",
-    borderRadius: "8px",
+    fontSize: "14px",
+    letterSpacing: "0.5px",
+    borderRadius: "12px",
     border: "none",
     cursor: "pointer",
-    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-    transition: "background-color 0.3s ease",
+    boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    position: "relative",
+    overflow: "hidden",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    transform: "translateY(0)",
   }}
-  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E40AF")}
-  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.background = "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)";
+    e.currentTarget.style.transform = "translateY(-2px)";
+    e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)";
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)";
+  }}
+  onMouseDown={(e) => {
+    e.currentTarget.style.transform = "translateY(1px)";
+    e.currentTarget.style.boxShadow = "0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)";
+  }}
+  onMouseUp={(e) => {
+    e.currentTarget.style.transform = "translateY(-2px)";
+    e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+  }}
 >
-  Change Record Design
-</button>   
+  {/* Icon for visual enhancement */}
+  <svg 
+    width="16" 
+    height="16" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    style={{ marginRight: "4px" }}
+  >
+    <path d="M3 3h18v18H3zM9 9h6v6H9z"/>
+  </svg>
+  
+  <span style={{ position: "relative", zIndex: 1 }}>
+    Change Record Design
+  </span>
+  
+  {/* Subtle shine effect overlay */}
+  <div
+    style={{
+      position: "absolute",
+      top: "0",
+      left: "-100%",
+      width: "100%",
+      height: "100%",
+      background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+      transition: "left 0.6s ease",
+      zIndex: 0,
+    }}
+    className="shine-effect"
+  />
+</button>
+
+{/* Optional: Add this CSS for the shine animation on hover */}
+<style jsx>{`
+  button:hover .shine-effect {
+    left: 100%;
+  }
+`}</style> 
 {!filteredMobiles.length> 0 ? 
 (
   <div className="w-full h-full flex items-center justify-center">

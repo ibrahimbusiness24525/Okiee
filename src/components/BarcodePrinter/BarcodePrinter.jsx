@@ -146,7 +146,6 @@ p {
             
         };
         
-console.log("this is bulk object" , obj);
 
     const printBulkPhoneBarcode = () =>{
         setModal(true)
@@ -176,8 +175,6 @@ console.log("this is bulk object" , obj);
         }));
     }).flat() || [];
     
-console.log("Extracted IMEIs:", imeiList);
-console.log("This is the object:", obj);
 const handleSelectImei = (imei) => {
     setSelectedImeis((prevSelected) => {
         const isAlreadySelected = prevSelected.some(
@@ -192,7 +189,6 @@ const handleSelectImei = (imei) => {
 
 
 const printBulkBarcode = (data) => {
-    console.log("this is the data", data);
 
     const imei = data.imei1 ? data.imei1.toString() : null;
     const imei2 = data.imei2 ? data.imei2.toString() : null;

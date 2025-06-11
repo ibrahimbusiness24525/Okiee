@@ -169,7 +169,6 @@ const getValidDate = (inputDate) => {
 
   
   useEffect(() => {
-    console.log(dataReceived, 'datarecieved')
     const shopData = localStorage.getItem('shop');
     if (shopData) {
       const parsedShop = JSON.parse(shopData);
@@ -222,7 +221,6 @@ const getValidDate = (inputDate) => {
     dataReceived?.ramSimDetails?.flatMap(item => item.imeiNumbers) || []
   );
   const imeiOneList =dataReceived?.addedImeis?.length !== 0 && dataReceived?.addedImeis?.map((imei) => imei.split(" / ")[0]) || [];
-  console.log("this is the imeiOneList",imeiOneList);
   const handleSubmit = async (type) => {
     if(dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId){
       const payload = {
@@ -258,13 +256,11 @@ const getValidDate = (inputDate) => {
             exchangePhoneDetail: dataReceived?.exchangePhoneDetail 
         })
       };
-      console.log("bulk payload",payload);
       try {
         const response = await api.post(`api/Purchase/sell-phone`, payload);
         // const response = await axios.post(BASE_URL + `api/Purchase/sell-phone`, payload,{
         //   "headers": {"Content-Type": "application/json"}
         // });
-        console.log("response of bulk invoice",response);
         
         if (response) {
           alert('Bulk invoice submitted successfully');
@@ -308,10 +304,8 @@ const getValidDate = (inputDate) => {
               exchangePhoneDetail: dataReceived?.exchangePhoneDetail 
           })
         }
-        console.log("This is the single sell phone data",payload);
         
         const response = await api.post(`api/Purchase/sell-single-phone`, payload);
-        console.log("This is the single phone",response);
 
         if (response) {
           alert('Invoice submitted successfully');
@@ -320,7 +314,6 @@ const getValidDate = (inputDate) => {
         alert('Error submitting invoice: ' + error.message);
       }
       // try {
-      //   console.log("This is the single invoice data",invoiceData);
         
       //   const response = await axios.post(BASE_URL + `api/invoice/invoices`, invoiceData);
 
@@ -332,8 +325,6 @@ const getValidDate = (inputDate) => {
       // }
     }
   };
-console.log("this is the date",dataReceived?.saleDate);
-console.log("this is the dataReceived",dataReceived);
 const totalAccessoriesPrice = dataReceived?.accessories?.reduce(
   (total, item) => total + Number(item.price || 0) * Number(item.quantity || 1),
   0
@@ -341,14 +332,11 @@ const totalAccessoriesPrice = dataReceived?.accessories?.reduce(
 
 const totalInvoice = Number(dataReceived.finalPrice || 0) + totalAccessoriesPrice;
 
-console.log("this is the total invoice",totalInvoice);
-console.log("These are the dataReceived",dataReceived.addedImeis);
 const addedImei1s = dataReceived?.addedImeis?.map((imeiPair) => {
   const [imei1] = imeiPair.split('/').map((imei) => imei.trim());
   return imei1;
 }) ?? [];
 
-console.log(addedImei1s, 'added imei 1s');
 
   return (
     <div>

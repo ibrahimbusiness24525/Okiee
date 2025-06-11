@@ -9,7 +9,6 @@ const SaleDetail = () => {
       const response = await api.get(`/api/dayBook/todayBook`);
       setTodayBookData(response?.data?.data || {});
     } catch (error) {
-      console.log("Error in getting the field", error);
     }
   };
 

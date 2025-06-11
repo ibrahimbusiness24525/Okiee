@@ -87,8 +87,6 @@ const PayablesAndReceivables = () => {
       setIsSubmitting(false)
     }
   }
-console.log('====================================');
-console.log('====================================');
 // Give credit
 const handleGiveCredit = async (e) => {
   e.preventDefault()
@@ -97,7 +95,6 @@ const handleGiveCredit = async (e) => {
     return
   }
   
-  console.log("give credit", giveCredit);
     try {
       setIsSubmitting(true)
       await api.post("/api/person/give-credit", {
@@ -118,7 +115,6 @@ const handleGiveCredit = async (e) => {
       setIsSubmitting(false)
     }
   }
-  console.log("give credit", giveCredit);
 
   // Take credit
   const handleTakeCredit = async (e) => {
@@ -194,7 +190,6 @@ const handleGiveCredit = async (e) => {
   useEffect(() => {
     fetchPersons()
   }, [])
-  console.log("Persons:", persons);
 
   //   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
 

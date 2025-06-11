@@ -9,8 +9,7 @@ const ScanDeviceDetails = () => {
         bulkPhone: {},
     });
 
-    console.log("this is imei", imei);
-    console.log("this is data", data);
+
 
     const getDeviceDetail = async () => {
         try {
@@ -21,9 +20,7 @@ const ScanDeviceDetails = () => {
                 purchasePhone: response?.data?.purchasePhone || {},
                 bulkPhone: response?.data?.bulkPhone || {},
             });
-            console.log("This is the response", response);
         } catch (error) {
-            console.log("Error in getting the field", error);
         }
     };
 

@@ -49,7 +49,6 @@ const PocketCash = () => {
     try {
       const res = await api.get('/api/pocketCash/total');
       setTotalCash(res.data.total);
-      console.log("total", res)
     } catch (error) {
       console.error('Failed to fetch total cash:', error);
     }

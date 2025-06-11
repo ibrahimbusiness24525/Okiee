@@ -101,20 +101,19 @@ const LedgerRecords = () => {
   const getAllLedgerRecords = async() =>{
     try{
       const response = await api.get(`/api/ledger/all`)
-      console.log("This is the records",response)
+      console.error("This is the records",response)
       setLedgerRecords(response?.data?.records)
     }catch(error){
-      console.log("error in getting all ledger records", error)
+      console.error("error in getting all ledger records", error)
     }
   }
-  
+
   const getAllCommitteeRecords = async() =>{
     try{
       const response = await api.get("/api/committee/getComitteesRecords");
       setComitteeRecords(response?.data?.committees)
-      console.log("This is CommitteeRecords response",response);
     }catch(error){
-      console.log("error in getting all ledger records", error)
+      console.error("error in getting all committee records", error)
     }
   }
 
@@ -126,26 +125,22 @@ const LedgerRecords = () => {
   };
 
   const applyStatusConfirmation = async(committeeId,recordId) =>{
-    console.log("committee Id", committeeId, "Record ID", recordId);
     
     try{
       const response = await api.patch(`/api/committee/updateComittee/${committeeId}/${recordId}`)
-      console.log(response);
       getAllCommitteeRecords();
       toast.success("Paid Successfully");
     }catch(error){
-      console.log("Error in making paid", error);
+      console.error("Error in updating committee record status", error);
     }
 
   }
-  console.log("This is response",comitteeRecords);
   useEffect(()=>{
     getAllLedgerRecords()
     getAllCommitteeRecords()
   },[])
 
 
-console.log(todayInvoices,'todayInvoice')
   return (
     <div style={styles.container}>
       <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Ledger Records</h2>

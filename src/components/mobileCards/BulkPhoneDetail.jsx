@@ -218,7 +218,6 @@ const BulkPhoneDetail = () => {
       setPurchaseData(response.data);
       setLoading(false);
     } catch (err) {
-      console.log(err);
       setError("Failed to load purchase details");
       setLoading(false);
     }
@@ -256,10 +255,6 @@ const BulkPhoneDetail = () => {
   if (error) {
     return <div style={styles.error}>{error}</div>;
   }
-
-  console.log('====================================');
-  console.log(purchaseData);
-  console.log('====================================');
 
      
   return (

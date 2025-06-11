@@ -110,7 +110,6 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
           }
         };
         
-        console.log("This is single phone edit payload", payload);
         
          await api.put(`/api/Purchase/single-purchase-phone/${editMobile._id}`, payload)
         toast('Mobile Phone Record Updated Successfully');
@@ -126,7 +125,6 @@ const AddPhone = ({ modal, editMobile, handleModalClose }) => {
         handleClose();
       }
     } catch (error) {
-      console.log(error);
       toast('Something went wrong');
     } finally {
       setLoading(false);

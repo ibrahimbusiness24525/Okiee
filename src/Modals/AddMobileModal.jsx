@@ -5,7 +5,6 @@ import { BASE_URL } from 'config/constant';
 import axios from 'axios';
 
 const AddMobileModal = ({showModal,data,handleChange,handleClose,handleImageChange,handleSubmit}) => {
-  console.log("data",data)
   return (
     <>
     <Modal show={showModal} onHide={handleClose} centered size="lg" className="custom-modal">

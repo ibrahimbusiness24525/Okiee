@@ -19,7 +19,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSi
         const getAllBanks = async () => {
           try {
             const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
-            console.log('All banks:', response?.data?.banks);
+ 
             setBanks(response?.data?.banks); // Set the banks state with the fetched data
           } catch (error) {
             console.error('Error fetching banks:', error);
@@ -31,8 +31,7 @@ const SingalPurchaseModal = ({handleSinglePhoneModalclose,type="purchase", setSi
         }
         , []);
       
-      console.log("This is the single purchase", singlePurchase);
-console.log("edit mobile", editMobile);
+    
 
     return(
          

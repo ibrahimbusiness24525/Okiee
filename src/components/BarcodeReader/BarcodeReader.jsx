@@ -120,7 +120,6 @@ const BarcodeReader = ({ onScan }) => {
         Enter Manually
       </button>
 
-      {/* Confirmation Dialog */}
       {showConfirmation && (
         <div style={styles.confirmationBox}>
           <p>Do you want to enter the IMEI manually?</p>

@@ -29,7 +29,6 @@ const SaleInvoices = () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const response = await api.get(`api/Purchase/sold-single-phones`);
       // const response = await axios.get(`${BASE_URL}api/invoice/invoices/getAll/${user._id}`);
-      console.log(response);
 
       setAllInvoices(response.data.soldPhones.slice().reverse());
 
@@ -40,16 +39,12 @@ const SaleInvoices = () => {
   const getAllBulkSales = async () => {
     try {
       const response = await api.get(`api/Purchase/all-sales`);
-     console.log("These are bulk sales",response);
 
       setAllBulkSales(response?.data?.data);
     } catch (error) {
       console.error('Error fetching bulk sales:', error);
     }
   };
-  console.log('====================================');
-  console.log("all bulk sales",allbulkSales);
-  console.log('====================================');
   
   // const handleSearchChange = (e) => {
   //   const query = e.target.value.toLowerCase();
@@ -81,8 +76,6 @@ const SaleInvoices = () => {
   // };
   
 const handlePrintClick = (invoice) => {
-  console.log('Printing invoice:', invoice);
-
   const formattedInvoice = {
     companyName: invoice.companyName,
     modelName: invoice.modelName,
@@ -165,12 +158,8 @@ const handlePrintClick = (invoice) => {
       transition: 'color 0.3s',
     },
   };
-console.log('====================================');
-console.log("invoices",allInvoices);
-console.log('====================================');
 const[scannedBarcodeValue,setScannedBarcodeValue]= useState("")
 const handleScan = (value) => {
-  console.log("Scanned IMEI:", value);
   setScannedBarcodeValue(value)
 };
 

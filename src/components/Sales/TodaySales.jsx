@@ -25,21 +25,17 @@ const TodaySales = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       const response = await api.get(`api/Purchase/sold-single-phones`);
-      console.log(response);
 
       setAllInvoices(response.data.soldPhones.filter((item) => {
         return new Date(item.saleDate).toDateString() === new Date().toDateString();
     }));
     } catch (error) {
-      console.error('Error fetching invoices:', error);
     }
   };
-  console.log("all invoices", allInvoices);
   
   const getAllBulkSales = async () => {
     try {
       const response = await api.get(`api/Purchase/all-sales`);
-     console.log("These are bulk sales",response);
 
       setAllBulkSales(response.data.data.filter((item) => {
         return new Date(item.dateSold).toDateString() === new Date().toDateString();
@@ -52,8 +48,6 @@ const TodaySales = () => {
   
 
 const handlePrintClick = (invoice) => {
-  console.log('Printing invoice:', invoice);
-
   const formattedInvoice = {
     companyName: invoice.companyName,
     modelName: invoice.modelName,
@@ -132,15 +126,10 @@ const handlePrintClick = (invoice) => {
       transition: 'color 0.3s',
     },
   };
-console.log("invoices",allInvoices);
 const[scannedBarcodeValue,setScannedBarcodeValue]= useState("")
 const handleScan = (value) => {
-  console.log("Scanned IMEI:", value);
   setScannedBarcodeValue(value)
 };
-console.log('====================================');
-console.log("all bulk sales",allbulkSales);
-console.log('====================================');
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Today Sales Invoices</h2>

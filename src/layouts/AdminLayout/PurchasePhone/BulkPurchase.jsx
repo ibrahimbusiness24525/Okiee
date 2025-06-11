@@ -42,7 +42,6 @@ const getAllPartyNames = async( ) =>{
     const response =  await api.get("/api/partyLedger/getAllNames");
     setPartyNames(response?.data?.data)
   }catch(error){
-    console.log("Error getting in name", error)
   }
 }
 
@@ -51,7 +50,6 @@ useEffect(()=>{
 },[])
 
 
-console.log("data  to check",bulkData)
 
 return(
      <Modal show={showBulkModal} onHide={handleBulkPhoneModalclose} centered size="lg">

@@ -88,11 +88,9 @@ const NewMobilesList = () => {
   const getMobiles = async () => {
 
     const user = JSON.parse(localStorage.getItem('user'));
-    console.log("required id", user._id);
     
     // const response = await axios.get(BASE_URL + `api/phone/getAllPhones/${user._id}`);
     const response = await api.get("/api/Purchase/purchase-phone")
-    console.log("this is the response of single mobile",response);
     setMobiles(response.data.phones);
   };
   const getActualPrice = (prices) => {
@@ -119,14 +117,12 @@ const NewMobilesList = () => {
     const deletePhone = async () => {
 
     try {
-      console.log("deleteMobileId",deleteMobileId);
       if(type === "bulk"){
         await api.delete(`/api/Purchase/purchase-bulk/delete/${deleteMobileId}`);
       }else{
         await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
       }
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
-      console.log('Phone deleted successfully');
     } 
     catch (error) {
       console.error('Error deleting phone:', error);
@@ -157,11 +153,8 @@ const NewMobilesList = () => {
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
 
-    console.log("Bulk Id", id);
   };
-  console.log('====================================');
-  console.log("these are selected imeis",imei);
-  console.log('====================================');
+
 
   const handleDispatchSubmit = async() => {
     try{
@@ -169,7 +162,6 @@ const NewMobilesList = () => {
       alert('Please fill all fields');
       return;
     }
-    console.log("selected imeis", imei)
     const response = await api.patch(`/api/Purchase/bulk-purchase-dispatch/${id}`, {
       shopName,
       receiverName: personName,
@@ -185,17 +177,14 @@ const NewMobilesList = () => {
     setPersonName('');
     setShowDispatchModal(false);
     getBulkPhones()
-    console.log("Dispatch response", response);
     toast.success("Dispatch is created successfully")
   }catch(error){
-    console.log("Error in creating a dispatch",error)
+    console.error("Error in creating a dispatch",error)
   }
   };
   
   
   const handleEdit = (mobile) => {
-    console.log("This is mobile to be edit", mobile);
-    
     setEditMobile(mobile);
     setShowModal(true);
   };
@@ -210,9 +199,8 @@ const NewMobilesList = () => {
     )
         )
       ));
-      console.log("bulk record response",response);
     }catch(error){
-      console.log("error in getting bulk mobiles", error);
+      console.error("error in getting bulk mobiles", error);
     }
   }
   useEffect(()=>{
@@ -230,7 +218,6 @@ const NewMobilesList = () => {
   };
   
   const handleSoldClick = (mobile,type) => {
-    console.log("this is type", type);
     
     if(type==="bulk"){
       setType("bulk")
@@ -261,7 +248,6 @@ const NewMobilesList = () => {
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
-  console.log(imei);
 
   const handleSoldSubmit = async () => {
   if (!finalPrice || !warranty || !customerName || !customerNumber || !saleDate || sellingType === "") {
@@ -368,7 +354,6 @@ const NewMobilesList = () => {
     );
   });
   
-  console.log(mobiles);
   useEffect(()=>{
     getBulkPhones()
   },[])
@@ -399,7 +384,6 @@ const handleShowPrices = (mobile) => {
     setShowPrices(false);
     setSelectedMobile(null);
   };
-  console.log("bulk Mobile",bulkMobile);
   const handleBulkDelete = (id) =>{
     setDeleteMobileId(id);
     setType("bulk");
@@ -421,22 +405,17 @@ const handleShowPrices = (mobile) => {
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
-  console.log("bulk mobile",bulkMobile);
   const totalBulkStockAmount = bulkMobile.reduce((total,mobile)=>total+(Number(mobile?.prices?.buyingPrice) || 0),0)
-  console.log("total stock amount",totalBulkStockAmount);
   const handleChange = (event) => {
     const selectedImeis = event.target.value; 
     setImei(selectedImeis); 
     
     setAddedImeis((prevImeis) => Array.from(new Set([...prevImeis, ...selectedImeis]))); // Ensure uniqueness
 
-    // setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); 
   };
   
-  console.log("this is imei", imei,"these are added", addedImeis);
   
   
-  console.log("These are the  imeis",imeiList)
   const totalImeisArray = bulkData.map((bulk) => {
     // Sum the length of imeiNumbers for each ramSimDetails in the bulk data
     return bulk.ramSimDetails.reduce((total, ramSim) => {
@@ -444,7 +423,6 @@ const handleShowPrices = (mobile) => {
     }, 0); // Starts the count from 0
   });
   
-  console.log(totalImeisArray); // This will give you an array with the total IMEI count for each mobile
   const groupedByParty = bulkMobile.reduce((acc, curr) => {
     const partyName = curr.partyName || "Unknown";
     if (!acc[partyName]) {
@@ -470,7 +448,6 @@ const handleShowPrices = (mobile) => {
 
     return { now, later };
   };
-  console.log("This is the sale date" , saleDate);
   
   return (
     <>
@@ -597,21 +574,86 @@ const handleShowPrices = (mobile) => {
 <button
   onClick={() => setList(!list)}
   style={{
-    padding: "10px 16px",
-    backgroundColor: "#2563EB",
+    padding: "14px 28px",
+    background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
     color: "white",
+    marginBottom: "24px",
     fontWeight: "600",
-    borderRadius: "8px",
+    fontSize: "14px",
+    letterSpacing: "0.5px",
+    borderRadius: "12px",
     border: "none",
     cursor: "pointer",
-    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-    transition: "background-color 0.3s ease",
+    boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    position: "relative",
+    overflow: "hidden",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    transform: "translateY(0)",
   }}
-  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E40AF")}
-  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.background = "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)";
+    e.currentTarget.style.transform = "translateY(-2px)";
+    e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)";
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)";
+  }}
+  onMouseDown={(e) => {
+    e.currentTarget.style.transform = "translateY(1px)";
+    e.currentTarget.style.boxShadow = "0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)";
+  }}
+  onMouseUp={(e) => {
+    e.currentTarget.style.transform = "translateY(-2px)";
+    e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+  }}
 >
-  Change Record Design
+  {/* Icon for visual enhancement */}
+  <svg 
+    width="16" 
+    height="16" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    style={{ marginRight: "4px" }}
+  >
+    <path d="M3 3h18v18H3zM9 9h6v6H9z"/>
+  </svg>
+  
+  <span style={{ position: "relative", zIndex: 1 }}>
+    Change Record Design
+  </span>
+  
+  {/* Subtle shine effect overlay */}
+  <div
+    style={{
+      position: "absolute",
+      top: "0",
+      left: "-100%",
+      width: "100%",
+      height: "100%",
+      background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+      transition: "left 0.6s ease",
+      zIndex: 0,
+    }}
+    className="shine-effect"
+  />
 </button>
+
+{/* Optional: Add this CSS for the shine animation on hover */}
+<style jsx>{`
+  button:hover .shine-effect {
+    left: 100%;
+  }
+`}</style>
  
       <h3 style={{marginTop:"rem",marginBottom:"1rem",}}>New Bulk Phones</h3>
       {!bulkMobile.length > 0 ? (

@@ -13,7 +13,6 @@ const PurchaseDetail = () => {
         try {
             const response = await fetch(`${BASE_URL}api/Purchase/purchase-phone/${id}`);
             const result = await response.json();
-            console.log(result);
             if (response.ok) {
                 setPurchase(result.data);
             } else {

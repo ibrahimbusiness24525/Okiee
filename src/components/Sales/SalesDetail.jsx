@@ -179,7 +179,6 @@ export default SalesDetail;
 
 //         fetchSaleDetail();
 //     }, [id]);
-//     console.log("sales detail", sale);
     
 //     if (loading) return <div>Loading...</div>;
 //     if (error) return <div>Error: {error}</div>;

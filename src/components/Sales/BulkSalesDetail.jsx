@@ -33,7 +33,6 @@ const BulkSalesDetail = () => {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
- console.log("sale detail", saleDetail);
  
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>

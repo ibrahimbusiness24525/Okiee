@@ -13,9 +13,7 @@ const BankTransactions = () => {
         try {
             const response = await api.get(`/api/banks/getBankTransaction/${id}`);
             setTransactions(response?.data?.transactions || []);
-            console.log(response?.data?.transactions);
         } catch (error) {
-            console.error('There was a problem with the fetch operation:', error);
         }
     };
 
@@ -23,17 +21,6 @@ const BankTransactions = () => {
         getBankTransactions();
     }, []);
 
-    const handleAddCash = (obj) => {
-        console.log('Add Cash', obj);
-    };
-
-    const handleRemoveCash = (obj) => {
-        console.log('Remove Cash', obj);
-    };
-
-    const handleDeleteProceed = (obj) => {
-        console.log('Delete Transaction', obj);
-    };
 
     return (
         <div style={{ padding: "20px" }}>

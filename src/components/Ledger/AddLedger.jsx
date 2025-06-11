@@ -44,14 +44,12 @@ const AddLedger = () => {
       }
 
       const response = await api.post("/api/entity/add", payload)
-      console.log("Creating entity:", payload)
       setShowModal(false)
       setFormData({ name: "", reference: "" })
       getAllEntities() // Refresh entities list
       toast.success("Entity created successfully!")
     } catch (error) {
       toast.error("Entity creation failed. Please try again.")
-      console.log("Error in creating entity:", error)
     }
   }
 
@@ -62,13 +60,11 @@ const AddLedger = () => {
       }
 
       const response = await api.post(`/api/entity/expense/${expenseData?.entityId}`, payload)
-      console.log("Creating expense:", payload)
       setShowExpenseModal(false)
       setExpenseData({ entityId: "", expense: "", description: "" })
       toast.success("Expense recorded successfully!")
     } catch (error) {
       toast.error("Failed to record expense. Please try again.")
-      console.log("Error in creating expense:", error)
     }
   }
 
@@ -79,13 +75,11 @@ const AddLedger = () => {
       }
 
       const response = await api.post(`/api/entity/cash-payment/${cashPaidData?.entityId}`, payload)
-      console.log("Creating cash paid:", payload)
       setShowCashPaidModal(false)
       setCashPaidData({ entityId: "", cashPaid: "", description: "" })
       toast.success("Cash payment recorded successfully!")
     } catch (error) {
       toast.error("Failed to record cash payment. Please try again.")
-      console.log("Error in creating cash paid:", error)
     }
   }
 
@@ -96,13 +90,11 @@ const AddLedger = () => {
       }
 
       const response = await api.post(`/api/entity/cash-receive/${cashReceivedData?.entityId}`, payload)
-      console.log("Creating cash received:", payload)
       setShowCashReceivedModal(false)
       setCashReceivedData({ entityId: "", cashReceived: "", description: "" })
       toast.success("Cash receipt recorded successfully!")
     } catch (error) {
       toast.error("Failed to record cash receipt. Please try again.")
-      console.log("Error in creating cash received:", error)
     }
   }
 
@@ -111,7 +103,6 @@ const AddLedger = () => {
       const response = await api.get("/api/entity/all")
       setAllEntities(response?.data)
     } catch (error) {
-      console.log("Error in getting entity:", error)
     }
   }
   const getAllEntitiesRecords = async() =>{
@@ -119,7 +110,6 @@ const AddLedger = () => {
       const response = await api.get("/api/entity/records/all")
       setAllEntitiesRecords(response?.data)
     } catch (error) {
-      console.log("Error in getting entity records:", error)
     }
 }
   useEffect(() => {
@@ -127,9 +117,6 @@ const AddLedger = () => {
     getAllEntitiesRecords()
   }, [])
 
-  console.log("====================================")
-  console.log("these are all entities", allEntitiesRecords)
-  console.log("====================================")
 
   const getTotalsByType = () => {
     const totals = { CashPaid: 0, CashReceived: 0, Expense: 0 }
@@ -214,7 +201,6 @@ const AddLedger = () => {
       <polyline points="6 9 12 15 18 9" />
     </svg>
   )
-console.log("entities", entities);
 
   return (
     <div

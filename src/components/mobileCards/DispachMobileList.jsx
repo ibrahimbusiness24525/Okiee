@@ -82,18 +82,15 @@ const DispachMobilesList = () => {
     try {
       const response = await api.get(`/api/Purchase/single-dispatch`)
       setSingleDispatches(response.data.dispatches);
-      console.log("dispatches response", response);
     } catch (error) {
-      console.log("error", error)
     }
   };
   const getBulkDispatches = async () => {
     try {
       const response = await api.get(`/api/Purchase/bulk-dispatch`)
       setBulkDispatches(response.data.dispatches);
-      console.log("dispatches response", response);
     } catch (error) {
-      console.log("error", error)
+      console.error("error", error)
     }
   };
   const handleReturn = async (dispatchMobile) => {
@@ -102,14 +99,12 @@ const DispachMobilesList = () => {
     if (!confirmReturn) return;
 
     try {
-      console.log("dispatchMobile", dispatchMobile._id);
 
       const response = await api.patch(`/api/Purchase/single-dispatch-return/${dispatchMobile._id}`);
-      console.log("return mobile response", response);
       toast.success("Mobile returned successfully");
       getSingleDispatches();
     } catch (error) {
-      console.log("error", error);
+      console.error("error", error);
       toast.error("Failed to return the mobile");
     }
   };
@@ -128,17 +123,14 @@ const DispachMobilesList = () => {
       }) || []
     );
 
-    console.log("dispatchMobile", dispatchMobile);
 
   }
 
-  console.log("single dispatches", singleDispatches)
 
   const deletePhone = async () => {
     try {
       await axios.delete(`${BASE_URL}api/phone/deletePhone/${dispatchMobile}`);
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
-      console.log('Phone deleted successfully');
     } catch (error) {
       console.error('Error deleting phone:', error);
     } finally {
@@ -153,19 +145,15 @@ const DispachMobilesList = () => {
 
     // setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); 
   };
-  console.log(imei);
 
   const handleDispatchClick = (mobile) => {
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
   };
 
-  console.log("This is the selected imei", imei);
 
   const handleBulkReturnSubmit = async () => {
     try {
-      console.log("dispatchMobile", dispatchMobile._id);
-      console.log("This is the selected imeisasasasas", imei);
 
       const response = await api.patch(`/api/Purchase/bulk-dispatch-return/${dispatchMobile.dispatchId}`, {
         imeiArray: imei.map((imei) => {
@@ -174,11 +162,9 @@ const DispachMobilesList = () => {
         }),
       }
         ,);
-      console.log("return mobile response", response);
       toast.success("Bulk Mobile returned successfully");
       getBulkDispatches();
     } catch (error) {
-      console.log("error", error);
       toast.error("Failed to return the mobile");
     }
   };
@@ -190,8 +176,6 @@ const DispachMobilesList = () => {
   };
 
   const handleSoldClick = (mobile, type) => {
-    console.log("this is type", type);
-    console.log("this is the mobile-------------", mobile);
 
 
 
@@ -220,8 +204,6 @@ const DispachMobilesList = () => {
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
-  console.log("sold Mobile", soldMobile);
-  console.log("This is the imei list", imeiList);
 
   const handleSoldSubmit = async () => {
     if (!finalPrice || !warranty) {
@@ -261,11 +243,6 @@ const DispachMobilesList = () => {
 
 
 
-  console.log("These are bulk dispatches", bulkDispatches);
-  console.log("WARRANTY price", warranty);
-  console.log("-------------------------------");
-
-  console.log("final price", finalPrice);
   const dispatchedImeisList = bulkDispatches.bulkPhonePurchaseId?.ramSimDetails
     ?.flatMap((record) => {
       return record.imeiNumbers
@@ -275,7 +252,6 @@ const DispachMobilesList = () => {
         ));
     }) || [];
 
-  console.log("solution", dispatchedImeisList);
 
   return (
     <>

@@ -14,7 +14,6 @@ const PartyLedger = () => {
   const[showAmountPayModal, setShowAmountPayModal] = useState(false);
   const[id, setId] = useState("");
   const handleAddPayment = (rowData) => {
-    console.log("Row Data", rowData);
     setId(rowData._id);
     setShowAmountPayModal(true);
   }
@@ -24,11 +23,10 @@ const PartyLedger = () => {
             partyName
         }
         const response = await api.post("/api/partyLedger/create",payload);
-        console.log("This is the response", response)
         toast.success("Party added successfully")
         setShowModal(false)
       }catch(error){
-        console.log("Error in creating file,",error)
+        console.error("Error in creating file,",error)
         setShowModal(false)
         toast.error(error?.response?.data?.message || "Error in creating party")
     }
@@ -36,10 +34,9 @@ const PartyLedger = () => {
   const getAllPartyLedgerRecords = async() =>{
     try{
       const response = await api.get(`/api/partyLedger/getAllPartiesRecords`)
-      console.log("This is the records",response?.data?.data)
       setAllPartyLedgerRecords(response?.data?.data)
     }catch(error){
-      console.log("error in getting all party ledger records", error)
+      console.error("error in getting all party ledger records", error)
     }
   }
 
@@ -52,7 +49,6 @@ const PartyLedger = () => {
       return acc;
     }, {});
   };
-  console.log("this is id", id);
   
   const handleAddAmount = async() =>{
     try{
@@ -60,12 +56,11 @@ const PartyLedger = () => {
         amountToPay:amount
       }
       const response = await api.patch(`/api/Purchase/bulk-purchase-credit-pay/${id}`,payload);
-      console.log("This is the response", response)
       toast.success("Amount added successfully")
       getAllPartyLedgerRecords()
       setShowAmountPayModal(false)
     }catch(error){
-      console.log("Error in adding amount",error)
+      console.error("Error in adding amount",error)
       setShowAmountPayModal(false)
       toast.error(error?.response?.data?.message || "Error in adding amount")
   }
@@ -75,7 +70,7 @@ const PartyLedger = () => {
   useEffect(()=>{
     getAllPartyLedgerRecords()
   },[])
-  console.log("party records", partyLedgerRecords);
+  
   
   return (
     <div style={{ width: "100%", padding: "16px",  }}>

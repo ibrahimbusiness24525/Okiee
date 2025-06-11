@@ -15,17 +15,14 @@ const MobileInvoice = ({ showModal, data, handleClose }) => {
         finalPrice: data.finalPrice,
         // Add other relevant fields if necessary
       });
-      console.log('Invoice created:', response.data);
       handleClose(); // Close the invoice modal after creating the invoice
     } catch (error) {
-      console.error('Error creating invoice:', error);
     }
   };
 
   const handleDispatchMobile = async () => {
     // Implement logic to dispatch the mobile (e.g., API call)
     // Update UI or display a success message after dispatching
-    console.log('Dispatching mobile...');
     setDispatchModalVisible(false); // Close the dispatch modal
   };
 

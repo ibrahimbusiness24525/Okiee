@@ -26,24 +26,20 @@ const [totalCash, setTotalCash] = useState(0);
       
       setTodayBookData(response?.data?.data || []);
     }catch(error){
-      console.log("Error in getting the field", error);
     }
   } 
   const fetchTotalCash = async () => {
       try {
         const res = await api.get('/api/pocketCash/total');
         setTotalCash(res.data.total);
-        console.log("total", res)
       } catch (error) {
         console.error('Failed to fetch total cash:', error);
       }
 };
   
-  console.log("this is the date" , totalCash);
   const getAllBanks = async () => {
     try {
       const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
-      console.log('All banks:', response?.data?.banks);
       setBankData(response?.data?.banks); // Set the banks state with the fetched data
     } catch (error) {
       console.error('Error fetching banks:', error);
@@ -54,7 +50,6 @@ const [totalCash, setTotalCash] = useState(0);
         fetchTotalCash();
         getTodayBook();
   },[]); 
-console.log("these are required banks", bankData)
 
   
 const uniqueSoldBulkPhones = todayBookData?.soldBulkPhone
@@ -126,7 +121,6 @@ const totalSingleSalePrice = todayBookData?.soldSinglePhone?.reduce(
 ) || 0;
 
 const totalSalesPrice = totalSingleSalePrice + totalBulkSalePrice;
-console.log("Total Purchase Price:", totalPurchasePrice, "Total Invoices:", totalInvoices, "Total Sales Price:", totalSalesPrice);
 
     const extractedAccessoriesTotalProfile = totalSalesPrice > totalPurchasePrice ? "Profit" : "Loss";
     // const extractedAccessoriesTotalProfile = Math.max(0, (totalSalesPrice - totalPurchasePrice));
@@ -445,13 +439,9 @@ const [data, setData] = useState({
 
 
   
-  console.log("Total Purchase Price:", totalPurchasePrice);
   
-  console.log("Total invoices:", totalInvoices);
 
-  // console.log("Total bulk invoices:", totalBulkInvoices);
   
-  console.log("detail today book", todayBookData);
   const navigation = useNavigate()
   return (
 <div style={{ padding: "20px", minHeight: "100vh" }}>

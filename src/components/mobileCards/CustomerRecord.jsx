@@ -59,7 +59,6 @@ const CustomerRecord = () => {
     try {
       const response = await api.get(`/api/Purchase/customer-sold-record/${customerNumber}`);
       setSoldRecord(response?.data || []);
-      console.log("Sold Record:", response);
     } catch (error) {
       console.error("Error fetching sold record:", error);
     }

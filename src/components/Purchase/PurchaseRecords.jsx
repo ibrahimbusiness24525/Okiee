@@ -101,7 +101,6 @@ const PurchaseRecords = () => {
     try{
       const response = await api.get("api/Purchase/all-purchase-phone")
       // const response = await axios.get(`${BASE_URL}api/Purchase/all-purchase-phone`)
-      console.log("This is the records",response)
       setNewPhones(response?.data?.data?.singlePhones?.filter((item) => {
         return  item.phoneCondition === "New"; 
     }));
@@ -112,12 +111,10 @@ const PurchaseRecords = () => {
     }));
       setPurchasedPhone(response?.data?.data)
     }catch(error){
-      console.log("error in getting all ledger records", error)
     }
   }
   const[scannedBarcodeValue,setScannedBarcodeValue]= useState("")
 const handleScan = (value) => {
-  console.log("Scanned IMEI:", value);
   setScannedBarcodeValue(value)
 };
   useEffect(()=>{

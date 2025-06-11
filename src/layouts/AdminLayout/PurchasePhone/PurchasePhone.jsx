@@ -291,7 +291,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
   if(editMobile && !bulkEdit){
     try {
     const response =   await api.put(`/api/Purchase/single-purchase-phone/${editMobile._id}`, formData)
-      console.log(response, "response");
       if (response) {
         toast("Purchase Phone Record edited Successfully");
         handleSinglePhoneModalclose();
@@ -300,7 +299,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
       }
     } catch (error) {
       console.error(error);
-      console.log(error);
       
       toast("Something went wrong");
     } finally {
@@ -320,7 +318,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
       `/api/Purchase/purchase-phone`,
       formData
     )
-        console.log(response, "response");
     
         if (response) {
           toast("Purchase Phone Record Added Successfully");
@@ -329,8 +326,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
           // resetForm();
         }
       } catch (error) {
-        console.error(error);
-        console.log(error);
         
         toast("Something went wrong");
       } finally {
@@ -426,9 +421,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
   }, [bulkData.ramSimDetails])
 
   const handleBulkRecordSubmit = async() =>{
-    console.log('====================================');
-    console.log("bulk data",bulkData);
-    console.log('====================================');
+
     
     if(bulkEdit){
       try {
@@ -474,7 +467,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
         }
       } catch (error) {
         console.error(error);
-        console.log(error);
+
         
         toast(error?.response?.data?.message || error?.message || "Something went wrong!");
       } finally {
@@ -524,7 +517,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
         }
       } catch (error) {
         console.error(error);
-        console.log(error);
+
         
         toast(error?.response?.data?.message || error?.message || "Something went wrong!");
       } finally {
@@ -535,7 +528,7 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
   const getAllBanks = async () => {
     try {
       const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
-      console.log('All banks:', response?.data?.banks);
+
       setBanks(response?.data?.banks); // Set the banks state with the fetched data
     } catch (error) {
       console.error('Error fetching banks:', error);
@@ -547,7 +540,6 @@ const PurchasePhone = ({ modal,editMobile, handleModalClose,type="purchase",bulk
   }
   , []);
 
-console.log("These are the banks", banks);
 
 
   return (

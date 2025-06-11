@@ -30,7 +30,6 @@ const Wallet = () => {
     try {
       const res = await api.get('/api/pocketCash/total');
       setTotalCash(res.data.total);
-      console.log("total", res)
     } catch (error) {
       console.error('Failed to fetch total cash:', error);
     }
@@ -63,7 +62,6 @@ const Wallet = () => {
         '/api/banks/create', // your create bank endpoint
         formData,
       );
-      console.log('Bank created successfully:', response.data);
       toast.success('Bank created successfully!');
       setFormData({ bankName: '', accountType: '', accountNumber: '' }); // Reset form data
       getAllBanks(); // Fetch all banks when the component mounts
@@ -76,7 +74,6 @@ const Wallet = () => {
   const getAllBanks = async () => {
     try {
       const response = await api.get('/api/banks/getAllBanks'); // your get all banks endpoint
-      console.log('All banks:', response?.data?.banks);
       setBanks(response?.data?.banks); // Set the banks state with the fetched data
     } catch (error) {
       console.error('Error fetching banks:', error);
@@ -106,7 +103,6 @@ const Wallet = () => {
           accountCash: formData.accountCash, // Get the account cash from the form data
         } // your add cash endpoint
       )
-      console.log('Cash added successfully:', response.data);
       toast.success('Cash added successfully!');
       getAllBanks()
     } catch (error) {
@@ -126,7 +122,6 @@ const Wallet = () => {
           accountCash: formData.accountCash, // Get the account cash from the form data
         } // your add cash endpoint
       )
-      console.log('Cash removed successfully:', response.data);
       toast.success('Cash removed successfully!');
       getAllBanks()
     } catch (error) {
@@ -141,7 +136,7 @@ const Wallet = () => {
       toast.success("Bank Deleted Successfully")
       getAllBanks()
     } catch (error) {
-      console.log("error", error)
+      console.error("error", error)
       toast.success("Error in deleting bank")
 
     }
