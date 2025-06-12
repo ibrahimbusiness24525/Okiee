@@ -52,7 +52,6 @@ const AddAccessory = () => {
   const [formData, setFormData] = useState([
     {
       accessoryId: '',
-      accessoryName: '',
       quantity: 1,
       perPiecePrice: 0,
     },
@@ -521,23 +520,7 @@ const AddAccessory = () => {
                   </Form.Select>
                 </Form.Group>
 
-                {/* Accessory Name */}
-                <Form.Group controlId={`accessoryName-${index}`}>
-                  <Form.Label>Accessory Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={accessory.accessoryName}
-                    onChange={(e) =>
-                      setFormData((prev) => {
-                        const newData = [...prev];
-                        newData[index].accessoryName = e.target.value;
-                        return newData;
-                      })
-                    }
-                    placeholder="Enter accessory name"
-                    required
-                  />
-                </Form.Group>
+
 
                 {/* Quantity */}
                 <Form.Group controlId={`quantity-${index}`}>
@@ -591,7 +574,6 @@ const AddAccessory = () => {
                 ...prev,
                 {
                   accessoryId: '',
-                  accessoryName: '',
                   quantity: 1,
                   perPiecePrice: 0,
                 },
