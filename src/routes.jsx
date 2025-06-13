@@ -147,6 +147,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/pocketCashTransactions',
+        element: lazy(() => import('./components/Ledger/PocketCashTransactions')) // Ledger
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/partyLedger',
         element: lazy(() => import('./components/Ledger/PartyLedger')) // Ledger
       },
@@ -180,7 +185,7 @@ const routes = [
         path: '/app/dashboard/addShop',
         element: lazy(() => import('./layouts/AdminLayout/add-shop/add-shop')) // Mobile List
       },
-    
+
       {
         exact: 'true',
         path: '/app/dashboard/mobile-details', // Updated path for mobile details

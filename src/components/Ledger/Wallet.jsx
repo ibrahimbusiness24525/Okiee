@@ -7,10 +7,12 @@ import { dateFormatter } from 'utils/dateFormatter';
 import { ModeEdit } from '@mui/icons-material';
 import { Button } from 'react-bootstrap';
 import Modal from 'components/Modal/Modal';
+import { useNavigate } from 'react-router-dom';
 
 
 const Wallet = () => {
-
+  const Navigate = useNavigate()
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
   const [formData, setFormData] = useState({
     bankName: '',
     accountType: '',
@@ -152,7 +154,23 @@ const Wallet = () => {
 
   return (
     <>
+      <button
+        onClick={() => setShowAnalyticsModal(true)}
+        style={{
+          padding: '15px 30px',
+          margin: '20px',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          backgroundColor: '#28a745',
+          color: 'white',
+          transition: 'transform 0.2s ease, background-color 0.3s',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        }}>View Analytics</button>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
+
         <div style={styles.cardStyle} onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.target.style.transform = 'scale(1)'} >
           <h2>Pocket Cash 💸</h2>
           <h3 style={{ fontSize: '36px', margin: '20px 0', fontWeight: 'bold' }}>₹ {totalCash}</h3>
@@ -165,6 +183,9 @@ const Wallet = () => {
               Remove Cash
             </button>
           </div>
+          <button style={{ ...styles.buttonStyle, backgroundColor: '#007bff', color: 'white', marginTop: '20px' }} onClick={() => Navigate("/app/dashboard/pocketCashTransactions")}>
+            View Transactions
+          </button>
         </div>
         <div style={styles.container}>
           <h1 style={styles.heading}>Add Bank</h1>
@@ -447,6 +468,134 @@ const Wallet = () => {
               </Button>
             </div>
           </div>
+        </div>
+      </Modal>
+      <Modal
+        toggleModal={() => setShowAnalyticsModal(!showAnalyticsModal)}
+        size="lg"
+        show={showAnalyticsModal}
+      >
+        <div style={{ padding: '30px', textAlign: 'center' }}>
+          <h2 style={{ fontWeight: 'bold', color: '#007bff', marginBottom: 30 }}>Wallet Analytics</h2>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 40, flexWrap: 'wrap', marginBottom: 40 }}>
+            {/* Pocket Cash Card */}
+            <div style={{
+              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+              borderRadius: 16,
+              boxShadow: '0 4px 16px rgba(67,233,123,0.15)',
+              padding: 32,
+              minWidth: 260,
+              textAlign: 'center'
+            }}>
+              <h4 style={{ color: '#0a3d62', fontWeight: 700, marginBottom: 10 }}>Pocket Cash</h4>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#009432', marginBottom: 8 }}>
+                ₹ {totalCash}
+              </div>
+              <div style={{ color: '#222f3e', fontSize: 16 }}>Current Balance</div>
+            </div>
+            {/* Banks Card */}
+            <div style={{
+              background: 'linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%)',
+              borderRadius: 16,
+              boxShadow: '0 4px 16px rgba(116,235,213,0.15)',
+              padding: 32,
+              minWidth: 260,
+              textAlign: 'center'
+            }}>
+              <h4 style={{ color: '#222f3e', fontWeight: 700, marginBottom: 10 }}>Total Bank Balance</h4>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#1e3799', marginBottom: 8 }}>
+                ₹ {banks.reduce((sum, b) => sum + (Number(b.accountCash) || 0), 0)}
+              </div>
+              <div style={{ color: '#222f3e', fontSize: 16 }}>Across {banks.length} Bank{banks.length !== 1 ? 's' : ''}</div>
+            </div>
+
+            <div style={{
+              background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+              borderRadius: 16,
+              boxShadow: '0 4px 16px rgba(247,151,30,0.12)',
+              padding: 32,
+              minWidth: 260,
+              textAlign: 'center'
+            }}>
+              <h4 style={{ color: '#b06ab3', fontWeight: 700, marginBottom: 10 }}>Profit / Loss</h4>
+              {(() => {
+                // Calculate profit/loss: (cashIn - cashOut) for all banks + pocket cash
+                const totalIn = banks.reduce((sum, b) => sum + (Number(b.cashIn) || 0), 0);
+                const totalOut = banks.reduce((sum, b) => sum + (Number(b.cashOut) || 0), 0);
+                // For pocket cash, profit is just the current totalCash (since no cashIn/cashOut breakdown)
+                // So, total profit = (bank cashIn - bank cashOut) + (current pocket cash)
+                const profit = (totalIn - totalOut) + (Number(totalCash) || 0);
+                return (
+                  <div style={{
+                    fontSize: 32,
+                    fontWeight: 800,
+                    color: profit >= 0 ? '#27ae60' : '#e74c3c',
+                    marginBottom: 8
+                  }}>
+                    ₹ {profit}
+                  </div>
+                );
+              })()}
+              <div style={{ color: '#222f3e', fontSize: 16 }}>Total (Banks + Pocket Cash)</div>
+            </div>
+          </div>
+          {/* Transaction Summary Table */}
+          <div style={{
+            margin: '0 auto',
+            maxWidth: 900,
+            background: '#fff',
+            borderRadius: 12,
+            boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+            padding: 24
+          }}>
+            <h4 style={{ color: '#222f3e', fontWeight: 700, marginBottom: 18, textAlign: 'left' }}>Bank-wise Summary</h4>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
+              <thead>
+                <tr style={{ background: '#f1f2f6' }}>
+                  <th style={{ padding: 10, borderRadius: 6, textAlign: 'left' }}>Bank Name</th>
+                  <th style={{ padding: 10, textAlign: 'right' }}>Balance</th>
+                  <th style={{ padding: 10, textAlign: 'right' }}>Cash In</th>
+                  <th style={{ padding: 10, textAlign: 'right' }}>Cash Out</th>
+                  <th style={{ padding: 10, textAlign: 'right' }}>Net</th>
+                </tr>
+              </thead>
+              <tbody>
+                {banks.map((b, idx) => {
+                  const net = (Number(b.cashIn) || 0) - (Number(b.cashOut) || 0);
+                  return (
+                    <tr key={b._id || idx} style={{ borderBottom: '1px solid #f1f2f6' }}>
+                      <td style={{ padding: 10, fontWeight: 600 }}>{b.bankName}</td>
+                      <td style={{ padding: 10, textAlign: 'right' }}>₹ {b.accountCash}</td>
+                      <td style={{ padding: 10, textAlign: 'right', color: '#27ae60' }}>+₹ {b.cashIn || 0}</td>
+                      <td style={{ padding: 10, textAlign: 'right', color: '#e74c3c' }}>-₹ {b.cashOut || 0}</td>
+                      <td style={{
+                        padding: 10,
+                        textAlign: 'right',
+                        color: net >= 0 ? '#27ae60' : '#e74c3c',
+                        fontWeight: 700
+                      }}>
+                        ₹ {net}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {banks.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: 20, color: '#888' }}>
+                      No bank data available.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => setShowAnalyticsModal(false)}
+            style={{ padding: '10px 20px', fontSize: '16px', marginTop: '30px' }}
+          >
+            Close
+          </Button>
         </div>
       </Modal>
 

@@ -402,11 +402,27 @@ const SoldInvoice = () => {
           Download
         </button>
         <button
-
           style={{ ...styles.button, ...styles.submitBtn, backgroundColor: '#25D366', color: '#fff' }}
           onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
           onMouseLeave={(e) => (e.target.style.transform = 'none')}
-          onClick={() => window.open(`https://api.whatsapp.com/send?text=Invoice%20Details:%0A%0AShop%20Name:%20${shop?.shopName ?? 'Shop Name'}%0AContact:%20${shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}%0AInvoice%20No:%20${invoiceData.invoiceNumber}%0ADate:%20${dataReceived?.saleDate}%0ACustomer%20Name:%20${dataReceived?.customerName}%0ACustomer%20Number:%20${dataReceived?.customerNumber}%0ATotal%20Amount:%20${totalInvoice}Rs%0A%0AThank%20you!`, '_blank')}
+          onClick={() => {
+            // Send WhatsApp message directly to customer number if available
+            const customerNumber = dataReceived?.customerNumber;
+            if (customerNumber) {
+              // WhatsApp expects international format without + or 00, e.g., 923001234567
+              // Remove any non-digit characters
+              const phone = customerNumber.replace(/\D/g, '');
+              const message = encodeURIComponent(
+                `Invoice Details:\n\nShop Name: ${shop?.shopName ?? 'Shop Name'}\nContact: ${shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}\nInvoice No: ${invoiceData.invoiceNumber}\nDate: ${dataReceived?.saleDate}\nCustomer Name: ${dataReceived?.customerName}\nCustomer Number: ${customerNumber}\nTotal Amount: ${totalInvoice}Rs\n\nThank you!`
+              );
+              window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+            } else {
+              window.open(
+                `https://api.whatsapp.com/send?text=Invoice%20Details:%0A%0AShop%20Name:%20${shop?.shopName ?? 'Shop Name'}%0AContact:%20${shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}%0AInvoice%20No:%20${invoiceData.invoiceNumber}%0ADate:%20${dataReceived?.saleDate}%0ACustomer%20Name:%20${dataReceived?.customerName}%0ACustomer%20Number:%20${dataReceived?.customerNumber}%0ATotal%20Amount:%20${totalInvoice}Rs%0A%0AThank%20you!`,
+                '_blank'
+              );
+            }
+          }}
         >
           Send to WhatsApp
         </button>

@@ -15,24 +15,24 @@ import WalletTransactionModal from 'components/WalletTransaction/WalletTransacti
 import { useGetAccessories } from 'hooks/accessory';
 import { Eye, EyeOff } from 'lucide-react'
 const UsedMobilesList = () => {
-  const{data} = useGetAccessories()
-    const[showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
-    const[walletTransaction, setWalletTransaction] = useState({
-      bankAccountUsed: "",
-      amountFromBank: "",
-      amountFromPocket: "",
-    })
+  const { data } = useGetAccessories()
+  const [showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
+  const [walletTransaction, setWalletTransaction] = useState({
+    bankAccountUsed: "",
+    amountFromBank: "",
+    amountFromPocket: "",
+  })
   const [mobiles, setMobiles] = useState([]);
-  const[bankName,setBankName]= useState("");
-  const[payableAmountNow,setPayableAmountNow]= useState("")
-  const[payableAmountLater,setPayableAmountLater]= useState("");
-  const[payableAmountLaterDate,setPayableAmountLaterDate]=useState("");
-  const[exchangePhoneDetail,setExchangePhoneDetail]= useState("");
-  const[cnicFrontPic,setCnicFrontPic]= useState("");
-  const[cnicBackPic,setCnicBackPic]= useState("");
-  const[customerNumber,setCustomerNumber]= useState("");
-  const[saleDate,setSaleDate] = useState("")
-  const[sellingType,setSellingType]= useState("")
+  const [bankName, setBankName] = useState("");
+  const [payableAmountNow, setPayableAmountNow] = useState("")
+  const [payableAmountLater, setPayableAmountLater] = useState("");
+  const [payableAmountLaterDate, setPayableAmountLaterDate] = useState("");
+  const [exchangePhoneDetail, setExchangePhoneDetail] = useState("");
+  const [cnicFrontPic, setCnicFrontPic] = useState("");
+  const [cnicBackPic, setCnicBackPic] = useState("");
+  const [customerNumber, setCustomerNumber] = useState("");
+  const [saleDate, setSaleDate] = useState("")
+  const [sellingType, setSellingType] = useState("")
   // const[accessoryName,setAccessoryName] = useState("");
   // const[accessoryPrice,setAccessoryPrice]= useState(0);
   const [accessories, setAccessories] = useState([
@@ -52,15 +52,15 @@ const UsedMobilesList = () => {
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const[list,setList] = useState(false)
-  const[id,setId] = useState("")
-  const[companies,setCompanies]= useState([])
+  const [list, setList] = useState(false)
+  const [id, setId] = useState("")
+  const [companies, setCompanies] = useState([])
   const [selectedCompany, setSelectedCompany] = useState(null);
 
-  
+
 
   const navigate = useNavigate();
-    
+
   useEffect(() => {
     getMobiles();
   }, []);
@@ -70,14 +70,14 @@ const UsedMobilesList = () => {
       // Retrieve user and shop data from localStorage
       const user = JSON.parse(localStorage.getItem('user'));
       const shop = JSON.parse(localStorage.getItem('shop'));
-  
+
       // Check if shop and shop.id exist and are valid
       if (!shop || !shop.shopId) {
         console.error("Shop ID is missing or invalid:", shop);
         return;
       }
-  
-  
+
+
       // Make the API call with the valid shopid
       const response = await api.get("/api/Purchase/purchase-phone")
       // const response = await axios.get(BASE_URL + `api/purchase/purchase-phone?shopid=${shop.shopId}`);
@@ -87,14 +87,14 @@ const UsedMobilesList = () => {
       console.error("Error fetching mobiles:", error.response?.data || error.message);
     }
   };
-  
-  
+
+
 
 
 
   const deletePhone = async () => {
     try {
-     await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
+      await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
       setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
     } catch (error) {
       console.error('Error deleting phone:', error);
@@ -108,26 +108,26 @@ const UsedMobilesList = () => {
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
   };
-  
-  const handleDispatchSubmit = async() => {
-    try{
-    if (!shopName || !personName) {
-      alert('Please fill all fields');
-      return;
-    }
-    const response  = await   api.patch(`/api/Purchase/single-purchase-dispatch/${id}`,
-      {
-        shopName,
-        receiverName: personName,
+
+  const handleDispatchSubmit = async () => {
+    try {
+      if (!shopName || !personName) {
+        alert('Please fill all fields');
+        return;
       }
-    )
-    setShopName('');
-    setPersonName('');
-    setShowDispatchModal(false);
-    getMobiles()
-    toast.success("Dispatch is created successfully")
-  }catch(error){
-  }
+      const response = await api.patch(`/api/Purchase/single-purchase-dispatch/${id}`,
+        {
+          shopName,
+          receiverName: personName,
+        }
+      )
+      setShopName('');
+      setPersonName('');
+      setShowDispatchModal(false);
+      getMobiles()
+      toast.success("Dispatch is created successfully")
+    } catch (error) {
+    }
   };
 
   const handleEdit = (mobile) => {
@@ -145,13 +145,13 @@ const UsedMobilesList = () => {
   };
 
   const handleSoldSubmit = async () => {
- if ( !warranty || !customerName || !customerNumber || !saleDate || sellingType === ""|| !finalPrice) {
+    if (!warranty || !customerName || !customerNumber || !saleDate || sellingType === "" || !finalPrice) {
       alert('Please fill all fields');
       return;
     }
     const updatedMobile = {
       ...soldMobile,
-       walletTransaction,
+      walletTransaction,
       finalPrice,
       sellingType,
       warranty,
@@ -211,12 +211,12 @@ const UsedMobilesList = () => {
   const filteredMobiles = mobiles?.filter((mobile) => {
     // Exclude sold phones
     if (mobile.isSold) return false;
-    if(mobile.phoneCondition==="New") return false
-    if(mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
-  
+    if (mobile.phoneCondition === "New") return false
+    if (mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
+
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
-  
+
     return searchWords.every((word) =>
       // Check if each word exists in any of the searchable fields
       mobile.companyName?.toLowerCase()?.includes(word) ||
@@ -226,28 +226,28 @@ const UsedMobilesList = () => {
       String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
     );
   });
-const updatedFilteredMobiles = useMemo(() => {
-  return filteredMobiles.filter(record => record.dispatch === false);
-}, [filteredMobiles]);
-useEffect(() => {
-  if (!updatedFilteredMobiles || updatedFilteredMobiles.length === 0) return;
+  const updatedFilteredMobiles = useMemo(() => {
+    return filteredMobiles.filter(record => record.dispatch === false);
+  }, [filteredMobiles]);
+  useEffect(() => {
+    if (!updatedFilteredMobiles || updatedFilteredMobiles.length === 0) return;
 
-  const uniqueCompaniesMap = new Map();
+    const uniqueCompaniesMap = new Map();
 
-  updatedFilteredMobiles.forEach((record) => {
-    const normalizedName = record.companyName.trim().toLowerCase();
-    if (!uniqueCompaniesMap.has(normalizedName)) {
-      uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
+    updatedFilteredMobiles.forEach((record) => {
+      const normalizedName = record.companyName.trim().toLowerCase();
+      if (!uniqueCompaniesMap.has(normalizedName)) {
+        uniqueCompaniesMap.set(normalizedName, record.companyName.trim());
+      }
+    });
+
+    const uniqueCompanies = Array.from(uniqueCompaniesMap.values());
+
+    // Only update if companies have changed
+    if (JSON.stringify(companies) !== JSON.stringify(uniqueCompanies)) {
+      setCompanies(uniqueCompanies);
     }
-  });
-
-  const uniqueCompanies = Array.from(uniqueCompaniesMap.values());
-
-  // Only update if companies have changed
-  if (JSON.stringify(companies) !== JSON.stringify(uniqueCompanies)) {
-    setCompanies(uniqueCompanies);
-  }
-}, [filteredMobiles]);
+  }, [filteredMobiles]);
   const handleAccessoryChange = (index, field, value) => {
     const updatedAccessories = [...accessories];
     updatedAccessories[index][field] = value;
@@ -265,47 +265,47 @@ useEffect(() => {
     setAccessories(updatedAccessories);
   };
   const visibleMobiles = filteredMobiles
-  .filter((record) => record.dispatch === false)
-  .filter((record) => {
-    if (!selectedCompany) return true;
-    const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
-    return normalize(record.companyName) === normalize(selectedCompany);
-  });
+    .filter((record) => record.dispatch === false)
+    .filter((record) => {
+      if (!selectedCompany) return true;
+      const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
+      return normalize(record.companyName) === normalize(selectedCompany);
+    });
 
   const totalPurchasePrice = visibleMobiles.reduce(
-  (total, mobile) => total + (Number(mobile.purchasePrice) || 0),
-  0
-);
-const handleShareInventory = () => {
-  const doc = new jsPDF();
-  doc.text('Mobile Inventory', 10, 10);
+    (total, mobile) => total + (Number(mobile.purchasePrice) || 0),
+    0
+  );
+  const handleShareInventory = () => {
+    const doc = new jsPDF();
+    doc.text('Mobile Inventory', 10, 10);
 
-  let y = 20;
+    let y = 20;
 
-  visibleMobiles.forEach((mobile, index) => {
-    const { images, companyName, modelSpecifications, specs, color } = mobile;
-    const imgData = `data:image/jpeg;base64,${images[0]}`;
+    visibleMobiles.forEach((mobile, index) => {
+      const { images, companyName, modelSpecifications, specs, color } = mobile;
+      const imgData = `data:image/jpeg;base64,${images[0]}`;
 
-    // Check if next item will exceed page height
-    if (y + 50 > 280) {  // 280 leaves a margin from the bottom of A4
-      doc.addPage();
-      y = 20; // reset y for new page
-    }
+      // Check if next item will exceed page height
+      if (y + 50 > 280) {  // 280 leaves a margin from the bottom of A4
+        doc.addPage();
+        y = 20; // reset y for new page
+      }
 
-    if (imgData) {
-      doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
-    }
-    doc.text(`Company: ${companyName}`, 50, y + 5);
-    doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
-    doc.text(`Specification: ${specs}`, 50, y + 25);
-    doc.text(`Color: ${color}`, 50, y + 35);
+      if (imgData) {
+        doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
+      }
+      doc.text(`Company: ${companyName}`, 50, y + 5);
+      doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
+      doc.text(`Specification: ${specs}`, 50, y + 25);
+      doc.text(`Color: ${color}`, 50, y + 35);
 
-    y += 50; // move y for the next entry
-  });
+      y += 50; // move y for the next entry
+    });
 
-  doc.save('Mobile_Inventory.pdf');
-};
-const [showAmount, setShowAmount] = useState(false)
+    doc.save('Mobile_Inventory.pdf');
+  };
+  const [showAmount, setShowAmount] = useState(false)
   return (
     <>
       {/* Search bar */}
@@ -320,566 +320,566 @@ const [showAmount, setShowAmount] = useState(false)
           onChange={handleSearch}
         />
       </InputGroup>
-     <div
-  style={{
-    display: "flex",
-    gap: "16px",
-    flexWrap: "wrap",
-    marginBottom: "1.5rem",
-    justifyContent: "flex-start",
-    alignItems: "center",
-  }}
->
-  {/* Enhanced "Show All" button */}
-  <button
-    onClick={() => setSelectedCompany(null)}
-    style={{
-      padding: "12px 24px",
-      borderRadius: "25px",
-      border: "none",
-      background: selectedCompany === null 
-        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        : "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-      color: selectedCompany === null ? "#fff" : "#495057",
-      cursor: "pointer",
-      fontWeight: "600",
-      fontSize: "14px",
-      letterSpacing: "0.5px",
-      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-      boxShadow: selectedCompany === null 
-        ? "0 8px 25px rgba(102, 126, 234, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
-        : "0 2px 8px rgba(0, 0, 0, 0.1)",
-      transform: selectedCompany === null ? "translateY(-2px)" : "translateY(0)",
-      position: "relative",
-      overflow: "hidden",
-    }}
-    onMouseEnter={(e) => {
-      if (selectedCompany !== null) {
-        e.target.style.background = "linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%)";
-        e.target.style.transform = "translateY(-1px)";
-        e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.15)";
-      }
-    }}
-    onMouseLeave={(e) => {
-      if (selectedCompany !== null) {
-        e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
-        e.target.style.transform = "translateY(0)";
-        e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
-      }
-    }}
-  >
-    <span style={{ position: "relative", zIndex: 1 }}>Show All</span>
-  </button>
-
-  {companies.map((company, index) => {
-    const isSelected = selectedCompany === company;
-    return (
-      <button
-        key={index}
-        onClick={() => setSelectedCompany(company)}
+      <div
         style={{
-          padding: "12px 24px",
-          borderRadius: "25px",
-          border: "none",
-          background: isSelected 
-            ? "linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%)"
-            : "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-          color: isSelected ? "#fff" : "#495057",
-          fontWeight: "600",
-          fontSize: "14px",
-          letterSpacing: "0.5px",
-          cursor: "pointer",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          boxShadow: isSelected
-            ? "0 8px 25px rgba(86, 171, 47, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
-            : "0 2px 8px rgba(0, 0, 0, 0.08)",
-          transform: isSelected ? "translateY(-2px)" : "translateY(0)",
-          position: "relative",
-          overflow: "hidden",
-          border: isSelected ? "2px solid rgba(255, 255, 255, 0.3)" : "2px solid #e9ecef",
-        }}
-        onMouseEnter={(e) => {
-          if (!isSelected) {
-            e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
-            e.target.style.transform = "translateY(-1px)";
-            e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.12)";
-            e.target.style.borderColor = "#dee2e6";
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isSelected) {
-            e.target.style.background = "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)";
-            e.target.style.transform = "translateY(0)";
-            e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.08)";
-            e.target.style.borderColor = "#e9ecef";
-          }
+          display: "flex",
+          gap: "16px",
+          flexWrap: "wrap",
+          marginBottom: "1.5rem",
+          justifyContent: "flex-start",
+          alignItems: "center",
         }}
       >
-        <span style={{ position: "relative", zIndex: 1 }}>
-          {company}
-        </span>
-        {/* Subtle shine effect for selected buttons */}
-        {isSelected && (
-          <div
-            style={{
-              position: "absolute",
-              top: "0",
-              left: "-100%",
-              width: "100%",
-              height: "100%",
-              background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
-              animation: "shine 2s infinite",
-              zIndex: 0,
-            }}
-          />
-        )}
-      </button>
-    );
-  })}
-</div>
+        {/* Enhanced "Show All" button */}
+        <button
+          onClick={() => setSelectedCompany(null)}
+          style={{
+            padding: "12px 24px",
+            borderRadius: "25px",
+            border: "none",
+            background: selectedCompany === null
+              ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+              : "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+            color: selectedCompany === null ? "#fff" : "#495057",
+            cursor: "pointer",
+            fontWeight: "600",
+            fontSize: "14px",
+            letterSpacing: "0.5px",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            boxShadow: selectedCompany === null
+              ? "0 8px 25px rgba(102, 126, 234, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
+              : "0 2px 8px rgba(0, 0, 0, 0.1)",
+            transform: selectedCompany === null ? "translateY(-2px)" : "translateY(0)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+          onMouseEnter={(e) => {
+            if (selectedCompany !== null) {
+              e.target.style.background = "linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%)";
+              e.target.style.transform = "translateY(-1px)";
+              e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.15)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (selectedCompany !== null) {
+              e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
+            }
+          }}
+        >
+          <span style={{ position: "relative", zIndex: 1 }}>Show All</span>
+        </button>
 
-{/* Add this CSS animation if you want the shine effect */}
-<style jsx>{`
+        {companies.map((company, index) => {
+          const isSelected = selectedCompany === company;
+          return (
+            <button
+              key={index}
+              onClick={() => setSelectedCompany(company)}
+              style={{
+                padding: "12px 24px",
+                borderRadius: "25px",
+                border: "none",
+                background: isSelected
+                  ? "linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%)"
+                  : "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+                color: isSelected ? "#fff" : "#495057",
+                fontWeight: "600",
+                fontSize: "14px",
+                letterSpacing: "0.5px",
+                cursor: "pointer",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: isSelected
+                  ? "0 8px 25px rgba(86, 171, 47, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
+                  : "0 2px 8px rgba(0, 0, 0, 0.08)",
+                transform: isSelected ? "translateY(-2px)" : "translateY(0)",
+                position: "relative",
+                overflow: "hidden",
+                border: isSelected ? "2px solid rgba(255, 255, 255, 0.3)" : "2px solid #e9ecef",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
+                  e.target.style.transform = "translateY(-1px)";
+                  e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.12)";
+                  e.target.style.borderColor = "#dee2e6";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.target.style.background = "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)";
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.08)";
+                  e.target.style.borderColor = "#e9ecef";
+                }
+              }}
+            >
+              <span style={{ position: "relative", zIndex: 1 }}>
+                {company}
+              </span>
+              {/* Subtle shine effect for selected buttons */}
+              {isSelected && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "0",
+                    left: "-100%",
+                    width: "100%",
+                    height: "100%",
+                    background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+                    animation: "shine 2s infinite",
+                    zIndex: 0,
+                  }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Add this CSS animation if you want the shine effect */}
+      <style jsx>{`
   @keyframes shine {
     0% { left: -100%; }
     100% { left: 100%; }
   }
 `}</style>
-<div className="d-flex justify-content-between align-items-center mb-3" style={{
-  background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-  padding: "20px",
-  borderRadius: "15px",
-  boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-  border: "1px solid #dee2e6"
-}}>
-  {/* Total Stock Amount Box */}
-  <div style={{ 
-    display: "flex", 
-    alignItems: "center", 
-    gap: "15px",
-    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-    padding: "20px 25px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
-    border: "2px solid #e3f2fd",
-    minWidth: "350px"
-  }}>
-    <div>
-      <h5 style={{ 
-        fontSize: 28, 
-        margin: 0,
-        color: "#2c3e50",
-        textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+      <div className="d-flex justify-content-between align-items-center mb-3" style={{
+        background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+        padding: "20px",
+        borderRadius: "15px",
+        boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
+        border: "1px solid #dee2e6"
       }}>
-        Total Stock Amount :
-        <span style={{ 
-          fontWeight: "bold", 
-          color: "#007bff", 
-          fontSize: 32,
-          marginLeft: "8px",
-          textShadow: "0 2px 4px rgba(0,123,255,0.2)"
+        {/* Total Stock Amount Box */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "15px",
+          background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+          padding: "20px 25px",
+          borderRadius: "12px",
+          boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
+          border: "2px solid #e3f2fd",
+          minWidth: "350px"
         }}>
-          {showAmount ? totalPurchasePrice : "••••••"}
+          <div>
+            <h5 style={{
+              fontSize: 28,
+              margin: 0,
+              color: "#2c3e50",
+              textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+            }}>
+              Total Stock Amount :
+              <span style={{
+                fontWeight: "bold",
+                color: "#007bff",
+                fontSize: 32,
+                marginLeft: "8px",
+                textShadow: "0 2px 4px rgba(0,123,255,0.2)"
+              }}>
+                {showAmount ? totalPurchasePrice : "••••••"}
+              </span>
+            </h5>
+          </div>
+          <button
+            onClick={() => setShowAmount(!showAmount)}
+            style={{
+              background: "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+              padding: "12px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.3s ease",
+              boxShadow: "0 4px 12px rgba(0,123,255,0.3)",
+              width: "45px",
+              height: "45px"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #0056b3 0%, #004085 100%)";
+              e.target.style.transform = "scale(1.15) rotate(5deg)";
+              e.target.style.boxShadow = "0 6px 20px rgba(0,123,255,0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #007bff 0%, #0056b3 100%)";
+              e.target.style.transform = "scale(1) rotate(0deg)";
+              e.target.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)";
+            }}
+            title={showAmount ? "Hide amount" : "Show amount"}
+          >
+            {showAmount ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+
+        {/* Stock Count Box */}
+        <div style={{
+          background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+          padding: "20px 30px",
+          borderRadius: "12px",
+          boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
+          border: "2px solid #e3f2fd",
+          textAlign: "center",
+          minWidth: "200px"
+        }}>
+          <h5 style={{
+            fontSize: "1.8rem",
+            margin: 0,
+            color: "#2c3e50",
+            textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+          }}>
+            Stock: <span style={{
+              fontWeight: "bold",
+              color: "#007bff",
+              fontSize: "2rem",
+              textShadow: "0 2px 4px rgba(0,123,255,0.2)"
+            }}>{visibleMobiles.length}</span>
+            <span style={{ color: "#6c757d", fontSize: "1.4rem" }}>Mobile(s)</span>
+          </h5>
+        </div>
+
+        {/* Share Inventory Button */}
+        <Button
+          variant="primary"
+          onClick={handleShareInventory}
+          style={{
+            background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+            border: "none",
+            color: "white",
+            padding: "15px 30px",
+            borderRadius: "12px",
+            fontWeight: "600",
+            fontSize: "1.1rem",
+            boxShadow: "0 6px 20px rgba(40,167,69,0.3)",
+            transition: "all 0.3s ease",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "linear-gradient(135deg, #218838 0%, #1e7e34 100%)";
+            e.target.style.transform = "translateY(-3px) scale(1.05)";
+            e.target.style.boxShadow = "0 10px 30px rgba(40,167,69,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "linear-gradient(135deg, #28a745 0%, #20c997 100%)";
+            e.target.style.transform = "translateY(0) scale(1)";
+            e.target.style.boxShadow = "0 6px 20px rgba(40,167,69,0.3)";
+          }}
+        >
+          Share Inventory
+        </Button>
+      </div>
+
+      <button
+        onClick={() => setList(!list)}
+        style={{
+          padding: "14px 28px",
+          background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
+          color: "white",
+          marginBottom: "24px",
+          fontWeight: "600",
+          fontSize: "14px",
+          letterSpacing: "0.5px",
+          borderRadius: "12px",
+          border: "none",
+          cursor: "pointer",
+          boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          position: "relative",
+          overflow: "hidden",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          transform: "translateY(0)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)";
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)";
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)";
+        }}
+        onMouseDown={(e) => {
+          e.currentTarget.style.transform = "translateY(1px)";
+          e.currentTarget.style.boxShadow = "0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)";
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+        }}
+      >
+        {/* Icon for visual enhancement */}
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ marginRight: "4px" }}
+        >
+          <path d="M3 3h18v18H3zM9 9h6v6H9z" />
+        </svg>
+
+        <span style={{ position: "relative", zIndex: 1 }}>
+          Change Record Design
         </span>
-      </h5>
-    </div>
-    <button
-      onClick={() => setShowAmount(!showAmount)}
-      style={{
-        background: "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
-        border: "none",
-        cursor: "pointer",
-        color: "white",
-        padding: "12px",
-        borderRadius: "50%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        transition: "all 0.3s ease",
-        boxShadow: "0 4px 12px rgba(0,123,255,0.3)",
-        width: "45px",
-        height: "45px"
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.background = "linear-gradient(135deg, #0056b3 0%, #004085 100%)";
-        e.target.style.transform = "scale(1.15) rotate(5deg)";
-        e.target.style.boxShadow = "0 6px 20px rgba(0,123,255,0.5)";
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.background = "linear-gradient(135deg, #007bff 0%, #0056b3 100%)";
-        e.target.style.transform = "scale(1) rotate(0deg)";
-        e.target.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)";
-      }}
-      title={showAmount ? "Hide amount" : "Show amount"}
-    >
-      {showAmount ? <EyeOff size={20} /> : <Eye size={20} />}
-    </button>
-  </div>
 
-  {/* Stock Count Box */}
-  <div style={{
-    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-    padding: "20px 30px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
-    border: "2px solid #e3f2fd",
-    textAlign: "center",
-    minWidth: "200px"
-  }}>
-    <h5 style={{ 
-      fontSize: "1.8rem", 
-      margin: 0,
-      color: "#2c3e50",
-      textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-    }}>
-      Stock: <span style={{ 
-        fontWeight: "bold", 
-        color: "#007bff",
-        fontSize: "2rem",
-        textShadow: "0 2px 4px rgba(0,123,255,0.2)"
-      }}>{visibleMobiles.length}</span> 
-      <span style={{ color: "#6c757d", fontSize: "1.4rem" }}>Mobile(s)</span>
-    </h5>
-  </div>
+        {/* Subtle shine effect overlay */}
+        <div
+          style={{
+            position: "absolute",
+            top: "0",
+            left: "-100%",
+            width: "100%",
+            height: "100%",
+            background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+            transition: "left 0.6s ease",
+            zIndex: 0,
+          }}
+          className="shine-effect"
+        />
+      </button>
 
-  {/* Share Inventory Button */}
-  <Button
-    variant="primary"
-    onClick={handleShareInventory}
-    style={{ 
-      background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-      border: "none", 
-      color: "white",
-      padding: "15px 30px",
-      borderRadius: "12px",
-      fontWeight: "600",
-      fontSize: "1.1rem",
-      boxShadow: "0 6px 20px rgba(40,167,69,0.3)",
-      transition: "all 0.3s ease",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px"
-    }}
-    onMouseEnter={(e) => {
-      e.target.style.background = "linear-gradient(135deg, #218838 0%, #1e7e34 100%)";
-      e.target.style.transform = "translateY(-3px) scale(1.05)";
-      e.target.style.boxShadow = "0 10px 30px rgba(40,167,69,0.5)";
-    }}
-    onMouseLeave={(e) => {
-      e.target.style.background = "linear-gradient(135deg, #28a745 0%, #20c997 100%)";
-      e.target.style.transform = "translateY(0) scale(1)";
-      e.target.style.boxShadow = "0 6px 20px rgba(40,167,69,0.3)";
-    }}
-  >
-    Share Inventory
-  </Button>
-</div>
-
-<button
-  onClick={() => setList(!list)}
-  style={{
-    padding: "14px 28px",
-    background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
-    color: "white",
-    marginBottom: "24px",
-    fontWeight: "600",
-    fontSize: "14px",
-    letterSpacing: "0.5px",
-    borderRadius: "12px",
-    border: "none",
-    cursor: "pointer",
-    boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    position: "relative",
-    overflow: "hidden",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    transform: "translateY(0)",
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.background = "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)";
-    e.currentTarget.style.transform = "translateY(-2px)";
-    e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.background = "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)";
-    e.currentTarget.style.transform = "translateY(0)";
-    e.currentTarget.style.boxShadow = "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)";
-  }}
-  onMouseDown={(e) => {
-    e.currentTarget.style.transform = "translateY(1px)";
-    e.currentTarget.style.boxShadow = "0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)";
-  }}
-  onMouseUp={(e) => {
-    e.currentTarget.style.transform = "translateY(-2px)";
-    e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
-  }}
->
-  {/* Icon for visual enhancement */}
-  <svg 
-    width="16" 
-    height="16" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round"
-    style={{ marginRight: "4px" }}
-  >
-    <path d="M3 3h18v18H3zM9 9h6v6H9z"/>
-  </svg>
-  
-  <span style={{ position: "relative", zIndex: 1 }}>
-    Change Record Design
-  </span>
-  
-  {/* Subtle shine effect overlay */}
-  <div
-    style={{
-      position: "absolute",
-      top: "0",
-      left: "-100%",
-      width: "100%",
-      height: "100%",
-      background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
-      transition: "left 0.6s ease",
-      zIndex: 0,
-    }}
-    className="shine-effect"
-  />
-</button>
-
-{/* Optional: Add this CSS for the shine animation on hover */}
-<style jsx>{`
+      {/* Optional: Add this CSS for the shine animation on hover */}
+      <style jsx>{`
   button:hover .shine-effect {
     left: 100%;
   }
-`}</style> 
-{!filteredMobiles.length> 0 ? 
-(
-  <div className="w-full h-full flex items-center justify-center">
-  <MoonLoader size={60} color="#4f46e5" />
-</div>
-)
-: 
-<>
-{list? <>
-    {/* <List items={filteredMobiles}
+`}</style>
+      {!filteredMobiles.length > 0 ?
+        (
+          <div className="w-full h-full flex items-center justify-center">
+            <MoonLoader size={60} color="#4f46e5" />
+          </div>
+        )
+        :
+        <>
+          {list ? <>
+            {/* <List items={filteredMobiles}
     displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
     descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
     onRowClick={"handleClick"}
      /> */}
-     <Table
-           // routes={["/purchase/purchaseRecords"]}
-            array={filteredMobiles.filter((record) => {
-  if (record.dispatch !== false) return false;
+            <Table
+              // routes={["/purchase/purchaseRecords"]}
+              array={filteredMobiles.filter((record) => {
+                if (record.dispatch !== false) return false;
 
-  if (!selectedCompany) return true;
+                if (!selectedCompany) return true;
 
-  const normalize = (str) =>
-    str.toLowerCase().replace(/\s+/g, "");
+                const normalize = (str) =>
+                  str.toLowerCase().replace(/\s+/g, "");
 
-  return (
-    normalize(record.companyName) === normalize(selectedCompany)
-  );
-})}
-               //  search={"imei1"}
-                keysToDisplay={["modelSpecifications", "companyName","finalPrice", "phoneCondition", "warranty"]}
-                label={[
-                    "Model Name",
-                    "Company Name",
-                    "Final Price",
-                    "Condition",
-                    "Warranty",
-            
-                    "Actions",
-                ]}
-                
-                extraColumns={[
-                  (obj) =>  
+                return (
+                  normalize(record.companyName) === normalize(selectedCompany)
+                );
+              })}
+              //  search={"imei1"}
+              keysToDisplay={["modelSpecifications", "companyName", "finalPrice", "phoneCondition", "warranty"]}
+              label={[
+                "Model Name",
+                "Company Name",
+                "Final Price",
+                "Condition",
+                "Warranty",
+
+                "Actions",
+              ]}
+
+              extraColumns={[
+                (obj) =>
                   <Button
-                  onClick={() => handleSoldClick(obj)}
-                  style={{
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  Sold
-                </Button>
+                    onClick={() => handleSoldClick(obj)}
+                    style={{
+                      backgroundColor: '#28a745',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '5px 10px',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Sold
+                  </Button>
               ]}
             />
-      </>:
-      <>
-      <Row xs={1} md={2} lg={3} className="g-4">
-   {filteredMobiles.length > 0 ? (
-  filteredMobiles
-    .filter((record) => record.dispatch === false)
-    .filter((record) => {
-      if (!selectedCompany) return true; // ✅ Show all if no company selected
-      const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
-      return normalize(record.companyName) === normalize(selectedCompany);
-    })
-    .map((mobile) => (
-      <Col key={mobile._id}>
-        <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-          <FaEdit
-            onClick={() => handleEdit(mobile)}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '50px',
-              color: '#28a745',
-              cursor: 'pointer',
-              fontSize: '1.2rem',
-            }}
-          />
-          <FaTrash
-            onClick={() => confirmDelete(mobile._id)}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              color: 'red',
-              cursor: 'pointer',
-              fontSize: '1.2rem',
-            }}
-          />
-          <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
-            <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
-              {mobile.companyName} {mobile.modelSpecifications}
-            </Card.Title>
-            {/* <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
+          </> :
+            <>
+              <Row xs={1} md={2} lg={3} className="g-4">
+                {filteredMobiles.length > 0 ? (
+                  filteredMobiles
+                    .filter((record) => record.dispatch === false)
+                    .filter((record) => {
+                      if (!selectedCompany) return true; // ✅ Show all if no company selected
+                      const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
+                      return normalize(record.companyName) === normalize(selectedCompany);
+                    })
+                    .map((mobile) => (
+                      <Col key={mobile._id}>
+                        <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+                          <FaEdit
+                            onClick={() => handleEdit(mobile)}
+                            style={{
+                              position: 'absolute',
+                              top: '10px',
+                              right: '50px',
+                              color: '#28a745',
+                              cursor: 'pointer',
+                              fontSize: '1.2rem',
+                            }}
+                          />
+                          <FaTrash
+                            onClick={() => confirmDelete(mobile._id)}
+                            style={{
+                              position: 'absolute',
+                              top: '10px',
+                              right: '10px',
+                              color: 'red',
+                              cursor: 'pointer',
+                              fontSize: '1.2rem',
+                            }}
+                          />
+                          <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
+                            <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
+                              {mobile.companyName} {mobile.modelSpecifications}
+                            </Card.Title>
+                            {/* <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
               {mobile.warranty}
             </Card.Title> */}
-            <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
-              {/* <div>
+                            <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
+                              {/* <div>
                 <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
                   Specs:
                 </strong>{' '}
                 {mobile.specs}
               </div> */}
-              <div>
-                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
-                  Color:
-                </strong>{' '}
-                {mobile.color}
-              </div>
-              <div>
-                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
-                  IMEI:
-                </strong>{' '}
-                {mobile.imei1}
-              </div>
-              {mobile.imei2 && (
-                <div>
-                  <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
-                    IMEI 2:
-                  </strong>{' '}
-                  {mobile.imei2}
-                </div>
-              )}
-               <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Battery Health:</strong>{' '}
-                      {mobile.batteryHealth ? mobile.batteryHealth : 'N/A'}
-                    </div>
-               <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
-                      {mobile.purchasePrice}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
-                      {mobile.demandPrice}
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
-                      {mobile.finalPrice || 'Not Sold'}
-                    </div>
-            </Card.Text>
-            <div style={{ textAlign: 'right', width: '100%' }}>
-              <Button
-                onClick={() => handleDispatchClick(mobile)}
-                style={{
-                  backgroundColor: '#FFD000',
-                  color: '#fff',
-                  border: 'none',
-                  padding: '5px 10px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                }}
-              >
-                Dispatch
-              </Button>
-               <Button
-                // onClick={() => handleSoldClick(mobile)}
-                style={{
-                  backgroundColor: '#DE970B',
-                  color: '#fff',
-                  border: 'none',
-                  padding: '5px 10px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                }}
-              >
-              {mobile.warranty}
-              </Button>
-                 <Button
-                // onClick={() => handleSoldClick(mobile)}
-                style={{
-                  backgroundColor: 'green',
-                  color: '#fff',
-                  border: 'none',
-                  padding: '5px 10px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                }}
-              >
-            {mobile.specs}
-              </Button>
-              <Button
-                onClick={() => handleSoldClick(mobile)}
-                style={{
-                  backgroundColor: '#007bff',
-                  color: '#fff',
-                  border: 'none',
-                  padding: '5px 10px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                }}
-              >
-                Sold
-              </Button>
-            </div>
-          </Card.Body>
-        </Card>
-      </Col>
-    ))
-  ) : (
-    <Col>
-      <Card className="text-center">
-        <Card.Body>
-          <Card.Text>No used mobiles found</Card.Text>
-        </Card.Body>
-      </Card>
-    </Col>
-  )}
-</Row>;
-      </>
-}
-</>
-}
-           {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
-     
+                              <div>
+                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                                  Color:
+                                </strong>{' '}
+                                {mobile.color}
+                              </div>
+                              <div>
+                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                                  IMEI:
+                                </strong>{' '}
+                                {mobile.imei1}
+                              </div>
+                              {mobile.imei2 && (
+                                <div>
+                                  <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                                    IMEI 2:
+                                  </strong>{' '}
+                                  {mobile.imei2}
+                                </div>
+                              )}
+                              <div>
+                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Battery Health:</strong>{' '}
+                                {mobile.batteryHealth ? mobile.batteryHealth : 'N/A'}
+                              </div>
+                              <div>
+                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
+                                {mobile.purchasePrice}
+                              </div>
+                              <div>
+                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
+                                {mobile.demandPrice}
+                              </div>
+                              <div>
+                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
+                                {mobile.finalPrice || 'Not Sold'}
+                              </div>
+                            </Card.Text>
+                            <div style={{ textAlign: 'right', width: '100%' }}>
+                              <Button
+                                onClick={() => handleDispatchClick(mobile)}
+                                style={{
+                                  backgroundColor: '#FFD000',
+                                  color: '#fff',
+                                  border: 'none',
+                                  padding: '5px 10px',
+                                  borderRadius: '5px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                                Dispatch
+                              </Button>
+                              <Button
+                                // onClick={() => handleSoldClick(mobile)}
+                                style={{
+                                  backgroundColor: '#DE970B',
+                                  color: '#fff',
+                                  border: 'none',
+                                  padding: '5px 10px',
+                                  borderRadius: '5px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                                {mobile.warranty}
+                              </Button>
+                              <Button
+                                // onClick={() => handleSoldClick(mobile)}
+                                style={{
+                                  backgroundColor: 'green',
+                                  color: '#fff',
+                                  border: 'none',
+                                  padding: '5px 10px',
+                                  borderRadius: '5px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                                {mobile.specs}
+                              </Button>
+                              <Button
+                                onClick={() => handleSoldClick(mobile)}
+                                style={{
+                                  backgroundColor: '#007bff',
+                                  color: '#fff',
+                                  border: 'none',
+                                  padding: '5px 10px',
+                                  borderRadius: '5px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                                Sold
+                              </Button>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    ))
+                ) : (
+                  <Col>
+                    <Card className="text-center">
+                      <Card.Body>
+                        <Card.Text>No used mobiles found</Card.Text>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                )}
+              </Row>;
+            </>
+          }
+        </>
+      }
+      {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
+
       <PurchasePhone type="edit" modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
 
       {/* Delete Confirmation Modal */}
@@ -899,40 +899,40 @@ const [showAmount, setShowAmount] = useState(false)
       </Modal>
 
       <Modal show={showDispatchModal} onHide={() => setShowDispatchModal(false)}>
-  <Modal.Header closeButton>
-    <Modal.Title>Dispatch Mobile</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <Form>
-      <Form.Group className="mb-3">
-        <Form.Label>Shop Name</Form.Label>
-        <Form.Control
-          type="text"
-          value={shopName}
-          onChange={(e) => setShopName(e.target.value)}
-          placeholder="Enter Shop Name"
-        />
-      </Form.Group>
-      <Form.Group className="mb-3">
-        <Form.Label>Receiver Person Name</Form.Label>
-        <Form.Control
-          type="text"
-          value={personName}
-          onChange={(e) => setPersonName(e.target.value)}
-          placeholder="Receiver Person Name"
-        />
-      </Form.Group>
-    </Form>
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={() => setShowDispatchModal(false)}>
-      Cancel
-    </Button>
-    <Button variant="primary" onClick={handleDispatchSubmit}>
-      Dispach
-    </Button>
-  </Modal.Footer>
-</Modal>
+        <Modal.Header closeButton>
+          <Modal.Title>Dispatch Mobile</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Shop Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value)}
+                placeholder="Enter Shop Name"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Receiver Person Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={personName}
+                onChange={(e) => setPersonName(e.target.value)}
+                placeholder="Receiver Person Name"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDispatchModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleDispatchSubmit}>
+            Dispach
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
 
       {/* <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
@@ -1008,45 +1008,46 @@ const [showAmount, setShowAmount] = useState(false)
   </Modal.Footer>
 </Modal> */}
 
-<Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
+      <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Sell Mobile</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <div>
-            <Form.Group className="mb-3">
-                  <Form.Label>Customer Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Enter Customer Name"
-                  />
-                </Form.Group>
-          
-                <Form.Group className="mb-3">
-                  <Form.Label>Customer Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={customerNumber}
-                    onChange={(e) => setCustomerNumber(e.target.value)}
-                    placeholder="Enter Customer Number"
-                  />
-                </Form.Group>
-                <Form.Group controlId="saleDate">
-                    <Form.Label>Sale Date</Form.Label>
-                    <Form.Control
-                      type="Date"
-                      placeholder="Enter Sale Date"
-                      value={saleDate}
-                      onChange={(e) => setSaleDate(e.target.value)}
-                      required
-                      
-                    />
-                  </Form.Group>
-                {/* CNIC Front Picture */}
-                {/* <Form.Group className="mb-3">
+              <Form.Group className="mb-3">
+                <Form.Label>Customer Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter number in +923XXXXXXXXX format"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter Customer Name"
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Customer Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter number in +923XXXXXXXXX format"
+                  value={customerNumber}
+                  onChange={(e) => setCustomerNumber(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group controlId="saleDate">
+                <Form.Label>Sale Date</Form.Label>
+                <Form.Control
+                  type="Date"
+                  placeholder="Enter Sale Date"
+                  value={saleDate}
+                  onChange={(e) => setSaleDate(e.target.value)}
+                  required
+
+                />
+              </Form.Group>
+              {/* CNIC Front Picture */}
+              {/* <Form.Group className="mb-3">
                   <Form.Label>CNIC Front Picture</Form.Label>
                   <Form.Control
                     type="file"
@@ -1063,55 +1064,55 @@ const [showAmount, setShowAmount] = useState(false)
                     onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
                   />
                 </Form.Group> */}
-                <div>
-      {accessories.map((accessory, index) => (
-        <div key={index} className="mb-3 p-3 border rounded">
-          <Form.Group>
-           <Form.Label>Accessory Name</Form.Label>
-           <Form.Select
-             value={accessory.name} // this holds the id now
-             onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
-           >
-             <option value="">Select accessory</option>
-             {data?.data?.map((item) => (
-               <option key={item._id} value={item._id}>
-                 {item.accessoryName}
-               </option>
-             ))}
-           </Form.Select>
-         </Form.Group>
+              <div>
+                {accessories.map((accessory, index) => (
+                  <div key={index} className="mb-3 p-3 border rounded">
+                    <Form.Group>
+                      <Form.Label>Accessory Name</Form.Label>
+                      <Form.Select
+                        value={accessory.name} // this holds the id now
+                        onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+                      >
+                        <option value="">Select accessory</option>
+                        {data?.data?.map((item) => (
+                          <option key={item._id} value={item._id}>
+                            {item.accessoryName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Quantity</Form.Label>
-            <Form.Control
-              type="number"
-              value={accessory.quantity}
-              onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
-              min="1"
-            />
-          </Form.Group>
+                    <Form.Group>
+                      <Form.Label>Quantity</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={accessory.quantity}
+                        onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
+                        min="1"
+                      />
+                    </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Accessory Price</Form.Label>
-            <Form.Control
-              type="number"
-              value={accessory.price}
-              onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
-              placeholder="Enter price"
-            />
-          </Form.Group>
+                    <Form.Group>
+                      <Form.Label>Accessory Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={accessory.price}
+                        onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
+                        placeholder="Enter price"
+                      />
+                    </Form.Group>
 
-          <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
-            Remove
-          </Button>
-        </div>
-      ))}
+                    <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
+                      Remove
+                    </Button>
+                  </div>
+                ))}
 
-      <Button variant="primary" onClick={addAccessory}>
-        Add Another Accessory
-      </Button>
-    </div>
-            {/* <Form.Group>
+                <Button variant="primary" onClick={addAccessory}>
+                  Add Another Accessory
+                </Button>
+              </div>
+              {/* <Form.Group>
             <Form.Label>Accessory Name</Form.Label>
               <Form.Control
                 type="text"
@@ -1130,120 +1131,120 @@ const [showAmount, setShowAmount] = useState(false)
                 placeholder="Enter Sold price"
               />
             </Form.Group> */}
-            <Form.Group>
-            <Form.Group className="mb-3">
-        <Form.Label>Company Warranty</Form.Label>
-        <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
-          <option value="">Select Warranty</option>
-          <option value="No Warranty">No Warranty</option>
-          <option value="1 Month">1 Month</option>
-          <option value="2 Months">2 Months</option>
-          <option value="3 Months">3 Months</option>
-          <option value="4 Months">4 Months</option>
-          <option value="5 Months">5 Months</option>
-          <option value="6 Months">6 Months</option>
-          <option value="7 Months">7 Months</option>
-          <option value="8 Months">8 Months</option>
-          <option value="9 Months">9 Months</option>
-          <option value="10 Months">10 Months</option>
-          <option value="11 Months">11 Months</option>
-          <option value="12 Months">12 Months</option>
-        </Form.Select>
-      </Form.Group>
-              <Form.Label>Selling Type</Form.Label>
-              <Form.Select
-                as="select"
-                value={sellingType}
-                onChange={(e) => setSellingType(e.target.value)}
-              >
-                <option value="">Select Selling Type</option>
-                <option value="Bank">Bank</option>
-                <option value="Exchange">Exchange</option>
-                <option value="Cash">Cash</option>
-                <option value="Credit">Credit</option>
-              </Form.Select>
-            </Form.Group>
-            {sellingType === "Bank" && (
-                            <Form.Group>
-                              <Form.Label>Bank Name</Form.Label>
-                              <Form.Control
-                                type="text"
-                                placeholder="Enter Bank Name"
-                                value={bankName}
-                                onChange={(e) => setBankName(e.target.value)}
-                              />
-                            </Form.Group>
-                          )}
-            
-                          {sellingType === "Credit" && (
-                              <>
-                                <Form.Group>
-                                  <Form.Label>Payable Amount Now</Form.Label>
-                                  <Form.Control
-                                    type="number"
-                                    placeholder="Enter amount payable now"
-                                    value={payableAmountNow}
-                                    onChange={(e) => setPayableAmountNow(e.target.value)}
-                                  />
-                                </Form.Group>
-                                        
-                                <Form.Group>
-                                  <Form.Label>Payable Amount Later</Form.Label>
-                                  <Form.Control
-                                    type="number"
-                                    placeholder="Enter amount payable later"
-                                    value={payableAmountLater}
-                                    onChange={(e) => setPayableAmountLater(e.target.value)}
-                                  />
-                                </Form.Group>
-                                        
-                                <Form.Group>
-                                  <Form.Label>When will it be paid?</Form.Label>
-                                  <Form.Control
-                                    type="date"
-                                    value={payableAmountLaterDate}
-                                    onChange={(e) => setPayableAmountLaterDate(e.target.value)}
-                                  />
-                                </Form.Group>
-                              </>
-                            )}
-            
-                          {sellingType === "Exchange" && (
-                            <Form.Group>
-                              <Form.Label>Exchange Phone Details</Form.Label>
-                              <Form.Control
-                              as={"textarea"}
-                              rows={4} //
-                                type="text"
-                                placeholder="Enter exchange phone details"
-                                value={exchangePhoneDetail}
-                                onChange={(e) => setExchangePhoneDetail(e.target.value)}
-                              />
-                            </Form.Group>
-                          )}
-            
-              <Form.Group className="mb-3">
-                  <Form.Label>Sold Price</Form.Label>
+              <Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Company Warranty</Form.Label>
+                  <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
+                    <option value="">Select Warranty</option>
+                    <option value="No Warranty">No Warranty</option>
+                    <option value="1 Month">1 Month</option>
+                    <option value="2 Months">2 Months</option>
+                    <option value="3 Months">3 Months</option>
+                    <option value="4 Months">4 Months</option>
+                    <option value="5 Months">5 Months</option>
+                    <option value="6 Months">6 Months</option>
+                    <option value="7 Months">7 Months</option>
+                    <option value="8 Months">8 Months</option>
+                    <option value="9 Months">9 Months</option>
+                    <option value="10 Months">10 Months</option>
+                    <option value="11 Months">11 Months</option>
+                    <option value="12 Months">12 Months</option>
+                  </Form.Select>
+                </Form.Group>
+                <Form.Label>Selling Type</Form.Label>
+                <Form.Select
+                  as="select"
+                  value={sellingType}
+                  onChange={(e) => setSellingType(e.target.value)}
+                >
+                  <option value="">Select Selling Type</option>
+                  <option value="Bank">Bank</option>
+                  <option value="Exchange">Exchange</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Credit">Credit</option>
+                </Form.Select>
+              </Form.Group>
+              {sellingType === "Bank" && (
+                <Form.Group>
+                  <Form.Label>Bank Name</Form.Label>
                   <Form.Control
-                    type="number"
-                    value={finalPrice}
-                    onChange={(e) => setFinalPrice(e.target.value)}
-                    placeholder="Enter Sold price"
+                    type="text"
+                    placeholder="Enter Bank Name"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
                   />
-                 </Form.Group>
-            </div>
-          
-       
-        
-   
-          </Form>
-            <Button variant="secondary" onClick={()=> setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
-            <WalletTransactionModal
-                      show={showWalletTransactionModal}
-                      toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
-                      singleTransaction={walletTransaction}
-                      setSingleTransaction={setWalletTransaction}
+                </Form.Group>
+              )}
+
+              {sellingType === "Credit" && (
+                <>
+                  <Form.Group>
+                    <Form.Label>Payable Amount Now</Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="Enter amount payable now"
+                      value={payableAmountNow}
+                      onChange={(e) => setPayableAmountNow(e.target.value)}
                     />
+                  </Form.Group>
+
+                  <Form.Group>
+                    <Form.Label>Payable Amount Later</Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="Enter amount payable later"
+                      value={payableAmountLater}
+                      onChange={(e) => setPayableAmountLater(e.target.value)}
+                    />
+                  </Form.Group>
+
+                  <Form.Group>
+                    <Form.Label>When will it be paid?</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={payableAmountLaterDate}
+                      onChange={(e) => setPayableAmountLaterDate(e.target.value)}
+                    />
+                  </Form.Group>
+                </>
+              )}
+
+              {sellingType === "Exchange" && (
+                <Form.Group>
+                  <Form.Label>Exchange Phone Details</Form.Label>
+                  <Form.Control
+                    as={"textarea"}
+                    rows={4} //
+                    type="text"
+                    placeholder="Enter exchange phone details"
+                    value={exchangePhoneDetail}
+                    onChange={(e) => setExchangePhoneDetail(e.target.value)}
+                  />
+                </Form.Group>
+              )}
+
+              <Form.Group className="mb-3">
+                <Form.Label>Sold Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={finalPrice}
+                  onChange={(e) => setFinalPrice(e.target.value)}
+                  placeholder="Enter Sold price"
+                />
+              </Form.Group>
+            </div>
+
+
+
+
+          </Form>
+          <Button variant="secondary" onClick={() => setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
+          <WalletTransactionModal
+            show={showWalletTransactionModal}
+            toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+            singleTransaction={walletTransaction}
+            setSingleTransaction={setWalletTransaction}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSoldModal(false)}>
