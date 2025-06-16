@@ -4,9 +4,22 @@ import { api } from '../../../api/api';
 import { toast } from 'react-toastify';
 import { useGetAccessories } from 'hooks/accessory';
 import { Button, Form, Toast } from 'react-bootstrap';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 
 const AddAccessory = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
+  const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
+  const [getPayment, setGetPayment] = useState({
+    amountFromBank: Number(""),
+    amountFromPocket: Number(""),
+    bankAccountUsed: Number(""),
+  });
+  const [givePayment, setGivePayment] = useState({
+    amountFromBank: Number(""),
+    amountFromPocket: Number(""),
+    bankAccountUsed: Number(""),
+  });
   const [showAccessoryModal, setShowAccessoryModal] = useState(false);
   const { data } = useGetAccessories();
   const [accessoryData, setAccessoryData] = useState({
@@ -28,6 +41,9 @@ const AddAccessory = () => {
 
     fetchAccessories();
   }, []);
+  console.log("give payment", givePayment);
+  console.log("get payment", getPayment);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -39,6 +55,7 @@ const AddAccessory = () => {
         perPiecePrice: Number(accessoryData.price),
         totalPrice,
         stock: Number(accessoryData.quantity),
+        givePayment: givePayment,
       });
 
       setAccessoryList([...accessoryList, res.data]);
@@ -86,6 +103,7 @@ const AddAccessory = () => {
           quantity: Number(accessory.quantity),
           perPiecePrice: Number(accessory.perPiecePrice),
         })),
+        getPayment: getPayment,
       };
 
       await api.post('/api/accessory/sell', payload);
@@ -297,8 +315,17 @@ const AddAccessory = () => {
               Submit
             </button>
           </div>
+          <Button variant="secondary" onClick={() => setShowPayForPurchaseModel(!showPayForPurchaseModel)}>Proceed To Pay</Button>
+
         </form>
       </Modal>
+      <WalletTransactionModal
+        show={showPayForPurchaseModel}
+        toggleModal={() => setShowPayForPurchaseModel(!showPayForPurchaseModel)}
+        singleTransaction={givePayment}
+        setSingleTransaction={setGivePayment}
+        type='purchase'
+      />
 
       {/* Layout */}
       <div
@@ -583,7 +610,15 @@ const AddAccessory = () => {
             Add Another Accessory
           </Button>
         </div>
+        <Button variant="secondary" onClick={() => setShowGetFromSaleModel(!showGetFromSaleModel)}>Proceed To Get Payment</Button>
+
       </Modal>
+      <WalletTransactionModal
+        show={showGetFromSaleModel}
+        toggleModal={() => setShowGetFromSaleModel(!showGetFromSaleModel)}
+        singleTransaction={getPayment}
+        setSingleTransaction={setGetPayment}
+      />
     </div>
   );
 };

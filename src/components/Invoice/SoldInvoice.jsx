@@ -3,9 +3,10 @@ import html2pdf from 'html2pdf.js';
 import { useLocation } from 'react-router-dom';
 import { api } from '../../../api/api';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
+import { InvoiceComponent } from 'components/InvoiceComponent';
 const SoldInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
-
+  const [displayHalfP4, setDisplayHalfP4] = useState(false)
   const colorOptions = [
     { name: 'Dark Blue', code: '#004B87' },
     { name: 'Sky Blue', code: '#87CEEB' },
@@ -337,10 +338,12 @@ const SoldInvoice = () => {
     return imei1;
   }) ?? [];
 
+  console.log("dataReceived", dataReceived, "totalInvoice", totalInvoice, "addedImei1s", addedImei1s);
 
   return (
     <div>
-      <div style={{ padding: '20px' }}>
+
+      {!displayHalfP4 && (<div style={{ padding: '20px' }}>
         <label style={{ fontWeight: 'bold', marginRight: '10px' }}>Select Color:</label>
         <select
           value={selectedColor}
@@ -382,25 +385,37 @@ const SoldInvoice = () => {
           {selectedColor}
         </div>
       )} */}
-      </div>
+      </div>)}
 
       <div style={{ textAlign: 'right', marginBottom: '20px' }}>
         <button
           style={{ ...styles.button, ...styles.printBtn }}
           onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
           onMouseLeave={(e) => (e.target.style.transform = 'none')}
-          onClick={handlePrint}
+          onClick={() => setDisplayHalfP4(!displayHalfP4)}
         >
-          Print
+          Change Preview
         </button>
-        <button
-          style={{ ...styles.button, ...styles.downloadBtn }}
-          onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
-          onMouseLeave={(e) => (e.target.style.transform = 'none')}
-          onClick={handleDownload}
-        >
-          Download
-        </button>
+        {!displayHalfP4 && (
+          <button
+            style={{ ...styles.button, ...styles.printBtn }}
+            onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
+            onMouseLeave={(e) => (e.target.style.transform = 'none')}
+            onClick={handlePrint}
+          >
+            Print
+          </button>
+        )}
+        {!displayHalfP4 && (
+          <button
+            style={{ ...styles.button, ...styles.downloadBtn }}
+            onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
+            onMouseLeave={(e) => (e.target.style.transform = 'none')}
+            onClick={handleDownload}
+          >
+            Download
+          </button>
+        )}
         <button
           style={{ ...styles.button, ...styles.submitBtn, backgroundColor: '#25D366', color: '#fff' }}
           onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
@@ -438,227 +453,167 @@ const SoldInvoice = () => {
         )}
       </div>
 
-      {dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId ?
-        <>
-          <div id="invoice" style={styles.container}>
-            {/* <h1>Bulk Mobile Invoice</h1> */}
-            <header style={styles.header}>
-              <div>
-                <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
-              </div>
-              <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
-            </header>
+      {!displayHalfP4 && (
+        dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId ?
+          <>
+            <div id="invoice" style={styles.container}>
+              {/* <h1>Bulk Mobile Invoice</h1> */}
+              <header style={styles.header}>
+                <div>
+                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                  <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
+                </div>
+                <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
+              </header>
 
-            <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              {/* Left Side */}
-              <div>
-                <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
-                <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
-                <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Date of Sale:</strong> {dataReceived?.saleDate}</p>
-              </div>
+              <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                {/* Left Side */}
+                <div>
+                  <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
+                  <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
+                  <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Date of Sale:</strong> {dataReceived?.saleDate}</p>
+                </div>
 
-              {/* Right Side */}
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer name:</strong> {dataReceived?.customerName}</p>
-                <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer Number:</strong> {dataReceived?.customerNumber}</p>
-                {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.contactNumber}</p> */}
-                {dataReceived.customerCNIC && <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
-              </div>
-            </section>
+                {/* Right Side */}
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer name:</strong> {dataReceived?.customerName}</p>
+                  <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer Number:</strong> {dataReceived?.customerNumber}</p>
+                  {/* <p style={{fontSize: "18px" , fontWeight: "bold"}}><strong>Customer Number:</strong> {dataReceived?.contactNumber}</p> */}
+                  {dataReceived.customerCNIC && <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
+                </div>
+              </section>
 
 
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Company</th>
-                  <th style={styles.th}>Model</th>
-                  <th style={styles.th}>RAM/ROM</th>
-                  <th style={styles.th}>SIM</th>
-                  <th style={styles.th}>Quantity</th>
-                  {/* <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Company</th>
+                    <th style={styles.th}>Model</th>
+                    <th style={styles.th}>RAM/ROM</th>
+                    <th style={styles.th}>SIM</th>
+                    <th style={styles.th}>Quantity</th>
+                    {/* <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
               {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>} */}
-                  <th style={styles.th}>Price</th>
-                  {/* <th style={styles.th}>Warranty</th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {dataReceived.addedImeis.length > 0 ?
-                  <>
-                    {dataReceived?.ramSimDetails
-                      ?.filter((detail) =>
-                        detail.imeiNumbers.some((imeiObj) =>
-                          addedImei1s.includes(imeiObj.imei1)
+                    <th style={styles.th}>Price</th>
+                    {/* <th style={styles.th}>Warranty</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataReceived.addedImeis.length > 0 ?
+                    <>
+                      {dataReceived?.ramSimDetails
+                        ?.filter((detail) =>
+                          detail.imeiNumbers.some((imeiObj) =>
+                            addedImei1s.includes(imeiObj.imei1)
+                          )
                         )
-                      )
-                      .map((detail, index) =>
-                      (
-                        <tr key={index} style={styles.stripedRow}>
-                          <td style={styles.td}>
-                            {
-                              detail?.companyName ?? 'Not Available'}
-                          </td>
+                        .map((detail, index) =>
+                        (
+                          <tr key={index} style={styles.stripedRow}>
+                            <td style={styles.td}>
+                              {
+                                detail?.companyName ?? 'Not Available'}
+                            </td>
 
-                          <td style={styles.td}>{detail?.modelName ?? 'Not Available'}</td>
-                          <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
-                          <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
+                            <td style={styles.td}>{detail?.modelName ?? 'Not Available'}</td>
+                            <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
+                            <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
 
-                          {/* Count of matched IMEIs */}
-                          <td style={styles.td}>
-                            {
-                              detail.imeiNumbers.filter((imeiObj) =>
-                                addedImei1s.includes(imeiObj.imei1)
-                              ).length
-                            }
-                          </td>
+                            {/* Count of matched IMEIs */}
+                            <td style={styles.td}>
+                              {
+                                detail.imeiNumbers.filter((imeiObj) =>
+                                  addedImei1s.includes(imeiObj.imei1)
+                                ).length
+                              }
+                            </td>
 
-                          <td style={styles.td}>
-                            {dataReceived?.invoice
-                              ? dataReceived.invoice.totalAmount
-                              : dataReceived?.finalPrice ?? 'Not Available'}
-                          </td>
+                            <td style={styles.td}>
+                              {dataReceived?.invoice
+                                ? dataReceived.invoice.totalAmount
+                                : dataReceived?.finalPrice ?? 'Not Available'}
+                            </td>
 
-                          {/* <td style={styles.td}>
+                            {/* <td style={styles.td}>
                        {dataReceived?.invoice?.items
                          ? dataReceived.invoice.items[0]?.warranty
                          : dataReceived?.warranty ?? 'Not Available'}
                      </td> */}
-                        </tr>
-                      ))}
-                  </>
-                  :
-                  <>
-                    {dataReceived?.ramSimDetails ? (
-                      dataReceived.ramSimDetails.map((detail, index) => (
-                        <tr key={index} style={styles.stripedRow}>
-                          <td style={styles.td}>
-                            {
-                              detail?.companyName ?? 'Not Available'}
-                          </td>
-
-                          {/* Model Name */}
-                          <td style={styles.td}>{detail?.modelName ?? 'Not Available'}</td>
-
-                          {/* RAM Memory */}
-                          <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
-
-                          {/* SIM Option */}
-                          <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
-
-
-                          <td style={styles.td}>
-                            {/* {dataReceived?.addedImeis?.length || detail?.imeiNumbers?.length} */}
+                          </tr>
+                        ))}
+                    </>
+                    :
+                    <>
+                      {dataReceived?.ramSimDetails ? (
+                        dataReceived.ramSimDetails.map((detail, index) => (
+                          <tr key={index} style={styles.stripedRow}>
                             <td style={styles.td}>
-                              {detail.imeiNumbers.length}
+                              {
+                                detail?.companyName ?? 'Not Available'}
                             </td>
-                          </td>
 
-                          {/* Final Price */}
-                          <td style={styles.td}>
-                            {dataReceived?.invoice
-                              ? dataReceived?.invoice?.totalAmount
-                              : dataReceived?.finalPrice ?? 'Not Available'}
-                          </td>
+                            {/* Model Name */}
+                            <td style={styles.td}>{detail?.modelName ?? 'Not Available'}</td>
 
-                          {/* Warranty */}
-                          <td style={styles.td}>
-                            {dataReceived?.invoice?.items
-                              ? dataReceived?.invoice?.items[0]?.warranty
-                              : dataReceived?.warranty ?? 'Not Available'}
-                          </td>
+                            {/* RAM Memory */}
+                            <td style={styles.td}>{detail?.ramMemory ?? 'Not Available'}</td>
+
+                            {/* SIM Option */}
+                            <td style={styles.td}>{detail?.simOption ?? 'Not Available'}</td>
+
+
+                            <td style={styles.td}>
+                              {/* {dataReceived?.addedImeis?.length || detail?.imeiNumbers?.length} */}
+                              <td style={styles.td}>
+                                {detail.imeiNumbers.length}
+                              </td>
+                            </td>
+
+                            {/* Final Price */}
+                            <td style={styles.td}>
+                              {dataReceived?.invoice
+                                ? dataReceived?.invoice?.totalAmount
+                                : dataReceived?.finalPrice ?? 'Not Available'}
+                            </td>
+
+                            {/* Warranty */}
+                            <td style={styles.td}>
+                              {dataReceived?.invoice?.items
+                                ? dataReceived?.invoice?.items[0]?.warranty
+                                : dataReceived?.warranty ?? 'Not Available'}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={7} style={styles.td}>No Data Available</td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} style={styles.td}>No Data Available</td>
-                      </tr>
-                    )}
+                      )}
 
-                  </>
-                }
+                    </>
+                  }
 
-              </tbody>
-            </table>
-            {dataReceived.accessoryName && (
-              <div style={{ ...styles.termsSection, display: "flex", marginBottom: "10px", alignItems: "center", justifyContent: "center", border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
-                <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
-                <div style={{ flex: 1, display: "flex", gap: "20px" }}>
-                  <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
-                  <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
-                </div>
-              </div>
-            )}
-            <div style={styles.totalSection}>
-              <h3>Total:{totalInvoice}Rs</h3>
-            </div>
-            {dataReceived.addedImeis.length !== 0 ?
-              <>
-                <div style={styles.termsSection}>
-                  {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
-                  {/* <div style={styles.termsHeading}>Total Selected Imeis</div> */}
-                  <div style={styles.termsText}>
-                    {dataReceived?.addedImeis?.length ? (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "8px",
-                          maxWidth: "100%",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <span style={{ fontWeight: "bold" }}>Selected IMEIs:</span>
-                        {dataReceived?.ramSimDetails?.map((ramGroup, ramIndex) => {
-                          // Filter only those imeis that are present in addedImeis
-                          const matchedImeis = ramGroup.imeiNumbers.filter(imeiObj =>
-                            addedImei1s.includes(imeiObj.imei1)
-                          );
-
-                          if (matchedImeis.length === 0) return null; // skip if no imeis matched for this RAM group
-
-                          return (
-                            <div key={ramIndex} style={{ marginBottom: "20px" }}>
-                              <StyledHeading>Ram Memory: {ramGroup.ramMemory}</StyledHeading>
-                              {matchedImeis.map((imeiObj, index) => (
-                                <div
-                                  key={index}
-                                  style={{
-                                    padding: "6px 10px",
-                                    borderRadius: "6px",
-                                    fontSize: "14px",
-                                    whiteSpace: "nowrap",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                  }}
-                                >
-                                  <strong>Phone {index + 1}:</strong>
-                                  <span style={{ background: "#f0f0f0", padding: "6px 10px", borderRadius: "10px" }}>
-                                    IMEI 1: {imeiObj.imei1}
-                                  </span>
-                                  {imeiObj.imei2 && (
-                                    <span style={{ background: "#f0f0f0", padding: "6px 10px", borderRadius: "10px" }}>
-                                      IMEI 2: {imeiObj.imei2}
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })}
-
-                      </div>
-                    ) : null}
+                </tbody>
+              </table>
+              {dataReceived.accessoryName && (
+                <div style={{ ...styles.termsSection, display: "flex", marginBottom: "10px", alignItems: "center", justifyContent: "center", border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
+                  <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
+                  <div style={{ flex: 1, display: "flex", gap: "20px" }}>
+                    <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
+                    <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
                   </div>
-
                 </div>
-              </> :
-              <>
-                {
-                  dataReceived.ramSimDetails?.length > 0 ? (
-                    <div>
-                      <div style={styles.termsSection}>
-
+              )}
+              <div style={styles.totalSection}>
+                <h3>Total:{totalInvoice}Rs</h3>
+              </div>
+              {dataReceived.addedImeis.length !== 0 ?
+                <>
+                  <div style={styles.termsSection}>
+                    {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+                    {/* <div style={styles.termsHeading}>Total Selected Imeis</div> */}
+                    <div style={styles.termsText}>
+                      {dataReceived?.addedImeis?.length ? (
                         <div
                           style={{
                             display: "flex",
@@ -668,188 +623,253 @@ const SoldInvoice = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <span style={{ fontWeight: "bold" }}>Total IMEIs:</span>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "6px",
-                            maxWidth: "100%",
-                            flexDirection: "column",
-                            padding: "5px 0",
-                          }}
-                        >
+                          <span style={{ fontWeight: "bold" }}>Selected IMEIs:</span>
+                          {dataReceived?.ramSimDetails?.map((ramGroup, ramIndex) => {
+                            // Filter only those imeis that are present in addedImeis
+                            const matchedImeis = ramGroup.imeiNumbers.filter(imeiObj =>
+                              addedImei1s.includes(imeiObj.imei1)
+                            );
 
-                          {dataReceived?.ramSimDetails?.map((detail, detailIndex) => (
-                            <div key={detailIndex} style={{ marginBottom: "16px" }}>
-                              <StyledHeading>Ram Memory: {detail?.ramMemory}</StyledHeading>
+                            if (matchedImeis.length === 0) return null; // skip if no imeis matched for this RAM group
 
-                              {detail?.imeiNumbers?.length > 0 ? <>
-                                {detail.imeiNumbers?.map((imeiObj, imeiIndex) => (
+                            return (
+                              <div key={ramIndex} style={{ marginBottom: "20px" }}>
+                                <StyledHeading>Ram Memory: {ramGroup.ramMemory}</StyledHeading>
+                                {matchedImeis.map((imeiObj, index) => (
                                   <div
-                                    key={`${detailIndex}-${imeiIndex}`}
+                                    key={index}
                                     style={{
-                                      marginBottom: "8px",
+                                      padding: "6px 10px",
+                                      borderRadius: "6px",
+                                      fontSize: "14px",
+                                      whiteSpace: "nowrap",
                                       display: "flex",
                                       alignItems: "center",
-                                      gap: "10px"
+                                      gap: "10px",
                                     }}
                                   >
-                                    <strong style={{ fontSize: "14px", color: "#333" }}>
-                                      Phone {imeiIndex + 1}:
-                                    </strong>
-                                    <div
-                                      style={{
-                                        background: "#f0f0f0",
-                                        padding: "4px 8px",
-                                        borderRadius: "4px",
-                                        fontSize: "12px",
-                                        whiteSpace: "nowrap",
-                                        marginTop: "4px",
-                                      }}
-                                    >
-                                      <strong>IMEI 1:</strong> {imeiObj.imei1}
-                                      {imeiObj.imei2 && ` | `}
-                                      {imeiObj.imei2 && <strong>IMEI 2:</strong>} {imeiObj.imei2}
-                                    </div>
+                                    <strong>Phone {index + 1}:</strong>
+                                    <span style={{ background: "#f0f0f0", padding: "6px 10px", borderRadius: "10px" }}>
+                                      IMEI 1: {imeiObj.imei1}
+                                    </span>
+                                    {imeiObj.imei2 && (
+                                      <span style={{ background: "#f0f0f0", padding: "6px 10px", borderRadius: "10px" }}>
+                                        IMEI 2: {imeiObj.imei2}
+                                      </span>
+                                    )}
                                   </div>
                                 ))}
-                              </> : <>
-                                <div
-                                  style={{
-                                    padding: "4px 8px",
-                                    fontSize: "12px",
-                                    marginTop: "4px",
-                                  }}
-                                >
-                                  <strong>Not found</strong>
-
-                                </div>
-                              </>}
-                            </div>
-                          ))}
-
-
+                              </div>
+                            );
+                          })}
 
                         </div>
-                      </div>
+                      ) : null}
                     </div>
 
-                  ) : (
-                    ""
-                  )
-                }
+                  </div>
+                </> :
+                <>
+                  {
+                    dataReceived.ramSimDetails?.length > 0 ? (
+                      <div>
+                        <div style={styles.termsSection}>
 
-              </>
-            }
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <span style={{ fontWeight: "bold" }}>Total IMEIs:</span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "6px",
+                              maxWidth: "100%",
+                              flexDirection: "column",
+                              padding: "5px 0",
+                            }}
+                          >
+
+                            {dataReceived?.ramSimDetails?.map((detail, detailIndex) => (
+                              <div key={detailIndex} style={{ marginBottom: "16px" }}>
+                                <StyledHeading>Ram Memory: {detail?.ramMemory}</StyledHeading>
+
+                                {detail?.imeiNumbers?.length > 0 ? <>
+                                  {detail.imeiNumbers?.map((imeiObj, imeiIndex) => (
+                                    <div
+                                      key={`${detailIndex}-${imeiIndex}`}
+                                      style={{
+                                        marginBottom: "8px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px"
+                                      }}
+                                    >
+                                      <strong style={{ fontSize: "14px", color: "#333" }}>
+                                        Phone {imeiIndex + 1}:
+                                      </strong>
+                                      <div
+                                        style={{
+                                          background: "#f0f0f0",
+                                          padding: "4px 8px",
+                                          borderRadius: "4px",
+                                          fontSize: "12px",
+                                          whiteSpace: "nowrap",
+                                          marginTop: "4px",
+                                        }}
+                                      >
+                                        <strong>IMEI 1:</strong> {imeiObj.imei1}
+                                        {imeiObj.imei2 && ` | `}
+                                        {imeiObj.imei2 && <strong>IMEI 2:</strong>} {imeiObj.imei2}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </> : <>
+                                  <div
+                                    style={{
+                                      padding: "4px 8px",
+                                      fontSize: "12px",
+                                      marginTop: "4px",
+                                    }}
+                                  >
+                                    <strong>Not found</strong>
+
+                                  </div>
+                                </>}
+                              </div>
+                            ))}
+
+
+
+                          </div>
+                        </div>
+                      </div>
+
+                    ) : (
+                      ""
+                    )
+                  }
+
+                </>
+              }
 
 
 
 
-            <div style={styles.termsSection}>
-              {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
-              <div style={styles.termsHeading}>Terms & conditions</div>
-              <div style={styles.termsText}>
+              <div style={styles.termsSection}>
+                {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+                <div style={styles.termsHeading}>Terms & conditions</div>
+                <div style={styles.termsText}>
 
 
-                {shop?.termsCondition.map((item, index) => (
-                  <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
-                ))}
-              </div>
-            </div>
-            <footer style={styles.footer}>
-              <p>
-                {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}
-              </p>
-            </footer>
-          </div>
-        </>
-        :
-        <>
-          <div id="invoice" style={styles.container}>
-            <header style={styles.header}>
-              <div>
-                <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
-              </div>
-              <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
-            </header>
-
-            <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              {/* Left Side */}
-              <div>
-                <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
-                <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
-                <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Date of Sale:</strong> {dataReceived?.saleDate}</p>
-              </div>
-
-              {/* Right Side */}
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer Name:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerName : dataReceived?.customerName ?? 'Not Available'}</p>
-                <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p>
-                {dataReceived.customerCNIC && <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
-              </div>
-            </section>
-
-
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Company</th>
-                  <th style={styles.th}>Model</th>
-                  <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
-                  {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>}
-                  <th style={styles.th}>Price</th>
-                  <th style={styles.th}>Warranty</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={styles.stripedRow}>
-                  <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'Not Available'}</td>
-                  <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileName : dataReceived?.modelSpecifications ?? dataReceived.modelName ?? 'Not Available'}</td>
-                  <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei : dataReceived?.imei1 ?? 'Not Available'}</td>
-                  {dataReceived.imei2 && <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei2 : dataReceived.imei2 ?? 'Not Available'}</td>}
-                  <td style={styles.td}>{dataReceived?.invoice ? dataReceived?.invoice?.totalAmount : dataReceived?.finalPrice ?? 'Not Available'}</td>
-                  <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty : dataReceived?.warranty ?? 'Not Available'}</td>
-                </tr>
-              </tbody>
-            </table>
-            {dataReceived.accessoryName && (
-              <div style={{ ...styles.termsSection, display: "flex", marginBottom: "10px", alignItems: "center", justifyContent: "center", border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
-                <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
-                <div style={{ flex: 1, display: "flex", gap: "20px" }}>
-                  <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
-                  <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
+                  {shop?.termsCondition.map((item, index) => (
+                    <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
+                  ))}
                 </div>
               </div>
-            )}
-            <div style={styles.totalSection}>
-              <h3>Total:{totalInvoice}Rs</h3>
+              <footer style={styles.footer}>
+                <p>
+                  {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}
+                </p>
+              </footer>
             </div>
+          </>
+          :
+          <>
+            <div id="invoice" style={styles.container}>
+              <header style={styles.header}>
+                <div>
+                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                  <p>{shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}</p>
+                </div>
+                <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
+              </header>
+
+              <section style={{ ...styles.infoSection, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                {/* Left Side */}
+                <div>
+                  <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Shop Address:</strong> {shop?.address ?? 'Address not available'}</p>
+                  <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Invoice No:</strong> {invoiceData.invoiceNumber}</p>
+                  <p style={{ fontSize: "15px", fontWeight: "bold" }}><strong>Date of Sale:</strong> {dataReceived?.saleDate}</p>
+                </div>
+
+                {/* Right Side */}
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer Name:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerName : dataReceived?.customerName ?? 'Not Available'}</p>
+                  <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer Number:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerNumber : dataReceived?.customerNumber ?? 'N/A'}</p>
+                  {dataReceived.customerCNIC && <p style={{ fontSize: "18px", fontWeight: "bold" }}><strong>Customer CNIC:</strong> {dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.customerCNIC : dataReceived?.customerCNIC ?? 'Not Available'}</p>}
+                </div>
+              </section>
 
 
-
-
-
-            <div style={styles.termsSection}>
-              {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
-              <div style={styles.termsHeading}>Terms and conditions</div>
-              <div style={styles.termsText}>
-
-                {shop?.termsCondition.map((item, index) => (
-                  <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
-                ))}
-
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Company</th>
+                    <th style={styles.th}>Model</th>
+                    <th style={styles.th}>{dataReceived.imei2 ? "IMEI 1" : "IMEI"}</th>
+                    {dataReceived.imei2 && <th style={styles.th}>IMEI 2</th>}
+                    <th style={styles.th}>Price</th>
+                    <th style={styles.th}>Warranty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={styles.stripedRow}>
+                    <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileCompany : dataReceived?.companyName ?? 'Not Available'}</td>
+                    <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.mobileName : dataReceived?.modelSpecifications ?? dataReceived.modelName ?? 'Not Available'}</td>
+                    <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei : dataReceived?.imei1 ?? 'Not Available'}</td>
+                    {dataReceived.imei2 && <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.imei2 : dataReceived.imei2 ?? 'Not Available'}</td>}
+                    <td style={styles.td}>{dataReceived?.invoice ? dataReceived?.invoice?.totalAmount : dataReceived?.finalPrice ?? 'Not Available'}</td>
+                    <td style={styles.td}>{dataReceived?.invoice?.items ? dataReceived?.invoice?.items[0]?.warranty : dataReceived?.warranty ?? 'Not Available'}</td>
+                  </tr>
+                </tbody>
+              </table>
+              {dataReceived.accessoryName && (
+                <div style={{ ...styles.termsSection, display: "flex", marginBottom: "10px", alignItems: "center", justifyContent: "center", border: "1px solid #ddd", padding: "10px", borderRadius: "5px" }}>
+                  <p style={{ fontWeight: "bold", minWidth: "150px" }}>Accessory Details:</p>
+                  <div style={{ flex: 1, display: "flex", gap: "20px" }}>
+                    <p><strong>Name:</strong> {dataReceived.accessoryName}</p>
+                    <p><strong>Sold Price:</strong> {dataReceived.accessoryPrice}</p>
+                  </div>
+                </div>
+              )}
+              <div style={styles.totalSection}>
+                <h3>Total:{totalInvoice}Rs</h3>
               </div>
+
+
+
+
+
+              <div style={styles.termsSection}>
+                {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+                <div style={styles.termsHeading}>Terms and conditions</div>
+                <div style={styles.termsText}>
+
+                  {shop?.termsCondition.map((item, index) => (
+                    <p key={index}><strong style={{ fontSize: '1.0rem', fontWeight: '600', color: '#333', width: '100%' }}>{index + 1}.</strong> {item}</p>
+                  ))}
+
+                </div>
+              </div>
+              <footer style={styles.footer}>
+                <p>
+                  {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}
+                </p>
+              </footer>
             </div>
-            <footer style={styles.footer}>
-              <p>
-                {shop?.shopName ?? 'Shop Name'} | {shop?.address ?? 'Address not available'} | {shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}
-              </p>
-            </footer>
-          </div>
-        </>
-      }
+          </>
+
+      )}
+      <div>
+        <InvoiceComponent display={displayHalfP4} saleData={dataReceived} />
+      </div>
     </div>
   );
 };
