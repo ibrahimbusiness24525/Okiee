@@ -15,7 +15,7 @@
 //   const logout = () => {
 //     localStorage.removeItem('token');
 //     localStorage.removeItem('user') // Clears all items from localStorage
-//     navigate('/login');   
+//     navigate('/login');
 // };
 
 // useEffect(() => {
@@ -24,7 +24,6 @@
 //     setLoginUser(JSON.parse(user)); // Parse the JSON string and set the state
 //   }
 // }, []);
-
 
 //   const notiData = [
 //     {
@@ -197,7 +196,7 @@
 //   const logout = () => {
 //     localStorage.removeItem('token');
 //     localStorage.removeItem('user') // Clears all items from localStorage
-//     navigate('/login');   
+//     navigate('/login');
 // };
 
 // useEffect(() => {
@@ -206,7 +205,6 @@
 //     setLoginUser(JSON.parse(user)); // Parse the JSON string and set the state
 //   }
 // }, []);
-
 
 //   const notiData = [
 //     {
@@ -372,8 +370,6 @@ import avatar2 from '../../../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../../../assets/images/user/avatar-3.jpg';
 import avatar4 from '../../../../assets/images/user/avatar-4.jpg';
 
-
-
 const NavRight = () => {
   const [listOpen, setListOpen] = useState(false);
   const [loginUser, setLoginUser] = useState({});
@@ -382,9 +378,9 @@ const NavRight = () => {
   const navigate = useNavigate();
 
   const logout = () => {
+    navigate('/login');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
   };
 
   useEffect(() => {
@@ -401,7 +397,7 @@ const NavRight = () => {
         image: avatar2,
         description: 'Purchase New Theme and make payment',
         status: true,
-        time: '30 min ago'
+        time: '30 min ago',
       },
       {
         id: 2,
@@ -409,7 +405,7 @@ const NavRight = () => {
         image: avatar3,
         description: 'currently login',
         status: false,
-        time: '1 hour ago'
+        time: '1 hour ago',
       },
       {
         id: 3,
@@ -417,36 +413,81 @@ const NavRight = () => {
         image: avatar4,
         description: 'Purchase New Theme and make payment',
         status: true,
-        time: 'yesterday'
-      }
+        time: 'yesterday',
+      },
     ];
 
     setNotifications(mockNotifications);
-    setUnreadCount(mockNotifications.filter(n => !n.status).length);
+    setUnreadCount(mockNotifications.filter((n) => !n.status).length);
   }, []);
-
+  useEffect(() => {}, []);
   const markAsRead = (id) => {
-    setNotifications(notifications.map(notification =>
-      notification.id === id ? { ...notification, status: true } : notification
-    ));
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === id
+          ? { ...notification, status: true }
+          : notification
+      )
+    );
     setUnreadCount(unreadCount - 1);
   };
 
   const markAllAsRead = () => {
-    setNotifications(notifications.map(notification => ({
-      ...notification,
-      status: true
-    })));
+    setNotifications(
+      notifications.map((notification) => ({
+        ...notification,
+        status: true,
+      }))
+    );
     setUnreadCount(0);
   };
 
   return (
     <React.Fragment>
-      <ListGroup as="ul" bsPrefix=" " className="navbar-nav ml-auto" id="navbar-right">
+      <ListGroup
+        as="ul"
+        bsPrefix=" "
+        className="navbar-nav ml-auto"
+        id="navbar-right"
+      >
         {/* Notification Dropdown */}
+        <button
+          style={{
+            background: 'linear-gradient(to right, #FFA726, #FB8C00)', // orange gradient
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            padding: '12px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            width: '200px',
+            height: '50px',
+            transition: 'background 0.3s ease',
+            marginRight: '10px',
+          }}
+          onMouseEnter={
+            (e) =>
+              (e.target.style.background =
+                'linear-gradient(to right, #F57C00, #EF6C00)') // darker orange
+          }
+          onClick={() => navigate('/stocklist')}
+          onMouseLeave={(e) =>
+            (e.target.style.background =
+              'linear-gradient(to right, #FFA726, #FB8C00)')
+          }
+        >
+          Show Stock List
+        </button>
+
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <Dropdown align="end" className="drp-notification">
-            <Dropdown.Toggle as={Link} variant="link" to="#" id="dropdown-notification">
+            <Dropdown.Toggle
+              as={Link}
+              variant="link"
+              to="#"
+              id="dropdown-notification"
+            >
               <i className="icon feather icon-bell" />
               {/* {unreadCount > 0 && (
                 <Badge pill bg="danger" className="notification-badge">
@@ -462,7 +503,12 @@ const NavRight = () => {
                 </button>
               </div>
               <PerfectScrollbar>
-                <ListGroup as="ul" bsPrefix=" " variant="flush" className="noti-body">
+                <ListGroup
+                  as="ul"
+                  bsPrefix=" "
+                  variant="flush"
+                  className="noti-body"
+                >
                   {notifications.map((notification) => (
                     <ListGroup.Item
                       as="li"
@@ -480,10 +526,16 @@ const NavRight = () => {
                         <div className="flex-grow-1">
                           <h6>{notification.personName}</h6>
                           <p>{notification.description}</p>
-                          <small className="text-muted">{notification.time}</small>
+                          <small className="text-muted">
+                            {notification.time}
+                          </small>
                         </div>
-                        <div className={`status-indicator ${notification.status ? 'active' : 'inactive'}`}>
-                          <span className={`status-dot ${notification.status ? 'bg-success' : 'bg-danger'}`} />
+                        <div
+                          className={`status-indicator ${notification.status ? 'active' : 'inactive'}`}
+                        >
+                          <span
+                            className={`status-dot ${notification.status ? 'bg-success' : 'bg-danger'}`}
+                          />
                         </div>
                       </div>
                     </ListGroup.Item>
@@ -500,18 +552,48 @@ const NavRight = () => {
         {/* User Settings Dropdown */}
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <Dropdown align="end" className="drp-user">
-            <Dropdown.Toggle as={Link} variant="link" to="#" id="dropdown-basic">
+            <Dropdown.Toggle
+              as={Link}
+              variant="link"
+              to="#"
+              id="dropdown-basic"
+            >
               <i className="icon feather icon-settings" />
             </Dropdown.Toggle>
             <Dropdown.Menu align="end" className="profile-notification">
-              <div className="pro-head">
-                <img src={avatar2} className="img-radius" alt="User Profile" />
-                <span>{loginUser.username}</span>
-                <Link to="#" className="dud-logout" title="Logout" onClick={logout}>
-                  <i className="feather icon-log-out" />
-                </Link>
+              <div
+                className="pro-head"
+                style={{ display: 'flex', justifyContent: 'space-between' }}
+              >
+                <div>
+                  <img
+                    src={avatar2}
+                    className="img-radius"
+                    alt="User Profile"
+                  />
+                  <span>{loginUser.username}</span>
+                </div>
+                <button
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                  onClick={logout}
+                  title="Logout"
+                >
+                  <i
+                    className="feather icon-log-out"
+                    style={{ color: 'white' }}
+                  />
+                </button>
               </div>
-              <ListGroup as="ul" bsPrefix=" " variant="flush" className="pro-body">
+              <ListGroup
+                as="ul"
+                bsPrefix=" "
+                variant="flush"
+                className="pro-body"
+              >
                 <ListGroup.Item as="li" bsPrefix=" ">
                   <Link to="/setup/shop" className="dropdown-item">
                     <i className="feather icon-settings" /> My Shop
