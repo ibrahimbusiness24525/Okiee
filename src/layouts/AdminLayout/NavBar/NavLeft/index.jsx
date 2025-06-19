@@ -172,6 +172,7 @@ import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import Modal from 'components/Modal/Modal';
 import { api } from '../../../../../api/api';
+import { toast } from 'react-toastify';
 
 const NavLeft = () => {
   const windowSize = useWindowSize();
@@ -189,8 +190,8 @@ const NavLeft = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await api.get('/api/all-companies');
-        setCompanies(response.data);
+        const response = await api.get('/api/company/all-companies');
+        setCompanies(response?.data?.companies || []);
       } catch (error) {
         console.error('Failed to fetch companies:', error);
       }
@@ -212,12 +213,15 @@ const NavLeft = () => {
 
   const handleAddModelShow = () => setShowAddModelModal(true);
   const handleAddModelClose = () => setShowAddModelModal(false);
-
+  console.log('====================================');
+  console.log(companies);
+  console.log('====================================');
   const handleAddCompany = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await api.post('/api/company/create', { name: companyName });
+      await api.post('/api/company/create-company', { name: companyName });
+      toast.success('Company added successfully!');
       setCompanyName('');
       handleAddCompanyClose();
     } catch (error) {
@@ -230,12 +234,14 @@ const NavLeft = () => {
   const handleAddModel = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
     try {
-      await api.post('/api/model/create', {
+      await api.post('/api/company/create-model', {
         name: modelName,
-        company: selectedCompanyId,
+        companyId: selectedCompanyId,
       });
       setModelName('');
+      toast.success('Model added successfully!');
       setSelectedCompanyId('');
       handleAddModelClose();
     } catch (error) {

@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Form, InputGroup, Modal, Button } from 'react-bootstrap';
+import {
+  Card,
+  Row,
+  Col,
+  Form,
+  InputGroup,
+  Modal,
+  Button,
+} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
@@ -20,38 +28,38 @@ const DispachMobilesList = () => {
   const [soldMobile, setSoldMobile] = useState(null);
   const [finalPrice, setFinalPrice] = useState('');
   const [warranty, setWarranty] = useState('12 months');
-  const [cnicFrontPic, setCnicFrontPic] = useState("");
-  const [cnicBackPic, setCnicBackPic] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [type, setType] = useState("");
-  const [payableAmountNow, setPayableAmountNow] = useState("")
-  const [payableAmountLater, setPayableAmountLater] = useState("");
-  const [payableAmountLaterDate, setPayableAmountLaterDate] = useState("");
-  const [exchangePhoneDetail, setExchangePhoneDetail] = useState("");
+  const [cnicFrontPic, setCnicFrontPic] = useState('');
+  const [cnicBackPic, setCnicBackPic] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [type, setType] = useState('');
+  const [payableAmountNow, setPayableAmountNow] = useState('');
+  const [payableAmountLater, setPayableAmountLater] = useState('');
+  const [payableAmountLaterDate, setPayableAmountLaterDate] = useState('');
+  const [exchangePhoneDetail, setExchangePhoneDetail] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteMobileId, setDeleteMobileId] = useState(null);
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [dispatchMobile, setDispatchMobile] = useState(null);
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
-  const [singleDispatches, setSingleDispatches] = useState([])
-  const [bulkDispatches, setBulkDispatches] = useState([])
+  const [singleDispatches, setSingleDispatches] = useState([]);
+  const [bulkDispatches, setBulkDispatches] = useState([]);
   const [imeiList, setImeiList] = useState([]);
   const [selectedImeis, setSelectedImeis] = useState([]);
-  const [imeiInput, setImeiInput] = useState("");
+  const [imeiInput, setImeiInput] = useState('');
   const [addedImeis, setAddedImeis] = useState([]);
-  const [sellingType, setSellingType] = useState("")
-  const [customerName, setCustomerName] = useState("");
-  const [search, setSearch] = useState("");
+  const [sellingType, setSellingType] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [search, setSearch] = useState('');
   const [accessories, setAccessories] = useState([
-    { name: "", quantity: 1, price: "" }
+    { name: '', quantity: 1, price: '' },
   ]);
   const [imei, setImei] = useState([]);
   const navigate = useNavigate();
   const [imeis, setImeis] = useState([]);
 
   const addAccessory = () => {
-    setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
+    setAccessories([...accessories, { name: '', quantity: 1, price: '' }]);
   };
   // Remove Accessory
   const removeAccessory = (index) => {
@@ -59,18 +67,18 @@ const DispachMobilesList = () => {
     setAccessories(updatedAccessories);
   };
   const handleAddImei = () => {
-    if (imeiInput.trim() !== "" && !imeis.includes(imeiInput)) {
+    if (imeiInput.trim() !== '' && !imeis.includes(imeiInput)) {
       setAddedImeis([...addedImeis, imeiInput]);
-      setImeiInput(""); // Clear input after adding
+      setImeiInput(''); // Clear input after adding
     }
   };
 
   const handleRemoveImei = (imeiToRemove) => {
-    setAddedImeis(imeis.filter(imei => imei !== imeiToRemove));
+    setAddedImeis(imeis.filter((imei) => imei !== imeiToRemove));
   };
   useEffect(() => {
     getSingleDispatches();
-    getBulkDispatches()
+    getBulkDispatches();
   }, []);
   const handleAccessoryChange = (index, field, value) => {
     const updatedAccessories = [...accessories];
@@ -80,37 +88,38 @@ const DispachMobilesList = () => {
 
   const getSingleDispatches = async () => {
     try {
-      const response = await api.get(`/api/Purchase/single-dispatch`)
+      const response = await api.get(`/api/Purchase/single-dispatch`);
       setSingleDispatches(response.data.dispatches);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
   const getBulkDispatches = async () => {
     try {
-      const response = await api.get(`/api/Purchase/bulk-dispatch`)
+      const response = await api.get(`/api/Purchase/bulk-dispatch`);
       setBulkDispatches(response.data.dispatches);
     } catch (error) {
-      console.error("error", error)
+      console.error('error', error);
     }
   };
   const handleReturn = async (dispatchMobile) => {
-    const confirmReturn = window.confirm("Are you sure you want to return this mobile?");
+    const confirmReturn = window.confirm(
+      'Are you sure you want to return this mobile?'
+    );
 
     if (!confirmReturn) return;
 
     try {
-
-      const response = await api.patch(`/api/Purchase/single-dispatch-return/${dispatchMobile._id}`);
-      toast.success("Mobile returned successfully");
+      const response = await api.patch(
+        `/api/Purchase/single-dispatch-return/${dispatchMobile._id}`
+      );
+      toast.success('Mobile returned successfully');
       getSingleDispatches();
     } catch (error) {
-      console.error("error", error);
-      toast.error("Failed to return the mobile");
+      console.error('error', error);
+      toast.error('Failed to return the mobile');
     }
   };
   const handleReturnBulkDispatch = async (dispatchMobile) => {
-
-    setDispatchMobile(dispatchMobile)
+    setDispatchMobile(dispatchMobile);
     setShowDispatchModal(true);
     setImeiList(
       dispatchMobile.ramSimDetails.flatMap((ramSim) => {
@@ -122,15 +131,14 @@ const DispachMobilesList = () => {
           );
       }) || []
     );
-
-
-  }
-
+  };
 
   const deletePhone = async () => {
     try {
       await axios.delete(`${BASE_URL}api/phone/deletePhone/${dispatchMobile}`);
-      setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
+      setMobiles((prevMobiles) =>
+        prevMobiles.filter((mobile) => mobile._id !== deleteMobileId)
+      );
     } catch (error) {
       console.error('Error deleting phone:', error);
     } finally {
@@ -140,10 +148,12 @@ const DispachMobilesList = () => {
   const handleChange = (event) => {
     const selectedImeis = event.target.value;
     setImei(selectedImeis);
-    setAddedImeis((prevImeis) => Array.from(new Set([...prevImeis, ...selectedImeis])));
+    setAddedImeis((prevImeis) =>
+      Array.from(new Set([...prevImeis, ...selectedImeis]))
+    );
     // setAddedImeis((prevImeis) => Array.from(new Set([...prevImeis, ...selectedImeis]))); // Ensure uniqueness
 
-    // setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]); 
+    // setAddedImeis((prevImeis) => [...new Set([...prevImeis, ...selectedImeis])]);
   };
 
   const handleDispatchClick = (mobile) => {
@@ -151,36 +161,31 @@ const DispachMobilesList = () => {
     setShowDispatchModal(true);
   };
 
-
   const handleBulkReturnSubmit = async () => {
     try {
-
-      const response = await api.patch(`/api/Purchase/bulk-dispatch-return/${dispatchMobile.dispatchId}`, {
-        imeiArray: imei.map((imei) => {
-          const [imei1, imei2] = imei.split(' / ');
-          return { imei1, imei2 };
-        }),
-      }
-        ,);
-      toast.success("Bulk Mobile returned successfully");
+      const response = await api.patch(
+        `/api/Purchase/bulk-dispatch-return/${dispatchMobile.dispatchId}`,
+        {
+          imeiArray: imei.map((imei) => {
+            const [imei1, imei2] = imei.split(' / ');
+            return { imei1, imei2 };
+          }),
+        }
+      );
+      toast.success('Bulk Mobile returned successfully');
       getBulkDispatches();
     } catch (error) {
-      toast.error("Failed to return the mobile");
+      toast.error('Failed to return the mobile');
     }
   };
-
-
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
   const handleSoldClick = (mobile, type) => {
-
-
-
-    if (type === "bulk") {
-      setType("bulk")
+    if (type === 'bulk') {
+      setType('bulk');
       setImeiList(
         mobile?.ramSimDetails.flatMap((ramSim) => {
           if (!ramSim.imeiNumbers) return [];
@@ -191,14 +196,12 @@ const DispachMobilesList = () => {
             );
         }) || []
       );
-
     }
-    if (type === "single") {
-      setType("single")
+    if (type === 'single') {
+      setType('single');
     }
-    if (type === "singleUsed") {
-      setType("singleUsed")
-
+    if (type === 'singleUsed') {
+      setType('singleUsed');
     }
 
     setSoldMobile(mobile);
@@ -215,7 +218,7 @@ const DispachMobilesList = () => {
       ...soldMobile,
       finalPrice,
       sellingType,
-      ...(type === "singleUsed" && { warranty }),
+      ...(type === 'singleUsed' && { warranty }),
       addedImeis,
       cnicBackPic,
       warranty,
@@ -226,7 +229,7 @@ const DispachMobilesList = () => {
       payableAmountNow,
       payableAmountLater,
       payableAmountLaterDate,
-      exchangePhoneDetail
+      exchangePhoneDetail,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -239,64 +242,240 @@ const DispachMobilesList = () => {
     setShowDeleteModal(true);
   };
 
-
-
-
-
-  const dispatchedImeisList = bulkDispatches.bulkPhonePurchaseId?.ramSimDetails
-    ?.flatMap((record) => {
+  const dispatchedImeisList =
+    bulkDispatches.bulkPhonePurchaseId?.ramSimDetails?.flatMap((record) => {
       return record.imeiNumbers
         .filter((imei) => imei.isDispatched) // Check if the IMEI is dispatched
         .map((item) => (
-          <strong key={item._id}>imei1: {item.imei1} / imei2: {item.imei2}</strong>
+          <strong key={item._id}>
+            imei1: {item.imei1} / imei2: {item.imei2}
+          </strong>
         ));
     }) || [];
-
 
   return (
     <>
       {/* Search bar */}
 
-
       <div className="d-flex justify-content-between align-items-center mb-3">
-
-
         {/* Share Inventory Button */}
-
       </div>
 
-      <StyledHeading>Single New  phones</StyledHeading>
+      <StyledHeading>Single New phones</StyledHeading>
       <Row xs={1} md={2} lg={3} className="g-4">
-        {!singleDispatches.every(item => item.purchasePhoneId === null) ? (
+        {!singleDispatches.every((item) => item.purchasePhoneId === null) ? (
           singleDispatches
-            .filter((phone) => phone?.purchasePhoneId?.phoneCondition === "New")
+            .filter((phone) => phone?.purchasePhoneId?.phoneCondition === 'New')
             .map((dispatch) => {
               const phone = dispatch.purchasePhoneId;
               return (
                 <Col key={dispatch._id}>
-                  <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                    <Card.Body style={{ padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+                  <Card
+                    className="h-100 shadow border-0"
+                    style={{
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}
+                  >
+                    <Card.Body
+                      style={{
+                        padding: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
                       {/* Title */}
-                      <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
+                      <Card.Title
+                        style={{
+                          fontSize: '1.3rem',
+                          fontWeight: '600',
+                          color: '#333',
+                          width: '100%',
+                        }}
+                      >
                         {phone.companyName} {phone.modelName}
                       </Card.Title>
 
                       {/* Details */}
-                      <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Shop:</strong> {dispatch.shopName}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Receiver:</strong> {dispatch.receiverName}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Battery Health:</strong> {phone.batteryHealth}%</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Warranty:</strong> {phone.warranty}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Color:</strong> {phone.color}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 1:</strong> {phone.imei1}</div>
-                        {phone.imei2 && <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 2:</strong> {phone.imei2}</div>}
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>RAM / Storage:</strong> {phone.ramMemory}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Condition:</strong> {phone.phoneCondition}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Specifications:</strong> {phone.specifications}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Purchase Price:</strong> {phone.price?.purchasePrice}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Demand Price:</strong> {phone.price?.demandPrice}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Final Price:</strong> {phone.price?.finalPrice || 'Not Sold'}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Dispatch Date:</strong> {new Date(dispatch.dispatchDate).toLocaleDateString()}</div>
+                      <Card.Text
+                        style={{
+                          fontSize: '0.9rem',
+                          color: '#666',
+                          lineHeight: '1.6',
+                          width: '100%',
+                        }}
+                      >
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Shop:
+                          </strong>{' '}
+                          {dispatch.shopName}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Receiver:
+                          </strong>{' '}
+                          {dispatch.receiverName}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Battery Health:
+                          </strong>{' '}
+                          {phone.batteryHealth}%
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Warranty:
+                          </strong>{' '}
+                          {phone.warranty}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Color:
+                          </strong>{' '}
+                          {phone.color}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            IMEI 1:
+                          </strong>{' '}
+                          {phone.imei1}
+                        </div>
+                        {phone.imei2 && (
+                          <div>
+                            <strong
+                              style={{
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                                color: '#333',
+                              }}
+                            >
+                              IMEI 2:
+                            </strong>{' '}
+                            {phone.imei2}
+                          </div>
+                        )}
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            RAM / Storage:
+                          </strong>{' '}
+                          {phone.ramMemory}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Condition:
+                          </strong>{' '}
+                          {phone.phoneCondition}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Specifications:
+                          </strong>{' '}
+                          {phone.specifications}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Purchase Price:
+                          </strong>{' '}
+                          {phone.price?.purchasePrice}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Demand Price:
+                          </strong>{' '}
+                          {phone.price?.demandPrice}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Final Price:
+                          </strong>{' '}
+                          {phone.price?.finalPrice || 'Not Sold'}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Dispatch Date:
+                          </strong>{' '}
+                          {new Date(dispatch.dispatchDate).toLocaleDateString()}
+                        </div>
                       </Card.Text>
 
                       {/* Buttons */}
@@ -317,7 +496,7 @@ const DispachMobilesList = () => {
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => handleSoldClick(phone, "single")}
+                          onClick={() => handleSoldClick(phone, 'single')}
                           style={{
                             backgroundColor: '#007bff',
                             color: '#fff',
@@ -346,39 +525,222 @@ const DispachMobilesList = () => {
           </Col>
         )}
       </Row>
-      <div style={{ marginTop: "2rem" }}></div>
-      <StyledHeading>Single Used  phones</StyledHeading>
+      <div style={{ marginTop: '2rem' }}></div>
+      <StyledHeading>Single Used phones</StyledHeading>
       <Row xs={1} md={2} lg={3} className="g-4">
-        {!singleDispatches.every(item => item.purchasePhoneId === null) ? (
+        {!singleDispatches.every((item) => item.purchasePhoneId === null) ? (
           singleDispatches
-            .filter((phone) => phone.purchasePhoneId?.phoneCondition === "Used")
+            .filter((phone) => phone.purchasePhoneId?.phoneCondition === 'Used')
             .map((dispatch) => {
               const phone = dispatch.purchasePhoneId;
               return (
                 <Col key={dispatch._id}>
-                  <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                    <Card.Body style={{ padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+                  <Card
+                    className="h-100 shadow border-0"
+                    style={{
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}
+                  >
+                    <Card.Body
+                      style={{
+                        padding: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
                       {/* Title */}
-                      <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
+                      <Card.Title
+                        style={{
+                          fontSize: '1.3rem',
+                          fontWeight: '600',
+                          color: '#333',
+                          width: '100%',
+                        }}
+                      >
                         {phone.companyName} {phone.modelName}
                       </Card.Title>
 
                       {/* Details */}
-                      <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Shop:</strong> {dispatch.shopName}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Receiver:</strong> {dispatch.receiverName}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Battery Health:</strong> {phone.batteryHealth}%</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Warranty:</strong> {phone.warranty}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Color:</strong> {phone.color}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 1:</strong> {phone.imei1}</div>
-                        {phone.imei2 && <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>IMEI 2:</strong> {phone.imei2}</div>}
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>RAM / Storage:</strong> {phone.ramMemory}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Condition:</strong> {phone.phoneCondition}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Specifications:</strong> {phone.specifications}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Purchase Price:</strong> {phone.price?.purchasePrice}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Demand Price:</strong> {phone.price?.demandPrice}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Final Price:</strong> {phone.price?.finalPrice || 'Not Sold'}</div>
-                        <div><strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>Dispatch Date:</strong> {new Date(dispatch.dispatchDate).toLocaleDateString()}</div>
+                      <Card.Text
+                        style={{
+                          fontSize: '0.9rem',
+                          color: '#666',
+                          lineHeight: '1.6',
+                          width: '100%',
+                        }}
+                      >
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Shop:
+                          </strong>{' '}
+                          {dispatch.shopName}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Receiver:
+                          </strong>{' '}
+                          {dispatch.receiverName}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Battery Health:
+                          </strong>{' '}
+                          {phone.batteryHealth}%
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Warranty:
+                          </strong>{' '}
+                          {phone.warranty}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Color:
+                          </strong>{' '}
+                          {phone.color}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            IMEI 1:
+                          </strong>{' '}
+                          {phone.imei1}
+                        </div>
+                        {phone.imei2 && (
+                          <div>
+                            <strong
+                              style={{
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                                color: '#333',
+                              }}
+                            >
+                              IMEI 2:
+                            </strong>{' '}
+                            {phone.imei2}
+                          </div>
+                        )}
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            RAM / Storage:
+                          </strong>{' '}
+                          {phone.ramMemory}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Condition:
+                          </strong>{' '}
+                          {phone.phoneCondition}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Specifications:
+                          </strong>{' '}
+                          {phone.specifications}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Purchase Price:
+                          </strong>{' '}
+                          {phone.price?.purchasePrice}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Demand Price:
+                          </strong>{' '}
+                          {phone.price?.demandPrice}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Final Price:
+                          </strong>{' '}
+                          {phone.price?.finalPrice || 'Not Sold'}
+                        </div>
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                            }}
+                          >
+                            Dispatch Date:
+                          </strong>{' '}
+                          {new Date(dispatch.dispatchDate).toLocaleDateString()}
+                        </div>
                       </Card.Text>
 
                       {/* Buttons */}
@@ -399,7 +761,7 @@ const DispachMobilesList = () => {
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => handleSoldClick(phone, "singleUsed")}
+                          onClick={() => handleSoldClick(phone, 'singleUsed')}
                           style={{
                             backgroundColor: '#007bff',
                             color: '#fff',
@@ -428,8 +790,8 @@ const DispachMobilesList = () => {
           </Col>
         )}
       </Row>
-      <div style={{ marginTop: "2rem" }}></div>
-      <StyledHeading>Bulk  phones</StyledHeading>
+      <div style={{ marginTop: '2rem' }}></div>
+      <StyledHeading>Bulk phones</StyledHeading>
       <Row xs={1} md={2} lg={3}>
         {bulkDispatches.length > 0 ? (
           bulkDispatches.map((dispatch) => {
@@ -571,7 +933,7 @@ const DispachMobilesList = () => {
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => handleSoldClick(dispatch, "bulk")}
+                        onClick={() => handleSoldClick(dispatch, 'bulk')}
                         style={{
                           backgroundColor: '#007bff',
                           color: '#fff',
@@ -603,10 +965,11 @@ const DispachMobilesList = () => {
         )}
       </Row>
 
-
-
-
-      <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+      <AddPhone
+        modal={showModal}
+        editMobile={editMobile}
+        handleModalClose={() => setShowModal(false)}
+      />
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
@@ -624,16 +987,26 @@ const DispachMobilesList = () => {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showDispatchModal} onHide={() => setShowDispatchModal(false)}>
+      <Modal
+        show={showDispatchModal}
+        onHide={() => setShowDispatchModal(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Return Mobile</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Modal.Body>Make select the imeis or make overall bulk return:</Modal.Body>
+          <Modal.Body>
+            Make select the imeis or make overall bulk return:
+          </Modal.Body>
           <Form>
             <FormControl fullWidth variant="outlined" className="mb-3">
               <InputLabel>IMEI</InputLabel>
-              <Select value={imei} onChange={handleChange} displayEmpty multiple>
+              <Select
+                value={imei}
+                onChange={handleChange}
+                displayEmpty
+                multiple
+              >
                 {imeiList
                   .filter((item) => item.toLowerCase())
                   .map((item, index) => (
@@ -646,7 +1019,10 @@ const DispachMobilesList = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDispatchModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDispatchModal(false)}
+          >
             Cancel
           </Button>
           <Button variant="primary" onClick={handleBulkReturnSubmit}>
@@ -654,7 +1030,6 @@ const DispachMobilesList = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
 
       {/* Sold Modal */}
       <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
@@ -673,8 +1048,6 @@ const DispachMobilesList = () => {
                   placeholder="Enter Customer Name"
                 />
               </Form.Group>
-
-
 
               {/* CNIC Front Picture */}
               {/* <Form.Group className="mb-3">
@@ -703,7 +1076,9 @@ const DispachMobilesList = () => {
                       <Form.Control
                         type="text"
                         value={accessory.name}
-                        onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'name', e.target.value)
+                        }
                         placeholder="Enter accessory name"
                       />
                     </Form.Group>
@@ -713,7 +1088,13 @@ const DispachMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.quantity}
-                        onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(
+                            index,
+                            'quantity',
+                            e.target.value
+                          )
+                        }
                         min="1"
                       />
                     </Form.Group>
@@ -723,24 +1104,38 @@ const DispachMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.price}
-                        onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'price', e.target.value)
+                        }
                         placeholder="Enter price"
                       />
                     </Form.Group>
 
-                    <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => removeAccessory(index)}
+                    >
                       Remove
                     </Button>
                   </div>
                 ))}
-                <Button variant="primary" onClick={addAccessory} style={{ marginBottom: "20px" }}>
+                <Button
+                  variant="primary"
+                  onClick={addAccessory}
+                  style={{ marginBottom: '20px' }}
+                >
                   Add Another Accessory
                 </Button>
-                {type === "bulk" && (
-
+                {type === 'bulk' && (
                   <FormControl fullWidth variant="outlined" className="mb-3">
                     <InputLabel>IMEI</InputLabel>
-                    <Select value={imei} onChange={handleChange} displayEmpty multiple>
+                    <Select
+                      value={imei}
+                      onChange={handleChange}
+                      displayEmpty
+                      multiple
+                    >
                       {imeiList
                         .filter((item) => item.toLowerCase())
                         .map((item, index) => (
@@ -751,12 +1146,14 @@ const DispachMobilesList = () => {
                     </Select>
                   </FormControl>
                 )}
-
               </div>
-              {type === "singleUsed" && (
+              {type === 'singleUsed' && (
                 <Form.Group className="mb-3">
                   <Form.Label>Company Warranty</Form.Label>
-                  <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
+                  <Form.Select
+                    value={warranty}
+                    onChange={(e) => setWarranty(e.target.value)}
+                  >
                     <option value="">Select Warranty</option>
                     <option value="No Warranty">No Warranty</option>
                     <option value="1 Month">1 Month</option>
@@ -790,7 +1187,7 @@ const DispachMobilesList = () => {
               </Form.Group>
 
               {/* Conditional Fields Based on Selling Type */}
-              {sellingType === "Bank" && (
+              {sellingType === 'Bank' && (
                 <Form.Group>
                   <Form.Label>Bank Name</Form.Label>
                   <Form.Control
@@ -802,7 +1199,7 @@ const DispachMobilesList = () => {
                 </Form.Group>
               )}
 
-              {sellingType === "Credit" && (
+              {sellingType === 'Credit' && (
                 <>
                   <Form.Group>
                     <Form.Label>Payable Amount Now</Form.Label>
@@ -829,17 +1226,19 @@ const DispachMobilesList = () => {
                     <Form.Control
                       type="date"
                       value={payableAmountLaterDate}
-                      onChange={(e) => setPayableAmountLaterDate(e.target.value)}
+                      onChange={(e) =>
+                        setPayableAmountLaterDate(e.target.value)
+                      }
                     />
                   </Form.Group>
                 </>
               )}
 
-              {sellingType === "Exchange" && (
+              {sellingType === 'Exchange' && (
                 <Form.Group>
                   <Form.Label>Exchange Phone Details</Form.Label>
                   <Form.Control
-                    as={"textarea"}
+                    as={'textarea'}
                     rows={4} //
                     type="text"
                     placeholder="Enter exchange phone details"
@@ -860,8 +1259,7 @@ const DispachMobilesList = () => {
               </Form.Group>
             </div>
 
-
-            {type === "bulk" && (
+            {type === 'bulk' && (
               <>
                 {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
                   <BarcodeReader />
@@ -877,7 +1275,12 @@ const DispachMobilesList = () => {
                       onChange={(e) => setImeiInput(e.target.value)}
                       placeholder="Enter IMEI number"
                     />
-                    <Button variant="success" onClick={handleAddImei} backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)" className="ms-2">
+                    <Button
+                      variant="success"
+                      onClick={handleAddImei}
+                      backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)"
+                      className="ms-2"
+                    >
                       Add
                     </Button>
                   </div>
@@ -889,9 +1292,16 @@ const DispachMobilesList = () => {
                     <h6>Added IMEIs:</h6>
                     <ul className="list-group">
                       {addedImeis.map((imei, index) => (
-                        <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                        <li
+                          key={index}
+                          className="list-group-item d-flex justify-content-between align-items-center"
+                        >
                           {imei}
-                          <Button variant="danger" size="sm" onClick={() => handleRemoveImei(imei)}>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleRemoveImei(imei)}
+                          >
                             Remove
                           </Button>
                         </li>
@@ -901,7 +1311,6 @@ const DispachMobilesList = () => {
                 )}
               </>
             )}
-
           </Form>
         </Modal.Body>
         <Modal.Footer>

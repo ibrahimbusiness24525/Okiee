@@ -24,6 +24,9 @@ const PurchasePhone = ({
     date: today,
     quantity: 0,
     lp: '',
+    bankAccountUsed: '',
+    amountFromBank: '',
+    amountFromPocket: '',
     lifting: '',
     promo: '',
     activation: '',
@@ -431,6 +434,9 @@ const PurchasePhone = ({
       try {
         const payload = {
           partyName: bulkData.partyName,
+          bankAccountUsed: bulkData.bankAccountUsed,
+          amountFromBank: bulkData.amountFromBank,
+          amountFromPocket: bulkData.amountFromPocket,
           date: bulkData.date,
           purchasePaymentType: bulkData.paymentType,
           purchasePaymentStatus:
@@ -486,6 +492,9 @@ const PurchasePhone = ({
       try {
         const payload = {
           partyName: bulkData.partyName,
+          bankAccountUsed: bulkData.bankAccountUsed,
+          amountFromBank: Number(bulkData.amountFromBank),
+          amountFromPocket: Number(bulkData.amountFromPocket),
           date: bulkData.date,
           purchasePaymentType: bulkData.paymentType,
           purchasePaymentStatus:
@@ -515,6 +524,7 @@ const PurchasePhone = ({
             imeiNumbers: item.imeiNumbers,
           })),
         };
+        console.log('Payload for bulk purchase:', payload);
 
         const response = await api.post(
           `/api/Purchase/bulk-phone-purchase`,
