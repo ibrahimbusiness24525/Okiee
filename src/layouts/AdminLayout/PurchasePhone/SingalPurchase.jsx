@@ -40,8 +40,34 @@ const SingalPurchaseModal = ({
       console.error('Error fetching banks:', error);
     }
   };
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+  const [models, setModels] = useState([]);
 
+  const fetchCompanies = async () => {
+    try {
+      const response = await api.get('/api/company/all-companies');
+      setCompanies(response?.data?.companies || []);
+    } catch (error) {
+      console.error('Failed to fetch companies:', error);
+    }
+  };
   useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await api.get(`/api/company/models/${selectedCompanyId}`);
+        setModels(response?.data.models || []);
+      } catch (error) {
+        console.error('Failed to fetch models:', error);
+      }
+    };
+    fetchModels();
+  }, [singlePurchase.companyName]);
+  console.log("models", models);
+
+  console.log('companies', companies);
+  useEffect(() => {
+    fetchCompanies();
     getAllBanks(); // Fetch all banks when the component mounts
   }, []);
 
@@ -114,14 +140,29 @@ const SingalPurchaseModal = ({
                 <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
                   Company
                 </Form.Label>
-                <Form.Control
-                  value={singlePurchase.companyName}
+                <Form.Select
+                  value={selectedCompanyId}
                   name="companyName"
-                  onChange={handleChange}
-                  type="text"
-                  placeholder="Enter Company Name"
+                  onChange={(e) => {
+                    setSelectedCompanyId(e.target.value);
+                    const selectedCompany = companies.find(
+                      (company) => company._id === e.target.value
+                    );
+                    setSinglePurchase({
+                      ...singlePurchase,
+                      companyName: selectedCompany ? selectedCompany.name : '',
+                      modelName: '', // reset model when company changes
+                    });
+                  }}
                   required
-                />
+                >
+                  <option value="">Select Company</option>
+                  {companies.map((company) => (
+                    <option key={company._id} value={company._id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </Form.Select>
               </Form.Group>
               <Form.Group
                 controlId="purchasePhoneModel"
@@ -130,14 +171,19 @@ const SingalPurchaseModal = ({
                 <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
                   Model
                 </Form.Label>
-                <Form.Control
+                <Form.Select
                   value={singlePurchase.modelName}
                   name="modelName"
                   onChange={handleChange}
-                  type="text"
-                  placeholder="Enter Model Name"
                   required
-                />
+                >
+                  <option value="">Select Model</option>
+                  {models.map((model) => (
+                    <option key={model._id} value={model.name}>
+                      {model.name}
+                    </option>
+                  ))}
+                </Form.Select>
               </Form.Group>
             </div>
             <div

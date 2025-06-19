@@ -28,54 +28,134 @@ const StockList = () => {
     );
   };
 
+  // const printSelected = () => {
+  //   const selectedBulkIds = selectedItems
+  //     .filter((id) => id.startsWith('bulk-'))
+  //     .map((id) => id.replace('bulk-', ''));
+
+  //   const selectedSingleIds = selectedItems
+  //     .filter((id) => id.startsWith('single-'))
+  //     .map((id) => id.replace('single-', ''));
+
+  //   const selectedBulkPhones = data.bulkPhones.filter((phone) =>
+  //     selectedBulkIds.includes(phone._id)
+  //   );
+
+  //   const selectedSinglePhones = data.singlePhones.filter((phone) =>
+  //     selectedSingleIds.includes(phone._id)
+  //   );
+
+  //   // Prepare print content
+  //   const printContent = preparePrintContent(
+  //     selectedBulkPhones,
+  //     selectedSinglePhones
+  //   );
+
+  //   // Open print window
+  //   const printWindow = window.open('', '_blank');
+  //   printWindow.document.write(`
+  //     <html>
+  //       <head>
+  //         <title>Stock List Print</title>
+  //         <style>
+  //           body { font-family: Arial, sans-serif; }
+  //           .phone-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+  //           .header { font-weight: bold; margin-bottom: 5px; }
+  //           .imei { font-size: 14px; }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         ${printContent}
+  //         <script>
+  //           window.onload = function() {
+  //             window.print();
+  //             setTimeout(() => window.close(), 1000);
+  //           };
+  //         </script>
+  //       </body>
+  //     </html>
+  //   `);
+  //   printWindow.document.close();
+  // };
   const printSelected = () => {
-    const selectedBulkIds = selectedItems
-      .filter((id) => id.startsWith('bulk-'))
-      .map((id) => id.replace('bulk-', ''));
+    try {
+      const selectedBulkIds = selectedItems
+        .filter((id) => id.startsWith('bulk-'))
+        .map((id) => id.replace('bulk-', ''));
 
-    const selectedSingleIds = selectedItems
-      .filter((id) => id.startsWith('single-'))
-      .map((id) => id.replace('single-', ''));
+      const selectedSingleIds = selectedItems
+        .filter((id) => id.startsWith('single-'))
+        .map((id) => id.replace('single-', ''));
 
-    const selectedBulkPhones = data.bulkPhones.filter((phone) =>
-      selectedBulkIds.includes(phone._id)
-    );
+      const selectedBulkPhones = data.bulkPhones.filter((phone) =>
+        selectedBulkIds.includes(phone._id)
+      );
 
-    const selectedSinglePhones = data.singlePhones.filter((phone) =>
-      selectedSingleIds.includes(phone._id)
-    );
+      const selectedSinglePhones = data.singlePhones.filter((phone) =>
+        selectedSingleIds.includes(phone._id)
+      );
 
-    // Prepare print content
-    const printContent = preparePrintContent(
-      selectedBulkPhones,
-      selectedSinglePhones
-    );
+      // Prepare print content
+      const printContent = preparePrintContent(
+        selectedBulkPhones,
+        selectedSinglePhones
+      );
 
-    // Open print window
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
+      // Create a hidden iframe instead of a new window
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      iframe.style.left = '-9999px';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+
+      iframeDoc.open();
+      iframeDoc.write(`
+      <!DOCTYPE html>
       <html>
         <head>
           <title>Stock List Print</title>
           <style>
-            body { font-family: Arial, sans-serif; }
-            .phone-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-            .header { font-weight: bold; margin-bottom: 5px; }
-            .imei { font-size: 14px; }
+            @media print {
+              body { font-family: Arial, sans-serif; margin: 0; padding: 10mm; }
+              .phone-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+              .header { font-weight: bold; margin-bottom: 5px; }
+              .imei { font-size: 14px; }
+              @page { size: auto; margin: 5mm; }
+            }
+            @media screen {
+              body { background-color: #fff; }
+            }
           </style>
         </head>
         <body>
           ${printContent}
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(() => window.close(), 1000);
-            };
-          </script>
         </body>
       </html>
     `);
-    printWindow.document.close();
+      iframeDoc.close();
+
+      // Wait for content to load
+      iframe.onload = function () {
+        setTimeout(() => {
+          // Focus the iframe window and print
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+
+          // Remove the iframe after printing
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+          }, 1000);
+        }, 500);
+      };
+
+    } catch (error) {
+      console.error('Printing failed:', error);
+      alert('Printing failed. Please check console for details.');
+    }
   };
 
   const preparePrintContent = (bulkPhones, singlePhones) => {
@@ -89,11 +169,11 @@ const StockList = () => {
             <div class="header">${detail.companyName} ${detail.modelName} ${detail.ramMemory}</div>
             <div class="imei">
               ${detail.imeiNumbers
-                ?.map(
-                  (imei) =>
-                    `IMEI1: ${imei.imei1 || ''} IMEI2: ${imei.imei2 || ''}`
-                )
-                .join('<br>')}
+            ?.map(
+              (imei) =>
+                `IMEI1: ${imei.imei1 || ''} IMEI2: ${imei.imei2 || ''}`
+            )
+            .join('<br>')}
             </div>
           </div>
         `;

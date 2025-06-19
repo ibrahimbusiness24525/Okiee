@@ -57,7 +57,7 @@ const BulkPurchaseModal = ({
     try {
       const response = await api.get('/api/partyLedger/getAllNames');
       setPartyNames(response?.data?.data);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   useEffect(() => {
@@ -200,10 +200,10 @@ const BulkPurchaseModal = ({
                             ramSimDetails: prev.ramSimDetails.map((item, i) =>
                               i === idx
                                 ? {
-                                    ...item,
-                                    simOption,
-                                    imeiNumbers: imeiFields,
-                                  }
+                                  ...item,
+                                  simOption,
+                                  imeiNumbers: imeiFields,
+                                }
                                 : item
                             ),
                           }));
@@ -344,9 +344,9 @@ const BulkPurchaseModal = ({
                                     (p, j) =>
                                       j === i
                                         ? {
-                                            ...p,
-                                            batteryHealth: e.target.value,
-                                          }
+                                          ...p,
+                                          batteryHealth: e.target.value,
+                                        }
                                         : p
                                   );
                                   setBulkData((prev) => ({
