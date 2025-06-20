@@ -180,13 +180,27 @@ const NavLeft = () => {
   const [showPurchasePhoneModal, setShowPurchasePhoneModal] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
   const [showAddModelModal, setShowAddModelModal] = useState(false);
-
+  const [show, setShow] = useState(false);
   const [companyName, setCompanyName] = useState('');
   const [modelName, setModelName] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [companies, setCompanies] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imei, setImei] = useState('');
 
+  const handleSellPhone = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await api.post('/api/purchase/general-mobile-sale', { imei: Number(imei) });
+
+      toast.success('Phone sold successfully!');
+
+    } catch (error) {
+      console.log('Error selling phone:', error);
+
+    }
+  };
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
@@ -264,9 +278,12 @@ const NavLeft = () => {
       justifyContent: 'center',
     },
     largeScreen: {
-      height: '50px',
-      width: '200px',
-      marginLeft: '50px',
+      // height: '50px',
+      // width: '200px',
+      // marginLeft: '50px',
+      height: '40px',
+      width: '150px',
+      marginLeft: '40px',
       marginTop: '0px',
     },
     mediumScreen: {
@@ -314,6 +331,42 @@ const NavLeft = () => {
           </button>
         </ListGroup.Item>
 
+        <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
+          <button
+            className="sale-mobile-btn"
+            style={{
+              ...buttonStyles.base,
+              ...dynamicStyles,
+              backgroundColor: '#4285F4', // Google blue
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '10px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#3367D6';
+              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#4285F4';
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'translateY(1px)';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+            onClick={() => setShow(true)}
+          >
+            Sale Mobile
+          </button>
+        </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <button
             style={{
@@ -417,6 +470,36 @@ const NavLeft = () => {
           </button>
         </form>
       </Modal>
+      <Modal show={show} toggleModal={() => setShow(!show)} onHide={() => setShow(false)} size="sm">
+        <h2>Sell Phone</h2>
+        <form onSubmit={handleSellPhone}>
+          <div className="mb-3">
+            <label htmlFor="imei" className="form-label">
+              Enter IMEI Number
+            </label>
+            <input
+              type="text"
+              id="imei"
+              className="form-control"
+              value={imei}
+              onChange={(e) => setImei(e.target.value)}
+              placeholder="IMEI number"
+              required
+            />
+          </div>
+
+
+
+          <button
+            type="submit"
+            className="btn btn-primary w-100"
+          >
+
+            Sell Phone
+          </button>
+        </form>
+      </Modal>
+
     </>
   );
 };

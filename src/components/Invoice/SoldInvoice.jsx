@@ -221,6 +221,25 @@ const SoldInvoice = () => {
   const [imeis, setImeis] = useState(
     dataReceived?.ramSimDetails?.flatMap(item => item.imeiNumbers) || []
   );
+  function formatPhoneNumber(number) {
+    if (!number) return null;
+
+    // Remove all non-digit characters first
+    const digitsOnly = number.replace(/\D/g, '');
+
+    // If number is in international format (+923057903867)
+    if (digitsOnly.startsWith('92')) {
+      return '0' + digitsOnly.slice(2); // Convert +92 305... → 0305...
+    }
+
+    // If number already starts with 0 (assume correct local format)
+    if (digitsOnly.startsWith('0')) {
+      return digitsOnly; // Keep as-is (030...)
+    }
+
+    // If number doesn't start with 0 or 92 (unexpected format)
+    return '0' + digitsOnly; // Fallback: prepend 0
+  }
   const imeiOneList = dataReceived?.addedImeis?.length !== 0 && dataReceived?.addedImeis?.map((imei) => imei.split(" / ")[0]) || [];
   const handleSubmit = async (type) => {
     if (dataReceived?.prices?.buyingPrice || dataReceived?.bulkPhonePurchaseId) {
@@ -236,7 +255,9 @@ const SoldInvoice = () => {
         warranty: dataReceived?.warranty,
         customerName: dataReceived?.customerName,
         dateSold: dataReceived?.saleDate,
-        customerNumber: dataReceived?.customerNumber,
+        // customerNumber: dataReceived?.customerNumber,
+        customerNumber: formatPhoneNumber(dataReceived?.customerNumber),
+
         cnicFrontPic: "/file",
         cnicBackPic: "/file",
         sellingPaymentType: dataReceived.sellingType,
@@ -287,7 +308,7 @@ const SoldInvoice = () => {
           cnicBackPic: "/file",
           purchasePrice: dataReceived?.purchasePrice,
           sellingPaymentType: dataReceived.sellingType,
-          customerNumber: dataReceived?.customerNumber,
+          customerNumber: formatPhoneNumber(dataReceived?.customerNumber),
           accessories: dataReceived?.accessories,
           // accesssoryName:dataReceived.accessoryName,
           // accesssoryAmount:Number(dataReceived.accessoryPrice),
@@ -339,7 +360,30 @@ const SoldInvoice = () => {
   }) ?? [];
 
   console.log("dataReceived", dataReceived, "totalInvoice", totalInvoice, "addedImei1s", addedImei1s);
+  const whatsAppPhoneFormatter = (customerNumber) => {
+    if (!customerNumber) return null;
 
+    // 1. Remove all non-digit characters
+    const digitsOnly = customerNumber.replace(/\D/g, '');
+
+    // 2. Convert local format (0305...) to international (92305...)
+    if (digitsOnly.startsWith('0')) {
+      return '92' + digitsOnly.substring(1); // Remove leading 0, add 92
+    }
+
+    // 3. Handle numbers already in international format
+    if (digitsOnly.startsWith('92')) {
+      return digitsOnly; // Return as-is
+    }
+
+    // 4. Handle numbers without country code (305...)
+    if (/^3\d{9}$/.test(digitsOnly)) {
+      return '92' + digitsOnly; // Add 92 prefix
+    }
+
+    // 5. Return null for invalid numbers
+    return null;
+  }
   return (
     <div>
 
@@ -426,7 +470,8 @@ const SoldInvoice = () => {
             if (customerNumber) {
               // WhatsApp expects international format without + or 00, e.g., 923001234567
               // Remove any non-digit characters
-              const phone = customerNumber.replace(/\D/g, '');
+              // const phone = customerNumber.replace(/\D/g, '');
+              const phone = whatsAppPhoneFormatter(customerNumber);
               const message = encodeURIComponent(
                 `Invoice Details:\n\nShop Name: ${shop?.shopName ?? 'Shop Name'}\nContact: ${shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}\nInvoice No: ${invoiceData.invoiceNumber}\nDate: ${dataReceived?.saleDate}\nCustomer Name: ${dataReceived?.customerName}\nCustomer Number: ${customerNumber}\nTotal Amount: ${totalInvoice}Rs\n\nThank you!`
               );
