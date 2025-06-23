@@ -44,6 +44,19 @@ const PayablesAndReceivables = () => {
     (acc, person) => acc + person.givingCredit,
     0
   );
+  const fetchPersons = async () => {
+    try {
+      setIsLoading(true);
+      const data = await api.get('/api/person/all');
+      setPersons(data?.data || []);
+      setFilteredPersons(data?.data || []);
+    } catch (error) {
+      console.error('Error fetching persons:', error);
+      alert('Error fetching data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const handleSearch = (searchTerm) => {
     const filtered = persons.filter(
       (person) =>
@@ -215,19 +228,6 @@ const PayablesAndReceivables = () => {
   //   }
 
   useEffect(() => {
-    const fetchPersons = async () => {
-      try {
-        setIsLoading(true);
-        const data = await api.get('/api/person/all');
-        setPersons(data?.data || []);
-        setFilteredPersons(data?.data || []);
-      } catch (error) {
-        console.error('Error fetching persons:', error);
-        alert('Error fetching data. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchPersons();
   }, []);
 

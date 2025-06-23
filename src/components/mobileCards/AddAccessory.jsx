@@ -11,14 +11,14 @@ const AddAccessory = () => {
   const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
   const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
   const [getPayment, setGetPayment] = useState({
-    amountFromBank: Number(""),
-    amountFromPocket: Number(""),
-    bankAccountUsed: Number(""),
+    amountFromBank: Number(''),
+    amountFromPocket: Number(''),
+    bankAccountUsed: Number(''),
   });
   const [givePayment, setGivePayment] = useState({
-    amountFromBank: Number(""),
-    amountFromPocket: Number(""),
-    bankAccountUsed: Number(""),
+    amountFromBank: Number(''),
+    amountFromPocket: Number(''),
+    bankAccountUsed: Number(''),
   });
   const [showAccessoryModal, setShowAccessoryModal] = useState(false);
   const { data } = useGetAccessories();
@@ -29,20 +29,19 @@ const AddAccessory = () => {
   });
   const [accessoryList, setAccessoryList] = useState([]);
 
+  const fetchAccessories = async () => {
+    try {
+      const res = await api.get('/api/accessory');
+      setAccessoryList(res.data);
+    } catch (error) {
+      console.error('Error fetching accessories', error);
+    }
+  };
   useEffect(() => {
-    const fetchAccessories = async () => {
-      try {
-        const res = await api.get('/api/accessory');
-        setAccessoryList(res.data);
-      } catch (error) {
-        console.error('Error fetching accessories', error);
-      }
-    };
-
     fetchAccessories();
   }, []);
-  console.log("give payment", givePayment);
-  console.log("get payment", getPayment);
+  console.log('accessoryList accessoryList', accessoryList);
+  console.log('get payment', getPayment);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,7 +56,7 @@ const AddAccessory = () => {
         stock: Number(accessoryData.quantity),
         givePayment: givePayment,
       });
-
+      fetchAccessories(); // Refresh the accessory list
       setAccessoryList([...accessoryList, res.data]);
       toast.success('Accessory added successfully!');
       setAccessoryData({ name: '', quantity: '', price: '' });
@@ -108,6 +107,7 @@ const AddAccessory = () => {
 
       await api.post('/api/accessory/sell', payload);
 
+      fetchAccessories(); // Refresh the accessory list
       toast.success('Accessory sold successfully!');
       setFormData([
         {
@@ -132,7 +132,7 @@ const AddAccessory = () => {
         backgroundColor: '#ffffff',
         borderRadius: '12px',
         boxShadow: '0 8px 20px rgba(0,0,0,0.05)',
-        maxWidth: '1000px',
+        maxWidth: '100%',
         margin: '0 auto',
       }}
     >
@@ -146,6 +146,114 @@ const AddAccessory = () => {
       >
         🎯 Accessories Manager
       </h2>
+      <div
+        style={{
+          display: 'flex',
+          gap: '16px',
+          marginBottom: '24px',
+          flexWrap: 'wrap',
+        }}
+      >
+        {/* Total Accessories Box */}
+        <div
+          style={{
+            flex: '1',
+            minWidth: '200px',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            border: '1px solid #e2e8f0',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              width: '4px',
+              height: '100%',
+              backgroundColor: '#3b82f6',
+            }}
+          />
+          <div style={{ paddingLeft: '12px' }}>
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#64748b',
+                marginBottom: '8px',
+              }}
+            >
+              Total Accessories
+            </div>
+            <div
+              style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: '#1e293b',
+              }}
+            >
+              {accessoryList.length}
+            </div>
+          </div>
+        </div>
+
+        {/* Total Stock Value Box */}
+        <div
+          style={{
+            flex: '1',
+            minWidth: '200px',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            border: '1px solid #e2e8f0',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              width: '4px',
+              height: '100%',
+              backgroundColor: '#10b981',
+            }}
+          />
+          <div style={{ paddingLeft: '12px' }}>
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#64748b',
+                marginBottom: '8px',
+              }}
+            >
+              Total Stock Value
+            </div>
+            <div
+              style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: '#1e293b',
+              }}
+            >
+              {' '}
+              {accessoryList.reduce(
+                (sum, item) => sum + (Number(item.totalPrice) || 0),
+                0
+              )}{' '}
+            </div>
+          </div>
+        </div>
+
+        {/* Optional: Add more metric boxes with different colors */}
+      </div>
 
       <div
         style={{
@@ -315,8 +423,12 @@ const AddAccessory = () => {
               Submit
             </button>
           </div>
-          <Button variant="secondary" onClick={() => setShowPayForPurchaseModel(!showPayForPurchaseModel)}>Proceed To Pay</Button>
-
+          <Button
+            variant="secondary"
+            onClick={() => setShowPayForPurchaseModel(!showPayForPurchaseModel)}
+          >
+            Proceed To Pay
+          </Button>
         </form>
       </Modal>
       <WalletTransactionModal
@@ -324,7 +436,7 @@ const AddAccessory = () => {
         toggleModal={() => setShowPayForPurchaseModel(!showPayForPurchaseModel)}
         singleTransaction={givePayment}
         setSingleTransaction={setGivePayment}
-        type='purchase'
+        type="purchase"
       />
 
       {/* Layout */}
@@ -364,7 +476,14 @@ const AddAccessory = () => {
         </div>
 
         {data?.data?.length > 0 ? (
-          <div style={{ display: 'grid', gap: '16px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: '20px',
+              alignItems: 'stretch',
+            }}
+          >
             {data.data.map((accessory, index) => (
               <div
                 key={index}
@@ -377,6 +496,10 @@ const AddAccessory = () => {
                   transition: 'all 0.3s ease',
                   position: 'relative',
                   overflow: 'hidden',
+                  minHeight: '100%',
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
                 {/* Gradient accent */}
@@ -392,7 +515,7 @@ const AddAccessory = () => {
                   }}
                 />
 
-                <div style={{ marginBottom: '12px' }}>
+                <div style={{ marginBottom: '12px', flex: '1' }}>
                   <h4
                     style={{
                       fontSize: '18px',
@@ -410,7 +533,16 @@ const AddAccessory = () => {
                       color: '#475569',
                     }}
                   >
-                    Category ID: {accessory.id}
+                    Per Piece Price: {accessory.perPiecePrice} PKR
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#475569',
+                    }}
+                  >
+                    Total Stock Price: {accessory.totalPrice} PKR
                   </div>
                 </div>
 
@@ -547,8 +679,6 @@ const AddAccessory = () => {
                   </Form.Select>
                 </Form.Group>
 
-
-
                 {/* Quantity */}
                 <Form.Group controlId={`quantity-${index}`}>
                   <Form.Label>Quantity</Form.Label>
@@ -610,8 +740,12 @@ const AddAccessory = () => {
             Add Another Accessory
           </Button>
         </div>
-        <Button variant="secondary" onClick={() => setShowGetFromSaleModel(!showGetFromSaleModel)}>Proceed To Get Payment</Button>
-
+        <Button
+          variant="secondary"
+          onClick={() => setShowGetFromSaleModel(!showGetFromSaleModel)}
+        >
+          Proceed To Get Payment
+        </Button>
       </Modal>
       <WalletTransactionModal
         show={showGetFromSaleModel}
