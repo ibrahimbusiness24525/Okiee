@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Form, InputGroup, Modal, Button } from 'react-bootstrap';
+import {
+  Card,
+  Row,
+  Col,
+  Form,
+  InputGroup,
+  Modal,
+  Button,
+} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import axios from 'axios';
 import { BASE_URL } from 'config/constant';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
-import bulkMobileImage from "../../assets/images/phoneBoxes.jpg"
+import bulkMobileImage from '../../assets/images/phoneBoxes.jpg';
 import BarcodeScannerComponent from 'react-webcam-barcode-scanner';
 import useScanDetection from 'use-scan-detection';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
-import List from '../List/List'
+import List from '../List/List';
 import Table from 'components/Table/Table';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -23,37 +31,37 @@ import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { toast } from 'react-toastify';
 import { MoonLoader } from 'react-spinners';
 import { useGetAccessories } from 'hooks/accessory';
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react';
 const NewMobilesList = () => {
-  const [showAmount, setShowAmount] = useState(false)
-  const { data } = useGetAccessories()
+  const [showAmount, setShowAmount] = useState(false);
+  const { data } = useGetAccessories();
   const [imei, setImei] = useState([]);
   const [imeiList, setImeiList] = useState([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [mobiles, setMobiles] = useState([]);
-  const [bankName, setBankName] = useState("");
-  const [payableAmountNow, setPayableAmountNow] = useState("")
-  const [payableAmountLater, setPayableAmountLater] = useState("");
-  const [payableAmountLaterDate, setPayableAmountLaterDate] = useState("");
-  const [exchangePhoneDetail, setExchangePhoneDetail] = useState("");
-  const [type, setType] = useState("");
-  const [cnicFrontPic, setCnicFrontPic] = useState("");
-  const [cnicBackPic, setCnicBackPic] = useState("");
-  const [sellingType, setSellingType] = useState("")
-  const [accessoryName, setAccessoryName] = useState("");
+  const [bankName, setBankName] = useState('');
+  const [payableAmountNow, setPayableAmountNow] = useState('');
+  const [payableAmountLater, setPayableAmountLater] = useState('');
+  const [payableAmountLaterDate, setPayableAmountLaterDate] = useState('');
+  const [exchangePhoneDetail, setExchangePhoneDetail] = useState('');
+  const [type, setType] = useState('');
+  const [cnicFrontPic, setCnicFrontPic] = useState('');
+  const [cnicBackPic, setCnicBackPic] = useState('');
+  const [sellingType, setSellingType] = useState('');
+  const [accessoryName, setAccessoryName] = useState('');
   const [accessoryPrice, setAccessoryPrice] = useState(0);
   const [accessories, setAccessories] = useState([
-    { name: "", quantity: 1, price: "" }
+    { name: '', quantity: 1, price: '' },
   ]);
-  const [customerNumber, setCustomerNumber] = useState("");
+  const [customerNumber, setCustomerNumber] = useState('');
   const [bulkMobile, setBulkMobiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editMobile, setEditMobile] = useState(null);
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [soldMobile, setSoldMobile] = useState(null);
-  const [saleDate, setSaleDate] = useState("")
-  const [customerName, setCustomerName] = useState("");
+  const [saleDate, setSaleDate] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [finalPrice, setFinalPrice] = useState('');
   const [warranty, setWarranty] = useState('12 months');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -63,22 +71,21 @@ const NewMobilesList = () => {
   const [shopName, setShopName] = useState('');
   const [id, setId] = useState('');
   const [personName, setPersonName] = useState('');
-  const [imeiInput, setImeiInput] = useState(""); // Input field for new IMEI
+  const [imeiInput, setImeiInput] = useState(''); // Input field for new IMEI
   const [addedImeis, setAddedImeis] = useState([]);
-  const [bulkData, setBulkData] = useState([])
-  const [list, setList] = useState(true)
+  const [bulkData, setBulkData] = useState([]);
+  const [list, setList] = useState(true);
   const navigate = useNavigate();
 
-
   const handleAddImei = () => {
-    if (imeiInput.trim() !== "" && !imeis.includes(imeiInput)) {
+    if (imeiInput.trim() !== '' && !imeis.includes(imeiInput)) {
       setAddedImeis([...addedImeis, imeiInput]);
-      setImeiInput(""); // Clear input after adding
+      setImeiInput(''); // Clear input after adding
     }
   };
 
   const handleRemoveImei = (imeiToRemove) => {
-    setAddedImeis(imeis.filter(imei => imei !== imeiToRemove));
+    setAddedImeis(imeis.filter((imei) => imei !== imeiToRemove));
   };
 
   useEffect(() => {
@@ -86,11 +93,10 @@ const NewMobilesList = () => {
   }, []);
 
   const getMobiles = async () => {
-
     const user = JSON.parse(localStorage.getItem('user'));
 
     // const response = await axios.get(BASE_URL + `api/phone/getAllPhones/${user._id}`);
-    const response = await api.get("/api/Purchase/purchase-phone")
+    const response = await api.get('/api/Purchase/purchase-phone');
     setMobiles(response.data.phones);
   };
   const getActualPrice = (prices) => {
@@ -111,50 +117,51 @@ const NewMobilesList = () => {
     return parseInt(Math.abs(actualPrice));
   };
 
-
-
-
   const deletePhone = async () => {
-
     try {
-      if (type === "bulk") {
-        await api.delete(`/api/Purchase/purchase-bulk/delete/${deleteMobileId}`);
+      if (type === 'bulk') {
+        await api.delete(
+          `/api/Purchase/purchase-bulk/delete/${deleteMobileId}`
+        );
       } else {
-        await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
+        await api.delete(
+          `/api/Purchase/purchase-phone/delete/${deleteMobileId}`
+        );
       }
-      setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
-    }
-    catch (error) {
+      setMobiles((prevMobiles) =>
+        prevMobiles.filter((mobile) => mobile._id !== deleteMobileId)
+      );
+    } catch (error) {
       console.error('Error deleting phone:', error);
-    }
-    finally {
+    } finally {
       setShowDeleteModal(false);
     }
-
   };
 
   const handleDispatchClick = (mobile) => {
-    const imeiList = mobile?.ramSimDetails
-      ?.filter((ramSim) =>
-        ramSim.imeiNumbers && ramSim.imeiNumbers.some(imei => imei.isDispatched === false) // Only include if any IMEI is not dispatched
-      )
-      .flatMap((ramSim) => {
-        if (!ramSim.imeiNumbers) return [];
-        return ramSim.imeiNumbers
-          .filter((imei) => imei.isDispatched === false) // Only keep IMEIs where isDispatched is false
-          .map((imei) =>
-            imei.imei2
-              ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
-              : imei.imei1 // Otherwise, just imei1
-          );
-      }) || [];
-    setImeiList(imeiList); // 
-    setId(mobile._id)
+    const imeiList =
+      mobile?.ramSimDetails
+        ?.filter(
+          (ramSim) =>
+            ramSim.imeiNumbers &&
+            ramSim.imeiNumbers.some((imei) => imei.isDispatched === false) // Only include if any IMEI is not dispatched
+        )
+        .flatMap((ramSim) => {
+          if (!ramSim.imeiNumbers) return [];
+          return ramSim.imeiNumbers
+            .filter((imei) => imei.isDispatched === false) // Only keep IMEIs where isDispatched is false
+            .map(
+              (imei) =>
+                imei.imei2
+                  ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
+                  : imei.imei1 // Otherwise, just imei1
+            );
+        }) || [];
+    setImeiList(imeiList); //
+    setId(mobile._id);
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
-
   };
-
 
   const handleDispatchSubmit = async () => {
     try {
@@ -162,27 +169,29 @@ const NewMobilesList = () => {
         alert('Please fill all fields');
         return;
       }
-      const response = await api.patch(`/api/Purchase/bulk-purchase-dispatch/${id}`, {
-        shopName,
-        receiverName: personName,
-        ...(imei.length > 0 && {
-          imeiArray: imei.map(i => {
-            const [imei1, imei2] = i.split(' / ').map(part => part.trim());
-            return { imei1, imei2 };
-          })
-        })
-      });
+      const response = await api.patch(
+        `/api/Purchase/bulk-purchase-dispatch/${id}`,
+        {
+          shopName,
+          receiverName: personName,
+          ...(imei.length > 0 && {
+            imeiArray: imei.map((i) => {
+              const [imei1, imei2] = i.split(' / ').map((part) => part.trim());
+              return { imei1, imei2 };
+            }),
+          }),
+        }
+      );
 
       setShopName('');
       setPersonName('');
       setShowDispatchModal(false);
-      getBulkPhones()
-      toast.success("Dispatch is created successfully")
+      getBulkPhones();
+      toast.success('Dispatch is created successfully');
     } catch (error) {
-      console.error("Error in creating a dispatch", error)
+      console.error('Error in creating a dispatch', error);
     }
   };
-
 
   const handleEdit = (mobile) => {
     setEditMobile(mobile);
@@ -190,59 +199,67 @@ const NewMobilesList = () => {
   };
   const getBulkPhones = async () => {
     try {
-      const response = await api.get("/api/Purchase/bulk-phone-purchase");
-      setBulkData(response.data)
-      setBulkMobiles(response.data.filter((item) =>
-        item.ramSimDetails?.some((ramSim) =>
-          ramSim.imeiNumbers?.some((imei) =>
-            imei.imei1?.includes(searchTerm) || imei.imei2?.includes(searchTerm)
+      const response = await api.get('/api/Purchase/bulk-phone-purchase');
+      setBulkData(response.data);
+      setBulkMobiles(
+        response.data.filter((item) =>
+          item.ramSimDetails?.some((ramSim) =>
+            ramSim.imeiNumbers?.some(
+              (imei) =>
+                imei.imei1?.includes(searchTerm) ||
+                imei.imei2?.includes(searchTerm)
+            )
           )
         )
-      ));
+      );
     } catch (error) {
-      console.error("error in getting bulk mobiles", error);
+      console.error('error in getting bulk mobiles', error);
     }
-  }
+  };
   useEffect(() => {
-    setBulkMobiles(bulkData.filter((item) =>
-      item.ramSimDetails?.some((ramSim) =>
-        ramSim.imeiNumbers?.some((imei) =>
-          imei.imei1?.includes(searchTerm) || imei.imei2?.includes(searchTerm)
+    setBulkMobiles(
+      bulkData.filter((item) =>
+        item.ramSimDetails?.some((ramSim) =>
+          ramSim.imeiNumbers?.some(
+            (imei) =>
+              imei.imei1?.includes(searchTerm) ||
+              imei.imei2?.includes(searchTerm)
+          )
         )
       )
-    ));
-  }, [searchTerm])
+    );
+  }, [searchTerm]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
   const handleSoldClick = (mobile, type) => {
+    if (type === 'bulk') {
+      setType('bulk');
+      const imeiList =
+        mobile?.ramSimDetails
+          ?.filter(
+            (ramSim) =>
+              ramSim.imeiNumbers &&
+              ramSim.imeiNumbers.some((imei) => imei.isDispatched === false) // Only include if any IMEI is not dispatched
+          )
+          .flatMap((ramSim) => {
+            if (!ramSim.imeiNumbers) return [];
+            return ramSim.imeiNumbers
+              .filter((imei) => imei.isDispatched === false) // Only keep IMEIs where isDispatched is false
+              .map(
+                (imei) =>
+                  imei.imei2
+                    ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
+                    : imei.imei1 // Otherwise, just imei1
+              );
+          }) || [];
 
-    if (type === "bulk") {
-      setType("bulk")
-      const imeiList = mobile?.ramSimDetails
-        ?.filter((ramSim) =>
-          ramSim.imeiNumbers && ramSim.imeiNumbers.some(imei => imei.isDispatched === false) // Only include if any IMEI is not dispatched
-        )
-        .flatMap((ramSim) => {
-          if (!ramSim.imeiNumbers) return [];
-          return ramSim.imeiNumbers
-            .filter((imei) => imei.isDispatched === false) // Only keep IMEIs where isDispatched is false
-            .map((imei) =>
-              imei.imei2
-                ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
-                : imei.imei1 // Otherwise, just imei1
-            );
-        }) || [];
-
-
-
-
-      setImeiList(imeiList); // 
+      setImeiList(imeiList); //
     }
-    if (type === "single") {
-      setType("single")
+    if (type === 'single') {
+      setType('single');
     }
 
     setSoldMobile(mobile);
@@ -250,7 +267,14 @@ const NewMobilesList = () => {
   };
 
   const handleSoldSubmit = async () => {
-    if (!finalPrice || !warranty || !customerName || !customerNumber || !saleDate || sellingType === "") {
+    if (
+      !finalPrice ||
+      !warranty ||
+      !customerName ||
+      !customerNumber ||
+      !saleDate ||
+      sellingType === ''
+    ) {
       alert('Please fill all fields');
       return;
     }
@@ -282,7 +306,7 @@ const NewMobilesList = () => {
   const confirmDelete = (mobileId) => {
     setDeleteMobileId(mobileId);
     setShowDeleteModal(true);
-    setType("single");
+    setType('single');
   };
 
   // const handleShareInventory = () => {
@@ -306,57 +330,143 @@ const NewMobilesList = () => {
   //   doc.save('Mobile_Inventory.pdf');
   // };
 
+  // const handleShareInventory = () => {
+  //   const doc = new jsPDF();
+  //   doc.text('Mobile Inventory', 10, 10);
+
+  //   let y = 20;
+
+  //   mobiles.forEach((mobile, index) => {
+  //     const { images, companyName, modelSpecifications, specs, color } = mobile;
+  //     const imgData = `data:image/jpeg;base64,${images[0]}`;
+
+  //     // Check if next item will exceed page height
+  //     if (y + 50 > 280) {
+  //       // 280 leaves a margin from the bottom of A4
+  //       doc.addPage();
+  //       y = 20; // reset y for new page
+  //     }
+
+  //     if (imgData) {
+  //       doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
+  //     }
+  //     doc.text(`Company: ${companyName}`, 50, y + 5);
+  //     doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
+  //     doc.text(`Specification: ${specs}`, 50, y + 25);
+  //     doc.text(`Color: ${color}`, 50, y + 35);
+
+  //     y += 50; // move y for the next entry
+  //   });
+
+  //   doc.save('Mobile_Inventory.pdf');
+  // };
   const handleShareInventory = () => {
     const doc = new jsPDF();
-    doc.text('Mobile Inventory', 10, 10);
 
-    let y = 20;
+    // Add title
+    doc.setFontSize(16);
+    doc.text('Mobile Inventory', 105, 15, { align: 'center' });
+    doc.setFontSize(12);
 
-    mobiles.forEach((mobile, index) => {
-      const { images, companyName, modelSpecifications, specs, color } = mobile;
-      const imgData = `data:image/jpeg;base64,${images[0]}`;
+    let y = 30; // Starting Y position
 
-      // Check if next item will exceed page height
-      if (y + 50 > 280) {  // 280 leaves a margin from the bottom of A4
+    bulkMobile.forEach((mobile, index) => {
+      const { companyName, modelName, ramSimDetails, prices, partyName, date } =
+        mobile;
+
+      // Check if we need a new page
+      if (y > 250) {
         doc.addPage();
-        y = 20; // reset y for new page
+        y = 30;
       }
 
-      if (imgData) {
-        doc.addImage(imgData, 'JPEG', 10, y, 30, 30);
-      }
-      doc.text(`Company: ${companyName}`, 50, y + 5);
-      doc.text(`Model: ${modelSpecifications}`, 50, y + 15);
-      doc.text(`Specification: ${specs}`, 50, y + 25);
-      doc.text(`Color: ${color}`, 50, y + 35);
+      // Format date
+      const formattedDate = new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
 
-      y += 50; // move y for the next entry
+      // Add mobile information
+      doc.setFont(undefined, 'bold');
+      doc.text(`Item ${index + 1}`, 15, y);
+      doc.setFont(undefined, 'normal');
+
+      // Show company and model name prominently
+      doc.text(`Company: ${companyName || 'N/A'}`, 15, y + 10);
+      doc.text(`Model: ${modelName || 'N/A'}`, 15, y + 20);
+
+      doc.text(
+        `Purchase Price: ${prices?.buyingPrice ? formatNumber(prices.buyingPrice) : 'N/A'}`,
+        15,
+        y + 30
+      );
+      doc.text(`Supplier: ${partyName || 'N/A'}`, 15, y + 40);
+      doc.text(`Purchase Date: ${formattedDate || 'N/A'}`, 15, y + 50);
+
+      // Add IMEI information if available
+      if (ramSimDetails?.length > 0) {
+        let imeiY = y + 60;
+        doc.text('IMEI Numbers:', 15, imeiY);
+        imeiY += 10;
+
+        ramSimDetails.forEach((detail) => {
+          if (detail.imeiNumbers?.length > 0) {
+            detail.imeiNumbers.forEach((imei) => {
+              doc.text(
+                `- ${imei.imei1}${imei.imei2 ? ` / ${imei.imei2}` : ''}`,
+                20,
+                imeiY
+              );
+              imeiY += 7;
+            });
+          }
+        });
+
+        y = imeiY + 10;
+      } else {
+        y += 70;
+      }
+
+      // Add separator line if not last item
+      if (index < bulkMobile.length - 1) {
+        doc.line(15, y, 195, y);
+        y += 15;
+      }
     });
 
-    doc.save('Mobile_Inventory.pdf');
+    doc.save('Mobile_Inventory_Report.pdf');
+  };
+
+  // Helper function to format numbers with commas
+  const formatNumber = (num) => {
+    if (!num) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
   const filteredMobiles = mobiles?.filter((mobile) => {
     // Exclude sold phones
     if (mobile.isSold) return false;
-    if (mobile.phoneCondition === "Used") return false
-    if (mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
+    if (mobile.phoneCondition === 'Used') return false;
+    if (mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
+      return true;
 
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
 
-    return searchWords.every((word) =>
-      // Check if each word exists in any of the searchable fields
-      mobile.companyName?.toLowerCase()?.includes(word) ||
-      mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
-      mobile.specs?.toLowerCase()?.includes(word) ||
-      mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
-      String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
+    return searchWords.every(
+      (word) =>
+        // Check if each word exists in any of the searchable fields
+        mobile.companyName?.toLowerCase()?.includes(word) ||
+        mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
+        mobile.specs?.toLowerCase()?.includes(word) ||
+        mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
+        String(mobile.purchasePrice)?.includes(word) // Example: Searching by price if needed
     );
   });
 
   useEffect(() => {
-    getBulkPhones()
-  }, [])
+    getBulkPhones();
+  }, []);
   const [showPrices, setShowPrices] = useState(false);
   const [selectedMobile, setSelectedMobile] = useState(null);
   const [imeis, setImeis] = useState([]);
@@ -369,11 +479,11 @@ const NewMobilesList = () => {
       setScanning(false); // Stop scanning after reading
     }
   };
-  const [barcodeScan, setBarcodeScan] = useState("No Barcode Scanned")
+  const [barcodeScan, setBarcodeScan] = useState('No Barcode Scanned');
   useScanDetection({
     onComplete: setBarcodeScan,
     minLength: 3,
-  })
+  });
 
   const handleShowPrices = (mobile) => {
     setSelectedMobile(mobile);
@@ -386,9 +496,9 @@ const NewMobilesList = () => {
   };
   const handleBulkDelete = (id) => {
     setDeleteMobileId(id);
-    setType("bulk");
+    setType('bulk');
     setShowDeleteModal(true);
-  }
+  };
   const handleAccessoryChange = (index, field, value) => {
     const updatedAccessories = [...accessories];
     updatedAccessories[index][field] = value;
@@ -397,7 +507,7 @@ const NewMobilesList = () => {
 
   // Add New Accessory
   const addAccessory = () => {
-    setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
+    setAccessories([...accessories, { name: '', quantity: 1, price: '' }]);
   };
 
   // Remove Accessory
@@ -405,16 +515,18 @@ const NewMobilesList = () => {
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
-  const totalBulkStockAmount = bulkMobile.reduce((total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0), 0)
+  const totalBulkStockAmount = bulkMobile.reduce(
+    (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
+    0
+  );
   const handleChange = (event) => {
     const selectedImeis = event.target.value;
     setImei(selectedImeis);
 
-    setAddedImeis((prevImeis) => Array.from(new Set([...prevImeis, ...selectedImeis]))); // Ensure uniqueness
-
+    setAddedImeis((prevImeis) =>
+      Array.from(new Set([...prevImeis, ...selectedImeis]))
+    ); // Ensure uniqueness
   };
-
-
 
   const totalImeisArray = bulkData.map((bulk) => {
     // Sum the length of imeiNumbers for each ramSimDetails in the bulk data
@@ -424,7 +536,7 @@ const NewMobilesList = () => {
   });
 
   const groupedByParty = bulkMobile.reduce((acc, curr) => {
-    const partyName = curr.partyName || "Unknown";
+    const partyName = curr.partyName || 'Unknown';
     if (!acc[partyName]) {
       acc[partyName] = [];
     }
@@ -438,10 +550,10 @@ const NewMobilesList = () => {
     let later = 0;
 
     entries.forEach((entry) => {
-      if (entry.purchasePaymentType === "credit" && entry.creditPaymentData) {
+      if (entry.purchasePaymentType === 'credit' && entry.creditPaymentData) {
         now += Number(entry.prices.buyingPrice || 0);
         later += Number(entry.creditPaymentData.payableAmountLater || 0);
-      } else if (entry.purchasePaymentType === "full-payment") {
+      } else if (entry.purchasePaymentType === 'full-payment') {
         now += Number(entry.prices?.buyingPrice || 0);
       }
     });
@@ -464,74 +576,83 @@ const NewMobilesList = () => {
       </InputGroup>
       {/* Search bar */}
 
-
-
-      <div className="d-flex justify-content-between align-items-center mb-3" style={{
-        background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-        padding: "20px",
-        borderRadius: "15px",
-        boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-        border: "1px solid #dee2e6"
-      }}>
+      <div
+        className="d-flex justify-content-between align-items-center mb-3"
+        style={{
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          padding: '20px',
+          borderRadius: '15px',
+          boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+          border: '1px solid #dee2e6',
+        }}
+      >
         {/* Total Stock Amount Box */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "15px",
-          background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-          padding: "20px 25px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
-          border: "2px solid #e3f2fd",
-          minWidth: "350px"
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            padding: '20px 25px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 15px rgba(0,123,255,0.1)',
+            border: '2px solid #e3f2fd',
+            minWidth: '350px',
+          }}
+        >
           <div>
-            <h5 style={{
-              fontSize: 28,
-              margin: 0,
-              color: "#2c3e50",
-              textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-            }}>
+            <h5
+              style={{
+                fontSize: 28,
+                margin: 0,
+                color: '#2c3e50',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              }}
+            >
               Total Stock Amount :
-              <span style={{
-                fontWeight: "bold",
-                color: "#007bff",
-                fontSize: 32,
-                marginLeft: "8px",
-                textShadow: "0 2px 4px rgba(0,123,255,0.2)"
-              }}>
-                {showAmount ? totalBulkStockAmount : "••••••"}
+              <span
+                style={{
+                  fontWeight: 'bold',
+                  color: '#007bff',
+                  fontSize: 32,
+                  marginLeft: '8px',
+                  textShadow: '0 2px 4px rgba(0,123,255,0.2)',
+                }}
+              >
+                {showAmount ? totalBulkStockAmount : '••••••'}
               </span>
             </h5>
           </div>
           <button
             onClick={() => setShowAmount(!showAmount)}
             style={{
-              background: "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
-              border: "none",
-              cursor: "pointer",
-              color: "white",
-              padding: "12px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 12px rgba(0,123,255,0.3)",
-              width: "45px",
-              height: "45px"
+              background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'white',
+              padding: '12px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 12px rgba(0,123,255,0.3)',
+              width: '45px',
+              height: '45px',
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #0056b3 0%, #004085 100%)";
-              e.target.style.transform = "scale(1.15) rotate(5deg)";
-              e.target.style.boxShadow = "0 6px 20px rgba(0,123,255,0.5)";
+              e.target.style.background =
+                'linear-gradient(135deg, #0056b3 0%, #004085 100%)';
+              e.target.style.transform = 'scale(1.15) rotate(5deg)';
+              e.target.style.boxShadow = '0 6px 20px rgba(0,123,255,0.5)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #007bff 0%, #0056b3 100%)";
-              e.target.style.transform = "scale(1) rotate(0deg)";
-              e.target.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)";
+              e.target.style.background =
+                'linear-gradient(135deg, #007bff 0%, #0056b3 100%)';
+              e.target.style.transform = 'scale(1) rotate(0deg)';
+              e.target.style.boxShadow = '0 4px 12px rgba(0,123,255,0.3)';
             }}
-            title={showAmount ? "Hide amount" : "Show amount"}
+            title={showAmount ? 'Hide amount' : 'Show amount'}
           >
             {showAmount ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
@@ -539,33 +660,34 @@ const NewMobilesList = () => {
 
         {/* Stock Count Box */}
 
-
         {/* Share Inventory Button */}
         <Button
           variant="primary"
           onClick={handleShareInventory}
           style={{
-            background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-            border: "none",
-            color: "white",
-            padding: "15px 30px",
-            borderRadius: "12px",
-            fontWeight: "600",
-            fontSize: "1.1rem",
-            boxShadow: "0 6px 20px rgba(40,167,69,0.3)",
-            transition: "all 0.3s ease",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
+            background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+            border: 'none',
+            color: 'white',
+            padding: '15px 30px',
+            borderRadius: '12px',
+            fontWeight: '600',
+            fontSize: '1.1rem',
+            boxShadow: '0 6px 20px rgba(40,167,69,0.3)',
+            transition: 'all 0.3s ease',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
           onMouseEnter={(e) => {
-            e.target.style.background = "linear-gradient(135deg, #218838 0%, #1e7e34 100%)";
-            e.target.style.transform = "translateY(-3px) scale(1.05)";
-            e.target.style.boxShadow = "0 10px 30px rgba(40,167,69,0.5)";
+            e.target.style.background =
+              'linear-gradient(135deg, #218838 0%, #1e7e34 100%)';
+            e.target.style.transform = 'translateY(-3px) scale(1.05)';
+            e.target.style.boxShadow = '0 10px 30px rgba(40,167,69,0.5)';
           }}
           onMouseLeave={(e) => {
-            e.target.style.background = "linear-gradient(135deg, #28a745 0%, #20c997 100%)";
-            e.target.style.transform = "translateY(0) scale(1)";
-            e.target.style.boxShadow = "0 6px 20px rgba(40,167,69,0.3)";
+            e.target.style.background =
+              'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+            e.target.style.transform = 'translateY(0) scale(1)';
+            e.target.style.boxShadow = '0 6px 20px rgba(40,167,69,0.3)';
           }}
         >
           Share Inventory
@@ -574,43 +696,50 @@ const NewMobilesList = () => {
       <button
         onClick={() => setList(!list)}
         style={{
-          padding: "14px 28px",
-          background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
-          color: "white",
-          marginBottom: "24px",
-          fontWeight: "600",
-          fontSize: "14px",
-          letterSpacing: "0.5px",
-          borderRadius: "12px",
-          border: "none",
-          cursor: "pointer",
-          boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          position: "relative",
-          overflow: "hidden",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          transform: "translateY(0)",
+          padding: '14px 28px',
+          background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+          color: 'white',
+          marginBottom: '24px',
+          fontWeight: '600',
+          fontSize: '14px',
+          letterSpacing: '0.5px',
+          borderRadius: '12px',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow:
+            '0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          transform: 'translateY(0)',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)";
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+          e.currentTarget.style.background =
+            'linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)';
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow =
+            '0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)";
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)";
+          e.currentTarget.style.background =
+            'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)';
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow =
+            '0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)';
         }}
         onMouseDown={(e) => {
-          e.currentTarget.style.transform = "translateY(1px)";
-          e.currentTarget.style.boxShadow = "0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)";
+          e.currentTarget.style.transform = 'translateY(1px)';
+          e.currentTarget.style.boxShadow =
+            '0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)';
         }}
         onMouseUp={(e) => {
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow =
+            '0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)';
         }}
       >
         {/* Icon for visual enhancement */}
@@ -623,25 +752,26 @@ const NewMobilesList = () => {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ marginRight: "4px" }}
+          style={{ marginRight: '4px' }}
         >
           <path d="M3 3h18v18H3zM9 9h6v6H9z" />
         </svg>
 
-        <span style={{ position: "relative", zIndex: 1 }}>
+        <span style={{ position: 'relative', zIndex: 1 }}>
           Change Record Design
         </span>
 
         {/* Subtle shine effect overlay */}
         <div
           style={{
-            position: "absolute",
-            top: "0",
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
-            transition: "left 0.6s ease",
+            position: 'absolute',
+            top: '0',
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background:
+              'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+            transition: 'left 0.6s ease',
             zIndex: 0,
           }}
           className="shine-effect"
@@ -650,12 +780,14 @@ const NewMobilesList = () => {
 
       {/* Optional: Add this CSS for the shine animation on hover */}
       <style jsx>{`
-  button:hover .shine-effect {
-    left: 100%;
-  }
-`}</style>
+        button:hover .shine-effect {
+          left: 100%;
+        }
+      `}</style>
 
-      <h3 style={{ marginTop: "rem", marginBottom: "1rem", }}>New Bulk Phones</h3>
+      <h3 style={{ marginTop: 'rem', marginBottom: '1rem' }}>
+        New Bulk Phones
+      </h3>
       {!bulkMobile.length > 0 ? (
         <div className="w-full h-full flex items-center justify-center">
           <MoonLoader size={60} color="#4f46e5" />
@@ -666,44 +798,69 @@ const NewMobilesList = () => {
             const { now, later } = calculatePayables(partyData);
 
             return (
-              <div key={partyName} style={{ marginBottom: "2rem" }}>
+              <div key={partyName} style={{ marginBottom: '2rem' }}>
                 <StyledHeading>{partyName}</StyledHeading>
-                <p style={{
-                  margin: "0 0 1.5rem 0",
-                  color: "#444",
-                  fontSize: "1.1rem",
-                  lineHeight: "1.6"
-                }}>
-                  <strong style={{ fontSize: "1.2rem" }}>Paid Amount:</strong>{" "}
-                  <span style={{
-                    color: "green",
-                    fontWeight: "700",
-                    fontSize: "1.2rem"
-                  }}>
+                <p
+                  style={{
+                    margin: '0 0 1.5rem 0',
+                    color: '#444',
+                    fontSize: '1.1rem',
+                    lineHeight: '1.6',
+                  }}
+                >
+                  <strong style={{ fontSize: '1.2rem' }}>Paid Amount:</strong>{' '}
+                  <span
+                    style={{
+                      color: 'green',
+                      fontWeight: '700',
+                      fontSize: '1.2rem',
+                    }}
+                  >
                     {now.toLocaleString()} PKR
-                  </span>{" "}
-                  |{" "}
-                  <strong style={{ fontSize: "1.2rem" }}>Remaining Amount:</strong>{" "}
-                  <span style={{
-                    color: "red",
-                    fontWeight: "700",
-                    fontSize: "1.2rem"
-                  }}>
+                  </span>{' '}
+                  |{' '}
+                  <strong style={{ fontSize: '1.2rem' }}>
+                    Remaining Amount:
+                  </strong>{' '}
+                  <span
+                    style={{
+                      color: 'red',
+                      fontWeight: '700',
+                      fontSize: '1.2rem',
+                    }}
+                  >
                     {later.toLocaleString()} PKR
                   </span>
                 </p>
                 <Table
-                  routes={["/app/dashboard/bulkPhoneDetail"]}
-                  array={partyData.filter((record) => record.dispatch === false)}
-                  keysToDisplay={["partyName", "actualBuyingPrice", "prices", "creditPaymentData", "status", "ramSimDetails", "purchasePaymentType"]}
-                  label={["Party Name", "Buying Price", "Payable Amount", "Remaining Amount", "Status", "Quantity", "Payment Type", "Actions"]}
+                  routes={['/app/dashboard/bulkPhoneDetail']}
+                  array={partyData.filter(
+                    (record) => record.dispatch === false
+                  )}
+                  keysToDisplay={[
+                    'partyName',
+                    'actualBuyingPrice',
+                    'prices',
+                    'creditPaymentData',
+                    'status',
+                    'ramSimDetails',
+                    'purchasePaymentType',
+                  ]}
+                  label={[
+                    'Party Name',
+                    'Buying Price',
+                    'Payable Amount',
+                    'Remaining Amount',
+                    'Status',
+                    'Quantity',
+                    'Payment Type',
+                    'Actions',
+                  ]}
                   customBlocks={[
-
                     {
                       index: 1,
                       component: (buyingPrice) => {
-
-                        return <span>{buyingPrice || "Not mentioned"}</span>;
+                        return <span>{buyingPrice || 'Not mentioned'}</span>;
                       },
                     },
                     {
@@ -721,7 +878,7 @@ const NewMobilesList = () => {
                               display: 'inline-block',
                             }}
                           >
-                            {prices?.buyingPrice || "Not mentioned"}
+                            {prices?.buyingPrice || 'Not mentioned'}
                           </span>
                         );
                       },
@@ -733,7 +890,7 @@ const NewMobilesList = () => {
 
                         const style = {
                           backgroundColor: hasAmount ? '#fee2e2' : '#d1fae5', // red or green background
-                          color: hasAmount ? '#991b1b' : '#065f46',           // red or green text
+                          color: hasAmount ? '#991b1b' : '#065f46', // red or green text
                           padding: '4px 12px',
                           borderRadius: '8px',
                           fontWeight: '500',
@@ -743,22 +900,26 @@ const NewMobilesList = () => {
 
                         return (
                           <span style={style}>
-                            {hasAmount || "Not Remaining"}
+                            {hasAmount || 'Not Remaining'}
                           </span>
                         );
                       },
                     },
 
-
                     {
                       index: 5,
                       component: (ramSimDetails) => {
-                        const totalImeiNumbers = ramSimDetails.reduce((total, ramSim) => {
-                          const imeis = Array.isArray(ramSim.imeiNumbers)
-                            ? ramSim.imeiNumbers.filter(imei => imei.isDispatched === false)
-                            : [];
-                          return total + imeis.length;
-                        }, 0);
+                        const totalImeiNumbers = ramSimDetails.reduce(
+                          (total, ramSim) => {
+                            const imeis = Array.isArray(ramSim.imeiNumbers)
+                              ? ramSim.imeiNumbers.filter(
+                                  (imei) => imei.isDispatched === false
+                                )
+                              : [];
+                            return total + imeis.length;
+                          },
+                          0
+                        );
 
                         return <span>{totalImeiNumbers}</span>;
                       },
@@ -768,34 +929,35 @@ const NewMobilesList = () => {
                       index: 6,
                       component: (purchasePaymentType) => {
                         return (
-                          <span style={{ fontWeight: 600, fontSize: "1rem" }}>
-                            {purchasePaymentType === "full-payment" ? (
-                              <span style={{ color: "green" }}>Full Payment</span>
+                          <span style={{ fontWeight: 600, fontSize: '1rem' }}>
+                            {purchasePaymentType === 'full-payment' ? (
+                              <span style={{ color: 'green' }}>
+                                Full Payment
+                              </span>
                             ) : (
-                              <span style={{ color: "orange" }}>Partial Payment</span>
+                              <span style={{ color: 'orange' }}>
+                                Partial Payment
+                              </span>
                             )}
                           </span>
                         );
                       },
-                    }
-
+                    },
                   ]}
                   extraColumns={[
                     (obj) => (
                       <>
-                        <div>
-
-                        </div>
+                        <div></div>
                         <Button
-                          onClick={() => handleSoldClick(obj, "bulk")}
+                          onClick={() => handleSoldClick(obj, 'bulk')}
                           style={{
-                            backgroundColor: "#28a745",
-                            color: "#fff",
-                            border: "none",
-                            padding: "5px 10px",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            fontSize: "0.8rem",
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
                           }}
                         >
                           Sold
@@ -803,13 +965,13 @@ const NewMobilesList = () => {
                         <Button
                           onClick={() => handleEdit(obj)}
                           style={{
-                            backgroundColor: "#28a745",
-                            color: "#fff",
-                            border: "none",
-                            padding: "5px 10px",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            fontSize: "0.8rem",
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
                           }}
                         >
                           Edit
@@ -829,8 +991,6 @@ const NewMobilesList = () => {
                         >
                           Dispatch
                         </Button>
-
-
                       </>
                     ),
                   ]}
@@ -847,7 +1007,14 @@ const NewMobilesList = () => {
                 .filter((record) => record.dispatch === false)
                 .map((mobile) => (
                   <Col key={mobile._id}>
-                    <Card className="h-100 shadow border-0" style={{ borderRadius: '15px', overflow: 'hidden', position: 'relative' }}>
+                    <Card
+                      className="h-100 shadow border-0"
+                      style={{
+                        borderRadius: '15px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                      }}
+                    >
                       <FaEdit
                         onClick={() => handleEdit(mobile)}
                         style={{
@@ -888,24 +1055,74 @@ const NewMobilesList = () => {
                 />
               )} */}
 
-                      <Card.Body style={{ padding: '1.5rem', display: 'flex', justifyContent: "left", alignItems: "start", flexDirection: 'column', width: "100%" }}>
-                        <Card.Title style={{ fontSize: '1.4rem', fontWeight: '600', color: '#333' }}>
-                          {mobile?.companyName || 'No Company Name'} {mobile?.modelName || 'No Model Name'}
+                      <Card.Body
+                        style={{
+                          padding: '1.5rem',
+                          display: 'flex',
+                          justifyContent: 'left',
+                          alignItems: 'start',
+                          flexDirection: 'column',
+                          width: '100%',
+                        }}
+                      >
+                        <Card.Title
+                          style={{
+                            fontSize: '1.4rem',
+                            fontWeight: '600',
+                            color: '#333',
+                          }}
+                        >
+                          {mobile?.companyName || 'No Company Name'}{' '}
+                          {mobile?.modelName || 'No Model Name'}
                         </Card.Title>
 
                         {/* Bulk Mobile Details */}
-                        <Card.Text style={{ fontSize: '1rem', color: '#666', lineHeight: '1.6' }}>
+                        <Card.Text
+                          style={{
+                            fontSize: '1rem',
+                            color: '#666',
+                            lineHeight: '1.6',
+                          }}
+                        >
                           <div>
-                            <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Party Name:</strong> {mobile?.partyName || 'Not Available'}
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Party Name:
+                            </strong>{' '}
+                            {mobile?.partyName || 'Not Available'}
                           </div>
                           <div>
-                            <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Date:</strong> {mobile?.date ? new Date(mobile?.date).toLocaleDateString() : 'Not Available'}
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Date:
+                            </strong>{' '}
+                            {mobile?.date
+                              ? new Date(mobile?.date).toLocaleDateString()
+                              : 'Not Available'}
                           </div>
 
-                          <div >
-                            <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Price:</strong>
-                            <p>Total Buying Price :
-                              {mobile.prices?.buyingPrice}
+                          <div>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Price:
+                            </strong>
+                            <p>
+                              Total Buying Price :{mobile.prices?.buyingPrice}
                               {/* {getActualPrice(mobile?.prices)} */}
                             </p>
                             <Button
@@ -914,7 +1131,7 @@ const NewMobilesList = () => {
                                 backgroundColor: '#3f4d67',
                                 color: '#fff',
                                 border: 'none',
-                                width: "100%",
+                                width: '100%',
                                 padding: '6px 14px', // Smaller padding
                                 borderRadius: '3px', // Slightly smaller border radius
                                 cursor: 'pointer',
@@ -926,55 +1143,104 @@ const NewMobilesList = () => {
                             >
                               View All Prices
                             </Button>
-
                           </div>
 
                           {/* RAM & SIM Options - Dropdowns */}
                           {mobile?.ramSimDetails?.length > 0 ? (
                             <div>
-                              <div style={{ marginBottom: "20px" }}></div>
-                              <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600', }}>RAM and SIM Options:</strong>
-                              <div style={{ marginBottom: "10px" }}></div>
+                              <div style={{ marginBottom: '20px' }}></div>
+                              <strong
+                                style={{
+                                  color: '#333',
+                                  fontSize: '1.1rem',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                RAM and SIM Options:
+                              </strong>
+                              <div style={{ marginBottom: '10px' }}></div>
                               {mobile?.ramSimDetails?.map((ramSim) => (
                                 <div
                                   key={ramSim._id}
                                   style={{
-                                    border: "1px solid #ddd",
-                                    padding: "10px",
-                                    borderRadius: "8px",
-                                    marginBottom: "20px",
-                                    backgroundColor: "#f9f9f9",
-                                    boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
+                                    border: '1px solid #ddd',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    marginBottom: '20px',
+                                    backgroundColor: '#f9f9f9',
+                                    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.1)',
                                   }}
                                 >
-                                  <div style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "5px" }}>
-                                    RAM Memory: {ramSim?.ramMemory || "Not Available"} GB
+                                  <div
+                                    style={{
+                                      fontSize: '16px',
+                                      fontWeight: 'bold',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    RAM Memory:{' '}
+                                    {ramSim?.ramMemory || 'Not Available'} GB
                                   </div>
 
-                                  <div style={{ fontSize: "14px", marginBottom: "5px" }}>
-                                    <strong>SIM Option:</strong> {ramSim?.simOption || "Not Available"}
+                                  <div
+                                    style={{
+                                      fontSize: '14px',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    <strong>SIM Option:</strong>{' '}
+                                    {ramSim?.simOption || 'Not Available'}
                                   </div>
 
-                                  <div style={{ display: "flex", alignItems: "center", fontSize: "14px", marginBottom: "5px" }}>
-                                    <strong style={{ marginRight: "5px" }}>Quantity:</strong>
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      fontSize: '14px',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    <strong style={{ marginRight: '5px' }}>
+                                      Quantity:
+                                    </strong>
                                     <span>
-                                      {ramSim?.imeiNumbers?.length > 0 ? `${ramSim.imeiNumbers.length}` : "No stock available"}
+                                      {ramSim?.imeiNumbers?.length > 0
+                                        ? `${ramSim.imeiNumbers.length}`
+                                        : 'No stock available'}
                                     </span>
                                   </div>
 
                                   {ramSim.priceOfOne && (
-                                    <div style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}>
-                                      Per Piece Price: <span style={{ color: "#007bff" }}>{ramSim.priceOfOne}</span>
+                                    <div
+                                      style={{
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                        color: '#333',
+                                      }}
+                                    >
+                                      Per Piece Price:{' '}
+                                      <span style={{ color: '#007bff' }}>
+                                        {ramSim.priceOfOne}
+                                      </span>
                                     </div>
                                   )}
                                   {ramSim.priceOfOne && (
-                                    <div style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}>
-                                      Total Amount: <span style={{ color: "#007bff" }}>{ramSim.priceOfOne * ramSim.imeiNumbers.length}</span>
+                                    <div
+                                      style={{
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                        color: '#333',
+                                      }}
+                                    >
+                                      Total Amount:{' '}
+                                      <span style={{ color: '#007bff' }}>
+                                        {ramSim.priceOfOne *
+                                          ramSim.imeiNumbers.length}
+                                      </span>
                                     </div>
                                   )}
                                 </div>
                               ))}
-
                             </div>
                           ) : (
                             <div>RAM and SIM Options: Not Available</div>
@@ -983,7 +1249,13 @@ const NewMobilesList = () => {
 
                         {/* Action Buttons */}
                       </Card.Body>
-                      <div style={{ textAlign: 'right', width: '100%', padding: '1.5rem' }}>
+                      <div
+                        style={{
+                          textAlign: 'right',
+                          width: '100%',
+                          padding: '1.5rem',
+                        }}
+                      >
                         <Button
                           onClick={() => handleDispatchClick(mobile)}
                           style={{
@@ -1000,7 +1272,7 @@ const NewMobilesList = () => {
                           Dispatch
                         </Button>
                         <Button
-                          onClick={() => handleSoldClick(mobile, "bulk")}
+                          onClick={() => handleSoldClick(mobile, 'bulk')}
                           style={{
                             backgroundColor: '#28a745',
                             color: '#fff',
@@ -1030,16 +1302,37 @@ const NewMobilesList = () => {
             {/* Modal for Prices */}
             <Modal show={showPrices} onHide={handleClosePrices}>
               <Modal.Header closeButton>
-                <Modal.Title>Prices for {selectedMobile?.companyName} {selectedMobile?.modelName}</Modal.Title>
+                <Modal.Title>
+                  Prices for {selectedMobile?.companyName}{' '}
+                  {selectedMobile?.modelName}
+                </Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <ul>
-                  <li><strong>Buying Price:</strong> {selectedMobile?.prices?.buyingPrice || 'Not Available'}</li>
-                  <li><strong>Dealer Price:</strong> {selectedMobile?.prices?.dealerPrice || 'Not Available'}</li>
-                  <li><strong>LP:</strong> {selectedMobile?.prices?.lp || 'Not Available'}</li>
-                  <li><strong>Lifting:</strong> {selectedMobile?.prices?.lifting || 'Not Available'}</li>
-                  <li><strong>Promo:</strong> {selectedMobile?.prices?.promo || 'Not Available'}</li>
-                  <li><strong>Activation:</strong> {selectedMobile?.prices?.activation || 'Not Available'}</li>
+                  <li>
+                    <strong>Buying Price:</strong>{' '}
+                    {selectedMobile?.prices?.buyingPrice || 'Not Available'}
+                  </li>
+                  <li>
+                    <strong>Dealer Price:</strong>{' '}
+                    {selectedMobile?.prices?.dealerPrice || 'Not Available'}
+                  </li>
+                  <li>
+                    <strong>LP:</strong>{' '}
+                    {selectedMobile?.prices?.lp || 'Not Available'}
+                  </li>
+                  <li>
+                    <strong>Lifting:</strong>{' '}
+                    {selectedMobile?.prices?.lifting || 'Not Available'}
+                  </li>
+                  <li>
+                    <strong>Promo:</strong>{' '}
+                    {selectedMobile?.prices?.promo || 'Not Available'}
+                  </li>
+                  <li>
+                    <strong>Activation:</strong>{' '}
+                    {selectedMobile?.prices?.activation || 'Not Available'}
+                  </li>
                 </ul>
               </Modal.Body>
               <Modal.Footer>
@@ -1053,7 +1346,13 @@ const NewMobilesList = () => {
       )}
 
       {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
-      <PurchasePhone type="edit" bulkEdit={true} modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+      <PurchasePhone
+        type="edit"
+        bulkEdit={true}
+        modal={showModal}
+        editMobile={editMobile}
+        handleModalClose={() => setShowModal(false)}
+      />
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
@@ -1070,7 +1369,10 @@ const NewMobilesList = () => {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showDispatchModal} onHide={() => setShowDispatchModal(false)}>
+      <Modal
+        show={showDispatchModal}
+        onHide={() => setShowDispatchModal(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Dispatch Mobile</Modal.Title>
         </Modal.Header>
@@ -1102,10 +1404,12 @@ const NewMobilesList = () => {
                 displayEmpty
                 multiple
                 fullWidth
-                placeholder={"Select Mobile imeis"}
+                placeholder={'Select Mobile imeis'}
               >
                 {imeiList
-                  .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
+                  .filter((item) =>
+                    item.toLowerCase().includes(search.toLowerCase())
+                  )
                   .map((item, index) => (
                     <MenuItem key={index} value={item}>
                       {item}
@@ -1113,11 +1417,13 @@ const NewMobilesList = () => {
                   ))}
               </Select>
             </Form.Group>
-
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDispatchModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDispatchModal(false)}
+          >
             Cancel
           </Button>
           <Button variant="primary" onClick={handleDispatchSubmit}>
@@ -1125,7 +1431,6 @@ const NewMobilesList = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
 
       {/* Sold Modal */}
       <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
@@ -1162,7 +1467,6 @@ const NewMobilesList = () => {
                   value={saleDate}
                   onChange={(e) => setSaleDate(e.target.value)}
                   required
-
                 />
               </Form.Group>
               {/* CNIC Front Picture */}
@@ -1200,7 +1504,9 @@ const NewMobilesList = () => {
                       <Form.Label>Accessory Name</Form.Label>
                       <Form.Select
                         value={accessory.name} // this holds the id now
-                        onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'name', e.target.value)
+                        }
                       >
                         <option value="">Select accessory</option>
                         {data?.data?.map((item) => (
@@ -1216,7 +1522,13 @@ const NewMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.quantity}
-                        onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(
+                            index,
+                            'quantity',
+                            e.target.value
+                          )
+                        }
                         min="1"
                       />
                     </Form.Group>
@@ -1226,17 +1538,27 @@ const NewMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.price}
-                        onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'price', e.target.value)
+                        }
                         placeholder="Enter price"
                       />
                     </Form.Group>
 
-                    <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => removeAccessory(index)}
+                    >
                       Remove
                     </Button>
                   </div>
                 ))}
-                <Button variant="primary" onClick={addAccessory} style={{ marginBottom: "20px" }}>
+                <Button
+                  variant="primary"
+                  onClick={addAccessory}
+                  style={{ marginBottom: '20px' }}
+                >
                   Add Another Accessory
                 </Button>
                 <FormControl fullWidth variant="outlined" className="mb-3">
@@ -1262,9 +1584,16 @@ const NewMobilesList = () => {
           </MenuItem>
         ))} */}
                   <InputLabel>IMEI</InputLabel>
-                  <Select value={imei} onChange={handleChange} displayEmpty multiple>
+                  <Select
+                    value={imei}
+                    onChange={handleChange}
+                    displayEmpty
+                    multiple
+                  >
                     {imeiList
-                      .filter((item) => item.toLowerCase().includes(search.toLowerCase()))
+                      .filter((item) =>
+                        item.toLowerCase().includes(search.toLowerCase())
+                      )
                       .map((item, index) => (
                         <MenuItem key={index} value={item}>
                           {item}
@@ -1272,7 +1601,6 @@ const NewMobilesList = () => {
                       ))}
                   </Select>
                 </FormControl>
-
               </div>
               <Form.Group>
                 <Form.Label>Selling Type</Form.Label>
@@ -1290,7 +1618,7 @@ const NewMobilesList = () => {
               </Form.Group>
 
               {/* Conditional Fields Based on Selling Type */}
-              {sellingType === "Bank" && (
+              {sellingType === 'Bank' && (
                 <Form.Group>
                   <Form.Label>Bank Name</Form.Label>
                   <Form.Control
@@ -1302,7 +1630,7 @@ const NewMobilesList = () => {
                 </Form.Group>
               )}
 
-              {sellingType === "Credit" && (
+              {sellingType === 'Credit' && (
                 <>
                   <Form.Group>
                     <Form.Label>Payable Amount Now</Form.Label>
@@ -1329,17 +1657,19 @@ const NewMobilesList = () => {
                     <Form.Control
                       type="date"
                       value={payableAmountLaterDate}
-                      onChange={(e) => setPayableAmountLaterDate(e.target.value)}
+                      onChange={(e) =>
+                        setPayableAmountLaterDate(e.target.value)
+                      }
                     />
                   </Form.Group>
                 </>
               )}
 
-              {sellingType === "Exchange" && (
+              {sellingType === 'Exchange' && (
                 <Form.Group>
                   <Form.Label>Exchange Phone Details</Form.Label>
                   <Form.Control
-                    as={"textarea"}
+                    as={'textarea'}
                     rows={4} //
                     type="text"
                     placeholder="Enter exchange phone details"
@@ -1360,8 +1690,7 @@ const NewMobilesList = () => {
               </Form.Group>
             </div>
 
-
-            {type === "bulk" && (
+            {type === 'bulk' && (
               <>
                 {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
                 <BarcodeReader />
@@ -1377,7 +1706,12 @@ const NewMobilesList = () => {
                       onChange={(e) => setImeiInput(e.target.value)}
                       placeholder="Enter IMEI number"
                     />
-                    <Button variant="success" onClick={handleAddImei} backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)" className="ms-2">
+                    <Button
+                      variant="success"
+                      onClick={handleAddImei}
+                      backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)"
+                      className="ms-2"
+                    >
                       Add
                     </Button>
                   </div>
@@ -1389,9 +1723,16 @@ const NewMobilesList = () => {
                     <h6>Added IMEIs:</h6>
                     <ul className="list-group">
                       {addedImeis.map((imei, index) => (
-                        <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                        <li
+                          key={index}
+                          className="list-group-item d-flex justify-content-between align-items-center"
+                        >
                           {imei}
-                          <Button variant="danger" size="sm" onClick={() => handleRemoveImei(imei)}>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleRemoveImei(imei)}
+                          >
                             Remove
                           </Button>
                         </li>
@@ -1401,7 +1742,6 @@ const NewMobilesList = () => {
                 )}
               </>
             )}
-
           </Form>
         </Modal.Body>
         <Modal.Footer>
@@ -1413,7 +1753,6 @@ const NewMobilesList = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
     </>
   );
 };
