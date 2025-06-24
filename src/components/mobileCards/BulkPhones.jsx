@@ -360,19 +360,19 @@ const NewMobilesList = () => {
 
   //   doc.save('Mobile_Inventory.pdf');
   // };
+  console.log(bulkMobile);
   const handleShareInventory = () => {
     const doc = new jsPDF();
 
     // Add title
     doc.setFontSize(16);
-    doc.text('Mobile Inventory', 105, 15, { align: 'center' });
+    doc.text('Mobile Inventory Summary', 105, 15, { align: 'center' });
     doc.setFontSize(12);
 
     let y = 30; // Starting Y position
 
     bulkMobile.forEach((mobile, index) => {
-      const { companyName, modelName, ramSimDetails, prices, partyName, date } =
-        mobile;
+      const { companyName, modelName, ramSimDetails } = mobile;
 
       // Check if we need a new page
       if (y > 250) {
@@ -380,53 +380,21 @@ const NewMobilesList = () => {
         y = 30;
       }
 
-      // Format date
-      const formattedDate = new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+      // Count number of mobiles based on IMEI entries
+      let totalMobiles = 0;
+      ramSimDetails?.forEach((detail) => {
+        totalMobiles += detail.imeiNumbers?.length || 0;
       });
 
-      // Add mobile information
       doc.setFont(undefined, 'bold');
       doc.text(`Item ${index + 1}`, 15, y);
       doc.setFont(undefined, 'normal');
 
-      // Show company and model name prominently
       doc.text(`Company: ${companyName || 'N/A'}`, 15, y + 10);
       doc.text(`Model: ${modelName || 'N/A'}`, 15, y + 20);
+      doc.text(`No. of Mobiles: ${totalMobiles}`, 15, y + 30);
 
-      doc.text(
-        `Purchase Price: ${prices?.buyingPrice ? formatNumber(prices.buyingPrice) : 'N/A'}`,
-        15,
-        y + 30
-      );
-      doc.text(`Supplier: ${partyName || 'N/A'}`, 15, y + 40);
-      doc.text(`Purchase Date: ${formattedDate || 'N/A'}`, 15, y + 50);
-
-      // Add IMEI information if available
-      if (ramSimDetails?.length > 0) {
-        let imeiY = y + 60;
-        doc.text('IMEI Numbers:', 15, imeiY);
-        imeiY += 10;
-
-        ramSimDetails.forEach((detail) => {
-          if (detail.imeiNumbers?.length > 0) {
-            detail.imeiNumbers.forEach((imei) => {
-              doc.text(
-                `- ${imei.imei1}${imei.imei2 ? ` / ${imei.imei2}` : ''}`,
-                20,
-                imeiY
-              );
-              imeiY += 7;
-            });
-          }
-        });
-
-        y = imeiY + 10;
-      } else {
-        y += 70;
-      }
+      y += 45;
 
       // Add separator line if not last item
       if (index < bulkMobile.length - 1) {
@@ -435,7 +403,7 @@ const NewMobilesList = () => {
       }
     });
 
-    doc.save('Mobile_Inventory_Report.pdf');
+    doc.save('Mobile_Inventory_Summary.pdf');
   };
 
   // Helper function to format numbers with commas

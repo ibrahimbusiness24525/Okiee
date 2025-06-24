@@ -889,6 +889,7 @@ export const InvoiceComponent = ({
           justifyContent: 'flex-end',
           gap: '10px',
           margin: '10px 0',
+          color: '#000',
         }}
       >
         <button
@@ -946,6 +947,7 @@ export const InvoiceComponent = ({
 
         <div
           style={{
+            color: '#000',
             display: 'flex',
             justifyContent: 'space-between',
             marginBottom: '10px',
@@ -961,9 +963,9 @@ export const InvoiceComponent = ({
           </div>
         </div>
 
-        <div style={{ marginBottom: '10px', fontSize: '11px' }}>
+        <div style={{ marginBottom: '10px', fontSize: '11px', color: '#000' }}>
           <div>
-            <strong>Party Code:</strong>{' '}
+            <strong style={{ color: '#000' }}>Party Code:</strong>{' '}
             {saleData.partyLedgerId?.substr(-6) || '000000'}
           </div>
           <div>
@@ -974,6 +976,7 @@ export const InvoiceComponent = ({
 
         <table
           style={{
+            color: '#000',
             width: '100%',
             borderCollapse: 'collapse',
             fontSize: '11px',
@@ -1007,7 +1010,7 @@ export const InvoiceComponent = ({
                   border: '1px solid #000',
                 }}
               >
-                Wruty
+                Wrnty
               </th>
               <th
                 style={{
@@ -1121,10 +1124,13 @@ export const InvoiceComponent = ({
             </tr>
           </tbody>
         </table>
-        <div style={{ border: '1px solid #000' }}>{renderImeiInfo()}</div>
+        <div style={{ border: '1px solid #000', color: '#000' }}>
+          {renderImeiInfo()}
+        </div>
 
         <div
           style={{
+            color: '#000',
             fontWeight: 'bold',
             fontSize: '11px',
             border: '1px solid #000',
@@ -1134,7 +1140,7 @@ export const InvoiceComponent = ({
           {numberToWords(totalAmount)}
         </div>
 
-        <div style={{ marginBottom: '10px', fontSize: '9px' }}>
+        <div style={{ color: '#000', marginBottom: '10px', fontSize: '9px' }}>
           <strong>Company Will be responsible for all warranty sets.</strong>
         </div>
         {/* 
@@ -1199,6 +1205,7 @@ export const InvoiceComponent = ({
 
         <div
           style={{
+            color: '#000',
             marginTop: '10px',
             fontSize: '11px',
             display: 'flex',
@@ -1231,6 +1238,7 @@ export const InvoiceComponent = ({
 
         <div
           style={{
+            color: '#000',
             display: 'flex',
             justifyContent: 'space-between',
             marginTop: '15px',
