@@ -1,42 +1,51 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Row, Col, Form, InputGroup, Modal, Button } from 'react-bootstrap';
+import {
+  Card,
+  Row,
+  Col,
+  Form,
+  InputGroup,
+  Modal,
+  Button,
+} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import { BASE_URL } from 'config/constant';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
 import { api } from '../../../api/api';
-import List from '../List/List'
+import List from '../List/List';
 import Table from 'components/Table/Table';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import { toast } from 'react-toastify';
 import { MoonLoader } from 'react-spinners';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import { useGetAccessories } from 'hooks/accessory';
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react';
 const UsedMobilesList = () => {
-  const { data } = useGetAccessories()
-  const [showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
+  const { data } = useGetAccessories();
+  const [showWalletTransactionModal, setShowWalletTransactionModal] =
+    useState(false);
   const [walletTransaction, setWalletTransaction] = useState({
-    bankAccountUsed: "",
-    amountFromBank: "",
-    amountFromPocket: "",
-  })
+    bankAccountUsed: '',
+    amountFromBank: '',
+    amountFromPocket: '',
+  });
   const [mobiles, setMobiles] = useState([]);
-  const [bankName, setBankName] = useState("");
-  const [payableAmountNow, setPayableAmountNow] = useState("")
-  const [payableAmountLater, setPayableAmountLater] = useState("");
-  const [payableAmountLaterDate, setPayableAmountLaterDate] = useState("");
-  const [exchangePhoneDetail, setExchangePhoneDetail] = useState("");
-  const [cnicFrontPic, setCnicFrontPic] = useState("");
-  const [cnicBackPic, setCnicBackPic] = useState("");
-  const [customerNumber, setCustomerNumber] = useState("");
-  const [saleDate, setSaleDate] = useState("")
-  const [sellingType, setSellingType] = useState("")
+  const [bankName, setBankName] = useState('');
+  const [payableAmountNow, setPayableAmountNow] = useState('');
+  const [payableAmountLater, setPayableAmountLater] = useState('');
+  const [payableAmountLaterDate, setPayableAmountLaterDate] = useState('');
+  const [exchangePhoneDetail, setExchangePhoneDetail] = useState('');
+  const [cnicFrontPic, setCnicFrontPic] = useState('');
+  const [cnicBackPic, setCnicBackPic] = useState('');
+  const [customerNumber, setCustomerNumber] = useState('');
+  const [saleDate, setSaleDate] = useState('');
+  const [sellingType, setSellingType] = useState('');
   // const[accessoryName,setAccessoryName] = useState("");
   // const[accessoryPrice,setAccessoryPrice]= useState(0);
   const [accessories, setAccessories] = useState([
-    { name: "", quantity: 1, price: "" }
+    { name: '', quantity: 1, price: '' },
   ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -52,12 +61,10 @@ const UsedMobilesList = () => {
   const [shopName, setShopName] = useState('');
   const [personName, setPersonName] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [list, setList] = useState(false)
-  const [id, setId] = useState("")
-  const [companies, setCompanies] = useState([])
+  const [list, setList] = useState(false);
+  const [id, setId] = useState('');
+  const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
-
-
 
   const navigate = useNavigate();
 
@@ -73,29 +80,29 @@ const UsedMobilesList = () => {
 
       // Check if shop and shop.id exist and are valid
       if (!shop || !shop.shopId) {
-        console.error("Shop ID is missing or invalid:", shop);
+        console.error('Shop ID is missing or invalid:', shop);
         return;
       }
 
-
       // Make the API call with the valid shopid
-      const response = await api.get("/api/Purchase/purchase-phone")
+      const response = await api.get('/api/Purchase/purchase-phone');
       // const response = await axios.get(BASE_URL + `api/purchase/purchase-phone?shopid=${shop.shopId}`);
       // Update state with the response data
       setMobiles(response.data.phones);
     } catch (error) {
-      console.error("Error fetching mobiles:", error.response?.data || error.message);
+      console.error(
+        'Error fetching mobiles:',
+        error.response?.data || error.message
+      );
     }
   };
-
-
-
-
 
   const deletePhone = async () => {
     try {
       await api.delete(`/api/Purchase/purchase-phone/delete/${deleteMobileId}`);
-      setMobiles((prevMobiles) => prevMobiles.filter((mobile) => mobile._id !== deleteMobileId));
+      setMobiles((prevMobiles) =>
+        prevMobiles.filter((mobile) => mobile._id !== deleteMobileId)
+      );
     } catch (error) {
       console.error('Error deleting phone:', error);
     } finally {
@@ -104,7 +111,7 @@ const UsedMobilesList = () => {
   };
 
   const handleDispatchClick = (mobile) => {
-    setId(mobile._id)
+    setId(mobile._id);
     setDispatchMobile(mobile);
     setShowDispatchModal(true);
   };
@@ -115,19 +122,19 @@ const UsedMobilesList = () => {
         alert('Please fill all fields');
         return;
       }
-      const response = await api.patch(`/api/Purchase/single-purchase-dispatch/${id}`,
+      const response = await api.patch(
+        `/api/Purchase/single-purchase-dispatch/${id}`,
         {
           shopName,
           receiverName: personName,
         }
-      )
+      );
       setShopName('');
       setPersonName('');
       setShowDispatchModal(false);
-      getMobiles()
-      toast.success("Dispatch is created successfully")
-    } catch (error) {
-    }
+      getMobiles();
+      toast.success('Dispatch is created successfully');
+    } catch (error) {}
   };
 
   const handleEdit = (mobile) => {
@@ -145,7 +152,14 @@ const UsedMobilesList = () => {
   };
 
   const handleSoldSubmit = async () => {
-    if (!warranty || !customerName || !customerNumber || !saleDate || sellingType === "" || !finalPrice) {
+    if (
+      !warranty ||
+      !customerName ||
+      !customerNumber ||
+      !saleDate ||
+      sellingType === '' ||
+      !finalPrice
+    ) {
       alert('Please fill all fields');
       return;
     }
@@ -167,7 +181,7 @@ const UsedMobilesList = () => {
       payableAmountLater,
       payableAmountLaterDate,
       exchangePhoneDetail,
-      customerNumber
+      customerNumber,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -203,31 +217,32 @@ const UsedMobilesList = () => {
   //   doc.save('Mobile_Inventory.pdf');
   // };
 
-
-  // const filteredMobiles = mobiles.filter(mobile => 
+  // const filteredMobiles = mobiles.filter(mobile =>
   //   mobile.phoneCondition === "Used" &&
   //   (searchTerm === "" || mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
   // );
   const filteredMobiles = mobiles?.filter((mobile) => {
     // Exclude sold phones
     if (mobile.isSold) return false;
-    if (mobile.phoneCondition === "New") return false
-    if (mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm)) return true
+    if (mobile.phoneCondition === 'New') return false;
+    if (mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
+      return true;
 
     // Split the search term into words
     const searchWords = searchTerm?.toLowerCase()?.split(/\s+/);
 
-    return searchWords.every((word) =>
-      // Check if each word exists in any of the searchable fields
-      mobile.companyName?.toLowerCase()?.includes(word) ||
-      mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
-      mobile.specs?.toLowerCase()?.includes(word) ||
-      mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
-      String(mobile.purchasePrice)?.includes(word)  // Example: Searching by price if needed
+    return searchWords.every(
+      (word) =>
+        // Check if each word exists in any of the searchable fields
+        mobile.companyName?.toLowerCase()?.includes(word) ||
+        mobile.modelSpecifications?.toLowerCase()?.includes(word) ||
+        mobile.specs?.toLowerCase()?.includes(word) ||
+        mobile.color?.toLowerCase()?.includes(word) || // Example: Searching by color if needed
+        String(mobile.purchasePrice)?.includes(word) // Example: Searching by price if needed
     );
   });
   const updatedFilteredMobiles = useMemo(() => {
-    return filteredMobiles.filter(record => record.dispatch === false);
+    return filteredMobiles.filter((record) => record.dispatch === false);
   }, [filteredMobiles]);
   useEffect(() => {
     if (!updatedFilteredMobiles || updatedFilteredMobiles.length === 0) return;
@@ -256,7 +271,7 @@ const UsedMobilesList = () => {
 
   // Add New Accessory
   const addAccessory = () => {
-    setAccessories([...accessories, { name: "", quantity: 1, price: "" }]);
+    setAccessories([...accessories, { name: '', quantity: 1, price: '' }]);
   };
 
   // Remove Accessory
@@ -287,7 +302,8 @@ const UsedMobilesList = () => {
       const imgData = `data:image/jpeg;base64,${images[0]}`;
 
       // Check if next item will exceed page height
-      if (y + 50 > 280) {  // 280 leaves a margin from the bottom of A4
+      if (y + 50 > 280) {
+        // 280 leaves a margin from the bottom of A4
         doc.addPage();
         y = 20; // reset y for new page
       }
@@ -305,7 +321,7 @@ const UsedMobilesList = () => {
 
     doc.save('Mobile_Inventory.pdf');
   };
-  const [showAmount, setShowAmount] = useState(false)
+  const [showAmount, setShowAmount] = useState(false);
   return (
     <>
       {/* Search bar */}
@@ -322,53 +338,58 @@ const UsedMobilesList = () => {
       </InputGroup>
       <div
         style={{
-          display: "flex",
-          gap: "16px",
-          flexWrap: "wrap",
-          marginBottom: "1.5rem",
-          justifyContent: "flex-start",
-          alignItems: "center",
+          display: 'flex',
+          gap: '16px',
+          flexWrap: 'wrap',
+          marginBottom: '1.5rem',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
         }}
       >
         {/* Enhanced "Show All" button */}
         <button
           onClick={() => setSelectedCompany(null)}
           style={{
-            padding: "12px 24px",
-            borderRadius: "25px",
-            border: "none",
-            background: selectedCompany === null
-              ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-              : "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-            color: selectedCompany === null ? "#fff" : "#495057",
-            cursor: "pointer",
-            fontWeight: "600",
-            fontSize: "14px",
-            letterSpacing: "0.5px",
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxShadow: selectedCompany === null
-              ? "0 8px 25px rgba(102, 126, 234, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
-              : "0 2px 8px rgba(0, 0, 0, 0.1)",
-            transform: selectedCompany === null ? "translateY(-2px)" : "translateY(0)",
-            position: "relative",
-            overflow: "hidden",
+            padding: '12px 24px',
+            borderRadius: '25px',
+            border: 'none',
+            background:
+              selectedCompany === null
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            color: selectedCompany === null ? '#fff' : '#495057',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '14px',
+            letterSpacing: '0.5px',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow:
+              selectedCompany === null
+                ? '0 8px 25px rgba(102, 126, 234, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)'
+                : '0 2px 8px rgba(0, 0, 0, 0.1)',
+            transform:
+              selectedCompany === null ? 'translateY(-2px)' : 'translateY(0)',
+            position: 'relative',
+            overflow: 'hidden',
           }}
           onMouseEnter={(e) => {
             if (selectedCompany !== null) {
-              e.target.style.background = "linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%)";
-              e.target.style.transform = "translateY(-1px)";
-              e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.15)";
+              e.target.style.background =
+                'linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%)';
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
             }
           }}
           onMouseLeave={(e) => {
             if (selectedCompany !== null) {
-              e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
+              e.target.style.background =
+                'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
             }
           }}
         >
-          <span style={{ position: "relative", zIndex: 1 }}>Show All</span>
+          <span style={{ position: 'relative', zIndex: 1 }}>Show All</span>
         </button>
 
         {companies.map((company, index) => {
@@ -378,57 +399,60 @@ const UsedMobilesList = () => {
               key={index}
               onClick={() => setSelectedCompany(company)}
               style={{
-                padding: "12px 24px",
-                borderRadius: "25px",
-                border: "none",
+                padding: '12px 24px',
+                borderRadius: '25px',
+                border: 'none',
                 background: isSelected
-                  ? "linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%)"
-                  : "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-                color: isSelected ? "#fff" : "#495057",
-                fontWeight: "600",
-                fontSize: "14px",
-                letterSpacing: "0.5px",
-                cursor: "pointer",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  ? 'linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%)'
+                  : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                color: isSelected ? '#fff' : '#495057',
+                fontWeight: '600',
+                fontSize: '14px',
+                letterSpacing: '0.5px',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: isSelected
-                  ? "0 8px 25px rgba(86, 171, 47, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)"
-                  : "0 2px 8px rgba(0, 0, 0, 0.08)",
-                transform: isSelected ? "translateY(-2px)" : "translateY(0)",
-                position: "relative",
-                overflow: "hidden",
-                border: isSelected ? "2px solid rgba(255, 255, 255, 0.3)" : "2px solid #e9ecef",
+                  ? '0 8px 25px rgba(86, 171, 47, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)'
+                  : '0 2px 8px rgba(0, 0, 0, 0.08)',
+                transform: isSelected ? 'translateY(-2px)' : 'translateY(0)',
+                position: 'relative',
+                overflow: 'hidden',
+                border: isSelected
+                  ? '2px solid rgba(255, 255, 255, 0.3)'
+                  : '2px solid #e9ecef',
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
-                  e.target.style.background = "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)";
-                  e.target.style.transform = "translateY(-1px)";
-                  e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.12)";
-                  e.target.style.borderColor = "#dee2e6";
+                  e.target.style.background =
+                    'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)';
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.12)';
+                  e.target.style.borderColor = '#dee2e6';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isSelected) {
-                  e.target.style.background = "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)";
-                  e.target.style.transform = "translateY(0)";
-                  e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.08)";
-                  e.target.style.borderColor = "#e9ecef";
+                  e.target.style.background =
+                    'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+                  e.target.style.borderColor = '#e9ecef';
                 }
               }}
             >
-              <span style={{ position: "relative", zIndex: 1 }}>
-                {company}
-              </span>
+              <span style={{ position: 'relative', zIndex: 1 }}>{company}</span>
               {/* Subtle shine effect for selected buttons */}
               {isSelected && (
                 <div
                   style={{
-                    position: "absolute",
-                    top: "0",
-                    left: "-100%",
-                    width: "100%",
-                    height: "100%",
-                    background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
-                    animation: "shine 2s infinite",
+                    position: 'absolute',
+                    top: '0',
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background:
+                      'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                    animation: 'shine 2s infinite',
                     zIndex: 0,
                   }}
                 />
@@ -440,105 +464,131 @@ const UsedMobilesList = () => {
 
       {/* Add this CSS animation if you want the shine effect */}
       <style jsx>{`
-  @keyframes shine {
-    0% { left: -100%; }
-    100% { left: 100%; }
-  }
-`}</style>
-      <div className="d-flex justify-content-between align-items-center mb-3" style={{
-        background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-        padding: "20px",
-        borderRadius: "15px",
-        boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-        border: "1px solid #dee2e6"
-      }}>
+        @keyframes shine {
+          0% {
+            left: -100%;
+          }
+          100% {
+            left: 100%;
+          }
+        }
+      `}</style>
+      <div
+        className="d-flex justify-content-between align-items-center mb-3"
+        style={{
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          padding: '20px',
+          borderRadius: '15px',
+          boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+          border: '1px solid #dee2e6',
+        }}
+      >
         {/* Total Stock Amount Box */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "15px",
-          background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-          padding: "20px 25px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
-          border: "2px solid #e3f2fd",
-          minWidth: "350px"
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            padding: '20px 25px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 15px rgba(0,123,255,0.1)',
+            border: '2px solid #e3f2fd',
+            minWidth: '350px',
+          }}
+        >
           <div>
-            <h5 style={{
-              fontSize: 28,
-              margin: 0,
-              color: "#2c3e50",
-              textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-            }}>
+            <h5
+              style={{
+                fontSize: 28,
+                margin: 0,
+                color: '#2c3e50',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              }}
+            >
               Total Stock Amount :
-              <span style={{
-                fontWeight: "bold",
-                color: "#007bff",
-                fontSize: 32,
-                marginLeft: "8px",
-                textShadow: "0 2px 4px rgba(0,123,255,0.2)"
-              }}>
-                {showAmount ? totalPurchasePrice : "••••••"}
+              <span
+                style={{
+                  fontWeight: 'bold',
+                  color: '#007bff',
+                  fontSize: 32,
+                  marginLeft: '8px',
+                  textShadow: '0 2px 4px rgba(0,123,255,0.2)',
+                }}
+              >
+                {showAmount ? totalPurchasePrice : '••••••'}
               </span>
             </h5>
           </div>
           <button
             onClick={() => setShowAmount(!showAmount)}
             style={{
-              background: "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
-              border: "none",
-              cursor: "pointer",
-              color: "white",
-              padding: "12px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 12px rgba(0,123,255,0.3)",
-              width: "45px",
-              height: "45px"
+              background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'white',
+              padding: '12px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 12px rgba(0,123,255,0.3)',
+              width: '45px',
+              height: '45px',
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #0056b3 0%, #004085 100%)";
-              e.target.style.transform = "scale(1.15) rotate(5deg)";
-              e.target.style.boxShadow = "0 6px 20px rgba(0,123,255,0.5)";
+              e.target.style.background =
+                'linear-gradient(135deg, #0056b3 0%, #004085 100%)';
+              e.target.style.transform = 'scale(1.15) rotate(5deg)';
+              e.target.style.boxShadow = '0 6px 20px rgba(0,123,255,0.5)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #007bff 0%, #0056b3 100%)";
-              e.target.style.transform = "scale(1) rotate(0deg)";
-              e.target.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)";
+              e.target.style.background =
+                'linear-gradient(135deg, #007bff 0%, #0056b3 100%)';
+              e.target.style.transform = 'scale(1) rotate(0deg)';
+              e.target.style.boxShadow = '0 4px 12px rgba(0,123,255,0.3)';
             }}
-            title={showAmount ? "Hide amount" : "Show amount"}
+            title={showAmount ? 'Hide amount' : 'Show amount'}
           >
             {showAmount ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
 
         {/* Stock Count Box */}
-        <div style={{
-          background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-          padding: "20px 30px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0,123,255,0.1)",
-          border: "2px solid #e3f2fd",
-          textAlign: "center",
-          minWidth: "200px"
-        }}>
-          <h5 style={{
-            fontSize: "1.8rem",
-            margin: 0,
-            color: "#2c3e50",
-            textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-          }}>
-            Stock: <span style={{
-              fontWeight: "bold",
-              color: "#007bff",
-              fontSize: "2rem",
-              textShadow: "0 2px 4px rgba(0,123,255,0.2)"
-            }}>{visibleMobiles.length}</span>
-            <span style={{ color: "#6c757d", fontSize: "1.4rem" }}>Mobile(s)</span>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            padding: '20px 30px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 15px rgba(0,123,255,0.1)',
+            border: '2px solid #e3f2fd',
+            textAlign: 'center',
+            minWidth: '200px',
+          }}
+        >
+          <h5
+            style={{
+              fontSize: '1.8rem',
+              margin: 0,
+              color: '#2c3e50',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            }}
+          >
+            Stock:{' '}
+            <span
+              style={{
+                fontWeight: 'bold',
+                color: '#007bff',
+                fontSize: '2rem',
+                textShadow: '0 2px 4px rgba(0,123,255,0.2)',
+              }}
+            >
+              {visibleMobiles.length}
+            </span>
+            <span style={{ color: '#6c757d', fontSize: '1.4rem' }}>
+              Mobile(s)
+            </span>
           </h5>
         </div>
 
@@ -547,27 +597,29 @@ const UsedMobilesList = () => {
           variant="primary"
           onClick={handleShareInventory}
           style={{
-            background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-            border: "none",
-            color: "white",
-            padding: "15px 30px",
-            borderRadius: "12px",
-            fontWeight: "600",
-            fontSize: "1.1rem",
-            boxShadow: "0 6px 20px rgba(40,167,69,0.3)",
-            transition: "all 0.3s ease",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
+            background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+            border: 'none',
+            color: 'white',
+            padding: '15px 30px',
+            borderRadius: '12px',
+            fontWeight: '600',
+            fontSize: '1.1rem',
+            boxShadow: '0 6px 20px rgba(40,167,69,0.3)',
+            transition: 'all 0.3s ease',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
           onMouseEnter={(e) => {
-            e.target.style.background = "linear-gradient(135deg, #218838 0%, #1e7e34 100%)";
-            e.target.style.transform = "translateY(-3px) scale(1.05)";
-            e.target.style.boxShadow = "0 10px 30px rgba(40,167,69,0.5)";
+            e.target.style.background =
+              'linear-gradient(135deg, #218838 0%, #1e7e34 100%)';
+            e.target.style.transform = 'translateY(-3px) scale(1.05)';
+            e.target.style.boxShadow = '0 10px 30px rgba(40,167,69,0.5)';
           }}
           onMouseLeave={(e) => {
-            e.target.style.background = "linear-gradient(135deg, #28a745 0%, #20c997 100%)";
-            e.target.style.transform = "translateY(0) scale(1)";
-            e.target.style.boxShadow = "0 6px 20px rgba(40,167,69,0.3)";
+            e.target.style.background =
+              'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+            e.target.style.transform = 'translateY(0) scale(1)';
+            e.target.style.boxShadow = '0 6px 20px rgba(40,167,69,0.3)';
           }}
         >
           Share Inventory
@@ -577,43 +629,50 @@ const UsedMobilesList = () => {
       <button
         onClick={() => setList(!list)}
         style={{
-          padding: "14px 28px",
-          background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
-          color: "white",
-          marginBottom: "24px",
-          fontWeight: "600",
-          fontSize: "14px",
-          letterSpacing: "0.5px",
-          borderRadius: "12px",
-          border: "none",
-          cursor: "pointer",
-          boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          position: "relative",
-          overflow: "hidden",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          transform: "translateY(0)",
+          padding: '14px 28px',
+          background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+          color: 'white',
+          marginBottom: '24px',
+          fontWeight: '600',
+          fontSize: '14px',
+          letterSpacing: '0.5px',
+          borderRadius: '12px',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow:
+            '0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          transform: 'translateY(0)',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)";
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+          e.currentTarget.style.background =
+            'linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)';
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow =
+            '0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)";
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)";
+          e.currentTarget.style.background =
+            'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)';
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow =
+            '0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1)';
         }}
         onMouseDown={(e) => {
-          e.currentTarget.style.transform = "translateY(1px)";
-          e.currentTarget.style.boxShadow = "0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)";
+          e.currentTarget.style.transform = 'translateY(1px)';
+          e.currentTarget.style.boxShadow =
+            '0 4px 15px rgba(59, 130, 246, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2)';
         }}
         onMouseUp={(e) => {
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)";
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow =
+            '0 12px 35px rgba(59, 130, 246, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15)';
         }}
       >
         {/* Icon for visual enhancement */}
@@ -626,25 +685,26 @@ const UsedMobilesList = () => {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ marginRight: "4px" }}
+          style={{ marginRight: '4px' }}
         >
           <path d="M3 3h18v18H3zM9 9h6v6H9z" />
         </svg>
 
-        <span style={{ position: "relative", zIndex: 1 }}>
+        <span style={{ position: 'relative', zIndex: 1 }}>
           Change Record Design
         </span>
 
         {/* Subtle shine effect overlay */}
         <div
           style={{
-            position: "absolute",
-            top: "0",
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
-            transition: "left 0.6s ease",
+            position: 'absolute',
+            top: '0',
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background:
+              'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+            transition: 'left 0.6s ease',
             zIndex: 0,
           }}
           className="shine-effect"
@@ -653,69 +713,75 @@ const UsedMobilesList = () => {
 
       {/* Optional: Add this CSS for the shine animation on hover */}
       <style jsx>{`
-  button:hover .shine-effect {
-    left: 100%;
-  }
-`}</style>
-      {!filteredMobiles.length > 0 ?
-        (
-          <div className="w-full h-full flex items-center justify-center">
-            <MoonLoader size={60} color="#4f46e5" />
-          </div>
-        )
-        :
+        button:hover .shine-effect {
+          left: 100%;
+        }
+      `}</style>
+      {!filteredMobiles.length > 0 ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <MoonLoader size={60} color="#4f46e5" />
+        </div>
+      ) : (
         <>
-          {list ? <>
-            {/* <List items={filteredMobiles}
+          {list ? (
+            <>
+              {/* <List items={filteredMobiles}
     displayKeys={["modelSpecifications","companyName", "finalPrice","phoneCondition","warranty"]}
     descriptions={["Model Name","Company Name","Final Price","Condition","Warranty"]}
     onRowClick={"handleClick"}
      /> */}
-            <Table
-              // routes={["/purchase/purchaseRecords"]}
-              array={filteredMobiles.filter((record) => {
-                if (record.dispatch !== false) return false;
+              <Table
+                // routes={["/purchase/purchaseRecords"]}
+                array={filteredMobiles.filter((record) => {
+                  if (record.dispatch !== false) return false;
 
-                if (!selectedCompany) return true;
+                  if (!selectedCompany) return true;
 
-                const normalize = (str) =>
-                  str.toLowerCase().replace(/\s+/g, "");
+                  const normalize = (str) =>
+                    str.toLowerCase().replace(/\s+/g, '');
 
-                return (
-                  normalize(record.companyName) === normalize(selectedCompany)
-                );
-              })}
-              //  search={"imei1"}
-              keysToDisplay={["modelSpecifications", "companyName", "finalPrice", "phoneCondition", "warranty"]}
-              label={[
-                "Model Name",
-                "Company Name",
-                "Final Price",
-                "Condition",
-                "Warranty",
+                  return (
+                    normalize(record.companyName) === normalize(selectedCompany)
+                  );
+                })}
+                //  search={"imei1"}
+                keysToDisplay={[
+                  'modelSpecifications',
+                  'companyName',
+                  'finalPrice',
+                  'phoneCondition',
+                  'warranty',
+                ]}
+                label={[
+                  'Model Name',
+                  'Company Name',
+                  'Final Price',
+                  'Condition',
+                  'Warranty',
 
-                "Actions",
-              ]}
-
-              extraColumns={[
-                (obj) =>
-                  <Button
-                    onClick={() => handleSoldClick(obj)}
-                    style={{
-                      backgroundColor: '#28a745',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '5px 10px',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem',
-                    }}
-                  >
-                    Sold
-                  </Button>
-              ]}
-            />
-          </> :
+                  'Actions',
+                ]}
+                extraColumns={[
+                  (obj) => (
+                    <Button
+                      onClick={() => handleSoldClick(obj)}
+                      style={{
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      Sold
+                    </Button>
+                  ),
+                ]}
+              />
+            </>
+          ) : (
             <>
               <Row xs={1} md={2} lg={3} className="g-4">
                 {filteredMobiles.length > 0 ? (
@@ -723,12 +789,23 @@ const UsedMobilesList = () => {
                     .filter((record) => record.dispatch === false)
                     .filter((record) => {
                       if (!selectedCompany) return true; // ✅ Show all if no company selected
-                      const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
-                      return normalize(record.companyName) === normalize(selectedCompany);
+                      const normalize = (str) =>
+                        str?.toLowerCase().replace(/\s+/g, '');
+                      return (
+                        normalize(record.companyName) ===
+                        normalize(selectedCompany)
+                      );
                     })
                     .map((mobile) => (
                       <Col key={mobile._id}>
-                        <Card className="h-100 shadow border-0" style={{ borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+                        <Card
+                          className="h-100 shadow border-0"
+                          style={{
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            position: 'relative',
+                          }}
+                        >
                           <FaEdit
                             onClick={() => handleEdit(mobile)}
                             style={{
@@ -751,14 +828,30 @@ const UsedMobilesList = () => {
                               fontSize: '1.2rem',
                             }}
                           />
-                          <Card.Body style={{ padding: '1rem', flexDirection: 'column' }}>
-                            <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
+                          <Card.Body
+                            style={{ padding: '1rem', flexDirection: 'column' }}
+                          >
+                            <Card.Title
+                              style={{
+                                fontSize: '1.3rem',
+                                fontWeight: '600',
+                                color: '#333',
+                                width: '100%',
+                              }}
+                            >
                               {mobile.companyName} {mobile.modelSpecifications}
                             </Card.Title>
                             {/* <Card.Title style={{ fontSize: '1.3rem', fontWeight: '600', color: '#333', width: '100%' }}>
               {mobile.warranty}
             </Card.Title> */}
-                            <Card.Text style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6', width: '100%' }}>
+                            <Card.Text
+                              style={{
+                                fontSize: '0.9rem',
+                                color: '#666',
+                                lineHeight: '1.6',
+                                width: '100%',
+                              }}
+                            >
                               {/* <div>
                 <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
                   Specs:
@@ -766,39 +859,95 @@ const UsedMobilesList = () => {
                 {mobile.specs}
               </div> */}
                               <div>
-                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                                <strong
+                                  style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600',
+                                    color: '#333',
+                                  }}
+                                >
                                   Color:
                                 </strong>{' '}
                                 {mobile.color}
                               </div>
                               <div>
-                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                                <strong
+                                  style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600',
+                                    color: '#333',
+                                  }}
+                                >
                                   IMEI:
                                 </strong>{' '}
                                 {mobile.imei1}
                               </div>
                               {mobile.imei2 && (
                                 <div>
-                                  <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                                  <strong
+                                    style={{
+                                      fontSize: '1.1rem',
+                                      fontWeight: '600',
+                                      color: '#333',
+                                    }}
+                                  >
                                     IMEI 2:
                                   </strong>{' '}
                                   {mobile.imei2}
                                 </div>
                               )}
                               <div>
-                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Battery Health:</strong>{' '}
-                                {mobile.batteryHealth ? mobile.batteryHealth : 'N/A'}
+                                <strong
+                                  style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    width: '100%',
+                                  }}
+                                >
+                                  Battery Health:
+                                </strong>{' '}
+                                {mobile.batteryHealth
+                                  ? mobile.batteryHealth
+                                  : 'N/A'}
                               </div>
                               <div>
-                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Purchase Price:</strong>{' '}
+                                <strong
+                                  style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    width: '100%',
+                                  }}
+                                >
+                                  Purchase Price:
+                                </strong>{' '}
                                 {mobile.purchasePrice}
                               </div>
                               <div>
-                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Demand Price:</strong>{' '}
+                                <strong
+                                  style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    width: '100%',
+                                  }}
+                                >
+                                  Demand Price:
+                                </strong>{' '}
                                 {mobile.demandPrice}
                               </div>
                               <div>
-                                <strong style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333', width: '100%' }}>Final Price:</strong>{' '}
+                                <strong
+                                  style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    width: '100%',
+                                  }}
+                                >
+                                  Final Price:
+                                </strong>{' '}
                                 {mobile.finalPrice || 'Not Sold'}
                               </div>
                             </Card.Text>
@@ -873,14 +1022,20 @@ const UsedMobilesList = () => {
                     </Card>
                   </Col>
                 )}
-              </Row>;
+              </Row>
+              ;
             </>
-          }
+          )}
         </>
-      }
+      )}
       {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
 
-      <PurchasePhone type="edit" modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} />
+      <PurchasePhone
+        type="edit"
+        modal={showModal}
+        editMobile={editMobile}
+        handleModalClose={() => setShowModal(false)}
+      />
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
@@ -898,7 +1053,10 @@ const UsedMobilesList = () => {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showDispatchModal} onHide={() => setShowDispatchModal(false)}>
+      <Modal
+        show={showDispatchModal}
+        onHide={() => setShowDispatchModal(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Dispatch Mobile</Modal.Title>
         </Modal.Header>
@@ -925,7 +1083,10 @@ const UsedMobilesList = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDispatchModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDispatchModal(false)}
+          >
             Cancel
           </Button>
           <Button variant="primary" onClick={handleDispatchSubmit}>
@@ -933,7 +1094,6 @@ const UsedMobilesList = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
 
       {/* <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
   <Modal.Header closeButton>
@@ -1022,7 +1182,6 @@ const UsedMobilesList = () => {
                   placeholder="Enter number in +923XXXXXXXXX format"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Enter Customer Name"
                 />
               </Form.Group>
 
@@ -1043,7 +1202,6 @@ const UsedMobilesList = () => {
                   value={saleDate}
                   onChange={(e) => setSaleDate(e.target.value)}
                   required
-
                 />
               </Form.Group>
               {/* CNIC Front Picture */}
@@ -1071,7 +1229,9 @@ const UsedMobilesList = () => {
                       <Form.Label>Accessory Name</Form.Label>
                       <Form.Select
                         value={accessory.name} // this holds the id now
-                        onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'name', e.target.value)
+                        }
                       >
                         <option value="">Select accessory</option>
                         {data?.data?.map((item) => (
@@ -1087,7 +1247,13 @@ const UsedMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.quantity}
-                        onChange={(e) => handleAccessoryChange(index, "quantity", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(
+                            index,
+                            'quantity',
+                            e.target.value
+                          )
+                        }
                         min="1"
                       />
                     </Form.Group>
@@ -1097,12 +1263,18 @@ const UsedMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.price}
-                        onChange={(e) => handleAccessoryChange(index, "price", e.target.value)}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'price', e.target.value)
+                        }
                         placeholder="Enter price"
                       />
                     </Form.Group>
 
-                    <Button variant="secondary" className="mt-2" onClick={() => removeAccessory(index)}>
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => removeAccessory(index)}
+                    >
                       Remove
                     </Button>
                   </div>
@@ -1134,7 +1306,10 @@ const UsedMobilesList = () => {
               <Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label>Company Warranty</Form.Label>
-                  <Form.Select value={warranty} onChange={(e) => setWarranty(e.target.value)}>
+                  <Form.Select
+                    value={warranty}
+                    onChange={(e) => setWarranty(e.target.value)}
+                  >
                     <option value="">Select Warranty</option>
                     <option value="No Warranty">No Warranty</option>
                     <option value="1 Month">1 Month</option>
@@ -1164,7 +1339,7 @@ const UsedMobilesList = () => {
                   <option value="Credit">Credit</option>
                 </Form.Select>
               </Form.Group>
-              {sellingType === "Bank" && (
+              {sellingType === 'Bank' && (
                 <Form.Group>
                   <Form.Label>Bank Name</Form.Label>
                   <Form.Control
@@ -1176,7 +1351,7 @@ const UsedMobilesList = () => {
                 </Form.Group>
               )}
 
-              {sellingType === "Credit" && (
+              {sellingType === 'Credit' && (
                 <>
                   <Form.Group>
                     <Form.Label>Payable Amount Now</Form.Label>
@@ -1203,17 +1378,19 @@ const UsedMobilesList = () => {
                     <Form.Control
                       type="date"
                       value={payableAmountLaterDate}
-                      onChange={(e) => setPayableAmountLaterDate(e.target.value)}
+                      onChange={(e) =>
+                        setPayableAmountLaterDate(e.target.value)
+                      }
                     />
                   </Form.Group>
                 </>
               )}
 
-              {sellingType === "Exchange" && (
+              {sellingType === 'Exchange' && (
                 <Form.Group>
                   <Form.Label>Exchange Phone Details</Form.Label>
                   <Form.Control
-                    as={"textarea"}
+                    as={'textarea'}
                     rows={4} //
                     type="text"
                     placeholder="Enter exchange phone details"
@@ -1233,15 +1410,20 @@ const UsedMobilesList = () => {
                 />
               </Form.Group>
             </div>
-
-
-
-
           </Form>
-          <Button variant="secondary" onClick={() => setShowWalletTransactionModal(!showWalletTransactionModal)}>Proceed To Pay</Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              setShowWalletTransactionModal(!showWalletTransactionModal)
+            }
+          >
+            Proceed To Pay
+          </Button>
           <WalletTransactionModal
             show={showWalletTransactionModal}
-            toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+            toggleModal={() =>
+              setShowWalletTransactionModal(!showWalletTransactionModal)
+            }
             singleTransaction={walletTransaction}
             setSingleTransaction={setWalletTransaction}
           />

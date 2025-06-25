@@ -107,6 +107,7 @@ const SaleInvoices = () => {
     console.log(invoice);
 
     const formattedInvoice = {
+      showInvoice: true,
       editing: true,
       id: invoice._id,
       invoiceNumber: invoice.invoiceNumber,

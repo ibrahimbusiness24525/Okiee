@@ -416,6 +416,8 @@ const SoldInvoice = () => {
     // 5. Return null for invalid numbers
     return null;
   };
+  console.log(dataReceived);
+
   return (
     <div>
       {!displayHalfP4 && (
