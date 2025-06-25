@@ -156,9 +156,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-      dataReceived?.finalPrice ??
-      dataReceived?.demandPrice ??
-      0
+    dataReceived?.finalPrice ??
+    dataReceived?.demandPrice ??
+    0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -546,9 +546,9 @@ const SoldInvoice = () => {
         )}
       </div>
 
-      {!displayHalfP4 &&
+      {!displayHalfP4 && !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-        dataReceived?.bulkPhonePurchaseId ? (
+          dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -725,6 +725,7 @@ const SoldInvoice = () => {
                   )}
                 </tbody>
               </table>
+
               {dataReceived.accessoryName && (
                 <div
                   style={{
@@ -1056,8 +1057,8 @@ const SoldInvoice = () => {
                       {dataReceived?.invoice?.items
                         ? dataReceived?.invoice?.items[0]?.mobileName
                         : dataReceived?.modelSpecifications ??
-                          dataReceived.modelName ??
-                          'Not Available'}
+                        dataReceived.modelName ??
+                        'Not Available'}
                     </td>
                     <td style={styles.td}>
                       {dataReceived?.invoice?.items
@@ -1147,10 +1148,136 @@ const SoldInvoice = () => {
           </>
         ))}
       <div>
+        {dataReceived?.showInvoice && (
+          <div id="invoice" style={styles.container}>
+            {/* Header */}
+            <header style={styles.header}>
+              <div>
+                <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                <p>
+                  {shop?.contactNumber?.join(' | ') ??
+                    'Contact number not available'}
+                </p>
+              </div>
+              <h2 style={{ color: selectedColor || '#4a6baf' }}>Invoice</h2>
+            </header>
+
+            {/* Info Section */}
+            <section
+              style={{
+                ...styles.infoSection,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+              }}
+            >
+              {/* Left */}
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                  <strong>Invoice No:</strong> {dataReceived.invoiceNumber}
+                </p>
+                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                  <strong>Date:</strong>{' '}
+                  {new Date(dataReceived.dateSold).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+
+              {/* Right */}
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                  <strong>Customer Name:</strong> {dataReceived.customerName}
+                </p>
+                {dataReceived.customerNumber && (
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Customer Number:</strong>{' '}
+                    {dataReceived.customerNumber}
+                  </p>
+                )}
+                {dataReceived.customerCNIC && (
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Customer CNIC:</strong>{' '}
+                    {dataReceived?.customerCNIC}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            {/* Table */}
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={{
+                    padding: '15px',
+                    backgroundColor: `${selectedColor}`,
+                    color: '#fff',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                  }}>Description</th>
+                  <th style={{
+                    padding: '15px',
+                    backgroundColor: `${selectedColor}`,
+                    color: '#fff',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                  }}>IMEI</th>
+                  <th style={styles.th}>Warranty</th>
+                  <th style={styles.th}>Price PKR</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={styles.stripedRow}>
+                  <td style={styles.td}>Mobile Device</td>
+                  <td style={styles.td}>{dataReceived.imei1}</td>
+                  <td style={styles.td}>
+                    {dataReceived.warranty ?? 'Not Available'}
+                  </td>
+                  <td style={styles.td}>
+                    {dataReceived.salePrice.toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Total Section */}
+            <div
+              style={{
+                padding: '15px 0',
+                textAlign: 'right',
+                fontWeight: 'bold',
+                fontSize: '16px',
+              }}
+            >
+              Total: {dataReceived.salePrice.toLocaleString('en-IN')} PKR
+            </div>
+
+            {/* Footer */}
+            <div
+              style={{
+                paddingTop: '10px',
+                textAlign: 'center',
+                fontSize: '13px',
+                color: '#555',
+              }}
+            >
+              <p style={{ margin: 0 }}>Thank you for your business!</p>
+              <p style={{ margin: 0 }}>
+                For any queries, contact {shop?.contactNumber?.[0] ?? 'Support'}
+              </p>
+            </div>
+          </div>
+        )}
+
         <InvoiceComponent
           display={displayHalfP4}
           saleData={dataReceived}
           shopName={shop?.shopName ?? ''}
+          number={shop?.contactNumber?.[0] ?? ''}
+          address={shop?.address ?? 'Address not available'}
+          termsAndConditions={shop?.termsAndConditions}
         />
       </div>
       {dataReceived?.editing && (

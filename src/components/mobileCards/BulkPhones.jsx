@@ -881,8 +881,8 @@ const NewMobilesList = () => {
                           (total, ramSim) => {
                             const imeis = Array.isArray(ramSim.imeiNumbers)
                               ? ramSim.imeiNumbers.filter(
-                                  (imei) => imei.isDispatched === false
-                                )
+                                (imei) => imei.isDispatched === false
+                              )
                               : [];
                             return total + imeis.length;
                           },
@@ -1578,9 +1578,10 @@ const NewMobilesList = () => {
                   onChange={(e) => setSellingType(e.target.value)}
                 >
                   <option value="">Select Selling Type</option>
-                  <option value="Bank">Bank</option>
+                  {/* <option value="Bank">Bank</option> */}
                   <option value="Exchange">Exchange</option>
-                  <option value="Cash">Cash</option>
+                  <option value="Full Payment">Full Payment</option>
+                  {/* <option value="Cash">Cash</option> */}
                   <option value="Credit">Credit</option>
                 </Form.Select>
               </Form.Group>

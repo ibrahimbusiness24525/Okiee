@@ -489,7 +489,7 @@ const SingalPurchaseModal = ({
                 )}
               </Form.Group>
             </div>
-            <div style={{ marginTop: '15px', lineHeight: '2.0' }}>
+            {/* <div style={{ marginTop: '15px', lineHeight: '2.0' }}>
               <p style={{ fontSize: '17px' }}>
                 جو کہ میری ذاتی ملکیت ہے۔ میں نے اپنے ماڈل کے تمام فنکشنز کو خود
                 چیک کر لیا ہے۔ میں نے تصدیق کی ہے کہ یہ چوری شدہ یا غیر قانونی
@@ -500,7 +500,7 @@ const SingalPurchaseModal = ({
                 میں نے اس بات کی مکمل وضاحت کر دی ہے۔ میں نے اس موبائل کو بغیر
                 کسی دباو کے اپنی مرضی سے فروخت کیا ہے۔
               </p>
-            </div>
+            </div> */}
 
             {/* Approval Checkbox */}
             <div
@@ -716,7 +716,7 @@ const SingalPurchaseModal = ({
             <Button variant="secondary" onClick={()=> setShowPocketCashModal(!showPocketCashModal)}>Pay Through Pocket (optional)</Button> */}
               </>
             )}
-            <div
+            {/* <div
               style={{
                 marginTop: '20px',
                 textAlign: 'center',
@@ -726,7 +726,7 @@ const SingalPurchaseModal = ({
             >
               نوٹ: ادارہ ہذا نے یہ موبائل سمیت نیک نیتی کی بنیاد پر خریدا کیا
               ہے۔
-            </div>
+            </div> */}
 
             <WalletTransactionModal
               show={showWalletTransactionModal}

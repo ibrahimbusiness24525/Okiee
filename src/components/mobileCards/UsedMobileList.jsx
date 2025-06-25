@@ -134,7 +134,7 @@ const UsedMobilesList = () => {
       setShowDispatchModal(false);
       getMobiles();
       toast.success('Dispatch is created successfully');
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleEdit = (mobile) => {
@@ -1333,9 +1333,10 @@ const UsedMobilesList = () => {
                   onChange={(e) => setSellingType(e.target.value)}
                 >
                   <option value="">Select Selling Type</option>
-                  <option value="Bank">Bank</option>
+                  {/* <option value="Bank">Bank</option> */}
                   <option value="Exchange">Exchange</option>
-                  <option value="Cash">Cash</option>
+                  <option value="Full Payment">Full Payment</option>
+                  {/* <option value="Cash">Cash</option> */}
                   <option value="Credit">Credit</option>
                 </Form.Select>
               </Form.Group>

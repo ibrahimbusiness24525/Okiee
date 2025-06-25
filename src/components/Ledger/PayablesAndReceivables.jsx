@@ -956,7 +956,93 @@ const PayablesAndReceivables = () => {
                         {person.takingCredit.toLocaleString()} PKR
                       </p>
                     </div>
-
+                    {/* {person.takingCredit === 0 && person.givingCredit === 0 ? (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '12px',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: '16px',
+                      }}>
+                      <p>Settled</p>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '12px',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: '16px',
+                      }}
+                    >
+                      {person.takingCredit !== 0 && (
+                        <div
+                          style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <p
+                            style={{
+                              margin: '0 0 4px 0',
+                              fontSize: '12px',
+                              color: '#6b7280',
+                            }}
+                          >
+                            Taking Credit
+                          </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              color: '#ef4444',
+                            }}
+                          >
+                            {person.takingCredit.toLocaleString()} PKR
+                          </p>
+                        </div>
+                      )}
+                      {person.givingCredit !== 0 && (
+                        <div
+                          style={{
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <p
+                            style={{
+                              margin: '0 0 4px 0',
+                              fontSize: '12px',
+                              color: '#6b7280',
+                            }}
+                          >
+                            Giving Credit
+                          </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              color: '#22c55e',
+                            }}
+                          >
+                            {person.givingCredit.toLocaleString()} PKR
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )} */}
                     <div
                       style={{
                         backgroundColor: 'rgba(34, 197, 94, 0.1)',

@@ -23,6 +23,7 @@ const PayablesAndReceivablesRecords = () => {
 
     fetchPersonDetail();
   }, [id]);
+  console.log(transactions);
 
   if (loading) return <p>Loading...</p>;
   if (!person) return <p>Person not found.</p>;
@@ -70,13 +71,66 @@ const PayablesAndReceivablesRecords = () => {
                 backgroundColor: "#f9fafb",
               }}
             >
-              <p style={{ margin: 0, fontSize: "14px" }}>
-                <strong>Taking:</strong> {tx.takingCredit.toLocaleString()} PKR
-              </p>
-              <p style={{ margin: 0, fontSize: "14px" }}>
-                <strong>Giving:</strong> {tx.givingCredit.toLocaleString()} PKR
-              </p>
-              <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
+              {/* Only show Taking Credit if non-zero */}
+              {tx.takingCredit !== 0 && (
+                <p style={{
+                  margin: "0 0 6px 0",
+                  fontSize: "14px",
+                  color: "#ef4444", // Red color for taking credit
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}>
+                  <span style={{
+                    display: "inline-block",
+                    width: "12px",
+                    height: "12px",
+                    borderRadius: "50%",
+                    backgroundColor: "#ef4444"
+                  }}></span>
+                  <strong>Taking:</strong> {tx.takingCredit.toLocaleString()} PKR
+                </p>
+              )}
+
+              {/* Only show Giving Credit if non-zero */}
+              {tx.givingCredit !== 0 && (
+                <p style={{
+                  margin: "0 0 6px 0",
+                  fontSize: "14px",
+                  color: "#22c55e", // Green color for giving credit
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}>
+                  <span style={{
+                    display: "inline-block",
+                    width: "12px",
+                    height: "12px",
+                    borderRadius: "50%",
+                    backgroundColor: "#22c55e"
+                  }}></span>
+                  <strong>Giving:</strong> {tx.givingCredit.toLocaleString()} PKR
+                </p>
+              )}
+
+              {/* Description */}
+              {tx.description && (
+                <p style={{
+                  margin: "0 0 6px 0",
+                  fontSize: "14px",
+                  color: "#4b5563"
+                }}>
+                  <strong>Description:</strong> {tx.description}
+                </p>
+              )}
+
+              {/* Timestamp */}
+              <p style={{
+                margin: 0,
+                fontSize: "12px",
+                color: "#6b7280",
+                fontStyle: "italic"
+              }}>
                 {new Date(tx.createdAt).toLocaleString()}
               </p>
             </div>

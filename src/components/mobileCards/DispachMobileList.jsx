@@ -90,7 +90,7 @@ const DispachMobilesList = () => {
     try {
       const response = await api.get(`/api/Purchase/single-dispatch`);
       setSingleDispatches(response.data.dispatches);
-    } catch (error) {}
+    } catch (error) { }
   };
   const getBulkDispatches = async () => {
     try {
@@ -1179,9 +1179,10 @@ const DispachMobilesList = () => {
                   onChange={(e) => setSellingType(e.target.value)}
                 >
                   <option value="">Select Selling Type</option>
-                  <option value="Bank">Bank</option>
+                  {/* <option value="Bank">Bank</option> */}
                   <option value="Exchange">Exchange</option>
-                  <option value="Cash">Cash</option>
+                  <option value="Full Payment">Full Payment</option>
+                  {/* <option value="Cash">Cash</option> */}
                   <option value="Credit">Credit</option>
                 </Form.Select>
               </Form.Group>
