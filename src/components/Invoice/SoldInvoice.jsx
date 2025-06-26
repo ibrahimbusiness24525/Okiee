@@ -156,9 +156,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-    dataReceived?.finalPrice ??
-    dataReceived?.demandPrice ??
-    0
+      dataReceived?.finalPrice ??
+      dataReceived?.demandPrice ??
+      0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -546,9 +546,10 @@ const SoldInvoice = () => {
         )}
       </div>
 
-      {!displayHalfP4 && !dataReceived?.showInvoice &&
+      {!displayHalfP4 &&
+        !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-          dataReceived?.bulkPhonePurchaseId ? (
+        dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -1036,8 +1037,10 @@ const SoldInvoice = () => {
               <table style={styles.table}>
                 <thead>
                   <tr>
-                    <th style={styles.th}>Company</th>
-                    <th style={styles.th}>Model</th>
+                    {!dataReceived?.manual && (
+                      <th style={styles.th}>Company</th>
+                    )}
+                    {!dataReceived?.manual && <th style={styles.th}>Model</th>}
                     <th style={styles.th}>
                       {dataReceived.imei2 ? 'IMEI 1' : 'IMEI'}
                     </th>
@@ -1048,23 +1051,39 @@ const SoldInvoice = () => {
                 </thead>
                 <tbody>
                   <tr style={styles.stripedRow}>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileCompany
-                        : dataReceived?.companyName ?? 'Not Available'}
-                    </td>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileName
-                        : dataReceived?.modelSpecifications ??
-                        dataReceived.modelName ??
-                        'Not Available'}
-                    </td>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.imei
-                        : dataReceived?.imei1 ?? 'Not Available'}
-                    </td>
+                    {!dataReceived?.manual && (
+                      <td style={styles.td}>
+                        {dataReceived?.invoice?.items
+                          ? dataReceived?.invoice?.items[0]?.mobileCompany
+                          : dataReceived?.companyName ?? 'Not Available'}
+                      </td>
+                    )}
+                    {!dataReceived?.manual && (
+                      <td style={styles.td}>
+                        {dataReceived?.invoice?.items
+                          ? dataReceived?.invoice?.items[0]?.mobileName
+                          : dataReceived?.modelSpecifications ??
+                            dataReceived.modelName ??
+                            'Not Available'}
+                      </td>
+                    )}
+                    {!dataReceived.manual && (
+                      <td style={styles.td}>
+                        {dataReceived?.invoice?.items
+                          ? dataReceived?.invoice?.items[0]?.imei
+                          : dataReceived?.imei1 ?? 'Not Available'}
+                      </td>
+                    )}
+                    {dataReceived?.manual && (
+                      <td style={styles.td}>
+                        {['11111', '2222'].map((items) => {
+                          return `${items},`;
+                        })}
+                        {/* {dataReceived?.writtenImeis?.map((items) => {
+                          return items;
+                        })} */}
+                      </td>
+                    )}
                     {dataReceived.imei2 && (
                       <td style={styles.td}>
                         {dataReceived?.invoice?.items
@@ -1199,8 +1218,7 @@ const SoldInvoice = () => {
                 )}
                 {dataReceived.customerCNIC && (
                   <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                    <strong>Customer CNIC:</strong>{' '}
-                    {dataReceived?.customerCNIC}
+                    <strong>Customer CNIC:</strong> {dataReceived?.customerCNIC}
                   </p>
                 )}
               </div>
@@ -1210,20 +1228,28 @@ const SoldInvoice = () => {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={{
-                    padding: '15px',
-                    backgroundColor: `${selectedColor}`,
-                    color: '#fff',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                  }}>Description</th>
-                  <th style={{
-                    padding: '15px',
-                    backgroundColor: `${selectedColor}`,
-                    color: '#fff',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                  }}>IMEI</th>
+                  <th
+                    style={{
+                      padding: '15px',
+                      backgroundColor: `${selectedColor}`,
+                      color: '#fff',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    style={{
+                      padding: '15px',
+                      backgroundColor: `${selectedColor}`,
+                      color: '#fff',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    IMEI
+                  </th>
                   <th style={styles.th}>Warranty</th>
                   <th style={styles.th}>Price PKR</th>
                 </tr>
