@@ -166,15 +166,19 @@
 // export default NavLeft;
 
 import React, { useState, useEffect } from 'react';
-import { ListGroup } from 'react-bootstrap';
+import { Button, Form, FormControl, ListGroup, Modal } from 'react-bootstrap';
 import useWindowSize from '../../../../hooks/useWindowSize';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
-import Modal from 'components/Modal/Modal';
 import { api } from '../../../../../api/api';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
+import { useGetAccessories } from 'hooks/accessory';
+import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 
 const NavLeft = () => {
+  const navigate = useNavigate();
   const windowSize = useWindowSize();
   const [showAddPhoneModal, setShowAddPhoneModal] = useState(false);
   const [showPurchasePhoneModal, setShowPurchasePhoneModal] = useState(false);
@@ -186,19 +190,88 @@ const NavLeft = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [companies, setCompanies] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSoldModal, setShowSoldModal] = useState(false);
+  const { data } = useGetAccessories();
   const [imei, setImei] = useState('');
+  const [formData, setFormData] = useState({
+    imei: Number(''),
+    imeiList: [],
+    search: '',
+    bankName: '',
+    payableAmountNow: '',
+    payableAmountLater: '',
+    payableAmountLaterDate: '',
+    exchangePhoneDetail: '',
+    type: '',
+    cnicFrontPic: '',
+    cnicBackPic: '',
+    sellingType: '',
+    accessoryName: '',
+    accessoryPrice: 0,
+    accessories: [{ name: '', quantity: 1, price: '' }],
+    customerNumber: '',
+    searchTerm: '',
+    editMobile: null,
+    soldMobile: null,
+    saleDate: '',
+    customerName: '',
+    finalPrice: '',
+    warranty: '12 months',
+    deleteMobileId: null,
+    dispatchMobile: null,
+    shopName: '',
+    id: '',
+    personName: '',
+    imeiInput: '',
+    addedImeis: [],
+    showAmount: false,
+    showPrices: false,
+    selectedMobile: null,
+    imeis: [],
+    scanning: false,
+    barcodeScan: 'No Barcode Scanned',
+    list: true,
+    showSoldModal: false,
+  });
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  // For select multiple (like IMEI selection)
+  const handleSelectChange = (name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // For nested objects like accessories
+  const handleAccessoryChange = (index, field, value) => {
+    setFormData((prev) => {
+      const updatedAccessories = [...prev.accessories];
+      updatedAccessories[index][field] = value;
+      return {
+        ...prev,
+        accessories: updatedAccessories,
+      };
+    });
+  };
   const handleSellPhone = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await api.post('/api/purchase/general-mobile-sale', { imei: Number(imei) });
+      const response = await api.post('/api/purchase/general-mobile-sale', {
+        imei: Number(imei),
+      });
 
       toast.success('Phone sold successfully!');
-
     } catch (error) {
       console.log('Error selling phone:', error);
-
     }
   };
   useEffect(() => {
@@ -346,7 +419,7 @@ const NavLeft = () => {
               fontWeight: '500',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#3367D6';
@@ -362,7 +435,7 @@ const NavLeft = () => {
             onMouseUp={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
             }}
-            onClick={() => setShow(true)}
+            onClick={() => setShowSoldModal(true)}
           >
             Sale Mobile
           </button>
@@ -409,97 +482,539 @@ const NavLeft = () => {
 
       <Modal
         show={showAddCompanyModal}
-        toggleModal={handleAddCompanyClose}
+        onHide={handleAddCompanyClose}
         size="sm"
+        centered
       >
-        <h2 style={{ marginBottom: 24 }}>Add Company</h2>
-        <form onSubmit={handleAddCompany}>
-          <input
-            type="text"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Company Name"
-            required
-            style={{ padding: 12, width: '100%', marginBottom: 20 }}
-          />
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{ padding: 10, width: '100%' }}
+        <div style={{ padding: '24px' }}>
+          <h2
+            style={{
+              marginBottom: '24px',
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#333',
+            }}
           >
-            {isSubmitting ? 'Adding...' : 'Add Company'}
-          </button>
-        </form>
+            Add Company
+          </h2>
+          <form onSubmit={handleAddCompany}>
+            <input
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="Company Name"
+              required
+              style={{
+                padding: '12px',
+                width: '100%',
+                marginBottom: '20px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                padding: '12px',
+                width: '100%',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '500',
+                transition: 'background-color 0.3s',
+              }}
+              onMouseOver={(e) =>
+                !isSubmitting && (e.target.style.backgroundColor = '#45a049')
+              }
+              onMouseOut={(e) =>
+                !isSubmitting && (e.target.style.backgroundColor = '#4CAF50')
+              }
+            >
+              {isSubmitting ? 'Adding...' : 'Add Company'}
+            </button>
+          </form>
+        </div>
       </Modal>
 
       <Modal
         show={showAddModelModal}
-        toggleModal={handleAddModelClose}
+        onHide={handleAddModelClose}
         size="sm"
+        centered
       >
-        <h2 style={{ marginBottom: 24 }}>Add Model</h2>
-        <form onSubmit={handleAddModel}>
-          <select
-            value={selectedCompanyId}
-            onChange={(e) => setSelectedCompanyId(e.target.value)}
-            required
-            style={{ padding: 12, width: '100%', marginBottom: 20 }}
+        <div style={{ padding: '24px' }}>
+          <h2
+            style={{
+              marginBottom: '24px',
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#333',
+            }}
           >
-            <option value="">Select Company</option>
-            {companies.map((company) => (
-              <option key={company._id} value={company._id}>
-                {company.name}
-              </option>
-            ))}
-          </select>
+            Add Model
+          </h2>
+          <form onSubmit={handleAddModel}>
+            <select
+              value={selectedCompanyId}
+              onChange={(e) => setSelectedCompanyId(e.target.value)}
+              required
+              style={{
+                padding: '12px',
+                width: '100%',
+                marginBottom: '20px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                appearance: 'none',
+              }}
+            >
+              <option value="">Select Company</option>
+              {companies.map((company) => (
+                <option key={company._id} value={company._id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
 
-          <input
-            type="text"
-            value={modelName}
-            onChange={(e) => setModelName(e.target.value)}
-            placeholder="Model Name"
-            required
-            style={{ padding: 12, width: '100%', marginBottom: 20 }}
-          />
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{ padding: 10, width: '100%' }}
-          >
-            {isSubmitting ? 'Adding...' : 'Add Model'}
-          </button>
-        </form>
-      </Modal>
-      <Modal show={show} toggleModal={() => setShow(!show)} onHide={() => setShow(false)} size="sm">
-        <h2>Sell Phone</h2>
-        <form onSubmit={handleSellPhone}>
-          <div className="mb-3">
-            <label htmlFor="imei" className="form-label">
-              Enter IMEI Number
-            </label>
             <input
               type="text"
-              id="imei"
-              className="form-control"
-              value={imei}
-              onChange={(e) => setImei(e.target.value)}
-              placeholder="IMEI number"
+              value={modelName}
+              onChange={(e) => setModelName(e.target.value)}
+              placeholder="Model Name"
               required
+              style={{
+                padding: '12px',
+                width: '100%',
+                marginBottom: '20px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+              }}
             />
-          </div>
-
-
-
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-          >
-
-            Sell Phone
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                padding: '12px',
+                width: '100%',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '500',
+                transition: 'background-color 0.3s',
+              }}
+              onMouseOver={(e) =>
+                !isSubmitting && (e.target.style.backgroundColor = '#45a049')
+              }
+              onMouseOut={(e) =>
+                !isSubmitting && (e.target.style.backgroundColor = '#4CAF50')
+              }
+            >
+              {isSubmitting ? 'Adding...' : 'Add Model'}
+            </button>
+          </form>
+        </div>
       </Modal>
+      <Modal
+        show={showSoldModal}
+        onHide={() => setShowSoldModal(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Sell Mobile</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <div>
+              <Form.Group className="mb-3">
+                <Form.Label>Customer Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="customerName"
+                  value={formData.customerName}
+                  onChange={handleChange}
+                  placeholder="Enter Customer Name"
+                />
+              </Form.Group>
 
+              <Form.Group className="mb-3">
+                <Form.Label>Customer Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="customerNumber"
+                  value={formData.customerNumber}
+                  onChange={handleChange}
+                  placeholder="Enter number in +923XXXXXXXXX format"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="saleDate" className="mb-3">
+                <Form.Label>Sale Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="saleDate"
+                  value={formData.saleDate}
+                  onChange={handleChange}
+                  placeholder="Enter Sale Date"
+                  required
+                />
+              </Form.Group>
+
+              <div>
+                {formData.accessories.map((accessory, index) => (
+                  <div key={index} className="mb-3 p-3 border rounded">
+                    <Form.Group>
+                      <Form.Label>Accessory Name</Form.Label>
+                      <Form.Select
+                        value={accessory.name}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'name', e.target.value)
+                        }
+                      >
+                        <option value="">Select accessory</option>
+                        {data?.data?.map((item, index) => (
+                          <option key={item._id} value={item._id}>
+                            {item.accessoryName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+
+                    <Form.Group>
+                      <Form.Label>Quantity</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={accessory.quantity}
+                        onChange={(e) =>
+                          handleAccessoryChange(
+                            index,
+                            'quantity',
+                            e.target.value
+                          )
+                        }
+                        min="1"
+                      />
+                    </Form.Group>
+
+                    <Form.Group>
+                      <Form.Label>Accessory Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={accessory.price}
+                        onChange={(e) =>
+                          handleAccessoryChange(index, 'price', e.target.value)
+                        }
+                        placeholder="Enter price"
+                      />
+                    </Form.Group>
+
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => {
+                        const updatedAccessories = formData.accessories.filter(
+                          (_, i) => i !== index
+                        );
+                        setFormData((prev) => ({
+                          ...prev,
+                          accessories: updatedAccessories,
+                        }));
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      accessories: [
+                        ...prev.accessories,
+                        { name: '', quantity: 1, price: '' },
+                      ],
+                    }));
+                  }}
+                  style={{ marginBottom: '20px' }}
+                >
+                  Add Another Accessory
+                </Button>
+                <Form.Group className="mb-3">
+                  <Form.Label>Enter Imei </Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={formData.imei}
+                    name="imei"
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        imei: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter IMEI number"
+                  />
+                </Form.Group>
+                <Button
+                  onClick={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      addedImeis: Number(formData.imei),
+                    }))
+                  }
+                >
+                  Add This Imei
+                </Button>
+                <p>
+                  {formData.addedImeis.length > 0
+                    ? formData.addedImeis
+                    : 'no imeis added yet'}
+                </p>
+                {/* <FormControl fullWidth variant="outlined" className="mb-3">
+                  <InputLabel>IMEI</InputLabel>
+                  <Select
+                    value={formData.imei}
+                    onChange={(e) => handleSelectChange('imei', e.target.value)} // ← Use event object
+                    displayEmpty
+                    multiple
+                    input={<OutlinedInput label="IMEI" />} // ← Required for proper styling
+                  >
+                    {formData.imeiList
+                      .filter((item) =>
+                        item
+                          .toLowerCase()
+                          .includes(formData.search.toLowerCase())
+                      )
+                      .map((item, index) => (
+                        <MenuItem key={index} value={item}>
+                          {item}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl> */}
+                {/* <BarcodeReader
+                  onScan={(data) => {
+                    if (data) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        imeiList: [...prev.imeiList, data], // ← Fixed: should be imeiList, not imeis
+                        barcodeScan: data,
+                      }));
+                    }
+                  }}
+                /> */}
+              </div>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Selling Type</Form.Label>
+                <Form.Select
+                  name="sellingType"
+                  value={formData.sellingType}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Selling Type</option>
+                  <option value="Exchange">Exchange</option>
+                  <option value="Full Payment">Full Payment</option>
+                  <option value="Credit">Credit</option>
+                </Form.Select>
+              </Form.Group>
+
+              {formData.sellingType === 'Credit' && (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Payable Amount Now</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="payableAmountNow"
+                      value={formData.payableAmountNow}
+                      onChange={handleChange}
+                      placeholder="Enter amount payable now"
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Payable Amount Later</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="payableAmountLater"
+                      value={formData.payableAmountLater}
+                      onChange={handleChange}
+                      placeholder="Enter amount payable later"
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    {/* <Form.Label>When will it be paid?<x/Form.Label> */}
+                    <Form.Control
+                      type="date"
+                      name="payableAmountLaterDate"
+                      value={formData.payableAmountLaterDate}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                </>
+              )}
+
+              {formData.sellingType === 'Exchange' && (
+                <Form.Group className="mb-3">
+                  <Form.Label>Exchange Phone Details</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    name="exchangePhoneDetail"
+                    value={formData.exchangePhoneDetail}
+                    onChange={handleChange}
+                    placeholder="Enter exchange phone details"
+                  />
+                </Form.Group>
+              )}
+
+              <Form.Group className="mb-3">
+                <Form.Label>Sold Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="finalPrice"
+                  value={formData.finalPrice}
+                  onChange={handleChange}
+                  placeholder="Enter Sold price"
+                />
+              </Form.Group>
+            </div>
+
+            {formData.type === 'bulk' && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>IMEI Number</Form.Label>
+                  <div className="d-flex">
+                    <Form.Control
+                      type="text"
+                      name="imeiInput"
+                      value={formData.imeiInput}
+                      onChange={handleChange}
+                      placeholder="Enter IMEI number"
+                    />
+                    <Button
+                      variant="success"
+                      onClick={() => {
+                        if (
+                          formData.imeiInput.trim() !== '' &&
+                          !formData.imeis.includes(formData.imeiInput)
+                        ) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            imeis: [...prev.imeis, prev.imeiInput],
+                            imeiInput: '',
+                          }));
+                        }
+                      }}
+                      className="ms-2"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </Form.Group>
+
+                {formData.imeis.length > 0 && (
+                  <div className="mt-3">
+                    <h6>Added IMEIs:</h6>
+                    <ul className="list-group">
+                      {formData.imeis.map((imei, index) => (
+                        <li
+                          key={index}
+                          className="list-group-item d-flex justify-content-between align-items-center"
+                        >
+                          {imei}
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                imeis: prev.imeis.filter((i) => i !== imei),
+                              }));
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, showSoldModal: false }))
+            }
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              if (
+                !formData.finalPrice ||
+                !formData.warranty ||
+                !formData.customerName ||
+                !formData.customerNumber ||
+                !formData.saleDate ||
+                formData.sellingType === ''
+              ) {
+                alert('Please fill all fields');
+                return;
+              }
+
+              const updatedMobile = {
+                ...formData.soldMobile,
+                finalPrice: formData.finalPrice,
+                imei1: formData.imei,
+                sellingType: formData.sellingType,
+                warranty: formData.warranty,
+                writtenImeis: formData.addedImeis || 'not added',
+                saleDate: formData.saleDate,
+                cnicBackPic: formData.cnicBackPic,
+                cnicFrontPic: formData.cnicFrontPic,
+                customerName: formData.customerName,
+                addedImeis: [],
+                accessories: formData.accessories,
+                bankName: formData.bankName,
+                payableAmountNow: formData.payableAmountNow,
+                payableAmountLater: formData.payableAmountLater,
+                payableAmountLaterDate: formData.payableAmountLaterDate,
+                exchangePhoneDetail: formData.exchangePhoneDetail,
+                customerNumber: formData.customerNumber,
+                manual: true,
+              };
+
+              navigate('/invoice/shop', { state: updatedMobile });
+              setFormData((prev) => ({
+                ...prev,
+                finalPrice: '',
+                showSoldModal: false,
+                imeis: [],
+                imeiInput: '',
+              }));
+            }}
+          >
+            Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

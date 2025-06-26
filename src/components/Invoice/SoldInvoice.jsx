@@ -546,7 +546,8 @@ const SoldInvoice = () => {
         )}
       </div>
 
-      {!displayHalfP4 && !dataReceived?.showInvoice &&
+      {!displayHalfP4 &&
+        !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
           dataReceived?.bulkPhonePurchaseId ? (
           <>
@@ -752,9 +753,61 @@ const SoldInvoice = () => {
                   </div>
                 </div>
               )}
-              <div style={styles.totalSection}>
+              {/* <div style={styles.totalSection}>
                 <h3>Total:{totalInvoice}Rs</h3>
+              </div> */}
+              <div
+                style={{
+                  ...styles.totalSection,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  padding: "10px 20px",
+                  marginTop: "20px",
+                  backgroundColor: "#f9f9f9",
+                  borderTop: "1px solid #ddd",
+                }}
+              >
+                {/* Left side - 60% width */}
+                <div style={{ width: "60%" }}>
+                  {dataReceived?.accessories?.map((acc, index) => (
+                    <p
+                      key={index}
+                      style={{
+                        fontSize: "15px",
+                        color: "#444",
+                        paddingBottom: "6px",
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        margin: 0,
+                        borderBottom: "1px solid #eee",
+                      }}
+                    >
+                      Accessory {index + 1}: {acc.quantity} × {acc.price} Rs
+                    </p>
+                  ))}
+                </div>
+
+                {/* Right side - 40% width - Total */}
+                <div
+                  style={{
+                    width: "40%",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      color: "#222",
+                    }}
+                  >
+                    Total: {totalInvoice} Rs
+                  </h3>
+                </div>
               </div>
+
               {dataReceived.addedImeis.length !== 0 ? (
                 <>
                   <div style={styles.termsSection}>
@@ -1036,8 +1089,10 @@ const SoldInvoice = () => {
               <table style={styles.table}>
                 <thead>
                   <tr>
-                    <th style={styles.th}>Company</th>
-                    <th style={styles.th}>Model</th>
+                    {!dataReceived?.manual && (
+                      <th style={styles.th}>Company</th>
+                    )}
+                    {!dataReceived?.manual && <th style={styles.th}>Model</th>}
                     <th style={styles.th}>
                       {dataReceived.imei2 ? 'IMEI 1' : 'IMEI'}
                     </th>
@@ -1048,23 +1103,39 @@ const SoldInvoice = () => {
                 </thead>
                 <tbody>
                   <tr style={styles.stripedRow}>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileCompany
-                        : dataReceived?.companyName ?? 'Not Available'}
-                    </td>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileName
-                        : dataReceived?.modelSpecifications ??
-                        dataReceived.modelName ??
-                        'Not Available'}
-                    </td>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.imei
-                        : dataReceived?.imei1 ?? 'Not Available'}
-                    </td>
+                    {!dataReceived?.manual && (
+                      <td style={styles.td}>
+                        {dataReceived?.invoice?.items
+                          ? dataReceived?.invoice?.items[0]?.mobileCompany
+                          : dataReceived?.companyName ?? 'Not Available'}
+                      </td>
+                    )}
+                    {!dataReceived?.manual && (
+                      <td style={styles.td}>
+                        {dataReceived?.invoice?.items
+                          ? dataReceived?.invoice?.items[0]?.mobileName
+                          : dataReceived?.modelSpecifications ??
+                          dataReceived.modelName ??
+                          'Not Available'}
+                      </td>
+                    )}
+                    {!dataReceived.manual && (
+                      <td style={styles.td}>
+                        {dataReceived?.invoice?.items
+                          ? dataReceived?.invoice?.items[0]?.imei
+                          : dataReceived?.imei1 ?? 'Not Available'}
+                      </td>
+                    )}
+                    {dataReceived?.manual && (
+                      <td style={styles.td}>
+                        {['11111', '2222'].map((items) => {
+                          return `${items},`;
+                        })}
+                        {/* {dataReceived?.writtenImeis?.map((items) => {
+                          return items;
+                        })} */}
+                      </td>
+                    )}
                     {dataReceived.imei2 && (
                       <td style={styles.td}>
                         {dataReceived?.invoice?.items
@@ -1111,8 +1182,60 @@ const SoldInvoice = () => {
                   </div>
                 </div>
               )}
-              <div style={styles.totalSection}>
+              {/* <div style={styles.totalSection}>
+                <p>{dataReceived?.accessories?.quan}</p>
                 <h3>Total:{totalInvoice}Rs</h3>
+              </div> */}
+              <div
+                style={{
+                  ...styles.totalSection,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  padding: "10px 20px",
+                  marginTop: "20px",
+                  backgroundColor: "#f9f9f9",
+                  borderTop: "1px solid #ddd",
+                }}
+              >
+                {/* Left side - 60% width */}
+                <div style={{ width: "60%" }}>
+                  {dataReceived?.accessories?.map((acc, index) => (
+                    <p
+                      key={index}
+                      style={{
+                        fontSize: "15px",
+                        color: "#444",
+                        paddingBottom: "6px",
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        margin: 0,
+                        borderBottom: "1px solid #eee",
+                      }}
+                    >
+                      Accessory {index + 1}: {acc.quantity} × {acc.price} Rs
+                    </p>
+                  ))}
+                </div>
+
+                {/* Right side - 40% width - Total */}
+                <div
+                  style={{
+                    width: "40%",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      color: "#222",
+                    }}
+                  >
+                    Total: {totalInvoice} Rs
+                  </h3>
+                </div>
               </div>
 
               <div style={styles.termsSection}>
@@ -1199,8 +1322,7 @@ const SoldInvoice = () => {
                 )}
                 {dataReceived.customerCNIC && (
                   <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                    <strong>Customer CNIC:</strong>{' '}
-                    {dataReceived?.customerCNIC}
+                    <strong>Customer CNIC:</strong> {dataReceived?.customerCNIC}
                   </p>
                 )}
               </div>
@@ -1210,20 +1332,28 @@ const SoldInvoice = () => {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={{
-                    padding: '15px',
-                    backgroundColor: `${selectedColor}`,
-                    color: '#fff',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                  }}>Description</th>
-                  <th style={{
-                    padding: '15px',
-                    backgroundColor: `${selectedColor}`,
-                    color: '#fff',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                  }}>IMEI</th>
+                  <th
+                    style={{
+                      padding: '15px',
+                      backgroundColor: `${selectedColor}`,
+                      color: '#fff',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    style={{
+                      padding: '15px',
+                      backgroundColor: `${selectedColor}`,
+                      color: '#fff',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    IMEI
+                  </th>
                   <th style={styles.th}>Warranty</th>
                   <th style={styles.th}>Price PKR</th>
                 </tr>

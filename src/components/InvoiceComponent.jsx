@@ -1,4 +1,3 @@
-
 // import React, { useRef } from 'react';
 // import html2canvas from 'html2canvas';
 // import { jsPDF } from 'jspdf';
@@ -484,7 +483,6 @@
 //           <strong>Company Will be responsible for all warranty sets.</strong>
 //         </div>
 
-
 //         <div
 //           style={{
 //             color: '#000',
@@ -536,7 +534,6 @@
 //   );
 // };
 
-
 import React, { useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -545,9 +542,9 @@ export const InvoiceComponent = ({
   saleData,
   display = true,
   shopName = '',
-  address = "",
-  number = "",
-  termsAndConditions = []
+  address = '',
+  number = '',
+  termsAndConditions = [],
 }) => {
   const invoiceRef = useRef();
 
@@ -860,11 +857,10 @@ export const InvoiceComponent = ({
       color: '#666',
     },
     termsSection: {
-      marginTop: '30px',
-      padding: '20px',
+      width: '100%',
       background: '#fff',
       borderRadius: '10px',
-      boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
+      // boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
       color: '#333',
     },
     termsHeading: {
@@ -949,7 +945,14 @@ export const InvoiceComponent = ({
         >
           {shopName || 'Mobile Shop'}
         </h1>
-        <div style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center" }}>
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <h1
             style={{
               textAlign: 'center',
@@ -1152,7 +1155,9 @@ export const InvoiceComponent = ({
           </tbody>
         </table>
 
-        <div style={{ border: '1px solid #000', color: '#000', padding: '5px' }}>
+        <div
+          style={{ border: '1px solid #000', color: '#000', padding: '5px' }}
+        >
           {renderImeiInfo()}
         </div>
 
@@ -1180,30 +1185,67 @@ export const InvoiceComponent = ({
             marginTop: '15px',
             fontSize: '14px',
             display: 'flex',
-            flexDirection: 'column',
-            textAlign: 'right',
+            gap: '10px',
+            justifyContent: 'space-between',
           }}
         >
+          <div style={styles.termsSection}>
+            {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+            <div style={styles.termsHeading}>Terms & conditions</div>
+            <div style={styles.termsText}>
+              {termsAndConditions.map((item, index) => (
+                <p key={index}>
+                  <strong
+                    style={{
+                      fontSize: '1.0rem',
+                      fontWeight: '600',
+                      color: '#333',
+                      width: '100%',
+                    }}
+                  >
+                    {index + 1}.
+                  </strong>{' '}
+                  {item}
+                </p>
+              ))}
+            </div>
+          </div>
           <div>
-            <strong>Amount With Tax</strong>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'end' }}>
-            <span style={{ width: '120px', textAlign: 'left' }}>Previous Bal :</span>
-            <span style={{ width: '80px', textAlign: 'right' }}>{formatNumber(saleData.previousBalance || '0.00')}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'end' }}>
-            <span style={{ width: '120px', textAlign: 'left' }}>Gross Total :</span>
-            <span style={{ width: '80px', textAlign: 'right' }}>{formatNumber(totalAmount)}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'end' }}>
-            <span style={{ width: '120px', textAlign: 'left' }}>Cash Rec. :</span>
-            <span style={{ width: '80px', textAlign: 'right' }}>{formatNumber(saleData.cashReceived || '0.00')}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'end' }}>
-            <span style={{ width: '120px', textAlign: 'left' }}>Net Balance :</span>
-            <span style={{ width: '80px', textAlign: 'right' }}>
-              {formatNumber(totalAmount - (saleData.cashReceived || 0))}
-            </span>
+            <div>
+              <strong>Amount With Tax</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'end' }}>
+              <span style={{ width: '120px', textAlign: 'left' }}>
+                Previous Bal :
+              </span>
+              <span style={{ width: '80px', textAlign: 'right' }}>
+                {formatNumber(saleData.previousBalance || '0.00')}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'end' }}>
+              <span style={{ width: '120px', textAlign: 'left' }}>
+                Gross Total :
+              </span>
+              <span style={{ width: '80px', textAlign: 'right' }}>
+                {formatNumber(totalAmount)}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'end' }}>
+              <span style={{ width: '120px', textAlign: 'left' }}>
+                Cash Rec. :
+              </span>
+              <span style={{ width: '80px', textAlign: 'right' }}>
+                {formatNumber(saleData.cashReceived || '0.00')}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'end' }}>
+              <span style={{ width: '120px', textAlign: 'left' }}>
+                Net Balance :
+              </span>
+              <span style={{ width: '80px', textAlign: 'right' }}>
+                {formatNumber(totalAmount - (saleData.cashReceived || 0))}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -1219,27 +1261,6 @@ export const InvoiceComponent = ({
         >
           <div>Checked By:______</div>
           <div>Issued By:______</div>
-        </div>
-        <div style={styles.termsSection}>
-          {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
-          <div style={styles.termsHeading}>Terms & conditions</div>
-          <div style={styles.termsText}>
-            {termsAndConditions.map((item, index) => (
-              <p key={index}>
-                <strong
-                  style={{
-                    fontSize: '1.0rem',
-                    fontWeight: '600',
-                    color: '#333',
-                    width: '100%',
-                  }}
-                >
-                  {index + 1}.
-                </strong>{' '}
-                {item}
-              </p>
-            ))}
-          </div>
         </div>
       </div>
     </div>
