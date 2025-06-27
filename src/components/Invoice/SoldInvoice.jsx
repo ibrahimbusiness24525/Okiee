@@ -369,6 +369,7 @@ const SoldInvoice = () => {
       // }
     }
   };
+
   const totalAccessoriesPrice = dataReceived?.accessories?.reduce(
     (total, item) =>
       total + Number(item.price || 0) * Number(item.quantity || 1),
@@ -417,6 +418,42 @@ const SoldInvoice = () => {
     return null;
   };
   console.log(dataReceived);
+  const handleSellAnyPhone = async () => {
+    try {
+      const payload = {
+        // imeis: dataReceived.imei, 
+        customerName: dataReceived.customerName,
+        customerNumber: dataReceived.customerNumber,
+        warranty: dataReceived.warranty,
+        saleDate: dataReceived.saleDate,
+        finalPrice: dataReceived.finalPrice,
+        sellingType: dataReceived.sellingType,
+        manual: dataReceived.manual,
+        accessories: dataReceived.accessories,
+        imeis: dataReceived.writtenImeis,
+        exchangePhoneDetail: dataReceived.exchangePhoneDetail,
+        cnicFrontPic: dataReceived.cnicFrontPic,
+        cnicBackPic: dataReceived.cnicBackPic,
+        payableAmountNow: dataReceived.payableAmountNow,
+        payableAmountLater: dataReceived.payableAmountLater,
+        payableAmountLaterDate: dataReceived.payableAmountLaterDate,
+        bankName: dataReceived.bankName,
+        salePrice: dataReceived.finalPrice,
+        totalInvoice: totalInvoice,
+        sellingPaymentType: dataReceived.sellingType,
+        mobileNumber: dataReceived.customerNumber,
+        // ...any other fields you want
+      };
+
+      const response = await api.post("/api/purchase/general-mobile-sale", payload);
+      toast.success("Sold Successfully")
+      console.log("✅ Sold successfully", response.data);
+    } catch (error) {
+      toast.error("something went wrong")
+      console.error("❌ Error selling phone:", error.response?.data || error.message);
+    }
+  }
+  console.log("shop", shop);
 
   return (
     <div>
@@ -532,7 +569,7 @@ const SoldInvoice = () => {
         >
           Send to WhatsApp
         </button>
-        {!dataReceived?.invoice && (
+        {!dataReceived?.invoice && !dataReceived.manual && (
           <button
             style={{ ...styles.button, ...styles.submitBtn }}
             onMouseEnter={(e) =>
@@ -540,6 +577,18 @@ const SoldInvoice = () => {
             }
             onMouseLeave={(e) => (e.target.style.transform = 'none')}
             onClick={handleSubmit}
+          >
+            Submit Invoice
+          </button>
+        )}
+        {dataReceived.manual && (
+          <button
+            style={{ ...styles.button, ...styles.submitBtn }}
+            onMouseEnter={(e) =>
+              (e.target.style.transform = 'translateY(-2px)')
+            }
+            onMouseLeave={(e) => (e.target.style.transform = 'none')}
+            onClick={handleSellAnyPhone}
           >
             Submit Invoice
           </button>
@@ -783,7 +832,7 @@ const SoldInvoice = () => {
                         borderBottom: "1px solid #eee",
                       }}
                     >
-                      Accessory {index + 1}: {acc.quantity} × {acc.price} Rs
+                      {acc.id}: {acc.quantity} × {acc.price} Rs
                     </p>
                   ))}
                 </div>
@@ -1128,12 +1177,10 @@ const SoldInvoice = () => {
                     )}
                     {dataReceived?.manual && (
                       <td style={styles.td}>
-                        {['11111', '2222'].map((items) => {
-                          return `${items},`;
-                        })}
-                        {/* {dataReceived?.writtenImeis?.map((items) => {
+
+                        {dataReceived?.writtenImeis?.map((items) => {
                           return items;
-                        })} */}
+                        })}
                       </td>
                     )}
                     {dataReceived.imei2 && (
@@ -1213,7 +1260,7 @@ const SoldInvoice = () => {
                         borderBottom: "1px solid #eee",
                       }}
                     >
-                      Accessory {index + 1}: {acc.quantity} × {acc.price} Rs
+                      {acc.id}: {acc.quantity} × {acc.price} Rs
                     </p>
                   ))}
                 </div>
@@ -1407,7 +1454,7 @@ const SoldInvoice = () => {
           shopName={shop?.shopName ?? ''}
           number={shop?.contactNumber?.[0] ?? ''}
           address={shop?.address ?? 'Address not available'}
-          termsAndConditions={shop?.termsAndConditions}
+          termsAndConditions={shop?.termsCondition}
         />
       </div>
       {dataReceived?.editing && (

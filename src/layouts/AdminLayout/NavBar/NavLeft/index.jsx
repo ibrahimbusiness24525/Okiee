@@ -194,7 +194,7 @@ const NavLeft = () => {
   const { data } = useGetAccessories();
   const [imei, setImei] = useState('');
   const [formData, setFormData] = useState({
-    imei: Number(''),
+    imei: "",
     imeiList: [],
     search: '',
     bankName: '',
@@ -317,7 +317,6 @@ const NavLeft = () => {
       setIsSubmitting(false);
     }
   };
-
   const handleAddModel = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -385,6 +384,7 @@ const NavLeft = () => {
   } else {
     dynamicStyles = buttonStyles.smallScreen;
   }
+  console.log("formdata imei", formData?.addedImeis)
 
   return (
     <>
@@ -751,7 +751,7 @@ const NavLeft = () => {
                   Add Another Accessory
                 </Button>
                 <Form.Group className="mb-3">
-                  <Form.Label>Enter Imei </Form.Label>
+                  <Form.Label>Enter IMEI</Form.Label>
                   <Form.Control
                     type="number"
                     value={formData.imei}
@@ -765,21 +765,32 @@ const NavLeft = () => {
                     placeholder="Enter IMEI number"
                   />
                 </Form.Group>
+
                 <Button
-                  onClick={(e) =>
+                  onClick={() => {
+                    if (!formData.imei) return;
+                    console.log("Adding IMEI:", formData.imei); // ✅ che
                     setFormData((prev) => ({
                       ...prev,
-                      addedImeis: Number(formData.imei),
-                    }))
-                  }
+                      addedImeis: [...(prev.addedImeis || []), prev.imei],
+                      imei: "", // clear input after adding
+                    }));
+                  }}
                 >
-                  Add This Imei
+                  Add This IMEI
                 </Button>
-                <p>
-                  {formData.addedImeis.length > 0
-                    ? formData.addedImeis
-                    : 'no imeis added yet'}
+
+                <p style={{ marginTop: "10px" }}>
+                  {formData.addedImeis && formData.addedImeis.length > 0
+                    ? formData.addedImeis.map((imei, idx) => (
+                      <span key={idx}>
+                        {imei}
+                        {idx < formData.addedImeis.length - 1 ? ", " : ""}
+                      </span>
+                    ))
+                    : "No IMEIs added yet"}
                 </p>
+
                 {/* <FormControl fullWidth variant="outlined" className="mb-3">
                   <InputLabel>IMEI</InputLabel>
                   <Select
@@ -1000,6 +1011,7 @@ const NavLeft = () => {
                 customerNumber: formData.customerNumber,
                 manual: true,
               };
+              setShowSoldModal(false)
 
               navigate('/invoice/shop', { state: updatedMobile });
               setFormData((prev) => ({

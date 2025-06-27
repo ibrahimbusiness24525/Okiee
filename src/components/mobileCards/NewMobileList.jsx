@@ -42,7 +42,7 @@ const NewMobilesList = () => {
   const [accessoryPrice, setAccessoryPrice] = useState(0);
   const [saleDate, setSaleDate] = useState("")
   const [accessories, setAccessories] = useState([
-    { name: "", quantity: 1, price: "" }
+    { id: "", name: "", quantity: 1, price: "" }
   ]);
   const [customerNumber, setCustomerNumber] = useState("");
   const [bulkMobile, setBulkMobiles] = useState([]);
@@ -1323,7 +1323,7 @@ const NewMobilesList = () => {
                   />
                 </Form.Group> */}
 
-              <div>
+              {/* <div>
                 {accessories.map((accessory, index) => (
                   <div key={index} className="mb-3 p-3 border rounded">
                     <Form.Group>
@@ -1369,7 +1369,90 @@ const NewMobilesList = () => {
                 <Button variant="primary" onClick={addAccessory}>
                   Add Another Accessory
                 </Button>
+              </div> */}
+              <div>
+                {accessories.map((accessory, index) => (
+                  <div key={index} className="mb-3 p-3 border rounded">
+                    <Form.Group>
+                      <Form.Label>Accessory Name</Form.Label>
+                      <Form.Select
+                        value={accessory.name} // holds ID
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          const selectedName = data?.data?.find(item => item._id === selectedId)?.accessoryName || "";
+
+                          const updatedAccessories = [...accessories];
+                          updatedAccessories[index] = {
+                            ...updatedAccessories[index],
+                            name: selectedId, // keep sending this as ID
+                            id: selectedName, // store actual name in "id"
+                          };
+                          setAccessories(updatedAccessories);
+                        }}
+                      >
+                        <option value="">Select accessory</option>
+                        {data?.data?.map((item) => (
+                          <option key={item._id} value={item._id}>
+                            {item.accessoryName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+
+                    <Form.Group>
+                      <Form.Label>Quantity</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={accessory.quantity}
+                        onChange={(e) => {
+                          const updated = [...accessories];
+                          updated[index].quantity = e.target.value;
+                          setAccessories(updated);
+                        }}
+                        min="1"
+                      />
+                    </Form.Group>
+
+                    <Form.Group>
+                      <Form.Label>Accessory Price</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={accessory.price}
+                        onChange={(e) => {
+                          const updated = [...accessories];
+                          updated[index].price = e.target.value;
+                          setAccessories(updated);
+                        }}
+                        placeholder="Enter price"
+                      />
+                    </Form.Group>
+
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => {
+                        const updated = accessories.filter((_, i) => i !== index);
+                        setAccessories(updated);
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    setAccessories((prev) => [
+                      ...prev,
+                      { id: "", name: "", quantity: 1, price: "" },
+                    ])
+                  }
+                >
+                  Add Another Accessory
+                </Button>
               </div>
+
               <Form.Group>
                 <Form.Label>Selling Type</Form.Label>
                 <Form.Select

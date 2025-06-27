@@ -51,7 +51,7 @@ const NewMobilesList = () => {
   const [accessoryName, setAccessoryName] = useState('');
   const [accessoryPrice, setAccessoryPrice] = useState(0);
   const [accessories, setAccessories] = useState([
-    { name: '', quantity: 1, price: '' },
+    { id: "", name: '', quantity: 1, price: '' },
   ]);
   const [customerNumber, setCustomerNumber] = useState('');
   const [bulkMobile, setBulkMobiles] = useState([]);
@@ -1457,78 +1457,89 @@ const NewMobilesList = () => {
                 </Form.Group> */}
 
               <div>
-                {accessories.map((accessory, index) => (
-                  <div key={index} className="mb-3 p-3 border rounded">
-                    {/* <Form.Group>
-            <Form.Label>Accessory Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={accessory.name}
-              onChange={(e) => handleAccessoryChange(index, "name", e.target.value)}
-              placeholder="Enter accessory name"
-            />
-          </Form.Group> */}
-                    <Form.Group>
-                      <Form.Label>Accessory Name</Form.Label>
-                      <Form.Select
-                        value={accessory.name} // this holds the id now
-                        onChange={(e) =>
-                          handleAccessoryChange(index, 'name', e.target.value)
-                        }
+                <div>
+                  {accessories.map((accessory, index) => (
+                    <div key={index} className="mb-3 p-3 border rounded">
+                      <Form.Group>
+                        <Form.Label>Accessory Name</Form.Label>
+                        <Form.Select
+                          value={accessory.name} // holds ID
+                          onChange={(e) => {
+                            const selectedId = e.target.value;
+                            const selectedName = data?.data?.find(item => item._id === selectedId)?.accessoryName || "";
+
+                            const updatedAccessories = [...accessories];
+                            updatedAccessories[index] = {
+                              ...updatedAccessories[index],
+                              name: selectedId, // keep sending this as ID
+                              id: selectedName, // store actual name in "id"
+                            };
+                            setAccessories(updatedAccessories);
+                          }}
+                        >
+                          <option value="">Select accessory</option>
+                          {data?.data?.map((item) => (
+                            <option key={item._id} value={item._id}>
+                              {item.accessoryName}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+
+                      <Form.Group>
+                        <Form.Label>Quantity</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={accessory.quantity}
+                          onChange={(e) => {
+                            const updated = [...accessories];
+                            updated[index].quantity = e.target.value;
+                            setAccessories(updated);
+                          }}
+                          min="1"
+                        />
+                      </Form.Group>
+
+                      <Form.Group>
+                        <Form.Label>Accessory Price</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={accessory.price}
+                          onChange={(e) => {
+                            const updated = [...accessories];
+                            updated[index].price = e.target.value;
+                            setAccessories(updated);
+                          }}
+                          placeholder="Enter price"
+                        />
+                      </Form.Group>
+
+                      <Button
+                        variant="secondary"
+                        className="mt-2"
+                        onClick={() => {
+                          const updated = accessories.filter((_, i) => i !== index);
+                          setAccessories(updated);
+                        }}
                       >
-                        <option value="">Select accessory</option>
-                        {data?.data?.map((item) => (
-                          <option key={item._id} value={item._id}>
-                            {item.accessoryName}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
 
-                    <Form.Group>
-                      <Form.Label>Quantity</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={accessory.quantity}
-                        onChange={(e) =>
-                          handleAccessoryChange(
-                            index,
-                            'quantity',
-                            e.target.value
-                          )
-                        }
-                        min="1"
-                      />
-                    </Form.Group>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      setAccessories((prev) => [
+                        ...prev,
+                        { id: "", name: "", quantity: 1, price: "" },
+                      ])
+                    }
+                  >
+                    Add Another Accessory
+                  </Button>
+                </div>
 
-                    <Form.Group>
-                      <Form.Label>Accessory Price</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={accessory.price}
-                        onChange={(e) =>
-                          handleAccessoryChange(index, 'price', e.target.value)
-                        }
-                        placeholder="Enter price"
-                      />
-                    </Form.Group>
-
-                    <Button
-                      variant="secondary"
-                      className="mt-2"
-                      onClick={() => removeAccessory(index)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="primary"
-                  onClick={addAccessory}
-                  style={{ marginBottom: '20px' }}
-                >
-                  Add Another Accessory
-                </Button>
                 <FormControl fullWidth variant="outlined" className="mb-3">
                   {/* Search Field Inside Dropdown */}
                   {/* <MenuItem onMouseDown={(e) => e.stopPropagation()}>

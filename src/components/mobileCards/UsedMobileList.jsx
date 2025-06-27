@@ -45,7 +45,7 @@ const UsedMobilesList = () => {
   // const[accessoryName,setAccessoryName] = useState("");
   // const[accessoryPrice,setAccessoryPrice]= useState(0);
   const [accessories, setAccessories] = useState([
-    { name: '', quantity: 1, price: '' },
+    { id: "", name: '', quantity: 1, price: '' },
   ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -1228,10 +1228,19 @@ const UsedMobilesList = () => {
                     <Form.Group>
                       <Form.Label>Accessory Name</Form.Label>
                       <Form.Select
-                        value={accessory.name} // this holds the id now
-                        onChange={(e) =>
-                          handleAccessoryChange(index, 'name', e.target.value)
-                        }
+                        value={accessory.name} // holds ID
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          const selectedName = data?.data?.find(item => item._id === selectedId)?.accessoryName || "";
+
+                          const updatedAccessories = [...accessories];
+                          updatedAccessories[index] = {
+                            ...updatedAccessories[index],
+                            name: selectedId, // keep sending this as ID
+                            id: selectedName, // store actual name in "id"
+                          };
+                          setAccessories(updatedAccessories);
+                        }}
                       >
                         <option value="">Select accessory</option>
                         {data?.data?.map((item) => (
@@ -1247,13 +1256,11 @@ const UsedMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.quantity}
-                        onChange={(e) =>
-                          handleAccessoryChange(
-                            index,
-                            'quantity',
-                            e.target.value
-                          )
-                        }
+                        onChange={(e) => {
+                          const updated = [...accessories];
+                          updated[index].quantity = e.target.value;
+                          setAccessories(updated);
+                        }}
                         min="1"
                       />
                     </Form.Group>
@@ -1263,9 +1270,11 @@ const UsedMobilesList = () => {
                       <Form.Control
                         type="number"
                         value={accessory.price}
-                        onChange={(e) =>
-                          handleAccessoryChange(index, 'price', e.target.value)
-                        }
+                        onChange={(e) => {
+                          const updated = [...accessories];
+                          updated[index].price = e.target.value;
+                          setAccessories(updated);
+                        }}
                         placeholder="Enter price"
                       />
                     </Form.Group>
@@ -1273,17 +1282,29 @@ const UsedMobilesList = () => {
                     <Button
                       variant="secondary"
                       className="mt-2"
-                      onClick={() => removeAccessory(index)}
+                      onClick={() => {
+                        const updated = accessories.filter((_, i) => i !== index);
+                        setAccessories(updated);
+                      }}
                     >
                       Remove
                     </Button>
                   </div>
                 ))}
 
-                <Button variant="primary" onClick={addAccessory}>
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    setAccessories((prev) => [
+                      ...prev,
+                      { id: "", name: "", quantity: 1, price: "" },
+                    ])
+                  }
+                >
                   Add Another Accessory
                 </Button>
               </div>
+
               {/* <Form.Group>
             <Form.Label>Accessory Name</Form.Label>
               <Form.Control

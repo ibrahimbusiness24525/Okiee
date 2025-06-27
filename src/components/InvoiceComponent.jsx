@@ -871,10 +871,12 @@ export const InvoiceComponent = ({
     },
     termsText: {
       fontSize: '14px',
-      lineHeight: '1.6',
+      lineHeight: '1.1',
       marginBottom: '10px',
     },
   };
+  console.log("terms and ..", termsAndConditions);
+
 
   return (
     <div
@@ -1174,10 +1176,10 @@ export const InvoiceComponent = ({
         >
           {numberToWords(totalAmount)}
         </div>
-
+        {/* 
         <div style={{ color: '#000', marginBottom: '15px', fontSize: '12px' }}>
           <strong>Company Will be responsible for all warranty sets.</strong>
-        </div>
+        </div> */}
 
         <div
           style={{
