@@ -540,14 +540,18 @@ import { jsPDF } from 'jspdf';
 
 export const InvoiceComponent = ({
   saleData,
+  companyName = '',
+  modelName = '',
+  warranty = '',
   display = true,
   shopName = '',
   address = '',
   number = '',
+  invoiceNumber = '',
   termsAndConditions = [],
 }) => {
   const invoiceRef = useRef();
-
+  console.log('saleData', saleData);
   if (!display) {
     return null;
   }
@@ -709,10 +713,13 @@ export const InvoiceComponent = ({
 
   // Function to render IMEI information based on data structure
   const renderImeiInfo = () => {
-    if (saleData?.addedImeis?.length > 0) {
+    if (
+      saleData?.addedImeis?.length > 0 ||
+      saleData?.writtenImeis?.length > 0
+    ) {
       return (
         <div style={{ margin: '5px 0', fontSize: '12px' }}>
-          {saleData.addedImeis.join(', ')}
+          {saleData.addedImeis.join(', ') || saleData?.writtenImeis.join(', ')}
         </div>
       );
     } else if (saleData?.imei1) {
@@ -740,7 +747,7 @@ export const InvoiceComponent = ({
 
   // Get model name based on data structure
   const getModelName = () => {
-    if (saleData?.modelName) return saleData.modelName;
+    if (modelName) return modelName;
     if (saleData?.ramSimDetails?.length > 0) {
       return saleData.ramSimDetails.map((d) => d.modelName).join(' / ');
     }
@@ -749,7 +756,7 @@ export const InvoiceComponent = ({
 
   // Get brand/company name based on data structure
   const getBrandName = () => {
-    if (saleData?.companyName) return saleData.companyName;
+    if (companyName) return companyName;
     if (saleData?.ramSimDetails?.length > 0) {
       return saleData.ramSimDetails.map((d) => d.companyName).join(' / ');
     }
@@ -875,8 +882,7 @@ export const InvoiceComponent = ({
       marginBottom: '10px',
     },
   };
-  console.log("terms and ..", termsAndConditions);
-
+  console.log('terms and ..', termsAndConditions);
 
   return (
     <div
@@ -991,7 +997,7 @@ export const InvoiceComponent = ({
             {formatDate(saleData.date || saleData.saleDate)}
           </div>
           <div>
-            <strong>Invoice #</strong> {saleData._id?.substr(-4) || '0000'}
+            <strong>Invoice #</strong> {invoiceNumber || '0000'}
           </div>
         </div>
 
@@ -1002,7 +1008,9 @@ export const InvoiceComponent = ({
           </div>
           <div>
             <strong>Customer Number:</strong>{' '}
-            {saleData.partyLedgerId?.substr(-6) || '000000'}
+            {saleData.partyLedgerId?.substr(-6) ||
+              saleData?.customerNumber ||
+              '000000'}
           </div>
         </div>
 
@@ -1106,7 +1114,7 @@ export const InvoiceComponent = ({
                   border: '1px solid #000',
                 }}
               >
-                {formatNumber(totalAmount)}
+                {warranty}
               </td>
               <td
                 style={{
@@ -1115,7 +1123,7 @@ export const InvoiceComponent = ({
                   border: '1px solid #000',
                 }}
               >
-                .00
+                {formatNumber(totalAmount)}
               </td>
               <td
                 style={{

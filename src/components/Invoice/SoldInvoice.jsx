@@ -156,9 +156,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-    dataReceived?.finalPrice ??
-    dataReceived?.demandPrice ??
-    0
+      dataReceived?.finalPrice ??
+      dataReceived?.demandPrice ??
+      0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -176,8 +176,24 @@ const SoldInvoice = () => {
     imei: dataReceived.imei,
     imei2: dataReceived.imei2 ?? '',
   });
+  const getDetailByImei = async () => {
+    try {
+      const response = await api.get(
+        `api/Purchase/getDetailByImei/${dataReceived.writtenImeis[0]}`
+      );
+      setPhoneDetail(response.data?.data);
+      console.log('Response from getDetailByImei:', response);
+    } catch (error) {
+      console.error('Error fetching details by IMEI:', error);
+    }
+  };
+  const [phoneDetail, setPhoneDetail] = useState();
+  console.log('phoneDetail', phoneDetail);
 
   useEffect(() => {
+    {
+      dataReceived.writtenImeis?.length > 0 && getDetailByImei();
+    }
     const shopData = localStorage.getItem('shop');
     if (shopData) {
       const parsedShop = JSON.parse(shopData);
@@ -421,7 +437,7 @@ const SoldInvoice = () => {
   const handleSellAnyPhone = async () => {
     try {
       const payload = {
-        // imeis: dataReceived.imei, 
+        // imeis: dataReceived.imei,
         customerName: dataReceived.customerName,
         customerNumber: dataReceived.customerNumber,
         warranty: dataReceived.warranty,
@@ -445,15 +461,21 @@ const SoldInvoice = () => {
         // ...any other fields you want
       };
 
-      const response = await api.post("/api/purchase/general-mobile-sale", payload);
-      toast.success("Sold Successfully")
-      console.log("✅ Sold successfully", response.data);
+      const response = await api.post(
+        '/api/purchase/general-mobile-sale',
+        payload
+      );
+      toast.success('Sold Successfully');
+      console.log('✅ Sold successfully', response.data);
     } catch (error) {
-      toast.error("something went wrong")
-      console.error("❌ Error selling phone:", error.response?.data || error.message);
+      toast.error('something went wrong');
+      console.error(
+        '❌ Error selling phone:',
+        error.response?.data || error.message
+      );
     }
-  }
-  console.log("shop", shop);
+  };
+  console.log('shop', shop);
 
   return (
     <div>
@@ -598,7 +620,7 @@ const SoldInvoice = () => {
       {!displayHalfP4 &&
         !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-          dataReceived?.bulkPhonePurchaseId ? (
+        dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -808,28 +830,28 @@ const SoldInvoice = () => {
               <div
                 style={{
                   ...styles.totalSection,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  padding: "10px 20px",
-                  marginTop: "20px",
-                  backgroundColor: "#f9f9f9",
-                  borderTop: "1px solid #ddd",
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  padding: '10px 20px',
+                  marginTop: '20px',
+                  backgroundColor: '#f9f9f9',
+                  borderTop: '1px solid #ddd',
                 }}
               >
                 {/* Left side - 60% width */}
-                <div style={{ width: "60%" }}>
+                <div style={{ width: '60%' }}>
                   {dataReceived?.accessories?.map((acc, index) => (
                     <p
                       key={index}
                       style={{
-                        fontSize: "15px",
-                        color: "#444",
-                        paddingBottom: "6px",
-                        display: "flex",
-                        justifyContent: "flex-start",
+                        fontSize: '15px',
+                        color: '#444',
+                        paddingBottom: '6px',
+                        display: 'flex',
+                        justifyContent: 'flex-start',
                         margin: 0,
-                        borderBottom: "1px solid #eee",
+                        borderBottom: '1px solid #eee',
                       }}
                     >
                       {acc.id}: {acc.quantity} × {acc.price} Rs
@@ -840,16 +862,16 @@ const SoldInvoice = () => {
                 {/* Right side - 40% width - Total */}
                 <div
                   style={{
-                    width: "40%",
-                    display: "flex",
-                    justifyContent: "flex-end",
+                    width: '40%',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
                   }}
                 >
                   <h3
                     style={{
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                      color: "#222",
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      color: '#222',
                     }}
                   >
                     Total: {totalInvoice} Rs
@@ -1138,10 +1160,8 @@ const SoldInvoice = () => {
               <table style={styles.table}>
                 <thead>
                   <tr>
-                    {!dataReceived?.manual && (
-                      <th style={styles.th}>Company</th>
-                    )}
-                    {!dataReceived?.manual && <th style={styles.th}>Model</th>}
+                    <th style={styles.th}>Company</th>
+                    <th style={styles.th}>Model</th>
                     <th style={styles.th}>
                       {dataReceived.imei2 ? 'IMEI 1' : 'IMEI'}
                     </th>
@@ -1152,37 +1172,39 @@ const SoldInvoice = () => {
                 </thead>
                 <tbody>
                   <tr style={styles.stripedRow}>
-                    {!dataReceived?.manual && (
-                      <td style={styles.td}>
-                        {dataReceived?.invoice?.items
-                          ? dataReceived?.invoice?.items[0]?.mobileCompany
-                          : dataReceived?.companyName ?? 'Not Available'}
-                      </td>
-                    )}
-                    {!dataReceived?.manual && (
-                      <td style={styles.td}>
-                        {dataReceived?.invoice?.items
-                          ? dataReceived?.invoice?.items[0]?.mobileName
-                          : dataReceived?.modelSpecifications ??
-                          dataReceived.modelName ??
+                    <td style={styles.td}>
+                      {dataReceived?.invoice?.items
+                        ? dataReceived?.invoice?.items[0]?.mobileCompany
+                        : dataReceived?.companyName ??
+                          phoneDetail?.companyName ??
+                          phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
+                            .companyName ??
                           'Not Available'}
-                      </td>
-                    )}
-                    {!dataReceived.manual && (
+                    </td>
+                    <td style={styles.td}>
+                      {dataReceived?.invoice?.items
+                        ? dataReceived?.invoice?.items[0]?.mobileName
+                        : dataReceived?.modelSpecifications ??
+                          dataReceived.modelName ??
+                          phoneDetail?.modelName ??
+                          phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
+                            .modelName ??
+                          'Not Available'}
+                    </td>
+                    {!dataReceived.manual ? (
                       <td style={styles.td}>
                         {dataReceived?.invoice?.items
                           ? dataReceived?.invoice?.items[0]?.imei
                           : dataReceived?.imei1 ?? 'Not Available'}
                       </td>
-                    )}
-                    {dataReceived?.manual && (
+                    ) : (
                       <td style={styles.td}>
-
                         {dataReceived?.writtenImeis?.map((items) => {
                           return items;
                         })}
                       </td>
                     )}
+
                     {dataReceived.imei2 && (
                       <td style={styles.td}>
                         {dataReceived?.invoice?.items
@@ -1198,7 +1220,9 @@ const SoldInvoice = () => {
                     <td style={styles.td}>
                       {dataReceived?.invoice?.items
                         ? dataReceived?.invoice?.items[0]?.warranty
-                        : dataReceived?.warranty ?? 'Not Available'}
+                        : dataReceived?.warranty ??
+                          phoneDetail?.warranty ??
+                          'Not Available'}
                     </td>
                   </tr>
                 </tbody>
@@ -1236,28 +1260,28 @@ const SoldInvoice = () => {
               <div
                 style={{
                   ...styles.totalSection,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  padding: "10px 20px",
-                  marginTop: "20px",
-                  backgroundColor: "#f9f9f9",
-                  borderTop: "1px solid #ddd",
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  padding: '10px 20px',
+                  marginTop: '20px',
+                  backgroundColor: '#f9f9f9',
+                  borderTop: '1px solid #ddd',
                 }}
               >
                 {/* Left side - 60% width */}
-                <div style={{ width: "60%" }}>
+                <div style={{ width: '60%' }}>
                   {dataReceived?.accessories?.map((acc, index) => (
                     <p
                       key={index}
                       style={{
-                        fontSize: "15px",
-                        color: "#444",
-                        paddingBottom: "6px",
-                        display: "flex",
-                        justifyContent: "flex-start",
+                        fontSize: '15px',
+                        color: '#444',
+                        paddingBottom: '6px',
+                        display: 'flex',
+                        justifyContent: 'flex-start',
                         margin: 0,
-                        borderBottom: "1px solid #eee",
+                        borderBottom: '1px solid #eee',
                       }}
                     >
                       {acc.id}: {acc.quantity} × {acc.price} Rs
@@ -1268,16 +1292,16 @@ const SoldInvoice = () => {
                 {/* Right side - 40% width - Total */}
                 <div
                   style={{
-                    width: "40%",
-                    display: "flex",
-                    justifyContent: "flex-end",
+                    width: '40%',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
                   }}
                 >
                   <h3
                     style={{
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                      color: "#222",
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      color: '#222',
                     }}
                   >
                     Total: {totalInvoice} Rs
@@ -1449,6 +1473,20 @@ const SoldInvoice = () => {
         )}
 
         <InvoiceComponent
+          invoiceNumber={invoiceData.invoiceNumber}
+          companyName={
+            dataReceived?.companyName ??
+            phoneDetail?.companyName ??
+            phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].companyName ??
+            ''
+          }
+          modelName={
+            dataReceived?.modelName ??
+            phoneDetail?.modelName ??
+            phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].modelName ??
+            ''
+          }
+          warranty={dataReceived?.warranty ?? phoneDetail?.warranty ?? ''}
           display={displayHalfP4}
           saleData={dataReceived}
           shopName={shop?.shopName ?? ''}
