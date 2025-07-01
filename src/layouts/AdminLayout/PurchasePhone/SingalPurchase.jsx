@@ -41,7 +41,7 @@ const SingalPurchaseModal = ({
     }
   };
   const [companies, setCompanies] = useState([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [models, setModels] = useState([]);
 
   const fetchCompanies = async () => {
@@ -55,7 +55,9 @@ const SingalPurchaseModal = ({
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await api.get(`/api/company/models/${selectedCompanyId}`);
+        const response = await api.get(
+          `/api/company/models/${selectedCompanyId}`
+        );
         setModels(response?.data.models || []);
       } catch (error) {
         console.error('Failed to fetch models:', error);
@@ -63,7 +65,7 @@ const SingalPurchaseModal = ({
     };
     fetchModels();
   }, [singlePurchase.companyName]);
-  console.log("models", models);
+  console.log('models', models);
 
   console.log('companies', companies);
   useEffect(() => {
@@ -144,26 +146,33 @@ const SingalPurchaseModal = ({
                   value={selectedCompanyId}
                   name="companyName"
                   onChange={(e) => {
-                    setSelectedCompanyId(e.target.value);
-                    const selectedCompany = companies.find(
-                      (company) => company._id === e.target.value
-                    );
+                    const selectedOption = e.target.selectedOptions[0];
+                    const companyId = e.target.value;
+                    const companyName =
+                      selectedOption.getAttribute('data-name');
+
+                    setSelectedCompanyId(companyId);
                     setSinglePurchase({
                       ...singlePurchase,
-                      companyName: selectedCompany ? selectedCompany.name : '',
-                      modelName: '', // reset model when company changes
+                      companyName: companyName || '',
+                      modelName: '', // reset model
                     });
                   }}
                   required
                 >
                   <option value="">Select Company</option>
                   {companies.map((company) => (
-                    <option key={company._id} value={company._id}>
+                    <option
+                      key={company._id}
+                      value={company._id}
+                      data-name={company.name}
+                    >
                       {company.name}
                     </option>
                   ))}
                 </Form.Select>
               </Form.Group>
+
               <Form.Group
                 controlId="purchasePhoneModel"
                 style={{ width: '48%' }}

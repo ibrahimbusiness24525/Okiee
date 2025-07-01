@@ -5,6 +5,7 @@ import { api } from '../../../api/api';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import { InvoiceComponent } from 'components/InvoiceComponent';
 import { toast } from 'react-toastify';
+import Modal from 'components/Modal/Modal';
 const SoldInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
   const [displayHalfP4, setDisplayHalfP4] = useState(false);
@@ -476,7 +477,45 @@ const SoldInvoice = () => {
     }
   };
   console.log('shop', shop);
+  // State for editing invoice fields in modal
+  const [editInvoiceFields, setEditInvoiceFields] = useState({
+    customerName: dataReceived.customerName || '',
+    customerNumber: dataReceived.customerNumber || '',
+    companyName: dataReceived.companyName || '',
+    modelName: dataReceived.modelName || '',
+    warranty: dataReceived.warranty || '',
+    saleDate: dataReceived.saleDate || '',
+    sellingType: dataReceived.sellingType || '',
+    bankName: dataReceived.bankName || '',
+    finalPrice: dataReceived.finalPrice || '',
+    // payableAmountNow: dataReceived.payableAmountNow || '',
+    // payableAmountLater: dataReceived.payableAmountLater || '',
+    // payableAmountLaterDate: dataReceived.payableAmountLaterDate || '',
+    // exchangePhoneDetail: dataReceived.exchangePhoneDetail || null,
+    cnicFrontPic: dataReceived.cnicFrontPic || '',
+    cnicBackPic: dataReceived.cnicBackPic || '',
+    accessories: dataReceived.accessories || [],
+    imei1: dataReceived.imei1 || '',
+    // Add more fields as needed
+  });
 
+  // Modal state for editing invoice
+  const [invoiceModal, setInvoiceModal] = useState(false);
+
+  // Update invoice data function (for edit/save)
+  const updateInvoiceData = async () => {
+    try {
+      const response = await api.put(
+        `/update-sold-phone/${dataReceived.id}`,
+        editInvoiceFields
+      );
+      toast.success('Invoice data updated successfully');
+      console.log('Invoice data updated successfully:', response.data);
+    } catch (error) {
+      toast.error('Error updating invoice data');
+      console.error('Error updating invoice data:', error);
+    }
+  };
   return (
     <div>
       {!displayHalfP4 && (
@@ -1530,7 +1569,7 @@ const SoldInvoice = () => {
               borderRadius: '5px',
             }}
             onClick={() => {
-              // Handle edit action
+              setInvoiceModal(true);
               console.log('Edit action triggered');
             }}
           >
@@ -1538,6 +1577,244 @@ const SoldInvoice = () => {
           </button>
         </div>
       )}
+      <Modal
+        show={invoiceModal}
+        isOpen={invoiceModal}
+        onClose={() => setInvoiceModal(false)}
+        toggleModal={() => setInvoiceModal(!invoiceModal)}
+        style={{
+          maxWidth: '600px',
+          padding: '20px',
+          borderRadius: '8px',
+          backgroundColor: '#f8f9fa',
+        }}
+      >
+        <h4>Edit Invoice</h4>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '16px',
+          }}
+        >
+          {/* Left Column */}
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                }}
+              >
+                Customer Number
+              </label>
+              <input
+                type="text"
+                placeholder="Enter Customer Number"
+                value={editInvoiceFields.customerNumber}
+                onChange={(e) =>
+                  setEditInvoiceFields({
+                    ...editInvoiceFields,
+                    customerNumber: e.target.value,
+                  })
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da',
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                }}
+              >
+                Sale Price
+              </label>
+              <input
+                type="text"
+                placeholder="Enter Sale Price"
+                value={editInvoiceFields.finalPrice}
+                onChange={(e) =>
+                  setEditInvoiceFields({
+                    ...editInvoiceFields,
+                    finalPrice: e.target.value,
+                  })
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da',
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                }}
+              >
+                Warranty
+              </label>
+              <input
+                type="text"
+                placeholder="Enter Warranty"
+                value={editInvoiceFields.warranty}
+                onChange={(e) =>
+                  setEditInvoiceFields({
+                    ...editInvoiceFields,
+                    warranty: e.target.value,
+                  })
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                }}
+              >
+                Sale Date
+              </label>
+              <input
+                type="text"
+                placeholder="Enter Sale Date"
+                value={editInvoiceFields.saleDate}
+                onChange={(e) =>
+                  setEditInvoiceFields({
+                    ...editInvoiceFields,
+                    saleDate: e.target.value,
+                  })
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da',
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                }}
+              >
+                IMEI 1
+              </label>
+              <input
+                type="text"
+                placeholder="Enter IMEI 1"
+                value={editInvoiceFields.imei1}
+                onChange={(e) =>
+                  setEditInvoiceFields({
+                    ...editInvoiceFields,
+                    imei1: e.target.value,
+                  })
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da',
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                }}
+              >
+                Company Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter Company Name"
+                value={editInvoiceFields.companyName}
+                onChange={(e) =>
+                  setEditInvoiceFields({
+                    ...editInvoiceFields,
+                    companyName: e.target.value,
+                  })
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={async () => {
+            try {
+              await api.put(
+                `/api/Purchase/update-sold-phone/${dataReceived.id}`,
+                editInvoiceFields
+              );
+              toast.success('Invoice updated successfully');
+              setInvoiceModal(false);
+            } catch (error) {
+              console.error('Error updating invoice:', error);
+              toast.error('Failed to update invoice');
+            }
+          }}
+          style={{
+            marginTop: '20px',
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: '500',
+            width: '100%',
+            transition: 'background-color 0.2s',
+            ':hover': {
+              backgroundColor: '#0056b3',
+            },
+          }}
+        >
+          Update Invoice
+        </button>
+      </Modal>
     </div>
   );
 };

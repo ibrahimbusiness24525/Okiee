@@ -168,7 +168,7 @@ const routes = [
       },
       {
         exact: 'true',
-        path: '/app/dashboard/pocketCashTransactions',
+        path: '/app/dashboard/pocketCashTransactions/:id',
         element: lazy(
           () => import('./components/Ledger/PocketCashTransactions')
         ), // Ledger

@@ -9,10 +9,9 @@ import { Button } from 'react-bootstrap';
 import Modal from 'components/Modal/Modal';
 import { useNavigate } from 'react-router-dom';
 
-
 const Wallet = () => {
-  const Navigate = useNavigate()
-  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
+  const Navigate = useNavigate();
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [formData, setFormData] = useState({
     bankName: '',
     accountType: '',
@@ -27,43 +26,44 @@ const Wallet = () => {
   const [showRemovalModal, setShowRemovalModal] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(null);
   const [totalCash, setTotalCash] = useState(0);
+  const [id, setId] = useState('');
 
   const fetchTotalCash = async () => {
     try {
       const res = await api.get('/api/pocketCash/total');
       setTotalCash(res.data.total);
+      console.log('Pocket Cash Response:', res);
+      setId(res.data.id);
     } catch (error) {
       console.error('Failed to fetch total cash:', error);
     }
   };
-  const [addPocketCashModal, setAddPocketCashModal] = useState(false)
-  const [removePocketCashModal, setRemovePocketCashModal] = useState(false)
+  const [addPocketCashModal, setAddPocketCashModal] = useState(false);
+  const [removePocketCashModal, setRemovePocketCashModal] = useState(false);
   const handleTransaction = async (type) => {
     try {
       const endpoint =
         type === 'add' ? '/api/pocketCash/add' : '/api/pocketCash/deduct';
       await api.post(endpoint, {
         amount: Number(formData.accountCash),
-        ...(type === "add"
+        ...(type === 'add'
           ? { sourceOfAmountAddition: formData.sourceOfAmountAddition }
           : { sourceOfAmountDeduction: formData.sourceOfAmountDeduction }),
       });
-      toast.success("transaction is successful!")
+      toast.success('transaction is successful!');
       fetchTotalCash();
     } catch (error) {
-      toast.error("Error in making transaction!")
+      toast.error('Error in making transaction!');
       console.error(`Failed to ${type} cash:`, error);
     }
   };
-
-
 
   const handleCreateBank = async (e) => {
     e.preventDefault();
     try {
       const response = await api.post(
         '/api/banks/create', // your create bank endpoint
-        formData,
+        formData
       );
       toast.success('Bank created successfully!');
       setFormData({ bankName: '', accountType: '', accountNumber: '' }); // Reset form data
@@ -81,7 +81,7 @@ const Wallet = () => {
     } catch (error) {
       console.error('Error fetching banks:', error);
     }
-  }
+  };
 
   const handleAddCash = (bank) => {
     setSelectedBank(bank);
@@ -90,11 +90,11 @@ const Wallet = () => {
   const handleRemoveCash = (bank) => {
     setSelectedBank(bank);
     setShowRemovalModal(true); // Show the modal when the button is clicked
-  }
+  };
   const handleDeleteProceed = (bank) => {
     setSelectedBank(bank);
     setShowDeleteModal(true); // Show the modal when the button is clicked
-  }
+  };
   const handleConfirmAddCash = async (e) => {
     e.preventDefault(); // Prevent default form submission
     try {
@@ -105,14 +105,14 @@ const Wallet = () => {
           sourceOfAmountAddition: formData.sourceOfAmountAddition, // Get the source of amount from the form data
           accountCash: formData.accountCash, // Get the account cash from the form data
         } // your add cash endpoint
-      )
+      );
       toast.success('Cash added successfully!');
-      getAllBanks()
+      getAllBanks();
     } catch (error) {
       console.error('Error adding cash:', error);
       toast.error('Error adding cash!');
     }
-  }
+  };
 
   const handleConfirmRemoveCash = async (e) => {
     e.preventDefault(); // Prevent default form submission
@@ -124,33 +124,30 @@ const Wallet = () => {
           sourceOfAmountDeduction: formData.sourceOfAmountDeduction, // Get the source of amount from the form data
           accountCash: formData.accountCash, // Get the account cash from the form data
         } // your add cash endpoint
-      )
+      );
       toast.success('Cash removed successfully!');
-      getAllBanks()
+      getAllBanks();
     } catch (error) {
       console.error('Error removed cash:', error);
       toast.error('Error removed cash!');
     }
-  }
+  };
 
   const handleDeleteBank = async () => {
     try {
-      const response = api.delete(`/api/banks/delete/${selectedBank._id}`)
-      toast.success("Bank Deleted Successfully")
-      getAllBanks()
+      const response = api.delete(`/api/banks/delete/${selectedBank._id}`);
+      toast.success('Bank Deleted Successfully');
+      getAllBanks();
     } catch (error) {
-      console.error("error", error)
-      toast.success("Error in deleting bank")
-
+      console.error('error', error);
+      toast.success('Error in deleting bank');
     }
-  }
+  };
 
   useEffect(() => {
     getAllBanks(); // Fetch all banks when the component mounts
     fetchTotalCash();
-  }
-    , []);
-
+  }, []);
 
   return (
     <>
@@ -168,22 +165,54 @@ const Wallet = () => {
           color: 'white',
           transition: 'transform 0.2s ease, background-color 0.3s',
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        }}>View Analytics</button>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
-
-        <div style={styles.cardStyle} onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.target.style.transform = 'scale(1)'} >
+        }}
+      >
+        View Analytics
+      </button>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <div
+          style={styles.cardStyle}
+          onMouseOver={(e) => (e.target.style.transform = 'scale(1.05)')}
+          onMouseOut={(e) => (e.target.style.transform = 'scale(1)')}
+        >
           <h2>Pocket Cash 💸</h2>
-          <h3 style={{ fontSize: '36px', margin: '20px 0', fontWeight: 'bold' }}>₹ {totalCash}</h3>
+          <h3
+            style={{ fontSize: '36px', margin: '20px 0', fontWeight: 'bold' }}
+          >
+            ₹ {totalCash}
+          </h3>
 
           <div>
-            <button style={addButtonStyle} onClick={() => setAddPocketCashModal(true)}>
+            <button
+              style={addButtonStyle}
+              onClick={() => setAddPocketCashModal(true)}
+            >
               Add Cash
             </button>
-            <button style={removeButtonStyle} onClick={() => setRemovePocketCashModal(true)}>
+            <button
+              style={removeButtonStyle}
+              onClick={() => setRemovePocketCashModal(true)}
+            >
               Remove Cash
             </button>
           </div>
-          <button style={{ ...styles.buttonStyle, backgroundColor: '#007bff', color: 'white', marginTop: '20px' }} onClick={() => Navigate("/app/dashboard/pocketCashTransactions")}>
+          <button
+            style={{
+              ...styles.buttonStyle,
+              backgroundColor: '#007bff',
+              color: 'white',
+              marginTop: '20px',
+            }}
+            onClick={() =>
+              Navigate(`/app/dashboard/pocketCashTransactions/${id}`)
+            }
+          >
             View Transactions
           </button>
         </div>
@@ -195,7 +224,9 @@ const Wallet = () => {
               type="text"
               placeholder="Bank Name"
               value={formData.bankName}
-              onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, bankName: e.target.value })
+              }
               style={styles.input}
               required
             />
@@ -203,7 +234,9 @@ const Wallet = () => {
               type="text"
               placeholder="Account Type (e.g., Savings, Current)"
               value={formData.accountType}
-              onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, accountType: e.target.value })
+              }
               style={styles.input}
               required
             />
@@ -211,7 +244,9 @@ const Wallet = () => {
               type="number"
               placeholder="Account Number"
               value={formData.accountNumber}
-              onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, accountNumber: e.target.value })
+              }
               style={styles.input}
             />
             <button type="submit" style={styles.button}>
@@ -219,23 +254,30 @@ const Wallet = () => {
             </button>
           </form>
         </div>
-
       </div>
 
       <Table
-        routes={["/app/dashboard/bankTransaction"]}
+        routes={['/app/dashboard/bankTransaction']}
         array={banks}
         // search={"ban"}
-        keysToDisplay={["bankName", "accountType", "accountCash", "accountNumber", "cashIn", "cashOut", "createdAt"]}
+        keysToDisplay={[
+          'bankName',
+          'accountType',
+          'accountCash',
+          'accountNumber',
+          'cashIn',
+          'cashOut',
+          'createdAt',
+        ]}
         label={[
-          "Bank Name",
-          "Account Type",
-          "Account Cash",
-          "Account Number",
-          "Cash In",
-          "Cash Out",
-          "Created At",
-          "Actions"
+          'Bank Name',
+          'Account Type',
+          'Account Cash',
+          'Account Number',
+          'Cash In',
+          'Cash Out',
+          'Created At',
+          'Actions',
         ]}
         customBlocks={[
           {
@@ -299,46 +341,75 @@ const Wallet = () => {
             index: 5,
             component: (cashout) => {
               return (
-
-                <p style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "12px" }}>-{cashout}</p>
+                <p
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginTop: '12px',
+                  }}
+                >
+                  -{cashout}
+                </p>
               );
             },
           },
           {
             index: 6,
             component: (date) => {
-              return dateFormatter(date)
-            }
-          }
+              return dateFormatter(date);
+            },
+          },
         ]}
-
         extraColumns={[
           (obj) => {
             return (
               <>
-                <Button variant="success" onClick={() => handleAddCash(obj)} size="sm" style={{ marginRight: '5px' }}>
+                <Button
+                  variant="success"
+                  onClick={() => handleAddCash(obj)}
+                  size="sm"
+                  style={{ marginRight: '5px' }}
+                >
                   Add Cash
                 </Button>
-                <Button onClick={() => handleRemoveCash(obj)} variant="warning" size="sm" style={{ marginRight: '5px', color: 'white' }}>
+                <Button
+                  onClick={() => handleRemoveCash(obj)}
+                  variant="warning"
+                  size="sm"
+                  style={{ marginRight: '5px', color: 'white' }}
+                >
                   Remove Cash
                 </Button>
-                <Button onClick={() => handleDeleteProceed(obj)} variant="danger" size="sm">
+                <Button
+                  onClick={() => handleDeleteProceed(obj)}
+                  variant="danger"
+                  size="sm"
+                >
                   Delete
                 </Button>
               </>
             );
           },
         ]}
-
       />
-      <Modal toggleModal={() => setShowModal(!showModal)} size="md" show={showModal}>
+      <Modal
+        toggleModal={() => setShowModal(!showModal)}
+        size="md"
+        show={showModal}
+      >
         <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Add Cash</h2>
         <form onSubmit={handleConfirmAddCash} style={styles.form}>
           <input
             type="text"
             placeholder="Enter Source of Amount"
             value={formData.sourceOfAmountAddition}
-            onChange={(e) => setFormData({ ...formData, sourceOfAmountAddition: e.target.value })}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                sourceOfAmountAddition: e.target.value,
+              })
+            }
             style={styles.input}
             required
           />
@@ -346,7 +417,9 @@ const Wallet = () => {
             type="number"
             placeholder="Enter Cash to Deposit"
             value={formData.accountCash}
-            onChange={(e) => setFormData({ ...formData, accountCash: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, accountCash: e.target.value })
+            }
             style={styles.input}
             required
           />
@@ -355,14 +428,25 @@ const Wallet = () => {
           </button>
         </form>
       </Modal>
-      <Modal toggleModal={() => setShowRemovalModal(!showRemovalModal)} size="md" show={showRemovalModal}>
-        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Remove Cash</h2>
+      <Modal
+        toggleModal={() => setShowRemovalModal(!showRemovalModal)}
+        size="md"
+        show={showRemovalModal}
+      >
+        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>
+          Remove Cash
+        </h2>
         <form onSubmit={handleConfirmRemoveCash} style={styles.form}>
           <input
             type="text"
             placeholder="Enter Source"
             value={formData.sourceOfAmountDeduction}
-            onChange={(e) => setFormData({ ...formData, sourceOfAmountDeduction: e.target.value })}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                sourceOfAmountDeduction: e.target.value,
+              })
+            }
             style={styles.input}
             required
           />
@@ -370,7 +454,9 @@ const Wallet = () => {
             type="number"
             placeholder="Enter Cash to Remove"
             value={formData.accountCash}
-            onChange={(e) => setFormData({ ...formData, accountCash: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, accountCash: e.target.value })
+            }
             style={styles.input}
             required
           />
@@ -379,16 +465,36 @@ const Wallet = () => {
           </button>
         </form>
       </Modal>
-      <Modal toggleModal={() => setShowDeleteModal(!showDeleteModal)} size="md" show={showDeleteModal}>
+      <Modal
+        toggleModal={() => setShowDeleteModal(!showDeleteModal)}
+        size="md"
+        show={showDeleteModal}
+      >
         <div style={{ padding: '20px', textAlign: 'center' }}>
-          <h2 style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>Confirm it</h2>
-          <p style={{ marginBottom: '30px', fontSize: '16px' }}>Do you really want to delete the bank?</p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <h2
+            style={{
+              marginBottom: '20px',
+              fontSize: '24px',
+              fontWeight: 'bold',
+            }}
+          >
+            Confirm it
+          </h2>
+          <p style={{ marginBottom: '30px', fontSize: '16px' }}>
+            Do you really want to delete the bank?
+          </p>
+          <div
+            style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}
+          >
             <Button
               variant="success"
               onClick={() => setShowDeleteModal(false)}
               size="sm"
-              style={{ minWidth: '80px', padding: '8px 12px', fontSize: '14px' }}
+              style={{
+                minWidth: '80px',
+                padding: '8px 12px',
+                fontSize: '14px',
+              }}
             >
               No
             </Button>
@@ -396,16 +502,32 @@ const Wallet = () => {
               variant="danger"
               onClick={handleDeleteBank}
               size="sm"
-              style={{ minWidth: '80px', padding: '8px 12px', fontSize: '14px' }}
+              style={{
+                minWidth: '80px',
+                padding: '8px 12px',
+                fontSize: '14px',
+              }}
             >
               Yes
             </Button>
           </div>
         </div>
       </Modal>
-      <Modal toggleModal={() => setAddPocketCashModal(!addPocketCashModal)} size="md" show={addPocketCashModal} centered>
+      <Modal
+        toggleModal={() => setAddPocketCashModal(!addPocketCashModal)}
+        size="md"
+        show={addPocketCashModal}
+        centered
+      >
         <div style={{ padding: 30, borderRadius: 10 }}>
-          <h4 style={{ marginBottom: 25, textAlign: 'center', color: '#198754', fontWeight: 'bold' }}>
+          <h4
+            style={{
+              marginBottom: 25,
+              textAlign: 'center',
+              color: '#198754',
+              fontWeight: 'bold',
+            }}
+          >
             Add Pocket Cash
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
@@ -413,23 +535,50 @@ const Wallet = () => {
               type="number"
               placeholder="Enter Amount"
               value={formData.accountCash}
-              onChange={(e) => setFormData({ ...formData, accountCash: e.target.value })}
-              style={{ padding: 12, borderRadius: 8, border: '1px solid #ced4da', width: '100%' }}
+              onChange={(e) =>
+                setFormData({ ...formData, accountCash: e.target.value })
+              }
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                border: '1px solid #ced4da',
+                width: '100%',
+              }}
               required
             />
             <input
               type="text"
               placeholder="Enter Source of Amount (Reference)"
               value={formData.sourceOfAmountAddition}
-              onChange={(e) => setFormData({ ...formData, sourceOfAmountAddition: e.target.value })}
-              style={{ padding: 12, borderRadius: 8, border: '1px solid #ced4da', width: '100%' }}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  sourceOfAmountAddition: e.target.value,
+                })
+              }
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                border: '1px solid #ced4da',
+                width: '100%',
+              }}
               required
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <Button variant="secondary" onClick={() => setAddPocketCashModal(false)} style={{ padding: '6px 16px' }}>
+            <div
+              style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}
+            >
+              <Button
+                variant="secondary"
+                onClick={() => setAddPocketCashModal(false)}
+                style={{ padding: '6px 16px' }}
+              >
                 Cancel
               </Button>
-              <Button variant="success" onClick={() => handleTransaction("add")} style={{ padding: '6px 16px' }}>
+              <Button
+                variant="success"
+                onClick={() => handleTransaction('add')}
+                style={{ padding: '6px 16px' }}
+              >
                 Submit
               </Button>
             </div>
@@ -437,9 +586,21 @@ const Wallet = () => {
         </div>
       </Modal>
 
-      <Modal toggleModal={() => setRemovePocketCashModal(!removePocketCashModal)} size="md" show={removePocketCashModal} centered>
+      <Modal
+        toggleModal={() => setRemovePocketCashModal(!removePocketCashModal)}
+        size="md"
+        show={removePocketCashModal}
+        centered
+      >
         <div style={{ padding: 30, borderRadius: 10 }}>
-          <h4 style={{ marginBottom: 25, textAlign: 'center', color: '#dc3545', fontWeight: 'bold' }}>
+          <h4
+            style={{
+              marginBottom: 25,
+              textAlign: 'center',
+              color: '#dc3545',
+              fontWeight: 'bold',
+            }}
+          >
             Remove Pocket Cash
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
@@ -447,23 +608,50 @@ const Wallet = () => {
               type="number"
               placeholder="Enter Amount"
               value={formData.accountCash}
-              onChange={(e) => setFormData({ ...formData, accountCash: e.target.value })}
-              style={{ padding: 12, borderRadius: 8, border: '1px solid #ced4da', width: '100%' }}
+              onChange={(e) =>
+                setFormData({ ...formData, accountCash: e.target.value })
+              }
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                border: '1px solid #ced4da',
+                width: '100%',
+              }}
               required
             />
             <input
               type="text"
               placeholder="Enter Source of Deduction (Reference)"
               value={formData.sourceOfAmountDeduction}
-              onChange={(e) => setFormData({ ...formData, sourceOfAmountDeduction: e.target.value })}
-              style={{ padding: 12, borderRadius: 8, border: '1px solid #ced4da', width: '100%' }}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  sourceOfAmountDeduction: e.target.value,
+                })
+              }
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                border: '1px solid #ced4da',
+                width: '100%',
+              }}
               required
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <Button variant="secondary" onClick={() => setRemovePocketCashModal(false)} style={{ padding: '6px 16px' }}>
+            <div
+              style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}
+            >
+              <Button
+                variant="secondary"
+                onClick={() => setRemovePocketCashModal(false)}
+                style={{ padding: '6px 16px' }}
+              >
                 Cancel
               </Button>
-              <Button variant="danger" onClick={() => handleTransaction("deduct")} style={{ padding: '6px 16px' }}>
+              <Button
+                variant="danger"
+                onClick={() => handleTransaction('deduct')}
+                style={{ padding: '6px 16px' }}
+              >
                 Submit
               </Button>
             </div>
@@ -476,83 +664,166 @@ const Wallet = () => {
         show={showAnalyticsModal}
       >
         <div style={{ padding: '30px', textAlign: 'center' }}>
-          <h2 style={{ fontWeight: 'bold', color: '#007bff', marginBottom: 30 }}>Wallet Analytics</h2>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 40, flexWrap: 'wrap', marginBottom: 40 }}>
+          <h2
+            style={{ fontWeight: 'bold', color: '#007bff', marginBottom: 30 }}
+          >
+            Wallet Analytics
+          </h2>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 40,
+              flexWrap: 'wrap',
+              marginBottom: 40,
+            }}
+          >
             {/* Pocket Cash Card */}
-            <div style={{
-              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-              borderRadius: 16,
-              boxShadow: '0 4px 16px rgba(67,233,123,0.15)',
-              padding: 32,
-              minWidth: 260,
-              textAlign: 'center'
-            }}>
-              <h4 style={{ color: '#0a3d62', fontWeight: 700, marginBottom: 10 }}>Pocket Cash</h4>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#009432', marginBottom: 8 }}>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                borderRadius: 16,
+                boxShadow: '0 4px 16px rgba(67,233,123,0.15)',
+                padding: 32,
+                minWidth: 260,
+                textAlign: 'center',
+              }}
+            >
+              <h4
+                style={{ color: '#0a3d62', fontWeight: 700, marginBottom: 10 }}
+              >
+                Pocket Cash
+              </h4>
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 800,
+                  color: '#009432',
+                  marginBottom: 8,
+                }}
+              >
                 ₹ {totalCash}
               </div>
-              <div style={{ color: '#222f3e', fontSize: 16 }}>Current Balance</div>
+              <div style={{ color: '#222f3e', fontSize: 16 }}>
+                Current Balance
+              </div>
             </div>
             {/* Banks Card */}
-            <div style={{
-              background: 'linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%)',
-              borderRadius: 16,
-              boxShadow: '0 4px 16px rgba(116,235,213,0.15)',
-              padding: 32,
-              minWidth: 260,
-              textAlign: 'center'
-            }}>
-              <h4 style={{ color: '#222f3e', fontWeight: 700, marginBottom: 10 }}>Total Bank Balance</h4>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#1e3799', marginBottom: 8 }}>
-                ₹ {banks.reduce((sum, b) => sum + (Number(b.accountCash) || 0), 0)}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%)',
+                borderRadius: 16,
+                boxShadow: '0 4px 16px rgba(116,235,213,0.15)',
+                padding: 32,
+                minWidth: 260,
+                textAlign: 'center',
+              }}
+            >
+              <h4
+                style={{ color: '#222f3e', fontWeight: 700, marginBottom: 10 }}
+              >
+                Total Bank Balance
+              </h4>
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 800,
+                  color: '#1e3799',
+                  marginBottom: 8,
+                }}
+              >
+                ₹{' '}
+                {banks.reduce(
+                  (sum, b) => sum + (Number(b.accountCash) || 0),
+                  0
+                )}
               </div>
-              <div style={{ color: '#222f3e', fontSize: 16 }}>Across {banks.length} Bank{banks.length !== 1 ? 's' : ''}</div>
+              <div style={{ color: '#222f3e', fontSize: 16 }}>
+                Across {banks.length} Bank{banks.length !== 1 ? 's' : ''}
+              </div>
             </div>
 
-            <div style={{
-              background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
-              borderRadius: 16,
-              boxShadow: '0 4px 16px rgba(247,151,30,0.12)',
-              padding: 32,
-              minWidth: 260,
-              textAlign: 'center'
-            }}>
-              <h4 style={{ color: '#b06ab3', fontWeight: 700, marginBottom: 10 }}>Profit / Loss</h4>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+                borderRadius: 16,
+                boxShadow: '0 4px 16px rgba(247,151,30,0.12)',
+                padding: 32,
+                minWidth: 260,
+                textAlign: 'center',
+              }}
+            >
+              <h4
+                style={{ color: '#b06ab3', fontWeight: 700, marginBottom: 10 }}
+              >
+                Profit / Loss
+              </h4>
               {(() => {
                 // Calculate profit/loss: (cashIn - cashOut) for all banks + pocket cash
-                const totalIn = banks.reduce((sum, b) => sum + (Number(b.cashIn) || 0), 0);
-                const totalOut = banks.reduce((sum, b) => sum + (Number(b.cashOut) || 0), 0);
+                const totalIn = banks.reduce(
+                  (sum, b) => sum + (Number(b.cashIn) || 0),
+                  0
+                );
+                const totalOut = banks.reduce(
+                  (sum, b) => sum + (Number(b.cashOut) || 0),
+                  0
+                );
                 // For pocket cash, profit is just the current totalCash (since no cashIn/cashOut breakdown)
                 // So, total profit = (bank cashIn - bank cashOut) + (current pocket cash)
-                const profit = (totalIn - totalOut) + (Number(totalCash) || 0);
+                const profit = totalIn - totalOut + (Number(totalCash) || 0);
                 return (
-                  <div style={{
-                    fontSize: 32,
-                    fontWeight: 800,
-                    color: profit >= 0 ? '#27ae60' : '#e74c3c',
-                    marginBottom: 8
-                  }}>
+                  <div
+                    style={{
+                      fontSize: 32,
+                      fontWeight: 800,
+                      color: profit >= 0 ? '#27ae60' : '#e74c3c',
+                      marginBottom: 8,
+                    }}
+                  >
                     ₹ {profit}
                   </div>
                 );
               })()}
-              <div style={{ color: '#222f3e', fontSize: 16 }}>Total (Banks + Pocket Cash)</div>
+              <div style={{ color: '#222f3e', fontSize: 16 }}>
+                Total (Banks + Pocket Cash)
+              </div>
             </div>
           </div>
           {/* Transaction Summary Table */}
-          <div style={{
-            margin: '0 auto',
-            maxWidth: 900,
-            background: '#fff',
-            borderRadius: 12,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
-            padding: 24
-          }}>
-            <h4 style={{ color: '#222f3e', fontWeight: 700, marginBottom: 18, textAlign: 'left' }}>Bank-wise Summary</h4>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
+          <div
+            style={{
+              margin: '0 auto',
+              maxWidth: 900,
+              background: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+              padding: 24,
+            }}
+          >
+            <h4
+              style={{
+                color: '#222f3e',
+                fontWeight: 700,
+                marginBottom: 18,
+                textAlign: 'left',
+              }}
+            >
+              Bank-wise Summary
+            </h4>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontSize: 16,
+              }}
+            >
               <thead>
                 <tr style={{ background: '#f1f2f6' }}>
-                  <th style={{ padding: 10, borderRadius: 6, textAlign: 'left' }}>Bank Name</th>
+                  <th
+                    style={{ padding: 10, borderRadius: 6, textAlign: 'left' }}
+                  >
+                    Bank Name
+                  </th>
                   <th style={{ padding: 10, textAlign: 'right' }}>Balance</th>
                   <th style={{ padding: 10, textAlign: 'right' }}>Cash In</th>
                   <th style={{ padding: 10, textAlign: 'right' }}>Cash Out</th>
@@ -561,19 +832,45 @@ const Wallet = () => {
               </thead>
               <tbody>
                 {banks.map((b, idx) => {
-                  const net = (Number(b.cashIn) || 0) - (Number(b.cashOut) || 0);
+                  const net =
+                    (Number(b.cashIn) || 0) - (Number(b.cashOut) || 0);
                   return (
-                    <tr key={b._id || idx} style={{ borderBottom: '1px solid #f1f2f6' }}>
-                      <td style={{ padding: 10, fontWeight: 600 }}>{b.bankName}</td>
-                      <td style={{ padding: 10, textAlign: 'right' }}>₹ {b.accountCash}</td>
-                      <td style={{ padding: 10, textAlign: 'right', color: '#27ae60' }}>+₹ {b.cashIn || 0}</td>
-                      <td style={{ padding: 10, textAlign: 'right', color: '#e74c3c' }}>-₹ {b.cashOut || 0}</td>
-                      <td style={{
-                        padding: 10,
-                        textAlign: 'right',
-                        color: net >= 0 ? '#27ae60' : '#e74c3c',
-                        fontWeight: 700
-                      }}>
+                    <tr
+                      key={b._id || idx}
+                      style={{ borderBottom: '1px solid #f1f2f6' }}
+                    >
+                      <td style={{ padding: 10, fontWeight: 600 }}>
+                        {b.bankName}
+                      </td>
+                      <td style={{ padding: 10, textAlign: 'right' }}>
+                        ₹ {b.accountCash}
+                      </td>
+                      <td
+                        style={{
+                          padding: 10,
+                          textAlign: 'right',
+                          color: '#27ae60',
+                        }}
+                      >
+                        +₹ {b.cashIn || 0}
+                      </td>
+                      <td
+                        style={{
+                          padding: 10,
+                          textAlign: 'right',
+                          color: '#e74c3c',
+                        }}
+                      >
+                        -₹ {b.cashOut || 0}
+                      </td>
+                      <td
+                        style={{
+                          padding: 10,
+                          textAlign: 'right',
+                          color: net >= 0 ? '#27ae60' : '#e74c3c',
+                          fontWeight: 700,
+                        }}
+                      >
                         ₹ {net}
                       </td>
                     </tr>
@@ -581,7 +878,14 @@ const Wallet = () => {
                 })}
                 {banks.length === 0 && (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: 20, color: '#888' }}>
+                    <td
+                      colSpan={5}
+                      style={{
+                        textAlign: 'center',
+                        padding: 20,
+                        color: '#888',
+                      }}
+                    >
                       No bank data available.
                     </td>
                   </tr>
@@ -592,20 +896,21 @@ const Wallet = () => {
           <Button
             variant="primary"
             onClick={() => setShowAnalyticsModal(false)}
-            style={{ padding: '10px 20px', fontSize: '16px', marginTop: '30px' }}
+            style={{
+              padding: '10px 20px',
+              fontSize: '16px',
+              marginTop: '30px',
+            }}
           >
             Close
           </Button>
         </div>
       </Modal>
-
-
     </>
   );
 };
 
 const styles = {
-
   container: {
     width: '450px',
     margin: '60px auto',
@@ -671,7 +976,6 @@ const styles = {
     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease',
   },
 
-
   buttonStyle: {
     padding: '15px 30px',
     margin: '15px 10px',
@@ -682,8 +986,7 @@ const styles = {
     fontSize: '16px',
     transition: 'transform 0.2s ease, background-color 0.3s',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  }
-
+  },
 };
 const addButtonStyle = {
   ...styles.buttonStyle,

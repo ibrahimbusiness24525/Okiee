@@ -1,101 +1,32 @@
-import { useEffect, useState } from "react";
-import { api } from "../../../api/api";
+import { useEffect, useState } from 'react';
+import { api } from '../../../api/api';
+import { useParams } from 'react-router-dom';
 
 const PocketCashTransactions = () => {
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [displayCount, setDisplayCount] = useState(10);
+  const { id } = useParams();
 
   const getTransactions = async () => {
     try {
-      const response = await api.get('/api/pocketCash/get');
-      setTransactions(response?.data?.transactions || []);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
+      setLoading(true);
+      const response = await api.get(`/api/pocketCash/get/${id}`);
+      setTransactions(response?.data || []);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching transactions:', err);
+      setError('Failed to load transactions');
+      setTransactions([]);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
   useEffect(() => {
     getTransactions();
-  }, []);
-
-  console.log('Transactions:', transactions);
-
-  // Static data for demonstration
-  const staticTransactions = [
-    {
-      "_id": "684bae0642865f0ab676a35c",
-      "userId": "6773f7840a3a7a3ba3fed833",
-      "accountCash": 1200,
-      "pocketCashId": {
-        "_id": "6832e30beadced8e99463d85",
-        "accountCash": 10033600
-      },
-      "amountAdded": 1200,
-      "remainingAmount": 10033600,
-      "sourceOfAmountAddition": "ARSHMAN",
-      "createdAt": "2025-06-13T04:50:14.854Z",
-      "updatedAt": "2025-06-13T04:50:14.854Z",
-      "__v": 0
-    },
-    {
-      "_id": "684bae0542865f0ab676a357",
-      "userId": "6773f7840a3a7a3ba3fed833",
-      "accountCash": 1200,
-      "pocketCashId": {
-        "_id": "6832e30beadced8e99463d85",
-        "accountCash": 10033600
-      },
-      "amountAdded": 1200,
-      "remainingAmount": 10032400,
-      "sourceOfAmountAddition": "ARSHMAN",
-      "createdAt": "2025-06-13T04:50:13.924Z",
-      "updatedAt": "2025-06-13T04:50:13.924Z",
-      "__v": 0
-    },
-    {
-      "_id": "684b57448382d5f56057b272",
-      "userId": "6773f7840a3a7a3ba3fed833",
-      "accountCash": 10031200,
-      "pocketCashId": {
-        "_id": "6832e30beadced8e99463d85",
-        "accountCash": 10033600
-      },
-      "reasonOfAmountDeduction": "sale of mobile from company: company 2, model: new",
-      "amountDeducted": 30000,
-      "remainingAmount": 10031200,
-      "sourceOfAmountAddition": "Payment for mobile sale",
-      "createdAt": "2025-06-12T22:40:04.726Z",
-      "updatedAt": "2025-06-12T22:40:04.726Z",
-      "__v": 0
-    },
-    {
-      "_id": "684a87318a0a32dc4bd78b34",
-      "userId": "6773f7840a3a7a3ba3fed833",
-      "accountCash": -1200,
-      "pocketCashId": {
-        "_id": "6832e30beadced8e99463d85",
-        "accountCash": 10033600
-      },
-      "amountDeducted": 1200,
-      "remainingAmount": 10001200,
-      "createdAt": "2025-06-12T07:52:17.042Z",
-      "updatedAt": "2025-06-12T07:52:17.042Z",
-      "__v": 0
-    },
-    {
-      "_id": "684a87258a0a32dc4bd78b2f",
-      "userId": "6773f7840a3a7a3ba3fed833",
-      "accountCash": 1200,
-      "pocketCashId": {
-        "_id": "6832e30beadced8e99463d85",
-        "accountCash": 10033600
-      },
-      "amountAdded": 1200,
-      "remainingAmount": 10002400,
-      "sourceOfAmountAddition": "arshman",
-      "createdAt": "2025-06-12T07:52:05.407Z",
-      "updatedAt": "2025-06-12T07:52:05.407Z",
-      "__v": 0
-    }
-  ];
+  }, [id]);
 
   // Helper to format date
   const formatDate = (dateStr) => {
@@ -105,47 +36,258 @@ const PocketCashTransactions = () => {
 
   // Helper to get transaction type and amount
   const getType = (txn) => {
-    if (txn.amountAdded) return { type: "Credit", amount: txn.amountAdded, color: "#27ae60" };
-    if (txn.amountDeducted) return { type: "Debit", amount: txn.amountDeducted, color: "#c0392b" };
-    return { type: txn.accountCash >= 0 ? "Credit" : "Debit", amount: Math.abs(txn.accountCash), color: txn.accountCash >= 0 ? "#27ae60" : "#c0392b" };
+    if (txn.amountAdded)
+      return { type: 'Credit', amount: txn.amountAdded, color: '#27ae60' };
+    if (txn.amountDeducted)
+      return { type: 'Debit', amount: txn.amountDeducted, color: '#c0392b' };
+    return {
+      type: txn.accountCash >= 0 ? 'Credit' : 'Debit',
+      amount: Math.abs(txn.accountCash),
+      color: txn.accountCash >= 0 ? '#27ae60' : '#c0392b',
+    };
   };
 
+  const handleViewMore = () => {
+    setDisplayCount((prev) => prev + 20);
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          maxWidth: 700,
+          margin: '30px auto',
+          padding: 24,
+          textAlign: 'center',
+          color: '#666',
+        }}
+      >
+        Loading transactions...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          maxWidth: 700,
+          margin: '30px auto',
+          padding: 24,
+          textAlign: 'center',
+          color: '#c0392b',
+        }}
+      >
+        {error}
+        <button
+          onClick={getTransactions}
+          style={{
+            marginTop: 10,
+            padding: '8px 16px',
+            background: '#3498db',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ maxWidth: 700, margin: "30px auto", background: "#fff", borderRadius: 10, boxShadow: "0 2px 8px #eee", padding: 24 }}>
-      <h2 style={{ textAlign: "center", marginBottom: 24 }}>Pocket Cash Transactions</h2>
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <div
+      style={{
+        maxWidth: '90%',
+        margin: '30px auto',
+        background: '#fff',
+        borderRadius: 10,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        padding: 24,
+      }}
+    >
+      <h3
+        style={{
+          textAlign: 'center',
+          marginBottom: 24,
+          color: '#2c3e50',
+        }}
+      >
+        Pocket Cash Transactions
+      </h3>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: 14,
+          }}
+        >
           <thead>
-            <tr style={{ background: "#f8f8f8" }}>
-              <th style={{ padding: 10, borderBottom: "1px solid #eee" }}>Date</th>
-              <th style={{ padding: 10, borderBottom: "1px solid #eee" }}>Type</th>
-              <th style={{ padding: 10, borderBottom: "1px solid #eee" }}>Amount</th>
-              <th style={{ padding: 10, borderBottom: "1px solid #eee" }}>Source/Reason</th>
-              <th style={{ padding: 10, borderBottom: "1px solid #eee" }}>Balance</th>
+            <tr
+              style={{
+                background: '#f8f9fa',
+                borderBottom: '2px solid #e9ecef',
+              }}
+            >
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'left',
+                  fontWeight: 600,
+                }}
+              >
+                Date
+              </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'left',
+                  fontWeight: 600,
+                }}
+              >
+                Type
+              </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'right',
+                  fontWeight: 600,
+                }}
+              >
+                Amount
+              </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'left',
+                  fontWeight: 600,
+                }}
+              >
+                Description
+              </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'right',
+                  fontWeight: 600,
+                }}
+              >
+                Balance
+              </th>
             </tr>
           </thead>
           <tbody>
-            {staticTransactions.map(txn => {
+            {transactions.slice(0, displayCount).map((txn) => {
               const { type, amount, color } = getType(txn);
               return (
-                <tr key={txn._id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                  <td style={{ padding: 10, fontSize: 13 }}>{formatDate(txn.createdAt)}</td>
-                  <td style={{ padding: 10, color, fontWeight: 600 }}>{type}</td>
-                  <td style={{ padding: 10, color, fontWeight: 600 }}>{amount}</td>
-                  <td style={{ padding: 10, fontSize: 13 }}>
-                    {txn.sourceOfAmountAddition || txn.reasonOfAmountDeduction || "-"}
+                <tr
+                  key={txn._id}
+                  style={{
+                    borderBottom: '1px solid #f0f0f0',
+                    ':hover': {
+                      backgroundColor: '#f8f9fa',
+                    },
+                  }}
+                >
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      color: '#495057',
+                    }}
+                  >
+                    {formatDate(txn.createdAt)}
                   </td>
-                  <td style={{ padding: 10, fontWeight: 500 }}>{txn.remainingAmount ?? txn.accountCash}</td>
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      color,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {type}
+                  </td>
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      color,
+                      fontWeight: 600,
+                      textAlign: 'right',
+                    }}
+                  >
+                    {amount.toLocaleString()}
+                  </td>
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      color: '#495057',
+                    }}
+                  >
+                    {txn.sourceOfAmountAddition ||
+                      txn.reasonOfAmountDeduction ||
+                      '-'}
+                  </td>
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      fontWeight: 500,
+                      textAlign: 'right',
+                      color: '#2c3e50',
+                    }}
+                  >
+                    {(txn.remainingAmount ?? txn.accountCash)?.toLocaleString()}
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
-      <div style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
-        Showing {staticTransactions.length} of your latest transactions.
+
+      {transactions.length > displayCount && (
+        <div
+          style={{
+            marginTop: 20,
+            textAlign: 'center',
+          }}
+        >
+          <button
+            onClick={handleViewMore}
+            style={{
+              padding: '8px 20px',
+              backgroundColor: '#3498db',
+              color: 'white',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontWeight: 500,
+              transition: 'background-color 0.2s',
+              ':hover': {
+                backgroundColor: '#2980b9',
+              },
+            }}
+          >
+            View More ({transactions.length - displayCount} remaining)
+          </button>
+        </div>
+      )}
+
+      <div
+        style={{
+          marginTop: 16,
+          fontSize: 12,
+          color: '#7f8c8d',
+          textAlign: 'center',
+        }}
+      >
+        Showing {Math.min(displayCount, transactions.length)} of{' '}
+        {transactions.length} transactions
       </div>
     </div>
   );
-}
+};
+
 export default PocketCashTransactions;

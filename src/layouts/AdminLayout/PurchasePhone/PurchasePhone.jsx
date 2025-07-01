@@ -99,6 +99,7 @@ const PurchasePhone = ({
       }));
     }
   };
+  console.log(editMobile, 'editMobile');
 
   useEffect(() => {
     // setShowSingleModal(modal)
@@ -298,6 +299,8 @@ const PurchasePhone = ({
     }
     if (editMobile && !bulkEdit) {
       try {
+        console.log('Editing mobile record:', editMobile);
+
         const response = await api.put(
           `/api/Purchase/single-purchase-phone/${editMobile._id}`,
           formData
