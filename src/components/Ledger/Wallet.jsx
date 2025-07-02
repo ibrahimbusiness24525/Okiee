@@ -185,7 +185,7 @@ const Wallet = () => {
           <h3
             style={{ fontSize: '36px', margin: '20px 0', fontWeight: 'bold' }}
           >
-            ₹ {totalCash}
+            {totalCash}
           </h3>
 
           <div>
@@ -702,7 +702,7 @@ const Wallet = () => {
                   marginBottom: 8,
                 }}
               >
-                ₹ {totalCash}
+                {totalCash}
               </div>
               <div style={{ color: '#222f3e', fontSize: 16 }}>
                 Current Balance
@@ -732,7 +732,7 @@ const Wallet = () => {
                   marginBottom: 8,
                 }}
               >
-                ₹{' '}
+                {' '}
                 {banks.reduce(
                   (sum, b) => sum + (Number(b.accountCash) || 0),
                   0
@@ -780,7 +780,7 @@ const Wallet = () => {
                       marginBottom: 8,
                     }}
                   >
-                    ₹ {profit}
+                    {profit}
                   </div>
                 );
               })()}
@@ -843,7 +843,7 @@ const Wallet = () => {
                         {b.bankName}
                       </td>
                       <td style={{ padding: 10, textAlign: 'right' }}>
-                        ₹ {b.accountCash}
+                        {b.accountCash}
                       </td>
                       <td
                         style={{
@@ -852,7 +852,7 @@ const Wallet = () => {
                           color: '#27ae60',
                         }}
                       >
-                        +₹ {b.cashIn || 0}
+                        + {b.cashIn || 0}
                       </td>
                       <td
                         style={{
@@ -861,7 +861,7 @@ const Wallet = () => {
                           color: '#e74c3c',
                         }}
                       >
-                        -₹ {b.cashOut || 0}
+                        - {b.cashOut || 0}
                       </td>
                       <td
                         style={{
@@ -871,7 +871,7 @@ const Wallet = () => {
                           fontWeight: 700,
                         }}
                       >
-                        ₹ {net}
+                        {net}
                       </td>
                     </tr>
                   );

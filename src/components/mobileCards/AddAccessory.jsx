@@ -10,6 +10,12 @@ const AddAccessory = () => {
   const [showModal, setShowModal] = useState(false);
   const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
   const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
+  const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [addStockForm, setAddStockForm] = useState({
+    accessoryId: '',
+    quantity: 1,
+    purchasePrice: 0,
+  });
   const [getPayment, setGetPayment] = useState({
     amountFromBank: Number(''),
     amountFromPocket: Number(''),
@@ -457,22 +463,46 @@ const AddAccessory = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             marginBottom: '24px',
             paddingBottom: '16px',
             borderBottom: '2px solid #f1f5f9',
           }}
         >
-          <span style={{ fontSize: '24px', marginRight: '12px' }}>🗂</span>
-          <h3
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{ fontSize: '24px', marginRight: '12px' }}>🗂</span>
+            <h3
+              style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#1e293b',
+                margin: 0,
+              }}
+            >
+              Accessory Categories
+            </h3>
+          </div>
+          <button
+            onClick={() => setShowAddStockModal(true)}
             style={{
-              fontSize: '24px',
-              fontWeight: '700',
-              color: '#1e293b',
-              margin: 0,
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+              ':hover': {
+                backgroundColor: '#2563eb',
+              },
             }}
           >
-            Accessory Categories
-          </h3>
+            <span>+</span> Add Stock
+          </button>
         </div>
 
         {data?.data?.length > 0 ? (
@@ -625,6 +655,111 @@ const AddAccessory = () => {
             </p>
           </div>
         )}
+
+        {/* Add Stock Modal */}
+        <Modal
+          size="md"
+          show={showAddStockModal}
+          toggleModal={() => setShowAddStockModal(!showAddStockModal)}
+        >
+          <div
+            style={{
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+            }}
+          >
+            <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>
+              Add Stock to Accessory
+            </h2>
+
+            <Form
+              onSubmit={(e) => {
+                e.preventDefault();
+                // Handle add stock logic here
+                console.log('Adding stock:', addStockForm);
+                setShowAddStockModal(false);
+              }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              {/* Select Accessory */}
+              <Form.Group className="mb-3">
+                <Form.Label>Select Accessory</Form.Label>
+                <Form.Select
+                  value={addStockForm.accessoryId}
+                  onChange={(e) =>
+                    setAddStockForm({
+                      ...addStockForm,
+                      accessoryId: e.target.value,
+                    })
+                  }
+                  required
+                >
+                  <option value="">Select an accessory</option>
+                  {data?.data?.map((item) => (
+                    <option key={item._id} value={item._id}>
+                      {item.accessoryName}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+
+              {/* Quantity to Add */}
+              <Form.Group controlId="quantity">
+                <Form.Label>Quantity to Add</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={addStockForm.quantity}
+                  onChange={(e) =>
+                    setAddStockForm({
+                      ...addStockForm,
+                      quantity: Number(e.target.value),
+                    })
+                  }
+                  placeholder="Enter quantity to add"
+                  required
+                  min="1"
+                />
+              </Form.Group>
+
+              {/* Purchase Price */}
+              <Form.Group controlId="purchasePrice">
+                <Form.Label>Purchase Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={addStockForm.purchasePrice}
+                  onChange={(e) =>
+                    setAddStockForm({
+                      ...addStockForm,
+                      purchasePrice: Number(e.target.value),
+                    })
+                  }
+                  placeholder="Enter purchase price"
+                  required
+                  min="0"
+                  step="0.01"
+                />
+              </Form.Group>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <Button variant="primary" type="submit">
+                  Add Stock
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowAddStockModal(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </Form>
+          </div>
+        </Modal>
       </div>
       <Modal
         size="md"

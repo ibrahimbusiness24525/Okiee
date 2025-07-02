@@ -176,6 +176,7 @@ import { useNavigate } from 'react-router-dom';
 import { InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
 import { useGetAccessories } from 'hooks/accessory';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 
 const NavLeft = () => {
   const navigate = useNavigate();
@@ -193,8 +194,15 @@ const NavLeft = () => {
   const [showSoldModal, setShowSoldModal] = useState(false);
   const { data } = useGetAccessories();
   const [imei, setImei] = useState('');
+  const [showWalletTransactionModal, setShowWalletTransactionModal] =
+    useState(false);
+  const [walletTransaction, setWalletTransaction] = useState({
+    bankAccountUsed: '',
+    amountFromBank: '',
+    amountFromPocket: '',
+  });
   const [formData, setFormData] = useState({
-    imei: "",
+    imei: '',
     imeiList: [],
     search: '',
     bankName: '',
@@ -384,7 +392,7 @@ const NavLeft = () => {
   } else {
     dynamicStyles = buttonStyles.smallScreen;
   }
-  console.log("formdata imei", formData?.addedImeis)
+  console.log('formdata imei', formData?.addedImeis);
 
   return (
     <>
@@ -769,26 +777,26 @@ const NavLeft = () => {
                 <Button
                   onClick={() => {
                     if (!formData.imei) return;
-                    console.log("Adding IMEI:", formData.imei); // ✅ che
+                    console.log('Adding IMEI:', formData.imei); // ✅ che
                     setFormData((prev) => ({
                       ...prev,
                       addedImeis: [...(prev.addedImeis || []), prev.imei],
-                      imei: "", // clear input after adding
+                      imei: '', // clear input after adding
                     }));
                   }}
                 >
                   Add This IMEI
                 </Button>
 
-                <p style={{ marginTop: "10px" }}>
+                <p style={{ marginTop: '10px' }}>
                   {formData.addedImeis && formData.addedImeis.length > 0
                     ? formData.addedImeis.map((imei, idx) => (
-                      <span key={idx}>
-                        {imei}
-                        {idx < formData.addedImeis.length - 1 ? ", " : ""}
-                      </span>
-                    ))
-                    : "No IMEIs added yet"}
+                        <span key={idx}>
+                          {imei}
+                          {idx < formData.addedImeis.length - 1 ? ', ' : ''}
+                        </span>
+                      ))
+                    : 'No IMEIs added yet'}
                 </p>
 
                 {/* <FormControl fullWidth variant="outlined" className="mb-3">
@@ -965,6 +973,16 @@ const NavLeft = () => {
               </>
             )}
           </Form>
+          <div style={{ textAlign: 'right', marginTop: '20px' }}>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setShowWalletTransactionModal(!showWalletTransactionModal)
+              }
+            >
+              Proceed To Pay
+            </Button>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -1002,6 +1020,9 @@ const NavLeft = () => {
                 cnicFrontPic: formData.cnicFrontPic,
                 customerName: formData.customerName,
                 addedImeis: [],
+                bankAccountUsed: walletTransaction.bankAccountUsed,
+                accountCash: walletTransaction.amountFromBank,
+                pocketCash: walletTransaction.amountFromPocket,
                 accessories: formData.accessories,
                 bankName: formData.bankName,
                 payableAmountNow: formData.payableAmountNow,
@@ -1011,7 +1032,7 @@ const NavLeft = () => {
                 customerNumber: formData.customerNumber,
                 manual: true,
               };
-              setShowSoldModal(false)
+              setShowSoldModal(false);
 
               navigate('/invoice/shop', { state: updatedMobile });
               setFormData((prev) => ({
@@ -1026,6 +1047,14 @@ const NavLeft = () => {
             Submit
           </Button>
         </Modal.Footer>
+        <WalletTransactionModal
+          show={showWalletTransactionModal}
+          toggleModal={() =>
+            setShowWalletTransactionModal(!showWalletTransactionModal)
+          }
+          singleTransaction={walletTransaction}
+          setSingleTransaction={setWalletTransaction}
+        />
       </Modal>
     </>
   );

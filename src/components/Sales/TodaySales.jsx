@@ -238,7 +238,7 @@ const TodaySales = () => {
           extraColumns={[
             (obj) => {
               const salePrice = Number(obj.salePrice) || 0;
-              const purchasePrice = Number(obj.purchasePrice) || 0;
+              const purchasePrice = Number(obj.buyingPrice) || 0;
               const profitOrLoss = salePrice - purchasePrice;
 
               return (
@@ -266,8 +266,8 @@ const TodaySales = () => {
                     }}
                   >
                     {profitOrLoss < 0
-                      ? `Loss of ₹${-profitOrLoss}`
-                      : `Profit of ₹${profitOrLoss}`}
+                      ? `Loss of ${-profitOrLoss}`
+                      : `Profit of ${profitOrLoss}`}
                   </p>
                   <Button
                     onClick={() => handlePrintClick(obj)}

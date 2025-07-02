@@ -44,35 +44,7 @@ const SaleInvoices = () => {
       console.error('Error fetching bulk sales:', error);
     }
   };
-
-  // const handleSearchChange = (e) => {
-  //   const query = e.target.value.toLowerCase();
-  //   setSearch(query);
-
-  //   const filtered = allInvoices.filter((invoice) => {
-  //     return (
-  //       invoice.invoiceNumber.toLowerCase().includes(query) ||
-  //       invoice.items[0]?.mobileName.toLowerCase().includes(query) ||
-  //       invoice.items[0]?.imei.toLowerCase().includes(query) ||
-  //       invoice.items[0]?.imei2.toLowerCase().includes(query)
-  //     );
-  //   });
-
-  //   setFilteredInvoices(filtered);
-  // };
-
-  // const handleDateFilter = () => {
-  //   const fromDate = new Date(dateFrom);
-  //   const toDate = new Date(dateTo);
-
-  //   const filtered = allInvoices.filter((invoice) => {
-  //     const invoiceDate = new Date(invoice.invoiceDate);
-  //     return invoiceDate >= fromDate && invoiceDate <= toDate;
-  //   });
-
-  //   setFilteredInvoices(filtered);
-  //   setIsPopupOpen(false);
-  // };
+  console.log('allInvoices', allbulkSales);
 
   const handlePrintClick = (invoice) => {
     const formattedInvoice = {
@@ -126,24 +98,7 @@ const SaleInvoices = () => {
       type: invoice.type,
       bulkPhonePurchaseId: invoice.bulkPhonePurchaseId,
     };
-    //     const formattedInvoice = {
-    //   ...invoice,
-    //   finalPrice: invoice.salePrice,
-    //   sellingType: invoice.sellingPaymentType,
-    //   warranty: invoice.warranty,
-    //   saleDate: invoice.dateSold,
-    //   addedImeis: invoice.addedImeis || [],
-    //   cnicBackPic: invoice.cnicBackPic,
-    //   cnicFrontPic: invoice.cnicFrontPic,
-    //   customerName: invoice.customerName,
-    //   accessories: invoice.accessories || [],
-    //   bankName: invoice.bankName || '',
-    //   payableAmountNow: invoice.payableAmountNow || 0,
-    //   payableAmountLater: invoice.payableAmountLater || 0,
-    //   payableAmountLaterDate: invoice.payableAmountLaterDate || null,
-    //   exchangePhoneDetail: invoice.exchangePhoneDetail || null,
-    //   customerNumber: invoice.customerNumber,
-    // };
+
     navigate('/invoice/shop', { state: formattedInvoice });
   };
   const styles = {
@@ -171,7 +126,6 @@ const SaleInvoices = () => {
       borderCollapse: 'collapse',
     },
     header: {
-      // backgroundColor: 'rgb(220, 220, 220)',
       color: '#333',
       textAlign: 'center',
       padding: '10px',
@@ -209,91 +163,9 @@ const SaleInvoices = () => {
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Sale Invoices</h2>
-      {/* <button onClick={() => setIsPopupOpen(true)} style={{ padding: '10px 20px', marginBottom: '10px' }}>
-        Filter by Date
-      </button> */}
-      {/* <input
-        type="text"
-        value={search}
-        onChange={handleSearchChange}
-        placeholder="Search by Imei or Mobile Name"
-        style={styles.searchBar}
-      /> */}
-      {/* {isPopupOpen && (
-        <>
-          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 999 }} onClick={() => setIsPopupOpen(false)}></div>
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#fff', padding: '20px', borderRadius: '8px', zIndex: 1000 }}>
-            <h3>Filter by Date</h3>
-            <label>
-              From:
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                style={styles.searchBar}
-              />
-            </label>
-            <label>
-              To:
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                style={styles.searchBar}
-              />
-            </label>
-            <div>
-              <button onClick={handleDateFilter} style={{ padding: '10px 20px', marginRight: '10px' }}>Apply Filter</button>
-              <button onClick={() => setIsPopupOpen(false)} style={{ padding: '10px 20px' }}>Cancel</button>
-            </div>
-          </div>
-        </>
-      )} */}
+
       <div style={styles.tableWrapper}>
-        {/* <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Invoice ID</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Mobile</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>IMEI</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>IMEI2</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Purchase Amount</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Sold Amount</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Profit</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Date</th>
-              <th style={{ ...styles.header, ...styles.headerCell }}>Print</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredInvoices.map((invoice) => (
-              <tr key={invoice.id} style={styles.row}>
-                <td style={styles.cell}>{invoice.invoiceNumber}</td>
-                <td style={styles.cell}>{invoice.items[0]?.mobileName}</td>
-                <td style={styles.cell}>{invoice.items[0]?.imei}</td>
-                <td style={styles.cell}>{invoice.items[0]?.imei2}</td>
-                <td style={styles.cell}>Rs{invoice.items[0]?.purchaseAmount}</td>
-                <td style={styles.cell}>Rs{invoice.totalAmount}</td>
-                <td style={styles.cell}>
-                  Rs{(invoice.totalAmount - (invoice.items[0]?.purchaseAmount || 0)).toFixed(2)}
-                </td>
-                <td style={styles.cell}>
-                  {new Intl.DateTimeFormat('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: '2-digit',
-                  }).format(new Date(invoice.invoiceDate))}
-                </td>
-                <td style={styles.cell}>
-                  <FaPrint
-                    style={styles.printIcon}
-                    onClick={() => handlePrintClick(invoice)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table> */}
-        <div>{/* <BarcodeReader onScan={handleScan} /> */}</div>
+        <div></div>
         <div>
           <h3
             style={{
@@ -378,8 +250,8 @@ const SaleInvoices = () => {
                     }}
                   >
                     {profitOrLoss < 0
-                      ? `Loss of ₹${-profitOrLoss}`
-                      : `Profit of ₹${profitOrLoss}`}
+                      ? `Loss of ${-profitOrLoss}`
+                      : `Profit of ${profitOrLoss}`}
                   </p>
                   <Button
                     onClick={() => handlePrintClick(obj)}
@@ -419,18 +291,13 @@ const SaleInvoices = () => {
         search={'imei1'}
         keysToDisplay={[
           'type',
-          // "modelName",
-          // "companyName",
-          // "partyName",
+
           'salePrice',
           'sellingPaymentType',
           'warranty',
           'dateSold',
         ]}
         label={[
-          // "Model Name",
-          // "Company",
-          // "Party Name",
           'Type of Sale',
           'Price',
           'Selling Payment Type',
@@ -455,7 +322,11 @@ const SaleInvoices = () => {
         extraColumns={[
           (obj) => {
             const salePrice = Number(obj.salePrice) || 0;
-            const purchasePrice = Number(obj.purchasePrice) || 0;
+            const purchasePrice = Number(obj.buyingPrice) || 0;
+            console.log('====================================');
+            console.log('salePrice', salePrice);
+            console.log('purchasePrice', purchasePrice);
+            console.log('====================================');
             const profitOrLoss = salePrice - purchasePrice;
 
             return (
@@ -483,8 +354,8 @@ const SaleInvoices = () => {
                   }}
                 >
                   {profitOrLoss < 0
-                    ? `Loss of ₹${-profitOrLoss}`
-                    : `Profit of ₹${profitOrLoss}`}
+                    ? `Loss of ${-profitOrLoss}`
+                    : `Profit of ${profitOrLoss}`}
                 </p>
                 <Button
                   onClick={() => handlePrintBulkClick(obj)}
