@@ -23,11 +23,14 @@ import {
   ShoppingBag,
   Boxes,
 } from 'lucide-react';
+import Modal from 'components/Modal/Modal';
 const TodayBook = () => {
   const [todayBookData, setTodayBookData] = useState([]);
   const [bankData, setBankData] = useState([]);
   const [date, setDate] = useState('');
   const [totalCash, setTotalCash] = useState(0);
+  const [showProfitModal, setShowProfitModal] = useState(false);
+  const [accessoryTransactions, setAccessoryTransactions] = useState([]); // Load your accessory data here
 
   const getTodayBook = async () => {
     try {
@@ -64,6 +67,7 @@ const TodayBook = () => {
       console.error('Error fetching accessories profit:', error);
     }
   };
+  console.log('accessoriesData', accessoriesData);
 
   const getAllBanks = async () => {
     try {
@@ -151,6 +155,30 @@ const TodayBook = () => {
 
       return acc;
     }, 0) || 0);
+  // Calculate total profit from soldSinglePhone and soldBulkPhone "profit" fields
+  // Calculate total profit including accessories profit
+  const profit =
+    (todayBookData?.soldSinglePhone?.reduce(
+      (acc, phone) => acc + (Number(phone.profit) || 0),
+      0
+    ) || 0) +
+    (todayBookData?.soldBulkPhone?.reduce(
+      (acc, phone) => acc + (Number(phone.profit) || 0),
+      0
+    ) || 0) +
+    (Number(accessoriesData.totalProfit) || 0);
+  console.log('todayBookData', todayBookData);
+
+  // Calculate profit without accessories
+  const profitWithoutAccessory =
+    (todayBookData?.soldSinglePhone?.reduce(
+      (acc, phone) => acc + (Number(phone.profit) || 0),
+      0
+    ) || 0) +
+    (todayBookData?.soldBulkPhone?.reduce(
+      (acc, phone) => acc + (Number(phone.profit) || 0),
+      0
+    ) || 0);
   // (todayBookData?.soldBulkPhone?.reduce((acc, phone) => acc + (phone.totalInvoice || 0), 0) || 0)
 
   const totalSingleSalePrice =
@@ -161,8 +189,7 @@ const TodayBook = () => {
 
   const totalSalesPrice = totalSingleSalePrice + totalBulkSalePrice;
 
-  const extractedAccessoriesTotalProfile =
-    totalSalesPrice > totalPurchasePrice ? 'Profit' : 'Loss';
+  const extractedAccessoriesTotalProfile = 0;
   // const extractedAccessoriesTotalProfile = Math.max(0, (totalSalesPrice - totalPurchasePrice));
 
   // Calculate all metrics properly
@@ -256,7 +283,7 @@ const TodayBook = () => {
   const metrics = [
     {
       title: 'Sales Profit',
-      value: formatCurrency(extractedAccessoriesTotalProfile, false),
+      value: formatCurrency(profit, false),
       icon: TrendingUp,
       color: totalProfit >= 0 ? '#16a34a' : '#dc2626', // green-600 or red-600
       bgColor: totalProfit >= 0 ? '#f0fdf4' : '#fef2f2', // green-50 or red-50
@@ -525,6 +552,341 @@ const TodayBook = () => {
   const navigation = useNavigate();
   return (
     <div style={{ padding: '20px', minHeight: '100vh' }}>
+      <Modal
+        size="lg"
+        show={showProfitModal}
+        onClose={() => setShowProfitModal(false)}
+        toggleModal={() => setShowProfitModal(!showProfitModal)}
+      >
+        <div style={{ padding: '24px' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              marginBottom: '24px',
+              color: '#111827',
+              textAlign: 'center',
+            }}
+          >
+            Today's Profit Breakdown
+          </h2>
+
+          {/* Single Phone Profit */}
+          <div style={{ marginBottom: '32px' }}>
+            <h3
+              style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#374151',
+              }}
+            >
+              Single Phone Sales
+            </h3>
+            {todayBookData?.soldSinglePhone?.length > 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  height: '200px',
+                  gap: '8px',
+                  padding: '16px 0',
+                  borderBottom: '1px solid #e5e7eb',
+                }}
+              >
+                {todayBookData.soldSinglePhone.map((phone, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      flex: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: `${Math.min(100, (phone.profit / Math.max(...todayBookData.soldSinglePhone.map((p) => p.profit))) * 100)}px`,
+                        width: '24px',
+                        backgroundColor: '#10b981',
+                        borderRadius: '4px 4px 0 0',
+                      }}
+                    />
+                    <span
+                      style={{
+                        marginTop: '8px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: '#6b7280',
+                      }}
+                    >
+                      {phone.profit?.toLocaleString() || '0'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: '#6b7280', textAlign: 'center' }}>
+                No single phone sales today
+              </p>
+            )}
+          </div>
+
+          {/* Bulk Phone Profit */}
+          <div style={{ marginBottom: '32px' }}>
+            <h3
+              style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#374151',
+              }}
+            >
+              Bulk Phone Sales
+            </h3>
+            {todayBookData?.soldBulkPhone?.length > 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  height: '200px',
+                  gap: '8px',
+                  padding: '16px 0',
+                  borderBottom: '1px solid #e5e7eb',
+                }}
+              >
+                {todayBookData.soldBulkPhone.map((phone, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      flex: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: `${Math.min(100, (phone.profit / Math.max(1, ...todayBookData.soldBulkPhone.filter((p) => p.profit > 0).map((p) => p.profit))) * 100)}px`,
+                        width: '24px',
+                        backgroundColor: '#3b82f6',
+                        borderRadius: '4px 4px 0 0',
+                      }}
+                    />
+                    <span
+                      style={{
+                        marginTop: '8px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: '#6b7280',
+                      }}
+                    >
+                      {phone.profit?.toLocaleString() || '0'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: '#6b7280', textAlign: 'center' }}>
+                No bulk phone sales today
+              </p>
+            )}
+          </div>
+
+          {/* Accessory Profit */}
+          <div style={{ marginBottom: '32px' }}>
+            <h3
+              style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#374151',
+              }}
+            >
+              Accessory Sales
+            </h3>
+            {accessoriesData?.length > 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}
+              >
+                <div
+                  style={{
+                    height: '8px',
+                    width: '100%',
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      height: '100%',
+                      width: `${accessoriesData.totalProfit}%`,
+                      backgroundColor: '#8b5cf6',
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                    Total Profit:{' '}
+                    {accessoriesData
+                      .reduce((sum, t) => sum + (t.totalProfit || 0), 0)
+                      .toLocaleString()}
+                  </span>
+                  <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                    Total Sales:{' '}
+                    {accessoriesData
+                      .reduce((sum, t) => sum + (t.totalPrice || 0), 0)
+                      .toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p style={{ color: '#6b7280', textAlign: 'center' }}>
+                No accessory sales today
+              </p>
+            )}
+          </div>
+
+          {/* Summary Section */}
+          <div
+            style={{
+              backgroundColor: '#f9fafb',
+              padding: '16px',
+              borderRadius: '8px',
+            }}
+          >
+            <h4
+              style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '12px',
+                color: '#374151',
+              }}
+            >
+              Today's Profit Summary
+            </h4>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '16px',
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Single Phones
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#10b981',
+                  }}
+                >
+                  {(
+                    todayBookData?.soldSinglePhone?.reduce(
+                      (sum, p) => sum + (p.profit || 0),
+                      0
+                    ) || 0
+                  ).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Bulk Phones
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#3b82f6',
+                  }}
+                >
+                  {(
+                    todayBookData?.soldBulkPhone?.reduce(
+                      (sum, p) => sum + (p.profit || 0),
+                      0
+                    ) || 0
+                  ).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Accessories
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#8b5cf6',
+                  }}
+                >
+                  {accessoriesData.totalProfit.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Total Profit
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#111827',
+                  }}
+                >
+                  {(
+                    (todayBookData?.soldSinglePhone?.reduce(
+                      (sum, p) => sum + (p.profit || 0),
+                      0
+                    ) || 0) +
+                    (todayBookData?.soldBulkPhone?.reduce(
+                      (sum, p) => sum + (p.profit || 0),
+                      0
+                    ) || 0) +
+                    (accessoriesData?.totalProfit || 0)
+                  ).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
       <div
         style={{
           display: 'flex',
@@ -603,7 +965,8 @@ const TodayBook = () => {
                 border: '1px solid #e5e7eb',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               }}
-              onClick={() => (window.location.href = metric.route)}
+              onClick={() => setShowProfitModal(true)}
+              // onClick={() => (window.location.href = metric.route)}
               onMouseOver={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05)';
                 e.currentTarget.style.boxShadow =
@@ -684,352 +1047,7 @@ const TodayBook = () => {
           );
         })}
       </div>
-      {/* <div style={containerStyle}>
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-        
-        .card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-      `}</style> */}
 
-      {/* <div style={headerStyle}>
-        <h1 style={titleStyle}>Mobile Inventory</h1>
-        <p style={subtitleStyle}>Real-time mobile phone stock monitoring</p>
-        <div style={liveIndicatorStyle}>
-          <span style={statusDotStyle}></span>
-          Live Updates
-        </div>
-      </div> */}
-
-      {/* <div style={gridStyle}>
-        <div
-          className="card"
-          style={{
-            ...cardStyle,
-            borderLeft: "4px solid #3b82f6",
-          }}
-        >
-          <div
-            style={{
-              ...numberStyle,
-              color: "#3b82f6",
-            }}
-          >
- <div>
-  <p>Purchased Single Phones: {todayBookData?.purchasedSinglePhone?.length ?? 0}</p>
-  <p>Purchased Bulk Phones: {todayBookData?.purchaseBulkPhone?.length ?? 0}</p>
-</div>
-
-
-
-          </div>
-          <div style={labelStyle}>Total Purchased Mobiles</div>
-          <div
-            style={{
-              marginTop: "12px",
-              fontSize: "0.75rem",
-              color: "#9ca3af",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: "#3b82f6",
-                marginRight: "6px",
-              }}
-            ></span>
-            Inventory Input
-          </div>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            ...cardStyle,
-            borderLeft: "4px solid #10b981",
-          }}
-        >
-          <div
-            style={{
-              ...numberStyle,
-              color: "#10b981",
-            }}
-          >
-          <div>
-             <p>Sold Single Phones: {todayBookData?.soldSinglePhone?.length ?? 0}</p>
-             <p>Sold Bulk Phones: {todayBookData?.soldBulkPhone?.length ?? 0}</p>
-          </div>
-
-          </div>
-          <div style={labelStyle}>Total Sold Mobiles</div>
-          <div
-            style={{
-              marginTop: "12px",
-              fontSize: "0.75rem",
-              color: "#9ca3af",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: "#10b981",
-                marginRight: "6px",
-              }}
-            ></span>
-            Sales Revenue
-          </div>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            ...cardStyle,
-            borderLeft: `4px solid ${data.totalRemaining < 100 ? "#ef4444" : "#f59e0b"}`,
-          }}
-        >
-          <div
-            style={{
-              ...numberStyle,
-              color: data.totalRemaining < 100 ? "#ef4444" : "#f59e0b",
-            }}
-          >
-            {(todayBookData?.purchaseBulkPhone?.length ?? 0) + (todayBookData?.purchasedSinglePhone?.length ?? 0)}
-          </div>
-          <div style={labelStyle}>Total Remaing</div>
-          <div
-            style={{
-              marginTop: "12px",
-              fontSize: "0.75rem",
-              color: "#9ca3af",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: data.totalRemaining < 100 ? "#ef4444" : "#f59e0b",
-                marginRight: "6px",
-              }}
-            ></span>
-            {data.totalRemaining < 100 ? "Low Stock Alert" : "Available Stock"}
-          </div>
-        </div>
-        <div
-          className="card"
-          style={{
-            ...cardStyle,
-            borderLeft: `4px solid ${data.totalRemaining < 100 ? "#ef4444" : "#f59e0b"}`,
-          }}
-        >
-          <div
-            style={{
-              ...numberStyle,
-              color: data.totalRemaining < 100 ? "#ef4444" : "#f59e0b",
-            }}
-          >
-            
-            {totalPurchasePrice}
-          </div>
-          <div style={labelStyle}>Total Stock Amount</div>
-          <div
-            style={{
-              marginTop: "12px",
-              fontSize: "0.75rem",
-              color: "#9ca3af",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: data.totalRemaining < 100 ? "#ef4444" : "#f59e0b",
-                marginRight: "6px",
-              }}
-            ></span>
-            {data.totalRemaining < 100 ? "Low Stock Alert" : "Available Stock"}
-          </div>
-        </div>
-      </div> */}
-
-      {/* Additional Stats Row */}
-      {/* <div
-        style={{
-          maxWidth: "1200px",
-          margin: "32px auto 0",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "16px",
-        }}
-      > */}
-      {/* <div
-          style={{
-            ...cardStyle,
-            padding: "16px",
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "600",
-              color: "#6366f1",
-              marginBottom: "4px",
-            }}
-          >
-            {((data.totalSold / data.totalPurchased) * 100).toFixed(1)}%
-          </div>
-          <div
-            style={{
-              fontSize: "0.75rem",
-              color: "#6b7280",
-              fontWeight: "500",
-            }}
-          >
-            Sales Rate
-          </div>
-        </div>
-
-        <div
-          style={{
-            ...cardStyle,
-            padding: "16px",
-            textAlign: "center" ,
-          }}
-        >
-          <div
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "600",
-              color: "#8b5cf6",
-              marginBottom: "4px",
-            }}
-          >
-            {Math.floor(data.totalSold / 30)}
-          </div>
-          <div
-            style={{
-              fontSize: "0.75rem",
-              color: "#6b7280",
-              fontWeight: "500",
-            }}
-          >
-            Daily Avg Sales
-          </div>
-        </div>
-
-        <div
-          style={{
-            ...cardStyle,
-            padding: "16px",
-            textAlign: "center" ,
-          }}
-        >
-          <div
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "600",
-              color: data.totalRemaining < 100 ? "#ef4444" : "#10b981",
-              marginBottom: "4px",
-            }}
-          >
-            {data.totalRemaining < 100 ? "LOW" : "GOOD"}
-          </div>
-          <div
-            style={{
-              fontSize: "0.75rem",
-              color: "#6b7280",
-              fontWeight: "500",
-            }}
-          >
-            Stock Status
-          </div>
-        </div> */}
-      {/* </div> */}
-      {/* </div> */}
-
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          gap: '20px',
-          margin: '30px 0',
-        }}
-      ></div>
-      {/* <div style={{display:"flex", alignItems:"center",justifyContent:"space-between"}}>
-            <Card 
-              onClick={()=>navigation("/todayBook/pruchaseDetail/:id")}
-              className="text-center shadow-lg p-3" 
-              style={{
-                borderRadius: "12px",
-                width: "350px",
-                margin: "auto",
-                background: "linear-gradient(135deg, #667eea, #764ba2)", // Cool gradient
-                boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
-                color: "white"
-              }}
-              >
-              <Card.Body style={{display:"flex", flexDirection:"column"}}>
-                <h5 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "8px" }}>
-                  Total Purchase (Today)
-                </h5>
-                <hr style={{ borderTop: "2px solid rgba(255, 255, 255, 0.6)", margin: "10px 0" }} />
-                <span style={{ fontSize: "28px", fontWeight: "700", display: "block" }}>
-                  {totalPurchasePrice?.toLocaleString() || "0.00"} PKR 
-                  
-
-                  
-                </span>
-              </Card.Body>
-            </Card>
-
-            <Card 
-            onClick={()=>navigation("/todayBook/saleDetail/:id")}
-            className="text-center shadow-lg p-3" 
-            style={{
-              borderRadius: "12px",
-               width: "350px",
-               margin: "auto",
-               background: "linear-gradient(135deg, #ff7e5f, #feb47b)", // Warm gradient
-               boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
-               color: "white"
-             }}
-           >
-                <Card.Body style={{display:"flex", flexDirection:"column"}}>
-                <h5 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "8px" }}>
-                  Total Sales (Today)
-                </h5>
-                <hr style={{ borderTop: "2px solid rgba(255, 255, 255, 0.6)", margin: "10px 0" }} />
-                <span style={{ fontSize: "28px", fontWeight: "700", display: "block" }}>
-                  {totalInvoices?.toLocaleString() || "0.00"} PKR
-                
-                </span>
-              </Card.Body>
-            </Card>
-            </div> */}
       <div
         style={{
           width: '80%', // Adjust width

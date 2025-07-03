@@ -175,6 +175,7 @@ const TodaySales = () => {
   const handleScan = (value) => {
     setScannedBarcodeValue(value);
   };
+  console.log('allInvoices', allInvoices);
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Today Sales Invoices</h2>
@@ -237,10 +238,6 @@ const TodaySales = () => {
           ]}
           extraColumns={[
             (obj) => {
-              const salePrice = Number(obj.salePrice) || 0;
-              const purchasePrice = Number(obj.buyingPrice) || 0;
-              const profitOrLoss = salePrice - purchasePrice;
-
               return (
                 <div
                   style={{
@@ -249,8 +246,8 @@ const TodaySales = () => {
                     gap: '12px',
                     padding: '8px 16px',
                     borderRadius: '8px',
-                    backgroundColor: profitOrLoss < 0 ? '#ffe6e6' : '#e6ffe6',
-                    color: profitOrLoss < 0 ? '#cc0000' : '#006600',
+                    backgroundColor: obj.profit < 0 ? '#ffe6e6' : '#e6ffe6',
+                    color: obj.profit < 0 ? '#cc0000' : '#006600',
                     fontWeight: 'bold',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                     width: '300px', // You can adjust this value as needed
@@ -265,9 +262,9 @@ const TodaySales = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {profitOrLoss < 0
-                      ? `Loss of ${-profitOrLoss}`
-                      : `Profit of ${profitOrLoss}`}
+                    {obj.profit < 0
+                      ? `Loss of ${-obj.profit}`
+                      : `Profit of ${obj.profit}`}
                   </p>
                   <Button
                     onClick={() => handlePrintClick(obj)}
@@ -302,41 +299,92 @@ const TodaySales = () => {
         </h3>
       </div>
       <Table
-        routes={['/sales/todayBulkSales']}
+        routes={['/sales/BulkSales']}
         array={allbulkSales}
         search={'imei1'}
         keysToDisplay={[
           'type',
-          // "modelName",
-          // "companyName",
-          // "partyName",
+          'purchasePrice',
           'salePrice',
           'sellingPaymentType',
           'warranty',
           'dateSold',
         ]}
         label={[
-          // "Model Name",
-          // "Company",
-          // "Party Name",
           'Type of Sale',
-          'Price',
+          'Purchase Price',
+          'Sale Price',
           'Selling Payment Type',
           'Warranty',
           'Invoice Date',
+          // "Barcode Generator"
         ]}
         customBlocks={[
           {
-            index: 2,
+            index: 1,
+            component: (purchasePrice) => {
+              return purchasePrice === 0 ? 'Not mentioned' : purchasePrice;
+            },
+          },
+          {
+            index: 3,
             component: (sellingType) => {
               return sellingType ? sellingType : 'Not mentioned';
             },
           },
           {
-            index: 4,
+            index: 5,
             component: (date) => {
               return dateFormatter(date);
             },
+          },
+        ]}
+        extraColumns={[
+          (obj) => {
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  backgroundColor: obj.profit < 0 ? '#ffe6e6' : '#e6ffe6',
+                  color: obj.profit < 0 ? '#cc0000' : '#006600',
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  width: '300px', // You can adjust this value as needed
+                  justifyContent: 'space-between',
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {obj.profit < 0
+                    ? `Loss of ${-obj.profit}`
+                    : `Profit of ${obj.profit}`}
+                </p>
+                <Button
+                  onClick={() => handlePrintBulkClick(obj)}
+                  style={{
+                    backgroundColor: '#007bff',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaPrint style={{ marginRight: '8px' }} />
+                  Get Invoice
+                </Button>
+              </div>
+            );
           },
         ]}
       />

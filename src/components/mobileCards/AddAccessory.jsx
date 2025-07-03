@@ -34,7 +34,22 @@ const AddAccessory = () => {
     price: '',
   });
   const [accessoryList, setAccessoryList] = useState([]);
+  const handleAddStock = async () => {
+    console.log(addStockForm);
 
+    try {
+      await api.post(`/api/accessory/${addStockForm.accessoryId}`, {
+        quantity: addStockForm.quantity,
+        perPiecePrice: addStockForm.purchasePrice,
+      });
+      toast.success('Stock added successfully');
+      setShowAddStockModal(false);
+    } catch (error) {
+      console.error('Error adding stock', error);
+      toast.console.error();
+      ('error adding stock');
+    }
+  };
   const fetchAccessories = async () => {
     try {
       const res = await api.get('/api/accessory');
@@ -675,12 +690,12 @@ const AddAccessory = () => {
             </h2>
 
             <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                // Handle add stock logic here
-                console.log('Adding stock:', addStockForm);
-                setShowAddStockModal(false);
-              }}
+              // onSubmit={(e) => {
+              //   e.preventDefault();
+              //   // Handle add stock logic here
+              //   console.log('Adding stock:', addStockForm);
+              //   setShowAddStockModal(false);
+              // }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -747,7 +762,7 @@ const AddAccessory = () => {
               </Form.Group>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <Button variant="primary" type="submit">
+                <Button variant="primary" onClick={handleAddStock}>
                   Add Stock
                 </Button>
                 <Button
