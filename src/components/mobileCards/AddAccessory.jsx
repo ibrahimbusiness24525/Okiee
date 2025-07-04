@@ -11,6 +11,8 @@ const AddAccessory = () => {
   const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
   const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [hideAccessories, setHideAccessories] = useState(true);
+  const [hideStockValue, setHideStockValue] = useState(true);
   const [addStockForm, setAddStockForm] = useState({
     accessoryId: '',
     quantity: 1,
@@ -199,25 +201,70 @@ const AddAccessory = () => {
               backgroundColor: '#3b82f6',
             }}
           />
-          <div style={{ paddingLeft: '12px' }}>
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#64748b',
-                marginBottom: '8px',
-              }}
-            >
-              Total Accessories
+          <div
+            style={{
+              paddingLeft: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#64748b',
+                  marginBottom: '8px',
+                }}
+              >
+                Total Accessories
+              </div>
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  filter: hideAccessories ? 'blur(5px)' : 'none',
+                  transition: 'filter 0.3s ease',
+                }}
+              >
+                {accessoryList.length}
+              </div>
             </div>
             <div
               style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#1e293b',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                ':hover': {
+                  backgroundColor: '#f1f5f9',
+                },
               }}
+              onClick={() => setHideAccessories(!hideAccessories)}
             >
-              {accessoryList.length}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 5C5.63636 5 2 12 2 12C2 12 5.63636 19 12 19C18.3636 19 22 12 22 12C22 12 18.3636 5 12 5Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </div>
         </div>
@@ -246,36 +293,79 @@ const AddAccessory = () => {
               backgroundColor: '#10b981',
             }}
           />
-          <div style={{ paddingLeft: '12px' }}>
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#64748b',
-                marginBottom: '8px',
-              }}
-            >
-              Total Stock Value
+          <div
+            style={{
+              paddingLeft: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#64748b',
+                  marginBottom: '8px',
+                }}
+              >
+                Total Stock Value
+              </div>
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  filter: hideStockValue ? 'blur(5px)' : 'none',
+                  transition: 'filter 0.3s ease',
+                }}
+              >
+                {accessoryList
+                  .reduce(
+                    (sum, item) => sum + (Number(item.totalPrice) || 0),
+                    0
+                  )
+                  .toLocaleString()}
+              </div>
             </div>
             <div
               style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#1e293b',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                ':hover': {
+                  backgroundColor: '#f1f5f9',
+                },
               }}
+              onClick={() => setHideStockValue(!hideStockValue)}
             >
-              {' '}
-              {accessoryList.reduce(
-                (sum, item) => sum + (Number(item.totalPrice) || 0),
-                0
-              )}{' '}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 5C5.63636 5 2 12 2 12C2 12 5.63636 19 12 19C18.3636 19 22 12 22 12C22 12 18.3636 5 12 5Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </div>
         </div>
-
-        {/* Optional: Add more metric boxes with different colors */}
       </div>
-
       <div
         style={{
           display: 'flex',
@@ -742,9 +832,9 @@ const AddAccessory = () => {
                 />
               </Form.Group>
 
-              {/* Purchase Price */}
+              {/* Per Piece Price */}
               <Form.Group controlId="purchasePrice">
-                <Form.Label>Purchase Price</Form.Label>
+                <Form.Label>Per Piece Price</Form.Label>
                 <Form.Control
                   type="number"
                   value={addStockForm.purchasePrice}

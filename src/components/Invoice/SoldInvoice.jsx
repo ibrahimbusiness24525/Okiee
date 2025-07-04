@@ -1204,6 +1204,18 @@ const SoldInvoice = () => {
                   <tr>
                     <th style={styles.th}>Company</th>
                     <th style={styles.th}>Model</th>
+                    {phoneDetail?.batteryHealth && (
+                      <th style={styles.th}>Battery Health</th>
+                    )}
+                    {dataReceived?.batteryHealth && (
+                      <th style={styles.th}>Battery Health</th>
+                    )}
+                    {phoneDetail?.specifications && (
+                      <th style={styles.th}>Type</th>
+                    )}
+                    {dataReceived?.specifications && (
+                      <th style={styles.th}>Type</th>
+                    )}
                     <th style={styles.th}>
                       {dataReceived.imei2 ? 'IMEI 1' : 'IMEI'}
                     </th>
@@ -1233,6 +1245,34 @@ const SoldInvoice = () => {
                             .modelName ??
                           'Not Available'}
                     </td>
+                    {phoneDetail?.batteryHealth && (
+                      <td style={styles.td}>
+                        {phoneDetail?.batteryHealth
+                          ? phoneDetail?.batteryHealth
+                          : 'Not Available'}
+                      </td>
+                    )}
+                    {dataReceived?.batteryHealth && (
+                      <td style={styles.td}>
+                        {dataReceived?.batteryHealth
+                          ? dataReceived?.batteryHealth
+                          : 'Not Available'}
+                      </td>
+                    )}
+                    {phoneDetail?.specifications && (
+                      <td style={styles.td}>
+                        {phoneDetail?.specifications
+                          ? phoneDetail?.specifications
+                          : 'Not Available'}
+                      </td>
+                    )}
+                    {dataReceived?.specifications && (
+                      <td style={styles.td}>
+                        {dataReceived?.specifications
+                          ? dataReceived?.specifications
+                          : 'Not Available'}
+                      </td>
+                    )}
                     {!dataReceived.manual ? (
                       <td style={styles.td}>
                         {dataReceived?.invoice?.items
@@ -1528,6 +1568,12 @@ const SoldInvoice = () => {
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].modelName ??
             ''
           }
+          batteryHealth={
+            dataReceived?.batteryHealth ?? phoneDetail?.batteryHealth ?? ''
+          }
+          type={
+            dataReceived?.specifications ?? phoneDetail?.specifications ?? ''
+          }
           warranty={dataReceived?.warranty ?? phoneDetail?.warranty ?? ''}
           display={displayHalfP4}
           saleData={dataReceived}
@@ -1772,6 +1818,34 @@ const SoldInvoice = () => {
                   setEditInvoiceFields({
                     ...editInvoiceFields,
                     companyName: e.target.value,
+                  })
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da',
+                }}
+              />
+            </div>
+            <div style={{ width: '100%', alignContent: 'start' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                }}
+              >
+                Model Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter Model Name"
+                value={editInvoiceFields.modelName}
+                onChange={(e) =>
+                  setEditInvoiceFields({
+                    ...editInvoiceFields,
+                    modelName: e.target.value,
                   })
                 }
                 style={{

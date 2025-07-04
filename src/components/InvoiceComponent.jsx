@@ -547,6 +547,8 @@ export const InvoiceComponent = ({
   shopName = '',
   address = '',
   number = '',
+  batteryHealth = '',
+  type = '',
   invoiceNumber = '',
   termsAndConditions = [],
 }) => {
@@ -1043,6 +1045,28 @@ export const InvoiceComponent = ({
               >
                 Brand
               </th>
+              {batteryHealth && (
+                <th
+                  style={{
+                    textAlign: 'left',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
+                  Battery Health
+                </th>
+              )}
+              {type && (
+                <th
+                  style={{
+                    textAlign: 'left',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
+                  Type
+                </th>
+              )}
               <th
                 style={{
                   textAlign: 'right',
@@ -1107,6 +1131,26 @@ export const InvoiceComponent = ({
               <td style={{ padding: '5px', border: '1px solid #000' }}>
                 {getBrandName()}
               </td>
+              {batteryHealth && (
+                <td
+                  style={{
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
+                  {batteryHealth}
+                </td>
+              )}
+              {type && (
+                <td
+                  style={{
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
+                  {type}
+                </td>
+              )}
               <td
                 style={{
                   textAlign: 'right',

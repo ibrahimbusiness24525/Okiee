@@ -6,16 +6,18 @@ import avatar1 from '../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../assets/images/user/avatar-3.jpg';
 
-
 const DashDefault = () => {
-
-
   const tabContent = (
     <React.Fragment>
       <div className="d-flex friendlist-box align-items-center justify-content-center m-b-20">
         <div className="m-r-10 photo-table flex-shrink-0">
           <Link to="#">
-            <img className="rounded-circle" style={{ width: '40px' }} src={avatar1} alt="activity-user" />
+            <img
+              className="rounded-circle"
+              style={{ width: '40px' }}
+              src={avatar1}
+              alt="activity-user"
+            />
           </Link>
         </div>
         <div className="flex-grow-1 ms-3">
@@ -29,7 +31,12 @@ const DashDefault = () => {
       <div className="d-flex friendlist-box align-items-center justify-content-center m-b-20">
         <div className="m-r-10 photo-table flex-shrink-0">
           <Link to="#">
-            <img className="rounded-circle" style={{ width: '40px' }} src={avatar2} alt="activity-user" />
+            <img
+              className="rounded-circle"
+              style={{ width: '40px' }}
+              src={avatar2}
+              alt="activity-user"
+            />
           </Link>
         </div>
         <div className="flex-grow-1 ms-3">
@@ -43,7 +50,12 @@ const DashDefault = () => {
       <div className="d-flex friendlist-box align-items-center justify-content-center m-b-20">
         <div className="m-r-10 photo-table flex-shrink-0">
           <Link to="#">
-            <img className="rounded-circle" style={{ width: '40px' }} src={avatar3} alt="activity-user" />
+            <img
+              className="rounded-circle"
+              style={{ width: '40px' }}
+              src={avatar3}
+              alt="activity-user"
+            />
           </Link>
         </div>
         <div className="flex-grow-1 ms-3">
@@ -57,7 +69,12 @@ const DashDefault = () => {
       <div className="d-flex friendlist-box align-items-center justify-content-center m-b-20">
         <div className="m-r-10 photo-table flex-shrink-0">
           <Link to="#">
-            <img className="rounded-circle" style={{ width: '40px' }} src={avatar1} alt="activity-user" />
+            <img
+              className="rounded-circle"
+              style={{ width: '40px' }}
+              src={avatar1}
+              alt="activity-user"
+            />
           </Link>
         </div>
         <div className="flex-grow-1 ms-3">
@@ -71,7 +88,12 @@ const DashDefault = () => {
       <div className="d-flex friendlist-box align-items-center justify-content-center m-b-20">
         <div className="m-r-10 photo-table flex-shrink-0">
           <Link to="#">
-            <img className="rounded-circle" style={{ width: '40px' }} src={avatar2} alt="activity-user" />
+            <img
+              className="rounded-circle"
+              style={{ width: '40px' }}
+              src={avatar2}
+              alt="activity-user"
+            />
           </Link>
         </div>
         <div className="flex-grow-1 ms-3">
@@ -85,7 +107,12 @@ const DashDefault = () => {
       <div className="d-flex friendlist-box align-items-center justify-content-center">
         <div className="m-r-10 photo-table flex-shrink-0">
           <Link to="#">
-            <img className="rounded-circle" style={{ width: '40px' }} src={avatar3} alt="activity-user" />
+            <img
+              className="rounded-circle"
+              style={{ width: '40px' }}
+              src={avatar3}
+              alt="activity-user"
+            />
           </Link>
         </div>
         <div className="flex-grow-1 ms-3">
@@ -97,61 +124,88 @@ const DashDefault = () => {
         </div>
       </div>
     </React.Fragment>
-
   );
   return (
     <React.Fragment>
-      <Row >
-           <Col   xl={6} xxl={4} style={{marginBottom:25,}}> 
-           <Link to={"/todayBook"}>
-              <Card style={{borderRadius:10,boxShadow:"0 2px 10px rgba(0,0,0,0.1)"}} >
-                <Card.Body>
-                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Today Book</h6>
-                  <div className="row d-flex align-items-center">
-                    <div className="col-9">
-                      <h3 className="f-w-300 d-flex align-items-center m-b-0">
-                        <i className={`feather } f-30 m-r-20`} /> 
-                      </h3>
-                    </div>
-                    
+      <Row>
+        <Col xl={6} xxl={4} style={{ marginBottom: 25 }}>
+          <Link to={'/todayBook'}>
+            <Card
+              style={{
+                borderRadius: 10,
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+              }}
+            >
+              <Card.Body>
+                <h6
+                  className="mb-1 mr-20"
+                  style={{ fontSize: 30, color: '#04a9f5' }}
+                >
+                  Today Book
+                </h6>
+                <div className="row d-flex align-items-center">
+                  <div className="col-9">
+                    <h3 className="f-w-300 d-flex align-items-center m-b-0">
+                      <i className={`feather } f-30 m-r-20`} />
+                    </h3>
                   </div>
-                </Card.Body>
-              </Card>
-           </Link>
-            </Col>
-            <Col  xl={6} xxl={4} style={{marginBottom:25}}> 
-            <Link to={"/app/dashboard/partyLedger"}>
-
-              <Card style={{borderRadius:10,boxShadow:"0 2px 10px rgba(0,0,0,0.1)"}} >
-                <Card.Body>
-                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Parties</h6>
-                  <div className="row d-flex align-items-center">
-                    <div className="col-9">
-                     
-                    </div>
-                  
-                  </div>
-                  
-                </Card.Body>
-              </Card>
-            </Link>
-            </Col>
-            <Col xl={6} xxl={4} style={{marginBottom:25}}> 
-            <Link to={"/app/dashboard/ledgerRecords"}>
-
-              <Card  style={{borderRadius:10,boxShadow:"0 2px 10px rgba(0,0,0,0.1)"}} >
-                <Card.Body>
-                  <h6 className="mb-1 mr-20"  style={{fontSize:30, color:"#04a9f5"} }>Shop/Commiittees</h6>
-                  <div className="row d-flex align-items-center">
-                    <div className="col-9">
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Link>
-            </Col>
+                </div>
+              </Card.Body>
+            </Card>
+          </Link>
+        </Col>
+        <Col xl={6} xxl={4} style={{ marginBottom: 25 }}>
+          <Link to={'/app/dashboard/partyLedger'}>
+            <Card
+              style={{
+                borderRadius: 10,
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+              }}
+            >
+              <Card.Body>
+                <h6
+                  className="mb-1 mr-20"
+                  style={{ fontSize: 30, color: '#04a9f5' }}
+                >
+                  Parties
+                </h6>
+                <div className="row d-flex align-items-center">
+                  <div className="col-9"></div>
+                </div>
+              </Card.Body>
+            </Card>
+          </Link>
+        </Col>
+        <Col xl={6} xxl={4} style={{ marginBottom: 25 }}>
+          <Link to={'/app/dashboard/balanceSheet'}>
+            <Card
+              style={{
+                borderRadius: 10,
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+              }}
+            >
+              <Card.Body>
+                <h6
+                  className="mb-1 mr-20"
+                  style={{ fontSize: 30, color: '#04a9f5' }}
+                >
+                  Balance Sheet
+                </h6>
+                <div className="row d-flex align-items-center">
+                  <div className="col-9"></div>
+                </div>
+              </Card.Body>
+            </Card>
+          </Link>
+        </Col>
         <Col md={6} xl={8}>
-          <Card className="Recent-Users widget-focus-lg" style={{borderRadius:10,boxShadow:"0 2px 10px rgba(0,0,0,0.1)"}}>
+          <Card
+            className="Recent-Users widget-focus-lg"
+            style={{
+              borderRadius: 10,
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            }}
+          >
             <Card.Header>
               <Card.Title as="h5">Recent Users</Card.Title>
             </Card.Header>
@@ -160,11 +214,18 @@ const DashDefault = () => {
                 <tbody>
                   <tr className="unread">
                     <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar1} alt="activity-user" />
+                      <img
+                        className="rounded-circle"
+                        style={{ width: '40px' }}
+                        src={avatar1}
+                        alt="activity-user"
+                      />
                     </td>
                     <td>
                       <h6 className="mb-1">Isabella Christensen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
+                      <p className="m-0">
+                        Lorem Ipsum is simply dummy text of…
+                      </p>
                     </td>
                     <td>
                       <h6 className="text-muted">
@@ -183,11 +244,18 @@ const DashDefault = () => {
                   </tr>
                   <tr className="unread">
                     <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar2} alt="activity-user" />
+                      <img
+                        className="rounded-circle"
+                        style={{ width: '40px' }}
+                        src={avatar2}
+                        alt="activity-user"
+                      />
                     </td>
                     <td>
                       <h6 className="mb-1">Mathilde Andersen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
+                      <p className="m-0">
+                        Lorem Ipsum is simply dummy text of…
+                      </p>
                     </td>
                     <td>
                       <h6 className="text-muted">
@@ -206,15 +274,23 @@ const DashDefault = () => {
                   </tr>
                   <tr className="unread">
                     <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar3} alt="activity-user" />
+                      <img
+                        className="rounded-circle"
+                        style={{ width: '40px' }}
+                        src={avatar3}
+                        alt="activity-user"
+                      />
                     </td>
                     <td>
                       <h6 className="mb-1">Karla Sorensen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
+                      <p className="m-0">
+                        Lorem Ipsum is simply dummy text of…
+                      </p>
                     </td>
                     <td>
                       <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-green f-10 m-r-15" />9 MAY 17:38
+                        <i className="fa fa-circle text-c-green f-10 m-r-15" />9
+                        MAY 17:38
                       </h6>
                     </td>
                     <td>
@@ -228,11 +304,18 @@ const DashDefault = () => {
                   </tr>
                   <tr className="unread">
                     <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar1} alt="activity-user" />
+                      <img
+                        className="rounded-circle"
+                        style={{ width: '40px' }}
+                        src={avatar1}
+                        alt="activity-user"
+                      />
                     </td>
                     <td>
                       <h6 className="mb-1">Ida Jorgensen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
+                      <p className="m-0">
+                        Lorem Ipsum is simply dummy text of…
+                      </p>
                     </td>
                     <td>
                       <h6 className="text-muted f-w-300">
@@ -249,22 +332,27 @@ const DashDefault = () => {
                       </Link>
                     </td>
                   </tr>
-                  
                 </tbody>
               </Table>
             </Card.Body>
           </Card>
         </Col>
         <Col md={6} xl={4}>
-          <Card className="card-event" style={{borderRadius:10,boxShadow:"0 2px 10px rgba(0,0,0,0.1)"}}>
+          <Card
+            className="card-event"
+            style={{
+              borderRadius: 10,
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            }}
+          >
             <Card.Body>
               <div className="row align-items-center justify-content-center">
                 <div className="col">
-                  <h5 className="-m-16" style={{fontSize:30}}>Upcoming Updates</h5>
+                  <h5 className="-m-16" style={{ fontSize: 30 }}>
+                    Upcoming Updates
+                  </h5>
                 </div>
-                
               </div>
-              
             </Card.Body>
           </Card>
           <Card>
@@ -301,12 +389,17 @@ const DashDefault = () => {
                 </div>
               </div>
             </Card.Body>
-         
           </Card>
         </Col>
-       
+
         <Col md={6} xl={12} className="user-activity">
-          <Card style={{marginTop:25,borderRadius:10,boxShadow:"0 2px 10px rgba(0,0,0,0.1)"}}> 
+          <Card
+            style={{
+              marginTop: 25,
+              borderRadius: 10,
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            }}
+          >
             <Tabs defaultActiveKey="today" id="uncontrolled-tab-example">
               <Tab eventKey="today" title="Today">
                 {tabContent}
@@ -320,11 +413,7 @@ const DashDefault = () => {
             </Tabs>
           </Card>
         </Col>
-        <Col md={6} xl={12} className="about-us-section">
-  
-</Col>
-
-
+        <Col md={6} xl={12} className="about-us-section"></Col>
       </Row>
     </React.Fragment>
   );
