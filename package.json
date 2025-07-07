@@ -31,6 +31,7 @@
     "@testing-library/user-event": "^14.5.2",
     "@vitejs/plugin-react": "^4.2.1",
     "@zxing/browser": "^0.1.5",
+    "antd": "^5.26.4",
     "axios": "^1.7.4",
     "bootstrap": "^5.3.3",
     "chance": "^1.1.11",
