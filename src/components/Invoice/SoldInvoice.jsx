@@ -157,9 +157,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-      dataReceived?.finalPrice ??
-      dataReceived?.demandPrice ??
-      0
+    dataReceived?.finalPrice ??
+    dataReceived?.demandPrice ??
+    0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -662,7 +662,7 @@ const SoldInvoice = () => {
       {!displayHalfP4 &&
         !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-        dataReceived?.bulkPhonePurchaseId ? (
+          dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -1204,8 +1204,14 @@ const SoldInvoice = () => {
                   <tr>
                     <th style={styles.th}>Company</th>
                     <th style={styles.th}>Model</th>
+                    {phoneDetail?.ramMemory && (
+                      <th style={styles.th}>Ram Memory</th>
+                    )}
                     {phoneDetail?.batteryHealth && (
                       <th style={styles.th}>Battery Health</th>
+                    )}
+                    {dataReceived?.modelName && (
+                      <th style={styles.th}>Ram Memory</th>
                     )}
                     {dataReceived?.batteryHealth && (
                       <th style={styles.th}>Battery Health</th>
@@ -1230,25 +1236,39 @@ const SoldInvoice = () => {
                       {dataReceived?.invoice?.items
                         ? dataReceived?.invoice?.items[0]?.mobileCompany
                         : dataReceived?.companyName ??
-                          phoneDetail?.companyName ??
-                          phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
-                            .companyName ??
-                          'Not Available'}
+                        phoneDetail?.companyName ??
+                        phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
+                          .companyName ??
+                        'Not Available'}
                     </td>
                     <td style={styles.td}>
                       {dataReceived?.invoice?.items
                         ? dataReceived?.invoice?.items[0]?.mobileName
                         : dataReceived?.modelSpecifications ??
-                          dataReceived.modelName ??
-                          phoneDetail?.modelName ??
-                          phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
-                            .modelName ??
-                          'Not Available'}
+                        dataReceived.modelName ??
+                        phoneDetail?.modelName ??
+                        phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
+                          .modelName ??
+                        'Not Available'}
                     </td>
+                    {phoneDetail?.ramMemory && (
+                      <td style={styles.td}>
+                        {phoneDetail?.ramMemory
+                          ? phoneDetail?.ramMemory
+                          : 'Not Available'}
+                      </td>
+                    )}
                     {phoneDetail?.batteryHealth && (
                       <td style={styles.td}>
                         {phoneDetail?.batteryHealth
                           ? phoneDetail?.batteryHealth
+                          : 'Not Available'}
+                      </td>
+                    )}
+                    {dataReceived?.ramMemory && (
+                      <td style={styles.td}>
+                        {dataReceived?.ramMemory
+                          ? dataReceived?.ramMemory
                           : 'Not Available'}
                       </td>
                     )}
@@ -1303,8 +1323,8 @@ const SoldInvoice = () => {
                       {dataReceived?.invoice?.items
                         ? dataReceived?.invoice?.items[0]?.warranty
                         : dataReceived?.warranty ??
-                          phoneDetail?.warranty ??
-                          'Not Available'}
+                        phoneDetail?.warranty ??
+                        'Not Available'}
                     </td>
                   </tr>
                 </tbody>
@@ -1560,6 +1580,12 @@ const SoldInvoice = () => {
             dataReceived?.companyName ??
             phoneDetail?.companyName ??
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].companyName ??
+            ''
+          }
+          ramMemory={
+            dataReceived?.ramMemory ??
+            phoneDetail?.ramMemory ??
+            phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].ramMemory ??
             ''
           }
           modelName={

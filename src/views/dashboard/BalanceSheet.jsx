@@ -131,12 +131,207 @@ const BalanceSheet = () => {
 
   return (
     <div className="balance-sheet-container">
-      <div className="header-section">
+      <div style={{
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        margin: '0 auto',
+        marginTop: '20px',
+        backgroundColor: '#f9f9f9'
+      }}>
+        {/* Header Section */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '30px',
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+          borderRadius: '10px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h1 style={{
+            margin: 0,
+            color: '#2c3e50',
+            fontSize: '2.5rem',
+            fontWeight: 600
+          }}>Balance Sheet</h1>
+          <p style={{
+            margin: '5px 0 0',
+            color: '#7f8c8d',
+            fontSize: '1rem',
+            fontStyle: 'italic'
+          }}>As of {new Date().toLocaleDateString()}</p>
+        </div>
+
+        {/* Summary Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '20px',
+          marginBottom: '30px'
+        }}>
+          {[
+            {
+              title: "Total Assets",
+              value: formatCurrency(balanceSheet.totals.totalAssets),
+              icon: <DollarOutlined style={{ color: '#389e0d', fontSize: '24px' }} />,
+              color: '#389e0d',
+              background: 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)'
+            },
+            {
+              title: "Total Liabilities",
+              value: formatCurrency(balanceSheet.totals.totalLiabilitiesAndEquity - balanceSheet.equity.totalEquity),
+              icon: <MoneyCollectOutlined style={{ color: '#f5222d', fontSize: '24px' }} />,
+              color: '#f5222d',
+              background: 'linear-gradient(135deg, #fff2f0 0%, #ffccc7 100%)'
+            },
+            {
+              title: "Net Worth",
+              value: formatCurrency(netWorth),
+              icon: <WalletOutlined style={{
+                color: netWorth >= 0 ? '#389e0d' : '#f5222d',
+                fontSize: '24px'
+              }} />,
+              color: netWorth >= 0 ? '#389e0d' : '#f5222d',
+              background: netWorth >= 0
+                ? 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)'
+                : 'linear-gradient(135deg, #fff1f0 0%, #ffa39e 100%)'
+            },
+            {
+              title: "Retained Earnings",
+              value: formatCurrency(balanceSheet.equity.retainedEarnings),
+              icon: <BankOutlined style={{
+                color: balanceSheet.equity.retainedEarnings >= 0 ? '#389e0d' : '#f5222d',
+                fontSize: '24px'
+              }} />,
+              color: balanceSheet.equity.retainedEarnings >= 0 ? '#389e0d' : '#f5222d',
+              background: balanceSheet.equity.retainedEarnings >= 0
+                ? 'linear-gradient(135deg, #e6fffb 0%, #b5f5ec 100%)'
+                : 'linear-gradient(135deg, #fff7e6 0%, #ffd591 100%)'
+            }
+          ].map((card, index) => (
+            <div key={index} style={{
+              background: card.background,
+              padding: '20px',
+              borderRadius: '10px',
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+              transition: 'transform 0.3s',
+              ':hover': {
+                transform: 'translateY(-5px)'
+              }
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <div style={{ marginRight: '15px' }}>{card.icon}</div>
+                <span style={{
+                  fontSize: '1rem',
+                  color: '#595959',
+                  fontWeight: 500
+                }}>{card.title}</span>
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 600,
+                color: card.color,
+                textAlign: 'right'
+              }}>{card.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Assets Section */}
+        <div style={{
+          marginBottom: '30px',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{
+            background: '#389e0d',
+            color: 'white',
+            padding: '15px 20px',
+            fontSize: '1.2rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <DollarOutlined style={{ marginRight: '10px', fontSize: '20px' }} />
+            Assets
+          </div>
+          <div style={{ background: 'white', padding: '0' }}>
+            <Table
+              columns={columns}
+              dataSource={assetsData}
+              pagination={false}
+              bordered={false}
+              style={{ border: 'none' }}
+              expandable={{ defaultExpandAllRows: true }}
+              summary={() => (
+                <Table.Summary.Row style={{ background: '#f6ffed' }}>
+                  <Table.Summary.Cell index={0} colSpan={1}>
+                    <strong>Total Assets</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} align="right">
+                    <strong style={{ color: '#389e0d' }}>
+                      {formatCurrency(balanceSheet.totals.totalAssets)}
+                    </strong>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Liabilities & Equity Section */}
+        <div style={{
+          borderRadius: '10px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{
+            background: '#f5222d',
+            color: 'white',
+            padding: '15px 20px',
+            fontSize: '1.2rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <MoneyCollectOutlined style={{ marginRight: '10px', fontSize: '20px' }} />
+            Liabilities & Equity
+          </div>
+          <div style={{ background: 'white', padding: '0' }}>
+            <Table
+              columns={columns}
+              dataSource={liabilitiesData}
+              pagination={false}
+              bordered={false}
+              style={{ border: 'none', marginBottom: '0' }}
+              expandable={{ defaultExpandAllRows: true }}
+            />
+            <Table
+              columns={columns}
+              dataSource={equityData}
+              pagination={false}
+              bordered={false}
+              style={{ border: 'none' }}
+              summary={() => (
+                <Table.Summary.Row style={{ background: '#fff2f0' }}>
+                  <Table.Summary.Cell index={0} colSpan={1}>
+                    <strong>Total Liabilities & Equity</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} align="right">
+                    <strong style={{ color: '#f5222d' }}>
+                      {formatCurrency(balanceSheet.totals.totalLiabilitiesAndEquity)}
+                    </strong>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              )}
+            />
+          </div>
+        </div>
+      </div>
+      {/* <div className="header-section">
         <h1> Balance Sheet</h1>
         <p className="last-updated">As of {new Date().toLocaleDateString()}</p>
       </div>
 
-      {/* Summary Cards */}
+    
       <div className="summary-cards">
         <Card className="summary-card">
           <Statistic
@@ -172,7 +367,7 @@ const BalanceSheet = () => {
         </Card>
       </div>
 
-      {/* Assets Section */}
+
       <Card
         title="Assets"
         className="section-card"
@@ -199,7 +394,7 @@ const BalanceSheet = () => {
         />
       </Card>
 
-      {/* Liabilities & Equity Section */}
+
       <Card
         title="Liabilities & Equity"
         className="section-card"
@@ -232,10 +427,10 @@ const BalanceSheet = () => {
             </Table.Summary.Row>
           )}
         />
-      </Card>
+      </Card> */}
 
       {/* Financial Health Indicators */}
-      <Card title="Financial Health Indicators" className="section-card">
+      {/* <Card title="Financial Health Indicators" className="section-card">
         <div className="indicators-grid">
           <div className="indicator-card">
             <h3>Current Ratio</h3>
@@ -291,7 +486,7 @@ const BalanceSheet = () => {
             </p>
           </div>
         </div>
-      </Card>
+      </Card> */}
 
       {/* Notes Section */}
       {/* <Card title="Notes" className="section-card">

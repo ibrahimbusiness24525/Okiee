@@ -19,6 +19,7 @@ import { toast } from 'react-toastify';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import { useGetAccessories } from 'hooks/accessory';
 import { Eye, EyeOff } from 'lucide-react';
+import { DetailRow } from 'components/DetailItem';
 const NewMobilesList = () => {
   const { data } = useGetAccessories()
   const [showWalletTransactionModal, setShowWalletTransactionModal] = useState(false)
@@ -825,7 +826,7 @@ const NewMobilesList = () => {
             </>
             :
             <>
-              <Row xs={1} md={2} lg={3} className="g-4">
+              {/* <Row xs={1} md={2} lg={3} className="g-4">
                 {filteredMobiles.length > 0 ? (
                   filteredMobiles
                     .filter((record) => record.dispatch === false)
@@ -970,6 +971,163 @@ const NewMobilesList = () => {
                     <Card className="text-center">
                       <Card.Body>
                         <Card.Text>No mobiles found</Card.Text>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                )}
+              </Row> */}
+              <Row xs={1} md={2} lg={3} className="g-4">
+                {filteredMobiles.length > 0 ? (
+                  filteredMobiles
+                    .filter(record => record.dispatch === false)
+                    .filter(record => {
+                      if (!selectedCompany) return true;
+                      const normalize = str => str?.toLowerCase().replace(/\s+/g, '');
+                      return normalize(record.companyName) === normalize(selectedCompany);
+                    })
+                    .map(mobile => (
+                      <Col key={mobile._id}>
+                        <Card style={{
+                          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                          borderRadius: '16px',
+                          height: '100%',
+                          backgroundColor: '#fafafa'
+                        }}>
+                          {/* Card Header */}
+                          <div style={{
+                            padding: '12px',
+                            borderBottom: '1px solid #eee',
+                            position: 'relative',
+                            backgroundColor: '#f5f5f5'
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <div>
+                                <div style={{
+                                  fontSize: '1.1rem',
+                                  fontWeight: '600',
+                                  color: '#333'
+                                }}>
+                                  {mobile.companyName}
+                                </div>
+                                <div style={{
+                                  fontSize: '0.9rem',
+                                  color: '#666',
+                                  marginTop: '4px'
+                                }}>
+                                  {mobile.modelSpecifications}
+                                </div>
+                              </div>
+                              <div style={{
+                                backgroundColor: '#e3f2fd',
+                                color: '#1976d2',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '0.8rem',
+                                fontWeight: '500'
+                              }}>
+                                {mobile.specs}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card Body */}
+                          <Card.Body style={{ width: "100%", padding: '12px', display: 'flex', justifyContent: 'space-between', }}>
+                            <div style={{ marginBottom: '12px' }}>
+                              <DetailRow label="IMEI 1" value={mobile.imei1} />
+                              {mobile.imei2 && <DetailRow label="IMEI 2" value={mobile.imei2} />}
+                              <DetailRow label="Color" value={mobile.color} />
+                              <DetailRow label="Battery" value={mobile.batteryHealth || 'N/A'} />
+                              <DetailRow label="Purchase" value={mobile.purchasePrice} />
+                              <DetailRow label="Demand" value={mobile.demandPrice} />
+                              <DetailRow
+                                label="Final Price"
+                                value={mobile.finalPrice || 'Not Sold'}
+                                highlight={!!mobile.finalPrice}
+                              />
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div style={{
+                              display: 'flex',
+                              gap: '8px',
+                              marginTop: '16px'
+                            }}>
+                              <button
+                                onClick={() => handleDispatchClick(mobile)}
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 12px',
+                                  backgroundColor: '#fff',
+                                  border: '1px solid #FFD000',
+                                  color: '#FFD000',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  bottom: "0",
+                                }}
+                              >
+                                Dispatch
+                              </button>
+                              <button
+                                onClick={() => handleSoldClick(mobile, "single")}
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 12px',
+                                  backgroundColor: '#28a745',
+                                  border: 'none',
+                                  color: 'white',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem'
+                                }}
+                              >
+                                Sold
+                              </button>
+                            </div>
+                          </Card.Body>
+
+                          {/* Card Footer (Edit/Delete) */}
+                          <div style={{
+                            padding: '8px 12px',
+                            borderTop: '1px solid #eee',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: '12px',
+
+                            backgroundColor: '#f5f5f5'
+                          }}>
+                            <FaEdit
+                              onClick={() => handleEdit(mobile)}
+                              style={{
+                                color: '#5c6bc0',
+                                cursor: 'pointer',
+                                fontSize: '1rem'
+                              }}
+                            />
+                            <FaTrash
+                              onClick={() => confirmDelete(mobile._id)}
+                              style={{
+                                color: '#e53935',
+                                cursor: 'pointer',
+                                fontSize: '1rem'
+                              }}
+                            />
+                          </div>
+                        </Card>
+                      </Col>
+                    ))
+                ) : (
+                  <Col>
+                    <Card style={{
+                      textAlign: 'center',
+                      padding: '20px',
+                      backgroundColor: '#fafafa',
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <Card.Body>
+                        <Card.Text style={{ color: '#757575' }}>
+                          No mobiles found
+                        </Card.Text>
                       </Card.Body>
                     </Card>
                   </Col>
