@@ -10,6 +10,8 @@ export const InvoiceComponent = ({
   warranty = '',
   display = true,
   shopName = '',
+  color = '',
+  simOption = '',
   address = '',
   number = '',
   batteryHealth = '',
@@ -339,15 +341,13 @@ export const InvoiceComponent = ({
       color: '#333',
     },
     termsHeading: {
-      fontSize: '20px',
+      fontSize: '15px',
       fontWeight: 'bold',
-      marginBottom: '15px',
+      marginBottom: '10px',
       color: `#000`,
     },
     termsText: {
-      fontSize: '14px',
-      lineHeight: '1.1',
-      marginBottom: '10px',
+      fontSize: '5px',
     },
   };
   console.log('terms and ..', termsAndConditions);
@@ -410,47 +410,72 @@ export const InvoiceComponent = ({
           boxSizing: 'border-box',
         }}
       >
-        <h1
-          style={{
-            textAlign: 'center',
-            margin: '5px 0',
-            fontSize: '24px',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-          }}
-        >
-          {shopName || 'Mobile Shop'}
-        </h1>
         <div
           style={{
             display: 'flex',
-            width: '100%',
+            borderBottom: '2px solid #000',
+            marginBottom: '15px',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+          }}>
+          <div
+            style={{
+
+            }}
+          >
+            <h1
+              style={{
+                textAlign: 'center',
+                margin: '5px 0',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+              }}
+            >
+              {shopName || 'Mobile Shop'}
+            </h1>
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                alignItems: 'center',
+              }}
+            >
+              <h1
+                style={{
+                  textAlign: 'center',
+                  margin: '5px 0',
+                  fontSize: '14px',
+                  fontWeight: 'normal',
+                }}
+              >
+                {address || 'Mobile Shop address'},
+              </h1>
+              <h1
+                style={{
+                  textAlign: 'center',
+                  margin: '5px 0',
+                  fontSize: '14px',
+                  fontWeight: 'normal',
+                }}
+              >
+                {number || 'Mobile Shop number'}
+              </h1>
+            </div>
+
+          </div>
           <h1
             style={{
               textAlign: 'center',
               margin: '5px 0',
-              fontSize: '14px',
-              fontWeight: 'normal',
+              fontSize: '34px',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
             }}
           >
-            {address || 'Mobile Shop address'},
-          </h1>
-          <h1
-            style={{
-              textAlign: 'center',
-              margin: '5px 0',
-              fontSize: '14px',
-              fontWeight: 'normal',
-            }}
-          >
-            {number || 'Mobile Shop number'}
+            Okiiee
           </h1>
         </div>
-
         <div
           style={{
             color: '#000',
@@ -471,11 +496,15 @@ export const InvoiceComponent = ({
 
         <div style={{ marginBottom: '15px', fontSize: '14px', color: '#000' }}>
           <div>
-            <strong>Customer Name:</strong>{' '}
+            <strong style={
+              { fontWeight: 'bold', color: '#000' }
+            }>Customer Name:</strong>{' '}
             {saleData.partyName || saleData.customerName || 'CUSTOMER'}
           </div>
           <div>
-            <strong>Customer Number:</strong>{' '}
+            <strong style={
+              { fontWeight: 'bold', color: '#000' }
+            }>Customer Number:</strong>{' '}
             {saleData.partyLedgerId?.substr(-6) ||
               saleData?.customerNumber ||
               '000000'}
@@ -511,6 +540,32 @@ export const InvoiceComponent = ({
               >
                 Brand
               </th>
+              {color && (
+                <th
+                  style={{
+                    textAlign: 'left',
+                    padding: '5px',
+
+                    border: '1px solid #000',
+                  }}
+                >
+                  Color
+                </th>
+              )
+              }
+              {simOption && (
+                <th
+                  style={{
+                    textAlign: 'left',
+                    padding: '5px',
+
+                    border: '1px solid #000',
+                  }}
+                >
+                  simOption
+                </th>
+              )
+              }
               {ramMemory && (
                 <th
                   style={{
@@ -544,15 +599,19 @@ export const InvoiceComponent = ({
                   Type
                 </th>
               )}
-              <th
-                style={{
-                  textAlign: 'right',
-                  padding: '5px',
-                  border: '1px solid #000',
-                }}
-              >
-                Wrnty
-              </th>
+              {
+                warranty && (
+                  <th
+                    style={{
+                      textAlign: 'right',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
+                    Wrnty
+                  </th>
+                )
+              }
               <th
                 style={{
                   textAlign: 'right',
@@ -562,7 +621,7 @@ export const InvoiceComponent = ({
               >
                 Inv. Price
               </th>
-              <th
+              {/* <th
                 style={{
                   textAlign: 'right',
                   padding: '5px',
@@ -579,7 +638,7 @@ export const InvoiceComponent = ({
                 }}
               >
                 Net Price
-              </th>
+              </th> */}
               <th
                 style={{
                   textAlign: 'center',
@@ -608,6 +667,28 @@ export const InvoiceComponent = ({
               <td style={{ padding: '5px', border: '1px solid #000' }}>
                 {getBrandName()}
               </td>
+              {color && (
+                <td
+                  style={{
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
+                  {color}
+                </td>
+              )
+              }
+              {simOption && (
+                <td
+                  style={{
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
+                  {simOption}
+                </td>
+              )
+              }
               {ramMemory && (
                 <td
                   style={{
@@ -638,15 +719,18 @@ export const InvoiceComponent = ({
                   {type}
                 </td>
               )}
-              <td
-                style={{
-                  textAlign: 'right',
-                  padding: '5px',
-                  border: '1px solid #000',
-                }}
-              >
-                {warranty}
-              </td>
+              {warranty &&
+                (
+                  <td
+                    style={{
+                      textAlign: 'right',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
+                    {warranty}
+                  </td>
+                )}
               <td
                 style={{
                   textAlign: 'right',
@@ -656,7 +740,7 @@ export const InvoiceComponent = ({
               >
                 {formatNumber(totalAmount)}
               </td>
-              <td
+              {/* <td
                 style={{
                   textAlign: 'right',
                   padding: '5px',
@@ -673,7 +757,7 @@ export const InvoiceComponent = ({
                 }}
               >
                 {formatNumber(totalAmount)}
-              </td>
+              </td> */}
               <td
                 style={{
                   textAlign: 'center',
@@ -733,12 +817,12 @@ export const InvoiceComponent = ({
           <div style={styles.termsSection}>
             {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
             <div style={styles.termsHeading}>Terms & conditions</div>
-            <div style={styles.termsText}>
+            <div style={{ fontSize: '5px', display: 'flex', flexDirection: 'column' }}>
               {termsAndConditions.map((item, index) => (
                 <p key={index}>
                   <strong
                     style={{
-                      fontSize: '1.0rem',
+                      margin: 0,
                       fontWeight: '600',
                       color: '#333',
                       width: '100%',
