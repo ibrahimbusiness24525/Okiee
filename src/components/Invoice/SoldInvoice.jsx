@@ -6,6 +6,8 @@ import { StyledHeading } from 'components/StyledHeading/StyledHeading';
 import { InvoiceComponent } from 'components/InvoiceComponent';
 import { toast } from 'react-toastify';
 import Modal from 'components/Modal/Modal';
+import { SmallInvoiceComponent } from 'components/SmallInvoiceComponent';
+import { StockListComponent } from 'components/StockInvoice';
 const SoldInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
   const [displayHalfP4, setDisplayHalfP4] = useState(false);
@@ -157,9 +159,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-      dataReceived?.finalPrice ??
-      dataReceived?.demandPrice ??
-      0
+    dataReceived?.finalPrice ??
+    dataReceived?.demandPrice ??
+    0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -665,7 +667,7 @@ const SoldInvoice = () => {
       {!displayHalfP4 &&
         !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-        dataReceived?.bulkPhonePurchaseId ? (
+          dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -1264,12 +1266,12 @@ const SoldInvoice = () => {
                           dataReceived?.companyName ||
                           (Array.isArray(phoneDetail)
                             ? phoneDetail.map((item, i) => (
-                                <div key={i}>
-                                  {item.companyName || 'Not Available'}
-                                </div>
-                              ))
+                              <div key={i}>
+                                {item.companyName || 'Not Available'}
+                              </div>
+                            ))
                             : phoneDetail?.bulkPhonePurchase?.ramSimDetails?.[0]
-                                ?.companyName || 'Not Available')}
+                              ?.companyName || 'Not Available')}
                       </div>
                     </td>
 
@@ -1308,7 +1310,7 @@ const SoldInvoice = () => {
                       }}
                     >
                       {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.ramMemory ? (
+                        phoneDetail[0]?.ramMemory ? (
                         <div>
                           {phoneDetail.map((item, i) => (
                             <div key={i}>{item.ramMemory || 'N/A'}</div>
@@ -1331,7 +1333,7 @@ const SoldInvoice = () => {
                       }}
                     >
                       {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.batteryHealth ? (
+                        phoneDetail[0]?.batteryHealth ? (
                         <div>
                           {phoneDetail.map((item, i) => (
                             <div key={i}>{item.batteryHealth || 'N/A'}</div>
@@ -1830,7 +1832,8 @@ const SoldInvoice = () => {
             </div>
           </div>
         )}
-
+        <StockListComponent />
+        <SmallInvoiceComponent />
         <InvoiceComponent
           invoiceNumber={invoiceData.invoiceNumber}
           companyName={
