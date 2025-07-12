@@ -125,21 +125,58 @@ const TodayBook = () => {
 
       return acc;
     }, 0) || 0;
+  console.log('todayBookData', todayBookData);
+
+  // const totalInvoicesWithoutAccessory =
+  //   (todayBookData?.soldSinglePhone?.reduce(
+  //     (acc, phone) => acc + (phone.salePrice || 0),
+  //     0
+  //   ) || 0) +
+  //   Number(
+  //     todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
+  //       if (!phone.bulkPhonePurchaseId) return acc;
+
+  //       if (!uniqueBulkSales.has(phone.bulkPhonePurchaseId)) {
+  //         uniqueBulkSales.set(phone.bulkPhonePurchaseId, true);
+  //         // Calculate perimeter as total IMEI count for this bulk sale
+  //         const imeiCount = Array.isArray(phone.imeiNumbers)
+  //           ? phone.imeiNumbers.length
+  //           : phone.ramSimDetails?.reduce(
+  //               (sum, ramSim) => sum + (ramSim?.imeiNumbers?.length || 0),
+  //               0
+  //             ) || 1;
+  //         // Multiply salePrice by perimeter (IMEI count)
+  //         return acc + (phone.salePrice || 0) * imeiCount;
+  //       }
+
+  //       return acc;
+  //     }, 0) || 0
+  //   );
   const totalInvoicesWithoutAccessory =
     (todayBookData?.soldSinglePhone?.reduce(
       (acc, phone) => acc + (phone.salePrice || 0),
       0
     ) || 0) +
-    (todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
-      if (!phone.bulkPhonePurchaseId) return acc;
+    Number(
+      todayBookData?.soldBulkPhone?.reduce((acc, phone) => {
+        if (!phone.bulkPhonePurchaseId) {
+          // If no bulkPhonePurchaseId, treat as single phone sale
+          return acc + (phone.salePrice || 0);
+        }
 
-      if (!uniqueBulkSales.has(phone.bulkPhonePurchaseId)) {
-        uniqueBulkSales.set(phone.bulkPhonePurchaseId, true);
-        return acc + (phone.salePrice || 0);
-      }
+        if (!uniqueBulkSales.has(phone.bulkPhonePurchaseId._id)) {
+          uniqueBulkSales.set(phone.bulkPhonePurchaseId._id, true);
 
-      return acc;
-    }, 0) || 0);
+          // Calculate perimeter based on IMEI count
+          const imeiCount = Array.isArray(phone.imei1) ? phone.imei1.length : 1; // Default to 1 if not an array
+
+          // Multiply salePrice by IMEI count (perimeter)
+          return acc + (phone.salePrice || 0) * imeiCount;
+        }
+
+        return acc;
+      }, 0) || 0
+    );
   const totalInvoices =
     (todayBookData?.soldSinglePhone?.reduce(
       (acc, phone) => acc + (phone.totalInvoice || 0),
