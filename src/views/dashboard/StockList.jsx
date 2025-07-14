@@ -406,6 +406,133 @@ const StockList = () => {
     return false;
   };
 
+  // const printSelected = async () => {
+  //   try {
+  //     const selectedBulkIds = selectedItems
+  //       .filter((id) => id.startsWith('bulk-'))
+  //       .map((id) => id.replace('bulk-', ''));
+
+  //     const selectedSingleIds = selectedItems
+  //       .filter((id) => id.startsWith('single-'))
+  //       .map((id) => id.replace('single-', ''));
+
+  //     const selectedBulkPhones = data.bulkPhones.filter((phone) =>
+  //       selectedBulkIds.includes(phone._id)
+  //     );
+
+  //     const selectedSinglePhones = data.singlePhones.filter((phone) =>
+  //       selectedSingleIds.includes(phone._id)
+  //     );
+
+  //     const printContent = preparePrintContent(
+  //       selectedBulkPhones,
+  //       selectedSinglePhones
+  //     );
+
+  //     // Create print window
+  //     const printWindow = window.open('', '_blank', 'width=800,height=600');
+  //     if (!printWindow) {
+  //       throw new Error('Popup blocked. Please allow popups for this site.');
+  //     }
+
+  //     printWindow.document.open();
+  //     printWindow.document.write(`
+  //     <!DOCTYPE html>
+  //     <html>
+  //       <head>
+  //         <title>Stock List Print</title>
+  //         <style>
+  //           body {
+  //             font-family: Arial, sans-serif;
+  //             margin: 0;
+  //             padding: 10mm;
+  //             -webkit-print-color-adjust: exact !important;
+  //             color-adjust: exact !important;
+  //           }
+  //           .phone-item {
+  //             margin-bottom: 20px;
+  //             border-bottom: 1px solid #eee;
+  //             padding-bottom: 10px;
+  //             page-break-inside: avoid;
+  //           }
+  //           .header {
+  //             font-weight: bold;
+  //             margin-bottom: 5px;
+  //           }
+  //           .imei {
+  //             font-size: 14px;
+  //           }
+  //           @page {
+  //             size: auto;
+  //             margin: 5mm;
+  //           }
+  //           @media print {
+  //             body {
+  //               padding: 0 !important;
+  //               margin: 0 !important;
+  //             }
+  //           }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         ${printContent}
+  //         <script>
+  //           // Print automatically when content loads
+  //           window.onload = function() {
+  //             setTimeout(function() {
+  //               window.print();
+  //               window.onafterprint = function() {
+  //                 window.close();
+  //               };
+  //             }, 300);
+  //           };
+  //         </script>
+  //       </body>
+  //     </html>
+  //   `);
+  //     printWindow.document.close();
+  //   } catch (error) {
+  //     console.error('Printing failed:', error);
+  //     alert('Printing failed: ' + error.message);
+  //   }
+  // };
+
+  // const preparePrintContent = (bulkPhones, singlePhones) => {
+  //   let content = '<h1>Stock List</h1>';
+
+  //   // Bulk phones
+  //   bulkPhones.forEach((phone) => {
+  //     phone.ramSimDetails?.forEach((detail) => {
+  //       content += `
+  //         <div class="phone-item">
+  //           <div class="header">${detail.companyName} ${detail.modelName} ${detail.ramMemory}</div>
+  //           <div class="imei">
+  //             ${detail.imeiNumbers
+  //               ?.map(
+  //                 (imei) =>
+  //                   `IMEI1: ${imei.imei1 || ''} IMEI2: ${imei.imei2 || ''}`
+  //               )
+  //               .join('<br>')}
+  //           </div>
+  //         </div>
+  //       `;
+  //     });
+  //   });
+
+  //   // Single phones
+  //   singlePhones.forEach((phone) => {
+  //     content += `
+  //       <div class="phone-item">
+  //         <div class="header">${phone.companyName} ${phone.modelName} ${phone.ramMemory}</div>
+  //         <div class="imei">
+  //           IMEI1: ${phone.imei1 || ''} IMEI2: ${phone.imei2 || ''}
+  //         </div>
+  //       </div>
+  //     `;
+  //   });
+
+  //   return content;
+  // };
   const printSelected = async () => {
     try {
       const selectedBulkIds = selectedItems
@@ -462,6 +589,10 @@ const StockList = () => {
             .imei { 
               font-size: 14px; 
             }
+            .phone-info {
+              margin-top: 5px;
+              font-size: 14px;
+            }
             @page { 
               size: auto; 
               margin: 5mm; 
@@ -475,6 +606,14 @@ const StockList = () => {
           </style>
         </head>
         <body>
+          <h1 style="text-align: center; margin-bottom: 20px;">Stock List</h1>
+          <div style="margin-bottom: 10px;">
+            <strong>Printed on:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+          </div>
+          <div style="margin-bottom: 20px;">
+            <strong>Total Items:</strong> ${selectedItems.length} 
+            (${selectedBulkPhones.length} bulk, ${selectedSinglePhones.length} single)
+          </div>
           ${printContent}
           <script>
             // Print automatically when content loads
@@ -498,42 +637,56 @@ const StockList = () => {
   };
 
   const preparePrintContent = (bulkPhones, singlePhones) => {
-    let content = '<h1>Stock List</h1>';
+    let content = '';
 
     // Bulk phones
-    bulkPhones.forEach((phone) => {
-      phone.ramSimDetails?.forEach((detail) => {
-        content += `
-          <div class="phone-item">
+    if (bulkPhones.length > 0) {
+      content += '<h2>Bulk Phones</h2>';
+      bulkPhones.forEach((phone) => {
+        content += `<div style="margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">`;
+        content += `<div><strong>Party:</strong> ${phone.partyName || 'N/A'}</div>`;
+        content += `<div><strong>Purchase Date:</strong> ${new Date(phone.createdAt).toLocaleDateString()}</div>`;
+
+        phone.ramSimDetails?.forEach((detail) => {
+          content += `
+          <div class="phone-item" style="margin-top: 10px;">
             <div class="header">${detail.companyName} ${detail.modelName} ${detail.ramMemory}</div>
             <div class="imei">
               ${detail.imeiNumbers
                 ?.map(
                   (imei) =>
-                    `IMEI1: ${imei.imei1 || ''} IMEI2: ${imei.imei2 || ''}`
+                    `<div style="margin-top: 5px;">IMEI1: ${imei.imei1 || 'N/A'} | IMEI2: ${imei.imei2 || 'N/A'}</div>`
                 )
-                .join('<br>')}
+                .join('')}
             </div>
           </div>
         `;
+        });
+        content += `</div>`;
       });
-    });
+    }
 
     // Single phones
-    singlePhones.forEach((phone) => {
-      content += `
+    if (singlePhones.length > 0) {
+      content += '<h2 style="margin-top: 20px;">Single Phones</h2>';
+      singlePhones.forEach((phone) => {
+        content += `
         <div class="phone-item">
           <div class="header">${phone.companyName} ${phone.modelName} ${phone.ramMemory}</div>
           <div class="imei">
-            IMEI1: ${phone.imei1 || ''} IMEI2: ${phone.imei2 || ''}
+            <div>IMEI1: ${phone.imei1 || 'N/A'} | IMEI2: ${phone.imei2 || 'N/A'}</div>
+          </div>
+          <div class="phone-info">
+            ${phone.color ? `<div>Color: ${phone.color}</div>` : ''}
+            <div>Purchased: ${new Date(phone.purchaseDate).toLocaleDateString()} | Price: $${phone.purchasePrice || 'N/A'}</div>
           </div>
         </div>
       `;
-    });
+      });
+    }
 
     return content;
   };
-
   const filteredBulkPhones =
     filter === 'all' || filter === 'bulk' ? data.bulkPhones : [];
   const filteredSinglePhones =

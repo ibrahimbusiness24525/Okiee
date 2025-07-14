@@ -11,6 +11,8 @@ import { StockListComponent } from 'components/StockInvoice';
 const SoldInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
   const [displayHalfP4, setDisplayHalfP4] = useState(false);
+  const [showSmallInvoice, setShowSmallInvoice] = useState(false);
+  const [originalInvoice, setOriginalInvoice] = useState(true);
   const colorOptions = [
     { name: 'Dark Blue', code: '#004B87' },
     { name: 'Sky Blue', code: '#87CEEB' },
@@ -524,6 +526,322 @@ const SoldInvoice = () => {
       console.error('Error updating invoice data:', error);
     }
   };
+  console.log('termsAndConditions', shop);
+
+  const smallInvoiceData = {
+    termsAndConditions:
+      shop?.termsCondition || 'No terms and conditions provided',
+    shopInfo: shop?.address || 'Shop Address Not Mentioned',
+    title: 'INVOICE',
+    subtitle:
+      dataReceived?.sellingType || phoneDetail?.sellingType || 'Counter Sale',
+    date:
+      dataReceived?.saleDate || phoneDetail?.saleDate
+        ? new Date(
+            dataReceived?.saleDate || phoneDetail?.saleDate
+          ).toLocaleDateString('en-GB')
+        : 'N/A',
+    invoiceNumber:
+      (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() ||
+      '000000',
+    customer: {
+      name:
+        dataReceived?.customerName ||
+        phoneDetail?.customerName ||
+        'Customer Name Not Provided',
+      phone:
+        dataReceived?.customerNumber ||
+        phoneDetail?.customerNumber ||
+        '____________________',
+    },
+    items: [
+      // Handle both ramSimDetails (bulk) and single phone cases
+      ...(dataReceived?.ramSimDetails?.flatMap((ramSim, index) => {
+        return ramSim?.imeiNumbers?.map((imeiItem, subIndex) => ({
+          no: index * 2 + subIndex + 1,
+          name: `${ramSim.companyName || phoneDetail?.companyName || 'Brand'} ${ramSim.modelName || phoneDetail?.modelName || 'Model'} ${ramSim.ramMemory || phoneDetail?.ramMemory || ''}`,
+          code:
+            imeiItem.imei1 || dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+          qty: 1,
+          rate: String(
+            ramSim.priceOfOne ||
+              dataReceived?.finalPrice ||
+              phoneDetail?.finalPrice ||
+              0
+          ),
+          amount: String(
+            ramSim.priceOfOne ||
+              dataReceived?.finalPrice ||
+              phoneDetail?.finalPrice ||
+              0
+          ),
+        }));
+      }) || []),
+
+      // Fallback to single phone if no ramSimDetails
+      ...(!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
+        ? [
+            {
+              no: 1,
+              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+              code: dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+              qty: 1,
+              rate: String(
+                dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+              ),
+              amount: String(
+                dataReceived?.totalInvoice ||
+                  phoneDetail?.totalInvoice ||
+                  dataReceived?.finalPrice ||
+                  phoneDetail?.finalPrice ||
+                  0
+              ),
+            },
+          ]
+        : []),
+
+      // Handle accessories from either source
+      ...((dataReceived?.accessories || phoneDetail?.accessories)?.map(
+        (item, index) => ({
+          no:
+            (dataReceived?.ramSimDetails?.length ||
+              phoneDetail?.ramSimDetails?.length ||
+              0) +
+            index +
+            1,
+          name: `Accessory: ${item.name || 'Unknown'}`,
+          code: item.name || '-',
+          qty: Number(item.quantity) || 1,
+          rate: String(item.price || 0),
+          amount: String(Number(item.price || 0) * Number(item.quantity || 1)),
+        })
+      ) || []),
+    ],
+    summary: {
+      items:
+        (dataReceived?.ramSimDetails?.reduce(
+          (sum, ramSim) => sum + (ramSim.imeiNumbers?.length || 0),
+          0
+        ) || 0) +
+        (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
+        (dataReceived?.accessories?.length ||
+          phoneDetail?.accessories?.length ||
+          0),
+
+      cashReturn: '–',
+      bankReturn: '–',
+      freight: '–',
+      subTotal: String(
+        Number(
+          dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0
+        ) +
+          ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
+            (sum, acc) =>
+              sum + Number(acc.price || 0) * Number(acc.quantity || 0),
+            0
+          ) || 0)
+      ),
+      discount: '–',
+      netTotal: String(
+        dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+      ),
+      previousBal: '–',
+      total: String(
+        dataReceived?.totalInvoice ||
+          phoneDetail?.totalInvoice ||
+          dataReceived?.finalPrice ||
+          phoneDetail?.finalPrice ||
+          0
+      ),
+      bankDeposit:
+        dataReceived?.walletTransaction?.amountFromBank ||
+        phoneDetail?.walletTransaction?.amountFromBank ||
+        '–',
+      currentTotal: '–',
+    },
+    operator: 'admin',
+    timestamp: new Date().toLocaleString('en-GB', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }),
+    pending: [
+      // Only add pending items if this is a credit sale
+      ...(dataReceived?.sellingPaymentType === 'Credit' ||
+      phoneDetail?.sellingPaymentType === 'Credit'
+        ? [
+            {
+              no: 1,
+              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+              qty: 1,
+            },
+          ]
+        : []),
+    ],
+    social: {
+      url: 'http://www.conceptmobiles.net',
+      text: 'www.conceptmobiles.net',
+    },
+    qr: 'qr-code.png',
+  };
+  // {
+  //   shopInfo: shop?.address || 'Shop info not available',
+  //   title: 'INVOICE',
+  //   subtitle: dataReceived?.sellingType || 'Counter Sale',
+  //   date: dataReceived?.saleDate
+  //     ? new Date(dataReceived.saleDate).toLocaleDateString('en-GB')
+  //     : 'N/A',
+  //   invoiceNumber: dataReceived?._id?.slice(-6).toUpperCase() || 'N/A',
+  //   customer: {
+  //     name: dataReceived?.customerName || 'Unknown',
+  //     phone: dataReceived?.customerNumber || 'Not provided',
+  //   },
+  //   items: [
+  //     ...(dataReceived?.ramSimDetails?.flatMap((ramSim, index) => {
+  //       return ramSim?.imeiNumbers?.map((imeiItem, subIndex) => ({
+  //         no: index * 2 + subIndex + 1,
+  //         name: `${ramSim.modelName || 'Model'} ${ramSim.ramMemory || ''}`,
+  //         code: imeiItem.imei1 || 'N/A',
+  //         qty: 1,
+  //         rate: `${ramSim.priceOfOne || 0}`,
+  //         amount: `${ramSim.priceOfOne || 0}`,
+  //       }));
+  //     }) || []),
+  //     ...(dataReceived?.accessories?.map((item, index) => ({
+  //       no: (dataReceived.ramSimDetails?.length || 0) + index + 1,
+  //       name: `Accessory (${item.id})`,
+  //       code: item.name,
+  //       qty: Number(item.quantity) || 1,
+  //       rate: item.price,
+  //       amount: (Number(item.price) * Number(item.quantity)).toString(),
+  //     })) || []),
+  //   ],
+  //   summary: {
+  //     items:
+  //       (dataReceived?.ramSimDetails?.reduce(
+  //         (sum, ramSim) => sum + (ramSim.imeiNumbers?.length || 0),
+  //         0
+  //       ) || 0) + (dataReceived?.accessories?.length || 0),
+  //     cashReturn: '–',
+  //     bankReturn: '–',
+  //     freight: '–',
+  //     subTotal: String(
+  //       Number(dataReceived?.prices?.buyingPrice || 0) +
+  //         (dataReceived?.accessories?.reduce(
+  //           (sum, acc) =>
+  //             sum + Number(acc.price || 0) * Number(acc.quantity || 0),
+  //           0
+  //         ) || 0)
+  //     ),
+  //     discount: '–',
+  //     netTotal: dataReceived?.finalPrice || '0',
+  //     previousBal: '–',
+  //     total:
+  //       dataReceived?.totalInvoice?.toString() ||
+  //       dataReceived?.finalPrice ||
+  //       '0',
+  //     bankDeposit: dataReceived?.walletTransaction?.amountFromBank || '–',
+  //     currentTotal: '–',
+  //   },
+  //   operator: 'admin',
+  //   timestamp: new Date().toLocaleString('en-GB', {
+  //     dateStyle: 'medium',
+  //     timeStyle: 'short',
+  //   }),
+  //   pending: [], // You can fill this if needed
+  //   social: {
+  //     url: 'http://www.conceptmobiles.net',
+  //     text: 'www.conceptmobiles.net',
+  //   },
+  //   qr: 'qr-code.png',
+  // };
+
+  // {
+  //   shopInfo: shop?.address || 'Shop Address Not Mentioned',
+  //   title: 'INVOICE',
+  //   subtitle: 'Counter Sale',
+  //   date: new Date(dataReceived.saleDate || Date.now()).toLocaleDateString(
+  //     'en-GB'
+  //   ),
+  //   invoiceNumber: dataReceived._id?.slice(-6).toUpperCase() || '000000',
+  //   customer: {
+  //     name: dataReceived.customerName || 'Customer Name Not Provided',
+  //     phone: dataReceived.customerNumber || '____________________',
+  //   },
+  //   items: [
+  //     {
+  //       no: 1,
+  //       name: `${dataReceived.companyName || 'Brand'} ${dataReceived.modelName || 'Model'}`,
+  //       code: dataReceived.imei1 || '-',
+  //       qty: 1,
+  //       rate: Number(dataReceived.finalPrice || 0).toLocaleString(),
+  //       amount: Number(dataReceived.totalInvoice || 0).toLocaleString(),
+  //     },
+  //     ...(dataReceived.accessories?.map((item, index) => ({
+  //       no: index + 2,
+  //       name: `Accessory: ${item.id || 'Unknown'}`,
+  //       code: item.name || '-',
+  //       qty: item.quantity || 0,
+  //       rate: Number(item.price || 0).toLocaleString(),
+  //       amount: (
+  //         Number(item.price || 0) * Number(item.quantity || 0)
+  //       ).toLocaleString(),
+  //     })) || []),
+  //   ],
+  //   summary: {
+  //     items: 1 + (dataReceived.accessories?.length || 0),
+  //     cashReturn: '–',
+  //     bankReturn: '–',
+  //     freight: '–',
+  //     subTotal: Number(dataReceived.totalInvoice || 0).toLocaleString(),
+  //     discount: '–',
+  //     netTotal: Number(dataReceived.totalInvoice || 0).toLocaleString(),
+  //     previousBal: '–',
+  //     total: Number(dataReceived.totalInvoice || 0).toLocaleString(),
+  //     bankDeposit:
+  //       dataReceived.walletTransaction?.amountFromBank?.toLocaleString?.() ||
+  //       '–',
+  //     currentTotal: '–',
+  //   },
+  //   operator: 'admin',
+  //   timestamp: new Date().toLocaleString('en-GB', {
+  //     day: '2-digit',
+  //     month: 'short',
+  //     year: '2-digit',
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //   }),
+  //   pending: [
+  //     {
+  //       no: 1,
+  //       name: `${dataReceived.companyName || 'Brand'} ${dataReceived.modelName || 'Model'}`,
+  //       qty: 1,
+  //     },
+  //   ],
+  //   social: {
+  //     url: 'http://www.conceptmobiles.net',
+  //     text: 'www.conceptmobiles.net',
+  //   },
+  //   qr: 'qr-code.png',
+  // };
+  const handleChangePreview = () => {
+    if (originalInvoice) {
+      // Switch from original → half preview
+      setOriginalInvoice(false);
+      setDisplayHalfP4(true);
+      setShowSmallInvoice(false);
+    } else if (displayHalfP4) {
+      // Switch from half preview → small invoice
+      setOriginalInvoice(false);
+      setDisplayHalfP4(false);
+      setShowSmallInvoice(true);
+    } else if (showSmallInvoice) {
+      // Switch from small invoice → original
+      setOriginalInvoice(true);
+      setDisplayHalfP4(false);
+      setShowSmallInvoice(false);
+    }
+  };
+
   return (
     <div>
       {!displayHalfP4 && (
@@ -579,7 +897,7 @@ const SoldInvoice = () => {
           style={{ ...styles.button, ...styles.printBtn }}
           onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
           onMouseLeave={(e) => (e.target.style.transform = 'none')}
-          onClick={() => setDisplayHalfP4(!displayHalfP4)}
+          onClick={handleChangePreview}
         >
           Change Preview
         </button>
@@ -664,7 +982,7 @@ const SoldInvoice = () => {
         )}
       </div>
 
-      {!displayHalfP4 &&
+      {originalInvoice &&
         !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
         dataReceived?.bulkPhonePurchaseId ? (
@@ -1832,8 +2150,10 @@ const SoldInvoice = () => {
             </div>
           </div>
         )}
-        {/* <StockListComponent />
-        <SmallInvoiceComponent /> */}
+        {/* <StockListComponent /> */}
+        {showSmallInvoice && (
+          <SmallInvoiceComponent invoiceData={smallInvoiceData} />
+        )}
         <InvoiceComponent
           invoiceNumber={invoiceData.invoiceNumber}
           companyName={
