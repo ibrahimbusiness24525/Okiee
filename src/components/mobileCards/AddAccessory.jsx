@@ -8,6 +8,8 @@ import WalletTransactionModal from 'components/WalletTransaction/WalletTransacti
 
 const AddAccessory = () => {
   const [showModal, setShowModal] = useState(false);
+  const [allParties, setAllParties] = useState([]);
+
   const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
   const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
@@ -34,8 +36,17 @@ const AddAccessory = () => {
     name: '',
     quantity: '',
     price: '',
+    paymentType: '',
+    payableAmountNow: '',
+    payableAmountLater: '',
+    dateOfPayment: '',
   });
   const [accessoryList, setAccessoryList] = useState([]);
+  const [selectedPartyId, setSelectedPartyId] = useState("");
+
+  const handleSelectChange = (e) => {
+    setSelectedPartyId(e.target.value);
+  };
   const handleAddStock = async () => {
     console.log(addStockForm);
 
@@ -60,7 +71,18 @@ const AddAccessory = () => {
       console.error('Error fetching accessories', error);
     }
   };
+  const getAllParties = async () => {
+    try {
+      const response = await api.get('/api/partyLedger/partyNameAndId');
+      setAllParties(response?.data?.data || []);
+    } catch (error) {
+      console.error("Error fetching parties:", error);
+    }
+  }
+  console.log("All parties:", allParties);
+
   useEffect(() => {
+    getAllParties();
     fetchAccessories();
   }, []);
   console.log('accessoryList accessoryList', accessoryList);
@@ -78,7 +100,16 @@ const AddAccessory = () => {
         totalPrice,
         stock: Number(accessoryData.quantity),
         givePayment: givePayment,
+        partyLedgerId: selectedPartyId,
+        purchasePaymentType: accessoryData.paymentType,
+        creditPaymentData: {
+          payableAmountNow: accessoryData.payableAmountNow,
+          payableAmountLater: accessoryData.payableAmountLater,
+          dateOfPayment: accessoryData.dateOfPayment,
+        },
       });
+      console.log('Accessory added:', res);
+
       fetchAccessories(); // Refresh the accessory list
       setAccessoryList([...accessoryList, res.data]);
       toast.success('Accessory added successfully!');
@@ -417,6 +448,34 @@ const AddAccessory = () => {
                 fontWeight: '600',
               }}
             >
+              Select Party *
+            </label>
+            <select
+              value={selectedPartyId}
+              onChange={handleSelectChange}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '2px solid #d1d5db',
+                borderRadius: '10px',
+                fontSize: '16px',
+                outline: 'none',
+              }}
+            >
+              <option value="">Select Party</option>
+              {allParties.map((party) => (
+                <option key={party._id} value={party._id}>
+                  {party.partyName}
+                </option>
+              ))}
+            </select>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '600',
+              }}
+            >
               Accessory Name *
             </label>
             <input
@@ -498,7 +557,76 @@ const AddAccessory = () => {
               }}
             />
           </div>
-
+          <div>
+            <label htmlFor="">Select Payment Type</label>
+            <select style={{
+              width: '100%',
+              padding: '12px',
+              border: '2px solid #d1d5db',
+              borderRadius: '10px',
+              fontSize: '16px',
+              outline: 'none',
+              marginBottom: '20px',
+            }} name="" id=""
+              onChange={(e) => setAccessoryData({ ...accessoryData, paymentType: e.target.value })}
+            >
+              <option value="">Select Payment</option>
+              <option value="full-payment">Full Payment</option>
+              <option value="credit">Credit</option>
+            </select>
+            {accessoryData.paymentType === 'credit' && (
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                <input
+                  type="number"
+                  placeholder="Payable Now"
+                  value={accessoryData.payableAmountNow || ''}
+                  onChange={e =>
+                    setAccessoryData({ ...accessoryData, payableAmountNow: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '10px',
+                    fontSize: '16px',
+                    outline: 'none',
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="Payable Later"
+                  value={accessoryData.payableAmountLater || ''}
+                  onChange={e =>
+                    setAccessoryData({ ...accessoryData, payableAmountLater: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '10px',
+                    fontSize: '16px',
+                    outline: 'none',
+                  }}
+                />
+                <input
+                  type="date"
+                  placeholder="Date of Payment"
+                  value={accessoryData.dateOfPayment || ''}
+                  onChange={e =>
+                    setAccessoryData({ ...accessoryData, dateOfPayment: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '10px',
+                    fontSize: '16px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            )}
+          </div>
           <div
             style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}
           >
