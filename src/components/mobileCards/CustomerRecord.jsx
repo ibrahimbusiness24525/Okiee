@@ -580,78 +580,123 @@ const CustomerRecord = () => {
                     }}>3</span>
                     Payment Status (Mobiles)
                   </h3>
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px"
-                  }}>
+
+                  {partyDetails.stats.totalPayableAmountNow === 0 &&
+                    partyDetails.stats.totalPayableAmountLater === 0 &&
+                    partyDetails.stats.totalPaidAmount === 0 ? (
                     <div style={{
                       backgroundColor: "#fff",
-                      padding: "12px",
+                      padding: "16px",
                       borderRadius: "6px",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                      textAlign: "center",
+                      color: "#6c757d",
+                      border: "1px dashed #dee2e6"
                     }}>
-                      <div style={{
-                        color: "#dc3545",
-                        fontWeight: "600",
-                        marginBottom: "6px",
-                        fontSize: "14px"
-                      }}>
-                        Payable Now
-                      </div>
-                      <div style={{
-                        fontSize: "18px",
-                        fontWeight: "700",
-                        color: "#212529"
-                      }}>
-                        {partyDetails.stats.totalPayableAmountNow}
-                      </div>
+                      No credit transactions found for mobiles
                     </div>
+                  ) : (
                     <div style={{
-                      backgroundColor: "#fff",
-                      padding: "12px",
-                      borderRadius: "6px",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "20px"
                     }}>
-                      <div style={{
-                        color: "#fd7e14",
-                        fontWeight: "600",
-                        marginBottom: "6px",
-                        fontSize: "14px"
-                      }}>
-                        Payable Later
-                      </div>
-                      <div style={{
-                        fontSize: "18px",
-                        fontWeight: "700",
-                        color: "#212529"
-                      }}>
-                        {partyDetails.stats.totalPayableAmountLater}
-                      </div>
+                      {partyDetails.stats.totalPayableAmountNow > 0 && (
+                        <div style={{
+                          backgroundColor: "#fff",
+                          padding: "12px",
+                          borderRadius: "6px",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                        }}>
+                          <div style={{
+                            color: "#dc3545",
+                            fontWeight: "600",
+                            marginBottom: "6px",
+                            fontSize: "14px"
+                          }}>
+                            Payable Now
+                          </div>
+                          <div style={{
+                            fontSize: "18px",
+                            fontWeight: "700",
+                            color: "#212529"
+                          }}>
+                            ₹{partyDetails.stats.totalPayableAmountNow.toLocaleString()}
+                          </div>
+                          <div style={{
+                            fontSize: "12px",
+                            color: "#6c757d",
+                            marginTop: "4px"
+                          }}>
+                            Due immediately
+                          </div>
+                        </div>
+                      )}
+
+                      {partyDetails.stats.totalPayableAmountLater > 0 && (
+                        <div style={{
+                          backgroundColor: "#fff",
+                          padding: "12px",
+                          borderRadius: "6px",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                        }}>
+                          <div style={{
+                            color: "#fd7e14",
+                            fontWeight: "600",
+                            marginBottom: "6px",
+                            fontSize: "14px"
+                          }}>
+                            Payable Later
+                          </div>
+                          <div style={{
+                            fontSize: "18px",
+                            fontWeight: "700",
+                            color: "#212529"
+                          }}>
+                            ₹{partyDetails.stats.totalPayableAmountLater.toLocaleString()}
+                          </div>
+                          <div style={{
+                            fontSize: "12px",
+                            color: "#6c757d",
+                            marginTop: "4px"
+                          }}>
+                            Future payments
+                          </div>
+                        </div>
+                      )}
+
+                      {partyDetails.stats.totalPaidAmount > 0 && (
+                        <div style={{
+                          backgroundColor: "#fff",
+                          padding: "12px",
+                          borderRadius: "6px",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                        }}>
+                          <div style={{
+                            color: "#28a745",
+                            fontWeight: "600",
+                            marginBottom: "6px",
+                            fontSize: "14px"
+                          }}>
+                            Total Paid
+                          </div>
+                          <div style={{
+                            fontSize: "18px",
+                            fontWeight: "700",
+                            color: "#212529"
+                          }}>
+                            ₹{partyDetails.stats.totalPaidAmount.toLocaleString()}
+                          </div>
+                          <div style={{
+                            fontSize: "12px",
+                            color: "#6c757d",
+                            marginTop: "4px"
+                          }}>
+                            Amount received
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div style={{
-                      backgroundColor: "#fff",
-                      padding: "12px",
-                      borderRadius: "6px",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
-                    }}>
-                      <div style={{
-                        color: "#28a745",
-                        fontWeight: "600",
-                        marginBottom: "6px",
-                        fontSize: "14px"
-                      }}>
-                        Total Paid
-                      </div>
-                      <div style={{
-                        fontSize: "18px",
-                        fontWeight: "700",
-                        color: "#212529"
-                      }}>
-                        {partyDetails.stats.totalPaidAmount}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -748,7 +793,7 @@ const CustomerRecord = () => {
                           color: "#495057",
                           fontSize: "14px"
                         }}>Total Accessories Price:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalAccessoryPrice}</span>
+                        <span style={{ color: "#212529" }}>₹{partyDetails.stats.totalAccessoryPrice.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -784,32 +829,60 @@ const CustomerRecord = () => {
                       }}>5</span>
                       Payment Status (Accessories)
                     </h3>
-                    <div style={{ display: "grid", gap: "12px" }}>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>Payable Now:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalAccessoryPayableNow}</span>
+
+                    {partyDetails.stats.totalAccessoryPayableNow === 0 &&
+                      partyDetails.stats.totalAccessoryPayableLater === 0 &&
+                      partyDetails.stats.totalAccessoryPaidAmount === 0 ? (
+                      <div style={{
+                        backgroundColor: "#fff",
+                        padding: "12px",
+                        borderRadius: "6px",
+                        textAlign: "center",
+                        color: "#6c757d",
+                        border: "1px dashed #dee2e6"
+                      }}>
+                        No credit transactions found for accessories
                       </div>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>Payable Later:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalAccessoryPayableLater}</span>
+                    ) : (
+                      <div style={{ display: "grid", gap: "12px" }}>
+                        {partyDetails.stats.totalAccessoryPayableNow > 0 && (
+                          <div style={{ display: "flex" }}>
+                            <strong style={{
+                              minWidth: "180px",
+                              color: "#dc3545",
+                              fontSize: "14px"
+                            }}>Payable Now:</strong>
+                            <span style={{ color: "#212529", fontWeight: "500" }}>
+                              ₹{partyDetails.stats.totalAccessoryPayableNow.toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                        {partyDetails.stats.totalAccessoryPayableLater > 0 && (
+                          <div style={{ display: "flex" }}>
+                            <strong style={{
+                              minWidth: "180px",
+                              color: "#fd7e14",
+                              fontSize: "14px"
+                            }}>Payable Later:</strong>
+                            <span style={{ color: "#212529", fontWeight: "500" }}>
+                              ₹{partyDetails.stats.totalAccessoryPayableLater.toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                        {partyDetails.stats.totalAccessoryPaidAmount > 0 && (
+                          <div style={{ display: "flex" }}>
+                            <strong style={{
+                              minWidth: "180px",
+                              color: "#28a745",
+                              fontSize: "14px"
+                            }}>Total Paid:</strong>
+                            <span style={{ color: "#212529", fontWeight: "500" }}>
+                              ₹{partyDetails.stats.totalAccessoryPaidAmount.toLocaleString()}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>Total Paid:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalAccessoryPaidAmount}</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -864,7 +937,7 @@ const CustomerRecord = () => {
                         >
                           <div>{accessory.accessoryName}</div>
                           <div>{accessory.quantity}</div>
-                          <div>{accessory.totalPrice}</div>
+                          <div>₹{accessory.totalPrice.toLocaleString()}</div>
                           <div>
                             <span style={{
                               display: "inline-block",
