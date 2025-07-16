@@ -88,6 +88,10 @@ const AddAccessory = () => {
   };
   console.log('All parties:', allParties);
   const [getAllEntities, setGetAllEntities] = useState([]);
+  const [newEntity, setNewEntity] = useState({
+    name: '',
+    number: '',
+  });
   const getAllEnityNameAndId = async () => {
     try {
       const response = await api.get('/api/person/nameAndId');
@@ -126,7 +130,7 @@ const AddAccessory = () => {
           payableAmountLater: accessoryData.payableAmountLater,
           dateOfPayment: accessoryData.dateOfPayment,
         },
-        entityData: entityData,
+        entityData: showNewEntityForm ? newEntity : entityData,
       });
       console.log('Accessory added:', res);
 
@@ -789,9 +793,10 @@ const AddAccessory = () => {
                   </label>
                   <input
                     type="text"
-                    value={entityData.name}
+                    name="name"
+                    value={newEntity.name}
                     onChange={(e) =>
-                      setNewEntity({ ...entityData, name: e.target.value })
+                      setNewEntity({ ...newEntity, name: e.target.value })
                     }
                     placeholder="Enter entity name"
                     required
@@ -817,10 +822,11 @@ const AddAccessory = () => {
                     Entity Number *
                   </label>
                   <input
+                    name="number"
                     type="text"
-                    value={entityData.number}
+                    value={newEntity.number}
                     onChange={(e) =>
-                      setNewEntity({ ...entityData, number: e.target.value })
+                      setNewEntity({ ...newEntity, number: e.target.value })
                     }
                     placeholder="Enter entity number"
                     required
@@ -859,7 +865,7 @@ const AddAccessory = () => {
                 <option value="">Select Entity</option>
                 {getAllEntities.map((entity) => (
                   <option key={entity._id} value={entity._id}>
-                    {`                    ${entity.name}
+                    {`                    ${entity.name} || ${entity.number} 
                       `}
                   </option>
                 ))}

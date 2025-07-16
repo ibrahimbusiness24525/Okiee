@@ -12,9 +12,10 @@ const AccessoryInvoice = () => {
     (sum, item) => sum + item.perPiecePrice * item.quantity,
     0
   );
-  const taxRate = 0.18; // 18% tax
-  const tax = subtotal * taxRate;
-  const total = subtotal + tax;
+  //   const taxRate = 0.18; // 18% tax
+  //   const tax = subtotal * taxRate;
+  const total = subtotal;
+  //   const total = subtotal + tax;
 
   // Format date
   const invoiceDate = new Date().toLocaleDateString('en-US', {
@@ -51,15 +52,50 @@ const AccessoryInvoice = () => {
   });
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6 no-print">
-          <h1 className="text-2xl font-bold text-gray-800">
+    <div
+      style={{
+        padding: '1rem',
+        backgroundColor: '#f9fafb',
+        minHeight: '100vh',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '56rem',
+          margin: '0 auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1.5rem',
+          }}
+          className="no-print"
+        >
+          <h1
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: '#1f2937',
+            }}
+          >
             Accessory Invoice
           </h1>
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              borderRadius: '0.375rem',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = '#1d4ed8')}
+            onMouseOut={(e) => (e.target.style.backgroundColor = '#2563eb')}
           >
             Print Invoice
           </button>
@@ -67,60 +103,151 @@ const AccessoryInvoice = () => {
 
         <div
           ref={invoiceRef}
-          className="invoice-container bg-white p-6 rounded-lg shadow-md"
+          style={{
+            backgroundColor: 'white',
+            padding: '1.5rem',
+            borderRadius: '0.5rem',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+            width: '100%',
+          }}
         >
           {/* Invoice Header */}
-          <div className="flex justify-between items-start mb-8 border-b pb-6">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: '2rem',
+              borderBottom: '1px solid #e5e7eb',
+              paddingBottom: '1.5rem',
+            }}
+          >
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2
+                style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: '#1f2937',
+                  marginBottom: '0.5rem',
+                }}
+              >
                 Accessory Invoice
               </h2>
-              <p className="text-gray-600">
+              <p style={{ color: '#4b5563', marginBottom: '0.25rem' }}>
                 Invoice #: {Math.floor(Math.random() * 1000000)}
               </p>
-              <p className="text-gray-600">Date: {invoiceDate}</p>
+              <p style={{ color: '#4b5563' }}>Date: {invoiceDate}</p>
             </div>
-            <div className="text-right">
-              <h3 className="text-xl font-semibold text-gray-800">Shop Name</h3>
-              <p className="text-gray-600">123 Business Street</p>
-              <p className="text-gray-600">City, State 10001</p>
-              <p className="text-gray-600">Phone: (123) 456-7890</p>
+            <div style={{ textAlign: 'right' }}>
+              <h3
+                style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#1f2937',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Shop Name
+              </h3>
+              <p style={{ color: '#4b5563', marginBottom: '0.25rem' }}>
+                123 Business Street
+              </p>
+              <p style={{ color: '#4b5563', marginBottom: '0.25rem' }}>
+                City, State 10001
+              </p>
+              <p style={{ color: '#4b5563' }}>Phone: (123) 456-7890</p>
             </div>
           </div>
 
           {/* Invoice Items Table */}
-          <div className="mb-8">
-            <table className="w-full border-collapse">
+          <div style={{ marginBottom: '2rem' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">
+                <tr style={{ backgroundColor: '#f3f4f6' }}>
+                  <th
+                    style={{
+                      padding: '0.75rem 1rem',
+                      textAlign: 'left',
+                      fontWeight: '600',
+                      color: '#374151',
+                      borderBottom: '1px solid #e5e7eb',
+                    }}
+                  >
                     Item
                   </th>
-                  <th className="py-3 px-4 text-right font-semibold text-gray-700 border-b">
+                  <th
+                    style={{
+                      padding: '0.75rem 1rem',
+                      textAlign: 'right',
+                      fontWeight: '600',
+                      color: '#374151',
+                      borderBottom: '1px solid #e5e7eb',
+                    }}
+                  >
                     Price
                   </th>
-                  <th className="py-3 px-4 text-right font-semibold text-gray-700 border-b">
+                  <th
+                    style={{
+                      padding: '0.75rem 1rem',
+                      textAlign: 'right',
+                      fontWeight: '600',
+                      color: '#374151',
+                      borderBottom: '1px solid #e5e7eb',
+                    }}
+                  >
                     Qty
                   </th>
-                  <th className="py-3 px-4 text-right font-semibold text-gray-700 border-b">
+                  <th
+                    style={{
+                      padding: '0.75rem 1rem',
+                      textAlign: 'right',
+                      fontWeight: '600',
+                      color: '#374151',
+                      borderBottom: '1px solid #e5e7eb',
+                    }}
+                  >
                     Amount
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {invoiceData.map((item, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="py-3 px-4 text-gray-800">
+                  <tr key={index} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <td
+                      style={{
+                        padding: '0.75rem 1rem',
+                        color: '#1f2937',
+                      }}
+                    >
                       {item.accessoryName || `Accessory ${index + 1}`}
                     </td>
-                    <td className="py-3 px-4 text-right text-gray-600">
-                      ₹{item.perPiecePrice.toFixed(2)}
+                    <td
+                      style={{
+                        padding: '0.75rem 1rem',
+                        textAlign: 'right',
+                        color: '#4b5563',
+                      }}
+                    >
+                      {item.perPiecePrice.toFixed(2)}
                     </td>
-                    <td className="py-3 px-4 text-right text-gray-600">
+                    <td
+                      style={{
+                        padding: '0.75rem 1rem',
+                        textAlign: 'right',
+                        color: '#4b5563',
+                      }}
+                    >
                       {item.quantity}
                     </td>
-                    <td className="py-3 px-4 text-right text-gray-800 font-medium">
-                      ₹{(item.perPiecePrice * item.quantity).toFixed(2)}
+                    <td
+                      style={{
+                        padding: '0.75rem 1rem',
+                        textAlign: 'right',
+                        color: '#1f2937',
+                        fontWeight: '500',
+                      }}
+                    >
+                      {(item.perPiecePrice * item.quantity).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -129,33 +256,74 @@ const AccessoryInvoice = () => {
           </div>
 
           {/* Invoice Totals */}
-          <div className="flex justify-end">
-            <div className="w-64">
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-gray-600">Subtotal:</span>
-                <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ width: '16rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.5rem 0',
+                  borderBottom: '1px solid #e5e7eb',
+                }}
+              >
+                <span style={{ color: '#4b5563' }}>Subtotal:</span>
+                <span style={{ fontWeight: '500' }}>{subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-gray-600">Tax (18%):</span>
-                <span className="font-medium">₹{tax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between py-3">
-                <span className="text-lg font-semibold">Total:</span>
-                <span className="text-lg font-bold">₹{total.toFixed(2)}</span>
+              {/* <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.5rem 0',
+                  borderBottom: '1px solid #e5e7eb',
+                }}
+              >
+                <span style={{ color: '#4b5563' }}>Tax (18%):</span>
+                <span style={{ fontWeight: '500' }}>{tax.toFixed(2)}</span>
+              </div> */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.75rem 0',
+                }}
+              >
+                <span style={{ fontSize: '1.125rem', fontWeight: '600' }}>
+                  Total:
+                </span>
+                <span style={{ fontSize: '1.125rem', fontWeight: '700' }}>
+                  {total.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="mt-12 pt-6 border-t text-center text-gray-500 text-sm">
+          <div
+            style={{
+              marginTop: '3rem',
+              paddingTop: '1.5rem',
+              borderTop: '1px solid #e5e7eb',
+              textAlign: 'center',
+              color: '#6b7280',
+              fontSize: '0.875rem',
+            }}
+          >
             <p>Thank you for your business!</p>
-            <p className="mt-2">
+            <p style={{ marginTop: '0.5rem' }}>
               Terms & Conditions: Payment due within 15 days
             </p>
           </div>
         </div>
 
-        <div className="mt-6 text-center text-gray-500 text-sm no-print">
+        <div
+          style={{
+            marginTop: '1.5rem',
+            textAlign: 'center',
+            color: '#6b7280',
+            fontSize: '0.875rem',
+          }}
+          className="no-print"
+        >
           <p>
             This is a computer generated invoice and does not require a
             signature.
