@@ -20,7 +20,7 @@ const Signin1 = () => {
             <span className="r s" />
             <span className="r" />
           </div>
-          <Card className="borderless text-center" style={{height:'100vh'}}>
+          <Card className="borderless text-center" style={{ height: '100vh' }}>
             <Card.Body>
               {/* <div className="mb-4">
                 <i className="feather icon-unlock auth-icon" />
