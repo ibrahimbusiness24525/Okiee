@@ -301,7 +301,7 @@ const PayablesAndReceivables = () => {
                   (e.currentTarget.style.backgroundColor = '#3b82f6')
                 }
               >
-                <FaPlus /> Create Person
+                <FaPlus /> Create Entity
               </button>
 
               <button

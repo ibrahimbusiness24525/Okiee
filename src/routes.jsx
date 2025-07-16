@@ -351,6 +351,11 @@ const routes = [
         element: lazy(() => import('./components/Invoice/SoldInvoice')),
       },
       {
+        exact: 'true',
+        path: '/invoice/accessory',
+        element: lazy(() => import('./components/Invoice/AccessoryInvoice')),
+      },
+      {
         path: '*',
         exact: 'true',
         element: () => <Navigate to={BASE_URL} />,

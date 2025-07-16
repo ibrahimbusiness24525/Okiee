@@ -167,6 +167,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Form, FormControl, ListGroup, Modal } from 'react-bootstrap';
+import ModalComponent from '../../../../components/Modal/Modal';
 import useWindowSize from '../../../../hooks/useWindowSize';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
@@ -177,6 +178,7 @@ import { InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
 import { useGetAccessories } from 'hooks/accessory';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import { FaFileAlt, FaPhone, FaPlus, FaUser } from 'react-icons/fa';
 
 const NavLeft = () => {
   const navigate = useNavigate();
@@ -241,6 +243,43 @@ const NavLeft = () => {
     list: true,
     showSoldModal: false,
   });
+  const [createPersonData, setCreatePersonData] = useState({
+    name: '',
+    number: '',
+    reference: '',
+  });
+
+  const [isCreatingEntity, setIsCreatingEntity] = useState(false);
+  const handleCreatePerson = async (e) => {
+    e.preventDefault();
+    if (
+      !createPersonData.name ||
+      !createPersonData.number ||
+      !createPersonData.reference
+    ) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.post('/api/person/create', {
+        name: createPersonData.name,
+        number: Number.parseInt(createPersonData.number),
+        reference: createPersonData.reference,
+      });
+
+      setShowCreateModal(false);
+      setCreatePersonData({ name: '', number: '', reference: '' });
+      alert('Person created successfully!');
+    } catch (error) {
+      console.error('Error creating person:', error);
+      alert('Error creating person. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -358,11 +397,8 @@ const NavLeft = () => {
       justifyContent: 'center',
     },
     largeScreen: {
-      // height: '50px',
-      // width: '200px',
-      // marginLeft: '50px',
       height: '40px',
-      width: '150px',
+      width: '120px',
       marginLeft: '40px',
       marginTop: '0px',
     },
@@ -393,7 +429,6 @@ const NavLeft = () => {
     dynamicStyles = buttonStyles.smallScreen;
   }
   console.log('formdata imei', formData?.addedImeis);
-
   return (
     <>
       <ListGroup as="ul" bsPrefix=" " className="navbar-nav mr-auto">
@@ -475,6 +510,20 @@ const NavLeft = () => {
             onClick={handleAddModelShow}
           >
             Add Model
+          </button>
+        </ListGroup.Item>
+        <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
+          <button
+            style={{
+              ...buttonStyles.base,
+              ...dynamicStyles,
+              background: '#4CAF50', // Simple blue
+            }}
+            onMouseEnter={(e) => (e.target.style.background = '#1976D2')} // Darker blue
+            onMouseLeave={(e) => (e.target.style.background = '#2196F3')}
+            onClick={() => setShowCreateModal(true)}
+          >
+            Create Entity
           </button>
         </ListGroup.Item>
       </ListGroup>
@@ -1056,6 +1105,231 @@ const NavLeft = () => {
           setSingleTransaction={setWalletTransaction}
         />
       </Modal>
+      <ModalComponent
+        show={showCreateModal}
+        size="sm"
+        onClick={() => setShowCreateModal(false)}
+      >
+        <h2
+          style={{
+            margin: '0 0 24px 0',
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#1f2937',
+          }}
+        >
+          Create New Person
+        </h2>
+
+        <form onSubmit={handleCreatePerson}>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}
+            >
+              Name *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaUser
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="text"
+                value={createPersonData.name}
+                onChange={(e) =>
+                  setCreatePersonData({
+                    ...createPersonData,
+                    name: e.target.value,
+                  })
+                }
+                placeholder="Enter person name"
+                style={{
+                  width: '100%',
+                  padding: '12px 12px 12px 40px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}
+            >
+              Phone Number *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaPhone
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="tel"
+                value={createPersonData.number}
+                onChange={(e) =>
+                  setCreatePersonData({
+                    ...createPersonData,
+                    number: e.target.value,
+                  })
+                }
+                placeholder="Enter phone number"
+                style={{
+                  width: '100%',
+                  padding: '12px 12px 12px 40px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}
+            >
+              Reference *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaFileAlt
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="text"
+                value={createPersonData.reference}
+                onChange={(e) =>
+                  setCreatePersonData({
+                    ...createPersonData,
+                    reference: e.target.value,
+                  })
+                }
+                placeholder="Enter reference"
+                style={{
+                  width: '100%',
+                  padding: '12px 12px 12px 40px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                required
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              style={{
+                padding: '12px 24px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                color: '#6b7280',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = '#f9fafb')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = 'white')
+              }
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isCreatingEntity}
+              style={{
+                padding: '12px 24px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: isCreatingEntity ? '#9ca3af' : '#3b82f6',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: isCreatingEntity ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) => {
+                if (!isCreatingEntity)
+                  e.currentTarget.style.backgroundColor = '#2563eb';
+              }}
+              onMouseOut={(e) => {
+                if (!isSubmitting)
+                  e.currentTarget.style.backgroundColor = '#3b82f6';
+              }}
+            >
+              {isCreatingEntity ? 'Creating...' : 'Create Person'}
+            </button>
+          </div>
+        </form>
+      </ModalComponent>
     </>
   );
 };
