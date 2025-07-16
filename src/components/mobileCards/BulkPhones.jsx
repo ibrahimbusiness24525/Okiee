@@ -32,6 +32,7 @@ import { toast } from 'react-toastify';
 import { MoonLoader } from 'react-spinners';
 import { useGetAccessories } from 'hooks/accessory';
 import { Eye, EyeOff } from 'lucide-react';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 const NewMobilesList = () => {
   const [showAmount, setShowAmount] = useState(false);
   const { data } = useGetAccessories();
@@ -51,8 +52,15 @@ const NewMobilesList = () => {
   const [accessoryName, setAccessoryName] = useState('');
   const [accessoryPrice, setAccessoryPrice] = useState(0);
   const [accessories, setAccessories] = useState([
-    { id: "", name: '', quantity: 1, price: '' },
+    { id: '', name: '', quantity: 1, price: '' },
   ]);
+  const [showWalletTransactionModal, setShowWalletTransactionModal] =
+    useState(false);
+  const [walletTransaction, setWalletTransaction] = useState({
+    bankAccountUsed: '',
+    amountFromBank: '',
+    amountFromPocket: '',
+  });
   const [customerNumber, setCustomerNumber] = useState('');
   const [bulkMobile, setBulkMobiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -281,6 +289,7 @@ const NewMobilesList = () => {
 
     const updatedMobile = {
       ...soldMobile,
+      walletTransaction,
       finalPrice,
       sellingType,
       warranty,
@@ -881,8 +890,8 @@ const NewMobilesList = () => {
                           (total, ramSim) => {
                             const imeis = Array.isArray(ramSim.imeiNumbers)
                               ? ramSim.imeiNumbers.filter(
-                                (imei) => imei.isDispatched === false
-                              )
+                                  (imei) => imei.isDispatched === false
+                                )
                               : [];
                             return total + imeis.length;
                           },
@@ -1466,7 +1475,10 @@ const NewMobilesList = () => {
                           value={accessory.name} // holds ID
                           onChange={(e) => {
                             const selectedId = e.target.value;
-                            const selectedName = data?.data?.find(item => item._id === selectedId)?.accessoryName || "";
+                            const selectedName =
+                              data?.data?.find(
+                                (item) => item._id === selectedId
+                              )?.accessoryName || '';
 
                             const updatedAccessories = [...accessories];
                             updatedAccessories[index] = {
@@ -1518,7 +1530,9 @@ const NewMobilesList = () => {
                         variant="secondary"
                         className="mt-2"
                         onClick={() => {
-                          const updated = accessories.filter((_, i) => i !== index);
+                          const updated = accessories.filter(
+                            (_, i) => i !== index
+                          );
                           setAccessories(updated);
                         }}
                       >
@@ -1532,7 +1546,7 @@ const NewMobilesList = () => {
                     onClick={() =>
                       setAccessories((prev) => [
                         ...prev,
-                        { id: "", name: "", quantity: 1, price: "" },
+                        { id: '', name: '', quantity: 1, price: '' },
                       ])
                     }
                   >
@@ -1723,6 +1737,30 @@ const NewMobilesList = () => {
               </>
             )}
           </Form>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'end',
+              marginTop: '20px',
+            }}
+          >
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setShowWalletTransactionModal(!showWalletTransactionModal)
+              }
+            >
+              Proceed To Pay
+            </Button>
+            <WalletTransactionModal
+              show={showWalletTransactionModal}
+              toggleModal={() =>
+                setShowWalletTransactionModal(!showWalletTransactionModal)
+              }
+              singleTransaction={walletTransaction}
+              setSingleTransaction={setWalletTransaction}
+            />
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSoldModal(false)}>

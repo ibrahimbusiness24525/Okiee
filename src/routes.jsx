@@ -180,6 +180,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/balanceSheet',
+        element: lazy(() => import('../src/views/dashboard/BalanceSheet')), // Ledger
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/partyLedger/:id',
         element: lazy(() => import('./components/Ledger/PartyLedgerDetail')), // Ledger
       },

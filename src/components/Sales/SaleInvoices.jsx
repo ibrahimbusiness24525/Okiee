@@ -221,10 +221,6 @@ const SaleInvoices = () => {
           ]}
           extraColumns={[
             (obj) => {
-              const salePrice = Number(obj.salePrice) || 0;
-              const purchasePrice = Number(obj.purchasePrice) || 0;
-              const profitOrLoss = salePrice - purchasePrice;
-
               return (
                 <div
                   style={{
@@ -233,8 +229,8 @@ const SaleInvoices = () => {
                     gap: '12px',
                     padding: '8px 16px',
                     borderRadius: '8px',
-                    backgroundColor: profitOrLoss < 0 ? '#ffe6e6' : '#e6ffe6',
-                    color: profitOrLoss < 0 ? '#cc0000' : '#006600',
+                    backgroundColor: obj.profit < 0 ? '#ffe6e6' : '#e6ffe6',
+                    color: obj.profit < 0 ? '#cc0000' : '#006600',
                     fontWeight: 'bold',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                     width: '300px', // You can adjust this value as needed
@@ -249,9 +245,9 @@ const SaleInvoices = () => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {profitOrLoss < 0
-                      ? `Loss of ${-profitOrLoss}`
-                      : `Profit of ${profitOrLoss}`}
+                    {obj.profit < 0
+                      ? `Loss of ${-obj.profit}`
+                      : `Profit of ${obj.profit}`}
                   </p>
                   <Button
                     onClick={() => handlePrintClick(obj)}
@@ -291,7 +287,7 @@ const SaleInvoices = () => {
         search={'imei1'}
         keysToDisplay={[
           'type',
-
+          'purchasePrice',
           'salePrice',
           'sellingPaymentType',
           'warranty',
@@ -299,7 +295,8 @@ const SaleInvoices = () => {
         ]}
         label={[
           'Type of Sale',
-          'Price',
+          'Purchase Price',
+          'Sale Price',
           'Selling Payment Type',
           'Warranty',
           'Invoice Date',
@@ -307,13 +304,19 @@ const SaleInvoices = () => {
         ]}
         customBlocks={[
           {
-            index: 2,
+            index: 1,
+            component: (purchasePrice) => {
+              return purchasePrice === 0 ? 'Not mentioned' : purchasePrice;
+            },
+          },
+          {
+            index: 3,
             component: (sellingType) => {
               return sellingType ? sellingType : 'Not mentioned';
             },
           },
           {
-            index: 4,
+            index: 5,
             component: (date) => {
               return dateFormatter(date);
             },
@@ -321,14 +324,6 @@ const SaleInvoices = () => {
         ]}
         extraColumns={[
           (obj) => {
-            const salePrice = Number(obj.salePrice) || 0;
-            const purchasePrice = Number(obj.buyingPrice) || 0;
-            console.log('====================================');
-            console.log('salePrice', salePrice);
-            console.log('purchasePrice', purchasePrice);
-            console.log('====================================');
-            const profitOrLoss = salePrice - purchasePrice;
-
             return (
               <div
                 style={{
@@ -337,8 +332,8 @@ const SaleInvoices = () => {
                   gap: '12px',
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  backgroundColor: profitOrLoss < 0 ? '#ffe6e6' : '#e6ffe6',
-                  color: profitOrLoss < 0 ? '#cc0000' : '#006600',
+                  backgroundColor: obj.profit < 0 ? '#ffe6e6' : '#e6ffe6',
+                  color: obj.profit < 0 ? '#cc0000' : '#006600',
                   fontWeight: 'bold',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                   width: '300px', // You can adjust this value as needed
@@ -353,9 +348,9 @@ const SaleInvoices = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {profitOrLoss < 0
-                    ? `Loss of ${-profitOrLoss}`
-                    : `Profit of ${profitOrLoss}`}
+                  {obj.profit < 0
+                    ? `Loss of ${-obj.profit}`
+                    : `Profit of ${obj.profit}`}
                 </p>
                 <Button
                   onClick={() => handlePrintBulkClick(obj)}

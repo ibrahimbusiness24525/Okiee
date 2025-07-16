@@ -8,9 +8,13 @@ import WalletTransactionModal from 'components/WalletTransaction/WalletTransacti
 
 const AddAccessory = () => {
   const [showModal, setShowModal] = useState(false);
+  const [allParties, setAllParties] = useState([]);
+
   const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
   const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [hideAccessories, setHideAccessories] = useState(true);
+  const [hideStockValue, setHideStockValue] = useState(true);
   const [addStockForm, setAddStockForm] = useState({
     accessoryId: '',
     quantity: 1,
@@ -32,9 +36,33 @@ const AddAccessory = () => {
     name: '',
     quantity: '',
     price: '',
+    paymentType: '',
+    payableAmountNow: '',
+    payableAmountLater: '',
+    dateOfPayment: '',
   });
   const [accessoryList, setAccessoryList] = useState([]);
+  const [selectedPartyId, setSelectedPartyId] = useState("");
 
+  const handleSelectChange = (e) => {
+    setSelectedPartyId(e.target.value);
+  };
+  const handleAddStock = async () => {
+    console.log(addStockForm);
+
+    try {
+      await api.post(`/api/accessory/${addStockForm.accessoryId}`, {
+        quantity: addStockForm.quantity,
+        perPiecePrice: addStockForm.purchasePrice,
+      });
+      toast.success('Stock added successfully');
+      setShowAddStockModal(false);
+    } catch (error) {
+      console.error('Error adding stock', error);
+      toast.console.error();
+      ('error adding stock');
+    }
+  };
   const fetchAccessories = async () => {
     try {
       const res = await api.get('/api/accessory');
@@ -43,7 +71,18 @@ const AddAccessory = () => {
       console.error('Error fetching accessories', error);
     }
   };
+  const getAllParties = async () => {
+    try {
+      const response = await api.get('/api/partyLedger/partyNameAndId');
+      setAllParties(response?.data?.data || []);
+    } catch (error) {
+      console.error("Error fetching parties:", error);
+    }
+  }
+  console.log("All parties:", allParties);
+
   useEffect(() => {
+    getAllParties();
     fetchAccessories();
   }, []);
   console.log('accessoryList accessoryList', accessoryList);
@@ -61,7 +100,16 @@ const AddAccessory = () => {
         totalPrice,
         stock: Number(accessoryData.quantity),
         givePayment: givePayment,
+        partyLedgerId: selectedPartyId,
+        purchasePaymentType: accessoryData.paymentType,
+        creditPaymentData: {
+          payableAmountNow: accessoryData.payableAmountNow,
+          payableAmountLater: accessoryData.payableAmountLater,
+          dateOfPayment: accessoryData.dateOfPayment,
+        },
       });
+      console.log('Accessory added:', res);
+
       fetchAccessories(); // Refresh the accessory list
       setAccessoryList([...accessoryList, res.data]);
       toast.success('Accessory added successfully!');
@@ -184,25 +232,70 @@ const AddAccessory = () => {
               backgroundColor: '#3b82f6',
             }}
           />
-          <div style={{ paddingLeft: '12px' }}>
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#64748b',
-                marginBottom: '8px',
-              }}
-            >
-              Total Accessories
+          <div
+            style={{
+              paddingLeft: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#64748b',
+                  marginBottom: '8px',
+                }}
+              >
+                Total Accessories
+              </div>
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  filter: hideAccessories ? 'blur(5px)' : 'none',
+                  transition: 'filter 0.3s ease',
+                }}
+              >
+                {accessoryList.length}
+              </div>
             </div>
             <div
               style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#1e293b',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                ':hover': {
+                  backgroundColor: '#f1f5f9',
+                },
               }}
+              onClick={() => setHideAccessories(!hideAccessories)}
             >
-              {accessoryList.length}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 5C5.63636 5 2 12 2 12C2 12 5.63636 19 12 19C18.3636 19 22 12 22 12C22 12 18.3636 5 12 5Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </div>
         </div>
@@ -231,36 +324,79 @@ const AddAccessory = () => {
               backgroundColor: '#10b981',
             }}
           />
-          <div style={{ paddingLeft: '12px' }}>
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#64748b',
-                marginBottom: '8px',
-              }}
-            >
-              Total Stock Value
+          <div
+            style={{
+              paddingLeft: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#64748b',
+                  marginBottom: '8px',
+                }}
+              >
+                Total Stock Value
+              </div>
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  filter: hideStockValue ? 'blur(5px)' : 'none',
+                  transition: 'filter 0.3s ease',
+                }}
+              >
+                {accessoryList
+                  .reduce(
+                    (sum, item) => sum + (Number(item.totalPrice) || 0),
+                    0
+                  )
+                  .toLocaleString()}
+              </div>
             </div>
             <div
               style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#1e293b',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                ':hover': {
+                  backgroundColor: '#f1f5f9',
+                },
               }}
+              onClick={() => setHideStockValue(!hideStockValue)}
             >
-              {' '}
-              {accessoryList.reduce(
-                (sum, item) => sum + (Number(item.totalPrice) || 0),
-                0
-              )}{' '}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 5C5.63636 5 2 12 2 12C2 12 5.63636 19 12 19C18.3636 19 22 12 22 12C22 12 18.3636 5 12 5Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                  stroke="#64748b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </div>
         </div>
-
-        {/* Optional: Add more metric boxes with different colors */}
       </div>
-
       <div
         style={{
           display: 'flex',
@@ -305,6 +441,34 @@ const AddAccessory = () => {
         </h2>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '600',
+              }}
+            >
+              Select Party *
+            </label>
+            <select
+              value={selectedPartyId}
+              onChange={handleSelectChange}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '2px solid #d1d5db',
+                borderRadius: '10px',
+                fontSize: '16px',
+                outline: 'none',
+              }}
+            >
+              <option value="">Select Party</option>
+              {allParties.map((party) => (
+                <option key={party._id} value={party._id}>
+                  {party.partyName}
+                </option>
+              ))}
+            </select>
             <label
               style={{
                 display: 'block',
@@ -393,7 +557,76 @@ const AddAccessory = () => {
               }}
             />
           </div>
-
+          <div>
+            <label htmlFor="">Select Payment Type</label>
+            <select style={{
+              width: '100%',
+              padding: '12px',
+              border: '2px solid #d1d5db',
+              borderRadius: '10px',
+              fontSize: '16px',
+              outline: 'none',
+              marginBottom: '20px',
+            }} name="" id=""
+              onChange={(e) => setAccessoryData({ ...accessoryData, paymentType: e.target.value })}
+            >
+              <option value="">Select Payment</option>
+              <option value="full-payment">Full Payment</option>
+              <option value="credit">Credit</option>
+            </select>
+            {accessoryData.paymentType === 'credit' && (
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                <input
+                  type="number"
+                  placeholder="Payable Now"
+                  value={accessoryData.payableAmountNow || ''}
+                  onChange={e =>
+                    setAccessoryData({ ...accessoryData, payableAmountNow: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '10px',
+                    fontSize: '16px',
+                    outline: 'none',
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="Payable Later"
+                  value={accessoryData.payableAmountLater || ''}
+                  onChange={e =>
+                    setAccessoryData({ ...accessoryData, payableAmountLater: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '10px',
+                    fontSize: '16px',
+                    outline: 'none',
+                  }}
+                />
+                <input
+                  type="date"
+                  placeholder="Date of Payment"
+                  value={accessoryData.dateOfPayment || ''}
+                  onChange={e =>
+                    setAccessoryData({ ...accessoryData, dateOfPayment: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '10px',
+                    fontSize: '16px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            )}
+          </div>
           <div
             style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}
           >
@@ -675,12 +908,12 @@ const AddAccessory = () => {
             </h2>
 
             <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                // Handle add stock logic here
-                console.log('Adding stock:', addStockForm);
-                setShowAddStockModal(false);
-              }}
+              // onSubmit={(e) => {
+              //   e.preventDefault();
+              //   // Handle add stock logic here
+              //   console.log('Adding stock:', addStockForm);
+              //   setShowAddStockModal(false);
+              // }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -727,9 +960,9 @@ const AddAccessory = () => {
                 />
               </Form.Group>
 
-              {/* Purchase Price */}
+              {/* Per Piece Price */}
               <Form.Group controlId="purchasePrice">
-                <Form.Label>Purchase Price</Form.Label>
+                <Form.Label>Per Piece Price</Form.Label>
                 <Form.Control
                   type="number"
                   value={addStockForm.purchasePrice}
@@ -747,7 +980,7 @@ const AddAccessory = () => {
               </Form.Group>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <Button variant="primary" type="submit">
+                <Button variant="primary" onClick={handleAddStock}>
                   Add Stock
                 </Button>
                 <Button
