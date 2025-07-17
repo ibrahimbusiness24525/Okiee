@@ -310,7 +310,7 @@ const TodayBook = () => {
   const totalAmount = totalInvoices + openingBalance - totalExpenses;
 
   const formatCurrency = (amount, pkr = true) => {
-    return `${amount.toLocaleString()}${pkr ? ' PKR' : ''}`;
+    return `${amount}${pkr ? ' PKR' : ''}`;
   };
 
   const formatDate = (dateString) => {
@@ -335,8 +335,11 @@ const TodayBook = () => {
       route: '/sales',
     },
     {
-      title: 'Accessories Sale',
-      value: formatCurrency(accessoriesData.totalSales, false),
+      title: 'Accessories Transactions',
+      value: formatCurrency(
+        todayBookData?.totalAccesoriesTransactionLength,
+        false
+      ),
       icon: Package,
       color: '#7c3aed', // purple-600
       bgColor: '#f5f3ff', // purple-50
@@ -344,7 +347,7 @@ const TodayBook = () => {
     },
     {
       title: 'Accessories Profit',
-      value: formatCurrency(accessoriesData.totalProfit, false),
+      value: formatCurrency(todayBookData?.totalAccessoriesProfit, false),
       icon: Package,
       color: '#7c3aed', // purple-600
       bgColor: '#f5f3ff', // purple-50
@@ -887,7 +890,7 @@ const TodayBook = () => {
                     color: '#8b5cf6',
                   }}
                 >
-                  {accessoriesData.totalProfit.toLocaleString()}
+                  {todayBookData?.totalAccessoriesProfit}
                 </p>
               </div>
               <div>
