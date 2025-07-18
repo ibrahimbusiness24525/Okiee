@@ -161,9 +161,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-      dataReceived?.finalPrice ??
-      dataReceived?.demandPrice ??
-      0
+    dataReceived?.finalPrice ??
+    dataReceived?.demandPrice ??
+    0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -538,8 +538,8 @@ const SoldInvoice = () => {
     date:
       dataReceived?.saleDate || phoneDetail?.saleDate
         ? new Date(
-            dataReceived?.saleDate || phoneDetail?.saleDate
-          ).toLocaleDateString('en-GB')
+          dataReceived?.saleDate || phoneDetail?.saleDate
+        ).toLocaleDateString('en-GB')
         : 'N/A',
     invoiceNumber:
       (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() ||
@@ -565,15 +565,15 @@ const SoldInvoice = () => {
           qty: 1,
           rate: String(
             ramSim.priceOfOne ||
-              dataReceived?.finalPrice ||
-              phoneDetail?.finalPrice ||
-              0
+            dataReceived?.finalPrice ||
+            phoneDetail?.finalPrice ||
+            0
           ),
           amount: String(
             ramSim.priceOfOne ||
-              dataReceived?.finalPrice ||
-              phoneDetail?.finalPrice ||
-              0
+            dataReceived?.finalPrice ||
+            phoneDetail?.finalPrice ||
+            0
           ),
         }));
       }) || []),
@@ -581,23 +581,23 @@ const SoldInvoice = () => {
       // Fallback to single phone if no ramSimDetails
       ...(!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
         ? [
-            {
-              no: 1,
-              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
-              code: dataReceived?.imei1 || phoneDetail?.imei1 || '-',
-              qty: 1,
-              rate: String(
-                dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
-              ),
-              amount: String(
-                dataReceived?.totalInvoice ||
-                  phoneDetail?.totalInvoice ||
-                  dataReceived?.finalPrice ||
-                  phoneDetail?.finalPrice ||
-                  0
-              ),
-            },
-          ]
+          {
+            no: 1,
+            name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+            code: dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+            qty: 1,
+            rate: String(
+              dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+            ),
+            amount: String(
+              dataReceived?.totalInvoice ||
+              phoneDetail?.totalInvoice ||
+              dataReceived?.finalPrice ||
+              phoneDetail?.finalPrice ||
+              0
+            ),
+          },
+        ]
         : []),
 
       // Handle accessories from either source
@@ -635,11 +635,11 @@ const SoldInvoice = () => {
         Number(
           dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0
         ) +
-          ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
-            (sum, acc) =>
-              sum + Number(acc.price || 0) * Number(acc.quantity || 0),
-            0
-          ) || 0)
+        ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
+          (sum, acc) =>
+            sum + Number(acc.price || 0) * Number(acc.quantity || 0),
+          0
+        ) || 0)
       ),
       discount: '–',
       netTotal: String(
@@ -648,10 +648,10 @@ const SoldInvoice = () => {
       previousBal: '–',
       total: String(
         dataReceived?.totalInvoice ||
-          phoneDetail?.totalInvoice ||
-          dataReceived?.finalPrice ||
-          phoneDetail?.finalPrice ||
-          0
+        phoneDetail?.totalInvoice ||
+        dataReceived?.finalPrice ||
+        phoneDetail?.finalPrice ||
+        0
       ),
       bankDeposit:
         dataReceived?.walletTransaction?.amountFromBank ||
@@ -667,14 +667,14 @@ const SoldInvoice = () => {
     pending: [
       // Only add pending items if this is a credit sale
       ...(dataReceived?.sellingPaymentType === 'Credit' ||
-      phoneDetail?.sellingPaymentType === 'Credit'
+        phoneDetail?.sellingPaymentType === 'Credit'
         ? [
-            {
-              no: 1,
-              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
-              qty: 1,
-            },
-          ]
+          {
+            no: 1,
+            name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+            qty: 1,
+          },
+        ]
         : []),
     ],
     social: {
@@ -985,7 +985,7 @@ const SoldInvoice = () => {
       {originalInvoice &&
         !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-        dataReceived?.bulkPhonePurchaseId ? (
+          dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -1584,12 +1584,12 @@ const SoldInvoice = () => {
                           dataReceived?.companyName ||
                           (Array.isArray(phoneDetail)
                             ? phoneDetail.map((item, i) => (
-                                <div key={i}>
-                                  {item.companyName || 'Not Available'}
-                                </div>
-                              ))
+                              <div key={i}>
+                                {item.companyName || 'Not Available'}
+                              </div>
+                            ))
                             : phoneDetail?.bulkPhonePurchase?.ramSimDetails?.[0]
-                                ?.companyName || 'Not Available')}
+                              ?.companyName || 'Not Available')}
                       </div>
                     </td>
 
@@ -1628,7 +1628,7 @@ const SoldInvoice = () => {
                       }}
                     >
                       {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.ramMemory ? (
+                        phoneDetail[0]?.ramMemory ? (
                         <div>
                           {phoneDetail.map((item, i) => (
                             <div key={i}>{item.ramMemory || 'N/A'}</div>
@@ -1651,7 +1651,7 @@ const SoldInvoice = () => {
                       }}
                     >
                       {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.batteryHealth ? (
+                        phoneDetail[0]?.batteryHealth ? (
                         <div>
                           {phoneDetail.map((item, i) => (
                             <div key={i}>{item.batteryHealth || 'N/A'}</div>

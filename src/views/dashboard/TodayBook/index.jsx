@@ -39,7 +39,7 @@ const TodayBook = () => {
       });
 
       setTodayBookData(response?.data?.data || []);
-    } catch (error) {}
+    } catch (error) { }
   };
   const fetchTotalCash = async () => {
     try {
@@ -86,11 +86,11 @@ const TodayBook = () => {
 
   const uniqueSoldBulkPhones = todayBookData?.soldBulkPhone
     ? Object.values(
-        todayBookData.soldBulkPhone.reduce((acc, phone) => {
-          acc[phone.bulkPhonePurchaseId] = phone; // override duplicates
-          return acc;
-        }, {})
-      )
+      todayBookData.soldBulkPhone.reduce((acc, phone) => {
+        acc[phone.bulkPhonePurchaseId] = phone; // override duplicates
+        return acc;
+      }, {})
+    )
     : [];
 
   const totalPurchasePrice =
@@ -203,7 +203,7 @@ const TodayBook = () => {
       (acc, phone) => acc + (Number(phone.profit) || 0),
       0
     ) || 0) +
-    (Number(accessoriesData.totalProfit) || 0);
+    (Number(todayBookData?.totalAccessoriesProfit) || 0);
   console.log('todayBookData', todayBookData);
 
   // Calculate profit without accessories
@@ -287,7 +287,7 @@ const TodayBook = () => {
   // Calculate opening balance from banks
   const openingBalance =
     bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) +
-      totalCash || 0 + totalCash;
+    totalCash || 0 + totalCash;
   const bankTotalBalance =
     bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) ||
     0;
@@ -320,7 +320,7 @@ const TodayBook = () => {
   const metrics = [
     {
       title: 'Sales Profit',
-      value: formatCurrency(profit, false),
+      value: formatCurrency(profit.toFixed(0), false),
       icon: TrendingUp,
       color: totalProfit >= 0 ? '#16a34a' : '#dc2626', // green-600 or red-600
       bgColor: totalProfit >= 0 ? '#f0fdf4' : '#fef2f2', // green-50 or red-50
@@ -328,7 +328,7 @@ const TodayBook = () => {
     },
     {
       title: 'Mobile Sales',
-      value: formatCurrency(totalInvoicesWithoutAccessory),
+      value: formatCurrency(totalInvoicesWithoutAccessory.toFixed(0)),
       icon: Smartphone,
       color: '#2563eb', // blue-600
       bgColor: '#eff6ff', // blue-50
@@ -347,7 +347,7 @@ const TodayBook = () => {
     },
     {
       title: 'Accessories Profit',
-      value: formatCurrency(todayBookData?.totalAccessoriesProfit, false),
+      value: formatCurrency(todayBookData?.totalAccessoriesProfit && todayBookData?.totalAccessoriesProfit.toFixed(0), false),
       icon: Package,
       color: '#7c3aed', // purple-600
       bgColor: '#f5f3ff', // purple-50
@@ -355,7 +355,7 @@ const TodayBook = () => {
     },
     {
       title: 'Expenses',
-      value: formatCurrency(totalExpenses),
+      value: formatCurrency(totalExpenses.toFixed(0)),
       icon: Receipt,
       color: '#dc2626', // red-600
       bgColor: '#fef2f2', // red-50
@@ -363,7 +363,7 @@ const TodayBook = () => {
     },
     {
       title: 'Opening Balance',
-      value: formatCurrency(openingBalance),
+      value: formatCurrency(openingBalance.toFixed(0)),
       icon: Wallet,
       color: '#ea580c', // orange-600
       bgColor: '#fff7ed', // orange-50
@@ -371,7 +371,7 @@ const TodayBook = () => {
     },
     {
       title: 'Cash Amount',
-      value: formatCurrency(pocketCash),
+      value: formatCurrency(pocketCash.toFixed(0)),
       icon: DollarSign,
       color: '#16a34a', // green-600
       bgColor: '#f0fdf4', // green-50
@@ -379,7 +379,7 @@ const TodayBook = () => {
     },
     {
       title: 'Bank Amount',
-      value: formatCurrency(bankTotalBalance),
+      value: formatCurrency(bankTotalBalance.toFixed(0)),
       icon: CreditCard,
       color: '#2563eb', // blue-600
       bgColor: '#eff6ff', // blue-50
@@ -388,7 +388,7 @@ const TodayBook = () => {
 
     {
       title: 'Total Amount',
-      value: formatCurrency(totalAmount),
+      value: formatCurrency(totalAmount.toFixed(0)),
       icon: DollarSign,
       color: '#059669', // emerald-600
       bgColor: '#ecfdf5', // emerald-50
@@ -452,7 +452,7 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.totalStockAmount || 0),
+      value: formatCurrency(todayBookData?.totalStockAmount && todayBookData?.totalStockAmount?.toFixed(0) || 0),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -461,7 +461,7 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.creditSummary?.totalPayable || 0),
+      value: formatCurrency(todayBookData?.creditSummary?.totalPayable.toFixed(0) || 0),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -470,7 +470,7 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.creditSummary?.totalReceivable || 0),
+      value: formatCurrency(todayBookData?.creditSummary?.totalReceivable.toFixed(0) || 0),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -890,7 +890,7 @@ const TodayBook = () => {
                     color: '#8b5cf6',
                   }}
                 >
-                  {todayBookData?.totalAccessoriesProfit}
+                  {todayBookData?.totalAccessoriesProfit?.toLocaleString()}
                 </p>
               </div>
               <div>
@@ -919,7 +919,7 @@ const TodayBook = () => {
                       (sum, p) => sum + (p.profit || 0),
                       0
                     ) || 0) +
-                    (accessoriesData?.totalProfit || 0)
+                    (todayBookData?.totalAccessoriesProfit || 0)
                   ).toLocaleString()}
                 </p>
               </div>
@@ -1186,15 +1186,15 @@ const TodayBook = () => {
             },
           },
         ]}
-        // extraColumns={[
-        //     () => {
-        //         return (
-        //             <MdEdit
+      // extraColumns={[
+      //     () => {
+      //         return (
+      //             <MdEdit
 
-        //                 className="text-[#ccccc] text-[1.3rem]" />
-        //         );
-        //     },
-        // ]}
+      //                 className="text-[#ccccc] text-[1.3rem]" />
+      //         );
+      //     },
+      // ]}
       />
       <div style={{ marginTop: '50px' }}></div>
       <StyledHeading>Today Purchased Single Phones</StyledHeading>

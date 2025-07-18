@@ -152,6 +152,7 @@ const AddAccessory = () => {
   };
   const [formData, setFormData] = useState([
     {
+      accessoryName: "",
       accessoryId: '',
       quantity: 1,
       perPiecePrice: 0,
@@ -168,6 +169,7 @@ const AddAccessory = () => {
 
     setShowAccessoryModal(true);
   };
+  const [invoiceData, setInvoiceData] = useState();
   const handleConfirmSale = async () => {
     try {
       for (let accessory of formData) {
@@ -196,7 +198,22 @@ const AddAccessory = () => {
         },
         entityData: showNewEntityForm ? newEntity : entityData,
       };
-
+      setInvoiceData({
+        sales: formData.map((accessory) => ({
+          accessoryId: accessory.accessoryId,
+          quantity: Number(accessory.quantity),
+          perPiecePrice: Number(accessory.perPiecePrice),
+          name: accessory.accessoryName,
+        })),
+        getPayment: getPayment,
+        purchasePaymentType: accessoryData.paymentType,
+        creditPaymentData: {
+          payableAmountNow: accessoryData.payableAmountNow,
+          payableAmountLater: accessoryData.payableAmountLater,
+          dateOfPayment: accessoryData.dateOfPayment,
+        },
+        entityData: showNewEntityForm ? newEntity : entityData,
+      });
       await api.post('/api/accessory/sell', payload);
 
       fetchAccessories(); // Refresh the accessory list
@@ -1747,7 +1764,7 @@ const AddAccessory = () => {
           variant="secondary"
           onClick={() =>
             navigate('/invoice/accessory', {
-              state: { data: formData },
+              state: { data: invoiceData, type: 'accessory' }, // Pass the invoice data
             })
           }
         >
