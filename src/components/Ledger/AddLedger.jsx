@@ -105,13 +105,13 @@ const AddLedger = () => {
     } catch (error) {
     }
   }
-  const getAllEntitiesRecords = async() =>{
+  const getAllEntitiesRecords = async () => {
     try {
       const response = await api.get("/api/entity/records/all")
       setAllEntitiesRecords(response?.data)
     } catch (error) {
     }
-}
+  }
   useEffect(() => {
     getAllEntities()
     getAllEntitiesRecords()
@@ -233,8 +233,8 @@ const AddLedger = () => {
               margin: "0 0 8px 0",
             }}
           >
-          Expenses          
-        </h1>
+            Expenses
+          </h1>
           <p
             style={{
               fontSize: "16px",
@@ -497,7 +497,7 @@ const AddLedger = () => {
                 </div>
                 <div>
                   <h3 style={{ fontSize: "20px", fontWeight: "600", color: "#1e293b", margin: "0" }}>
-                     Expenses
+                    Expenses
                   </h3>
                   <p style={{ fontSize: "14px", color: "#64748b", margin: "4px 0 0 0" }}>
                     Operating costs and expenditures
@@ -1105,10 +1105,10 @@ const AddLedger = () => {
               </button>
               <button
                 onClick={createExpense}
-                disabled={!expenseData.entityId || !expenseData.expense }
+                disabled={!expenseData.entityId || !expenseData.expense}
                 style={{
                   background:
-                    !expenseData.entityId || !expenseData.expense 
+                    !expenseData.entityId || !expenseData.expense
                       ? "#9ca3af"
                       : "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                   border: "none",
@@ -1117,7 +1117,7 @@ const AddLedger = () => {
                   fontWeight: "600",
                   color: "white",
                   cursor:
-                    !expenseData.entityId || !expenseData.expense 
+                    !expenseData.entityId || !expenseData.expense
                       ? "not-allowed"
                       : "pointer",
                   transition: "all 0.2s ease",
@@ -1290,7 +1290,7 @@ const AddLedger = () => {
                   />
                 </div>
 
-                
+
               </div>
             </div>
 
@@ -1320,10 +1320,10 @@ const AddLedger = () => {
               </button>
               <button
                 onClick={createCashPaid}
-                disabled={!cashPaidData.entityId || !cashPaidData.cashPaid }
+                disabled={!cashPaidData.entityId || !cashPaidData.cashPaid}
                 style={{
                   background:
-                    !cashPaidData.entityId || !cashPaidData.cashPaid 
+                    !cashPaidData.entityId || !cashPaidData.cashPaid
                       ? "#9ca3af"
                       : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
                   border: "none",
@@ -1332,7 +1332,7 @@ const AddLedger = () => {
                   fontWeight: "600",
                   color: "white",
                   cursor:
-                    !cashPaidData.entityId || !cashPaidData.cashPaid 
+                    !cashPaidData.entityId || !cashPaidData.cashPaid
                       ? "not-allowed"
                       : "pointer",
                   transition: "all 0.2s ease",
@@ -1505,7 +1505,7 @@ const AddLedger = () => {
                   />
                 </div>
 
-               
+
               </div>
             </div>
 
@@ -1535,10 +1535,10 @@ const AddLedger = () => {
               </button>
               <button
                 onClick={createCashReceived}
-                disabled={!cashReceivedData.entityId || !cashReceivedData.cashReceived }
+                disabled={!cashReceivedData.entityId || !cashReceivedData.cashReceived}
                 style={{
                   background:
-                    !cashReceivedData.entityId || !cashReceivedData.cashReceived 
+                    !cashReceivedData.entityId || !cashReceivedData.cashReceived
                       ? "#9ca3af"
                       : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                   border: "none",
@@ -1547,7 +1547,7 @@ const AddLedger = () => {
                   fontWeight: "600",
                   color: "white",
                   cursor:
-                    !cashReceivedData.entityId || !cashReceivedData.cashReceived 
+                    !cashReceivedData.entityId || !cashReceivedData.cashReceived
                       ? "not-allowed"
                       : "pointer",
                   transition: "all 0.2s ease",

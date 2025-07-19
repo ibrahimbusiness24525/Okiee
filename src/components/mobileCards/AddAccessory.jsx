@@ -6,6 +6,7 @@ import { useGetAccessories } from 'hooks/accessory';
 import { Button, Form, Toast } from 'react-bootstrap';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import { useNavigate } from 'react-router-dom';
+import { FaTrash } from 'react-icons/fa';
 
 const AddAccessory = () => {
   const navigate = useNavigate();
@@ -232,7 +233,23 @@ const AddAccessory = () => {
       toast.error('Failed to sell accessory');
     }
   };
-
+  const confirmDelete = (id) => {
+    // Show confirmation modal or alert
+    if (window.confirm('Are you sure you want to delete this accessory?')) {
+      // Call delete function
+      deleteAccessory(id);
+    }
+  }
+  const deleteAccessory = async (id) => {
+    try {
+      await api.delete(`/api/accessory/${id}`);
+      toast.success('Accessory deleted successfully');
+      fetchAccessories(); // Refresh the accessory list
+    } catch (error) {
+      console.error('Error deleting accessory', error);
+      toast.error('Failed to delete accessory');
+    }
+  }
   return (
     <div
       style={{
@@ -1108,16 +1125,26 @@ const AddAccessory = () => {
                   />
 
                   <div style={{ marginBottom: '12px', flex: '1' }}>
-                    <h4
-                      style={{
-                        fontSize: '18px',
-                        fontWeight: '600',
-                        color: '#1e293b',
-                        margin: '0 0 4px 0',
-                      }}
-                    >
-                      {accessory.accessoryName}
-                    </h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h4
+                        style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#1e293b',
+                          margin: '0 0 4px 0',
+                        }}
+                      >
+                        {accessory.accessoryName}
+                      </h4>
+                      <FaTrash
+                        onClick={() => confirmDelete(accessory._id)}
+                        style={{
+                          color: '#e53935',
+                          cursor: 'pointer',
+                          fontSize: '1rem'
+                        }}
+                      />
+                    </div>
                     <div
                       style={{
                         fontSize: '14px',

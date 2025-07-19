@@ -590,8 +590,74 @@ const TodayBook = () => {
   };
 
   const navigation = useNavigate();
+  const [showAccessoryTrackModal, setShowAccessoryTrackModal] = useState(false);
   return (
     <div style={{ padding: '20px', minHeight: '100vh' }}>
+      <Modal
+        size="lg"
+        show={showAccessoryTrackModal}
+        toggleModal={() => setShowAccessoryTrackModal(!showAccessoryTrackModal)}
+      >
+        <div
+          style={{
+            padding: '24px',
+            backgroundColor: '#f9fafb',
+            borderRadius: '8px',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              marginBottom: '24px',
+              color: '#111827',
+            }}
+          >
+            Track Accessory
+          </h2>
+
+          {todayBookData?.todayPersonsOfAccessories?.length > 0 ? (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {todayBookData.todayPersonsOfAccessories.map((accessory) => (
+                <li
+                  key={accessory.id}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginBottom: '12px',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '16px',
+                    color: '#374151',
+                  }}
+                >
+                  <span style={{ fontWeight: '600' }}>{accessory.accessoryName}</span>
+                  <span style={{ color: '#10b981', fontWeight: '500' }}>
+                    Profit {accessory.profit}PKR
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p
+              style={{
+                fontSize: '16px',
+                color: '#6b7280',
+                backgroundColor: '#fef3c7',
+                padding: '12px',
+                borderRadius: '6px',
+              }}
+            >
+              No accessories found for tracking.
+            </p>
+          )}
+        </div>
+      </Modal>
+
       <Modal
         size="lg"
         show={showProfitModal}
@@ -1005,7 +1071,13 @@ const TodayBook = () => {
                 border: '1px solid #e5e7eb',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               }}
-              onClick={() => setShowProfitModal(true)}
+              onClick={() => {
+                if (metric.title === 'Accessories Profit') {
+                  setShowAccessoryTrackModal(true);
+                } else {
+                  setShowProfitModal(true);
+                }
+              }}
               // onClick={() => (window.location.href = metric.route)}
               onMouseOver={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05)';
