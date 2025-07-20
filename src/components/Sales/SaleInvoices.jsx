@@ -9,6 +9,7 @@ import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
 import { Button } from 'react-bootstrap';
+import { get } from 'jquery';
 
 const SaleInvoices = () => {
   const [search, setSearch] = useState('');
@@ -22,6 +23,7 @@ const SaleInvoices = () => {
   useEffect(() => {
     getInvoices();
     getAllBulkSales();
+    getAccessoriesRecords();
   }, []);
 
   const getInvoices = async () => {
@@ -45,7 +47,20 @@ const SaleInvoices = () => {
     }
   };
   console.log('allInvoices', allbulkSales);
+  const [accessoriesRecords, setAccessoriesRecords] = useState([]);
+  const getAccessoriesRecords = async () => {
+    try {
+      const response = await api.get(`api/accessory/accessoryRecord`);
+      console.log("Accessories Records:", response.data);
+      setAccessoriesRecords(response?.data);
+      return response?.data || [];
 
+
+    } catch (error) {
+      console.error('Error fetching accessories records:', error);
+      return [];
+    }
+  }
   const handlePrintClick = (invoice) => {
     const formattedInvoice = {
       editing: true,
@@ -371,6 +386,94 @@ const SaleInvoices = () => {
           },
         ]}
       />
+      <h3
+        style={{
+          textAlign: 'start',
+          marginBottom: '40px',
+          fontWeight: '700',
+          marginTop: '2rem',
+        }}
+      >
+        Accessory Record
+      </h3>
+      <Table
+        array={accessoriesRecords}
+        search={'accessoryName'}
+        keysToDisplay={[
+          'type',
+          'accessoryName',
+          'perPiecePrice',
+          'quantity',
+          'totalPrice',
+          'createdAt',
+        ]}
+        label={[
+          'Type',
+          'Accessory Name',
+          'Per Piece Price',
+          'Quantity',
+          'Total Price',
+          'Date',
+        ]}
+        customBlocks={[
+          {
+            index: 2,
+            component: (price) => (price === 0 ? 'Not mentioned' : `Rs. ${price}`),
+          },
+          {
+            index: 5,
+            component: (date) => dateFormatter(date),
+          },
+        ]}
+        extraColumns={[
+          (obj) => (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                backgroundColor: obj.profit < 0 ? '#ffe6e6' : '#e6ffe6',
+                color: obj.profit < 0 ? '#cc0000' : '#006600',
+                fontWeight: 'bold',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                width: '300px',
+                justifyContent: 'space-between',
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {obj.profit < 0
+                  ? `Loss of Rs. ${-obj.profit}`
+                  : `Profit of Rs. ${obj.profit}`}
+              </p>
+              {/* <Button
+                onClick={() => handlePrintBulkClick(obj)}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                <FaPrint style={{ marginRight: '8px' }} />
+                Get Invoice
+              </Button> */}
+            </div>
+          ),
+        ]}
+      />
+
+
     </div>
   );
 };

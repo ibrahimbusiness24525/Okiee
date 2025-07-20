@@ -13,11 +13,33 @@ import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
 const TodayPurchase = () => {
 
   const navigate = useNavigate();
-  const[newPhones,setNewPhones] = useState([])
-  const[oldPhones,setOldPhones] = useState([])
-  const[singlePhones, setSinglePhones] = useState([])
-  const[bulkPhones, setBulkPhones] = useState([])
-  
+  const [newPhones, setNewPhones] = useState([])
+  const [oldPhones, setOldPhones] = useState([])
+  const [singlePhones, setSinglePhones] = useState([])
+  const [bulkPhones, setBulkPhones] = useState([])
+  const [accessoriesRecords, setAccessoriesRecords] = useState([]);
+  useEffect(() => {
+    const fetchTodayAccessories = async () => {
+      const records = await getAccessoriesRecords();
+      const today = new Date().toDateString();
+      const filtered = records.filter(item => new Date(item.createdAt).toDateString() === today);
+      setAccessoriesRecords(filtered);
+    };
+    fetchTodayAccessories();
+  }, []);
+  const getAccessoriesRecords = async () => {
+    try {
+      const response = await api.get(`api/accessory/accessoryRecord/purchase`);
+      console.log("Accessories Records:", response.data);
+      setAccessoriesRecords(response?.data);
+      return response?.data || [];
+
+
+    } catch (error) {
+      console.error('Error fetching accessories records:', error);
+      return [];
+    }
+  }
   // Inline styles for the table
   const styles = {
     container: {
@@ -77,172 +99,214 @@ const TodayPurchase = () => {
 
 
 
-  const getAllPurchasedPhones = async() =>{
-    try{
+  const getAllPurchasedPhones = async () => {
+    try {
       const response = await api.get("api/Purchase/all-purchase-phone")
       // const response = await axios.get(`${BASE_URL}api/Purchase/all-purchase-phone`)
       setSinglePhones(response?.data?.data?.singlePhones?.filter((item) => {
         return new Date(item.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
-    }));
-    setNewPhones(response?.data?.data?.singlePhones.filter(phone => {
-      const phoneDate = new Date(phone.date).toISOString().split("T")[0]; // Convert phone's date to "YYYY-MM-DD"
-      return phoneDate ===  new Date().toISOString().split("T")[0] && phone.phoneCondition === "New"; // Check if the phone is new and added today
-    }))
- 
-    
-    
-    setOldPhones(response?.data?.data?.singlePhones?.filter((item) => {
+      }));
+      setNewPhones(response?.data?.data?.singlePhones.filter(phone => {
+        const phoneDate = new Date(phone.date).toISOString().split("T")[0]; // Convert phone's date to "YYYY-MM-DD"
+        return phoneDate === new Date().toISOString().split("T")[0] && phone.phoneCondition === "New"; // Check if the phone is new and added today
+      }))
+
+
+
+      setOldPhones(response?.data?.data?.singlePhones?.filter((item) => {
         const itemDate = new Date(item.date).toISOString().split('T')[0];
         const todayDate = new Date().toISOString().split('T')[0];
-        
-        return itemDate === todayDate && item.phoneCondition === "Used"; 
-    }));
+
+        return itemDate === todayDate && item.phoneCondition === "Used";
+      }));
 
       setBulkPhones(response?.data?.data?.bulkPhones?.filter((item) => {
         return new Date(item.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
       }));
-      
-    }catch(error){
+
+    } catch (error) {
     }
   }
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     getAllPurchasedPhones()
-  },[])
-  const[scannedBarcodeValue,setScannedBarcodeValue]= useState("")
-const handleScan = (value) => {
-  setScannedBarcodeValue(value)
-};
+    getAccessoriesRecords();
+  }, [])
+  const [scannedBarcodeValue, setScannedBarcodeValue] = useState("")
+  const handleScan = (value) => {
+    setScannedBarcodeValue(value)
+  };
 
   return (
     <div style={styles.container}>
       <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Today Purchase Records</h2>
       {/* <BarcodeReader onScan={handleScan} /> */}
       <div>
-        <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700" }}>Single Purchases</h3>
+        <h3 style={{ textAlign: 'start', marginBottom: '40px', fontWeight: "700" }}>Single Purchases</h3>
       </div>
       <StyledHeading>New Phones</StyledHeading>
       <Table
-      routes={["/purchase/todayPurchase"]}
-                        array={newPhones}
-                        search={"imei1"}
-                        keysToDisplay={["modelName", "phoneCondition","imei1", "warranty", "name","date"]}
-                        label={[
-                            "Model Name",
-                            "Phone Condition",
-                            "Imei of mobile",
-                            "Mobile Warranty",
-                            "Name of Seller",
-                            "Date of Purchase",
-                    
-                            "Actions",
-                        ]}
-                        customBlocks={[
-                            {
-                                index: 5,
-                                component: (date) => {
-                                    return dateFormatter(date)
-                                }
-                            }
-                        ]}
-                        extraColumns={[
-                          (obj) => <BarcodePrinter  obj={obj}/>
-                      ]}
-                    />
-        <div style={{marginTop:"3rem"}}>
+        routes={["/purchase/todayPurchase"]}
+        array={newPhones}
+        search={"imei1"}
+        keysToDisplay={["modelName", "phoneCondition", "imei1", "warranty", "name", "date"]}
+        label={[
+          "Model Name",
+          "Phone Condition",
+          "Imei of mobile",
+          "Mobile Warranty",
+          "Name of Seller",
+          "Date of Purchase",
+
+          "Actions",
+        ]}
+        customBlocks={[
+          {
+            index: 5,
+            component: (date) => {
+              return dateFormatter(date)
+            }
+          }
+        ]}
+        extraColumns={[
+          (obj) => <BarcodePrinter obj={obj} />
+        ]}
+      />
+      <div style={{ marginTop: "3rem" }}>
         <StyledHeading>Used Phones</StyledHeading>
         <Table
-           routes={["/purchase/todayPurchase"]}
-                        array={oldPhones}
-                        search={"imei1"}
-                        keysToDisplay={["modelName", "phoneCondition","imei1", "warranty", "name","date"]}
-                        label={[
-                            "Model Name",
-                            "Phone Condition",
-                            "Imei of mobile",
-                            "Mobile Warranty",
-                            "Name of Seller",
-                            "Date of Purchase",
-                    
-                            "Actions",
-                        ]}
-                        customBlocks={[
-                            {
-                                index: 5,
-                                component: (date) => {
-                                    return dateFormatter(date)
-                                }
-                            }
-                        ]}
-                        extraColumns={[
-                          (obj) => <BarcodePrinter type='bulk' obj={obj}/>
-                      ]}
-                    />
-        </div>
+          routes={["/purchase/todayPurchase"]}
+          array={oldPhones}
+          search={"imei1"}
+          keysToDisplay={["modelName", "phoneCondition", "imei1", "warranty", "name", "date"]}
+          label={[
+            "Model Name",
+            "Phone Condition",
+            "Imei of mobile",
+            "Mobile Warranty",
+            "Name of Seller",
+            "Date of Purchase",
+
+            "Actions",
+          ]}
+          customBlocks={[
+            {
+              index: 5,
+              component: (date) => {
+                return dateFormatter(date)
+              }
+            }
+          ]}
+          extraColumns={[
+            (obj) => <BarcodePrinter type='bulk' obj={obj} />
+          ]}
+        />
+      </div>
       <div>
-        <h3 style={{ textAlign: 'start', marginBottom: '40px',fontWeight:"700",marginTop:"5rem" }}>Bulk Purchases</h3>
+        <h3 style={{ textAlign: 'start', marginBottom: '40px', fontWeight: "700", marginTop: "5rem" }}>Bulk Purchases</h3>
       </div>
       <Table
-           routes={["/purchase/todayPurchase/bulkPurchase"]}
-                        array={bulkPhones }
-                        search={"imeiNumbers"}
-                        keysToDisplay={["partyName", "totalQuantity","status","date"]}
-                        label={[
-                            "Party Name",
-                            "No of quantity",
-                            "Status",
-                            "Date of Purchasing",
-                            "Actions",
-                        ]}
-                        customBlocks={[
-                           
-                            {
-                                index: 3,
-                                component: (date) => {
-                                    return dateFormatter(date)
-                                }
-                            }
-                        ]}
-                        extraColumns={[
-                          (obj) => <>
-                          
-                          <div style={{marginRight:"1rem"}}>
-                        <select
-                          style={{
-                            padding: '7px 16px',
-                            borderRadius: '5px',
-                            border: '1px solid #d1d5db',
-                            backgroundColor: '#ffffff',
-                            color: '#111827',
-                            minWidth: '100px',
-                            fontSize: '15px',
-                            fontWeight: 500,
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                            outline: 'none',
-                            width: '100%',
-                            marginRight:'20px',
-                            appearance: 'none', // hides default arrow
-                            backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23666\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'right 12px center',
-                            backgroundSize: '18px 18px',
-                          }}
-                        >
-                          {obj?.ramSimDetails?.map((item) => (
-      <option key={item._id} value={item._id}>
-        {item.modelName}
-      </option>
-                          ))}
-                        </select>
-                        </div>
+        routes={["/purchase/todayPurchase/bulkPurchase"]}
+        array={bulkPhones}
+        search={"imeiNumbers"}
+        keysToDisplay={["partyName", "totalQuantity", "status", "date"]}
+        label={[
+          "Party Name",
+          "No of quantity",
+          "Status",
+          "Date of Purchasing",
+          "Actions",
+        ]}
+        customBlocks={[
 
-                       <BarcodePrinter type='bulk' obj={obj}/>
-                          </>
-                      ]}
-                      
-                       
-                    />
- 
+          {
+            index: 3,
+            component: (date) => {
+              return dateFormatter(date)
+            }
+          }
+        ]}
+        extraColumns={[
+          (obj) => <>
+
+            <div style={{ marginRight: "1rem" }}>
+              <select
+                style={{
+                  padding: '7px 16px',
+                  borderRadius: '5px',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: '#ffffff',
+                  color: '#111827',
+                  minWidth: '100px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  outline: 'none',
+                  width: '100%',
+                  marginRight: '20px',
+                  appearance: 'none', // hides default arrow
+                  backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23666\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 12px center',
+                  backgroundSize: '18px 18px',
+                }}
+              >
+                {obj?.ramSimDetails?.map((item) => (
+                  <option key={item._id} value={item._id}>
+                    {item.modelName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <BarcodePrinter type='bulk' obj={obj} />
+          </>
+        ]}
+
+
+      />
+      <h3
+        style={{
+          textAlign: 'start',
+          marginBottom: '40px',
+          fontWeight: '700',
+          marginTop: '2rem',
+        }}
+      >
+        Accessory Record
+      </h3>
+      <Table
+        array={accessoriesRecords}
+        search={'accessoryName'}
+        keysToDisplay={[
+          'type',
+          'accessoryName',
+          'perPiecePrice',
+          'quantity',
+          'totalPrice',
+          'createdAt',
+        ]}
+        label={[
+          'Type',
+          'Accessory Name',
+          'Per Piece Price',
+          'Quantity',
+          'Total Price',
+          'Date',
+        ]}
+        customBlocks={[
+          {
+            index: 2,
+            component: (price) => (price === 0 ? 'Not mentioned' : `Rs. ${price}`),
+          },
+          {
+            index: 5,
+            component: (date) => dateFormatter(date),
+          },
+        ]}
+
+      />
+
     </div>
   );
 };
