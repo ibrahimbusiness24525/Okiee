@@ -1505,6 +1505,25 @@ const AddAccessory = () => {
           >
             Sell Accessory
           </h4>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+            }}
+          >
+            Total Sale Price:
+          </label>
+
+          <p style={{ marginBottom: '16px' }}>
+            Rs.{' '}
+            {formData.reduce((total, accessory) => {
+              const quantity = Number(accessory.quantity) || 0;
+              const price = Number(accessory.perPiecePrice) || 0;
+              return total + quantity * price;
+            }, 0)}
+          </p>
+
           <div style={{ marginBottom: '24px' }}>
             <label
               style={{
