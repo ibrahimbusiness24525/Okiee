@@ -11,6 +11,7 @@ const AccessoryInvoice = () => {
   const { state } = useLocation();
   const invoiceData = state?.data || {};
   const invoiceRef = useRef();
+
   console.log('Data received in AccessoryInvoice:', invoiceData);
 
   // State for color selection and invoice type
@@ -36,7 +37,7 @@ const AccessoryInvoice = () => {
 
   // Calculate totals
   const subtotal = invoiceData.sales?.reduce(
-    (sum, item) => sum + (item.perPiecePrice * item.quantity),
+    (sum, item) => sum + item.perPiecePrice * item.quantity,
     0
   );
   const total = subtotal;
@@ -97,24 +98,29 @@ const AccessoryInvoice = () => {
 
   // Prepare data for small invoice
   const smallInvoiceData = {
-    termsAndConditions: shop?.termsCondition || "No terms and conditions provided",
-    shopInfo: "Shop Address Not Mentioned",
+    termsAndConditions:
+      shop?.termsCondition || 'No terms and conditions provided',
+    shopInfo: 'Shop Address Not Mentioned',
     title: 'Okiiee',
-    subtitle: invoiceData.purchasePaymentType === 'credit' ? 'Credit Sale' : 'Counter Sale',
+    subtitle:
+      invoiceData.purchasePaymentType === 'credit'
+        ? 'Credit Sale'
+        : 'Counter Sale',
     date: invoiceDate,
     invoiceNumber: `ACC-${Math.floor(Math.random() * 1000000)}`,
     customer: {
       name: invoiceData.entityData?.name || 'Customer Name Not Provided',
       phone: invoiceData.entityData?.number || '____________________',
     },
-    items: invoiceData.sales?.map((item, index) => ({
-      no: index + 1,
-      name: `Accessory ${index + 1}`,
-      code: item.accessoryId.slice(-6),
-      qty: item.quantity,
-      rate: String(item.perPiecePrice),
-      amount: String(item.perPiecePrice * item.quantity),
-    })) || [],
+    items:
+      invoiceData.sales?.map((item, index) => ({
+        no: index + 1,
+        name: `Accessory ${index + 1}`,
+        code: item.accessoryId.slice(-6),
+        qty: item.quantity,
+        rate: String(item.perPiecePrice),
+        amount: String(item.perPiecePrice * item.quantity),
+      })) || [],
     summary: {
       items: invoiceData.sales?.length || 0,
       cashReturn: '–',
@@ -133,11 +139,16 @@ const AccessoryInvoice = () => {
       dateStyle: 'medium',
       timeStyle: 'short',
     }),
-    pending: invoiceData.purchasePaymentType === 'credit' ? [{
-      no: 1,
-      name: 'Accessory Sale',
-      qty: 1,
-    }] : [],
+    pending:
+      invoiceData.purchasePaymentType === 'credit'
+        ? [
+            {
+              no: 1,
+              name: 'Accessory Sale',
+              qty: 1,
+            },
+          ]
+        : [],
     social: {
       url: 'http://www.yourshop.com',
       text: 'www.yourshop.com',
@@ -312,7 +323,9 @@ const AccessoryInvoice = () => {
           <>
             <button
               style={{ ...styles.button, ...styles.printBtn }}
-              onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
+              onMouseEnter={(e) =>
+                (e.target.style.transform = 'translateY(-2px)')
+              }
               onMouseLeave={(e) => (e.target.style.transform = 'none')}
               onClick={handlePrint}
             >
@@ -320,7 +333,9 @@ const AccessoryInvoice = () => {
             </button>
             <button
               style={{ ...styles.button, ...styles.downloadBtn }}
-              onMouseEnter={(e) => (e.target.style.transform = 'translateY(-2px)')}
+              onMouseEnter={(e) =>
+                (e.target.style.transform = 'translateY(-2px)')
+              }
               onMouseLeave={(e) => (e.target.style.transform = 'none')}
               onClick={() => {
                 const element = document.getElementById('invoice');
@@ -339,8 +354,10 @@ const AccessoryInvoice = () => {
           {/* Header */}
           <header style={styles.header}>
             <div>
-              <h2 style={styles.logo}>{shop?.name || "Accessory Shop"}</h2>
-              <p>Contact: {shop?.contactNumber?.join(', ') || "Not Provided"}</p>
+              <h2 style={styles.logo}>{shop?.name || 'Accessory Shop'}</h2>
+              <p>
+                Contact: {shop?.contactNumber?.join(', ') || 'Not Provided'}
+              </p>
             </div>
             <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
           </header>
@@ -360,7 +377,8 @@ const AccessoryInvoice = () => {
                 <strong>Shop Address:</strong> 123 Business Street, City
               </p>
               <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                <strong>Invoice No:</strong> ACC-{Math.floor(Math.random() * 1000000)}
+                <strong>Invoice No:</strong> ACC-
+                {Math.floor(Math.random() * 1000000)}
               </p>
               <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
                 <strong>Date:</strong> {invoiceDate}
@@ -370,13 +388,18 @@ const AccessoryInvoice = () => {
             {/* Right Side */}
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <strong>Customer Name:</strong> {invoiceData.entityData?.name || 'N/A'}
+                <strong>Customer Name:</strong>{' '}
+                {invoiceData.entityData?.name || 'N/A'}
               </p>
               <p style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <strong>Customer Number:</strong> {invoiceData.entityData?.number || 'N/A'}
+                <strong>Customer Number:</strong>{' '}
+                {invoiceData.entityData?.number || 'N/A'}
               </p>
               <p style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <strong>Payment Type:</strong> {invoiceData.purchasePaymentType === 'credit' ? 'Credit' : 'Full Payment'}
+                <strong>Payment Type:</strong>{' '}
+                {invoiceData.purchasePaymentType === 'credit'
+                  ? 'Credit'
+                  : 'Full Payment'}
               </p>
             </div>
           </section>
@@ -394,12 +417,21 @@ const AccessoryInvoice = () => {
             </thead>
             <tbody>
               {invoiceData.sales?.map((item, index) => (
-                <tr key={index} style={index % 2 === 0 ? {} : styles.stripedRow}>
+                <tr
+                  key={index}
+                  style={index % 2 === 0 ? {} : styles.stripedRow}
+                >
                   <td style={styles.td}>{item.name}</td>
-                  <td style={styles.td}>{item.accessoryId.slice(-6)}</td>
-                  <td style={styles.td}>{item.perPiecePrice.toFixed(2)}</td>
+                  <td style={styles.td}>
+                    {item?.accessoryId && item.accessoryId?.slice(-6)}
+                  </td>
+                  <td style={styles.td}>
+                    {item?.perPiecePrice && item.perPiecePrice?.toFixed(2)}
+                  </td>
                   <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}>{(item.perPiecePrice * item.quantity).toFixed(2)}</td>
+                  <td style={styles.td}>
+                    {(item?.perPiecePrice * item?.quantity).toFixed(2)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -407,22 +439,39 @@ const AccessoryInvoice = () => {
 
           {/* Payment Summary */}
           <div style={styles.totalSection}>
-
             {invoiceData.purchasePaymentType === 'credit' && (
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
                   <span>Payable Now:</span>
-                  <span>{invoiceData.creditPaymentData?.payableAmountNow || '0'}</span>
+                  <span>
+                    {invoiceData.creditPaymentData?.payableAmountNow || '0'}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
                   <span>Payable Later:</span>
-                  <span>{invoiceData.creditPaymentData?.payableAmountLater || '0'}</span>
+                  <span>
+                    {invoiceData.creditPaymentData?.payableAmountLater || '0'}
+                  </span>
                 </div>
               </>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-              <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Total:</span>
-              <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{total.toFixed(2)}</span>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '10px',
+              }}
+            >
+              <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
+                Total:
+              </span>
+              <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
+                {total?.toFixed(2)}
+              </span>
             </div>
           </div>
 
@@ -432,7 +481,7 @@ const AccessoryInvoice = () => {
             <div style={styles.termsText}>
               {shop?.termsCondition?.map((term, index) => (
                 <p key={index}>{term}</p>
-              )) || "No terms and conditions provided"}
+              )) || 'No terms and conditions provided'}
             </div>
           </div>
 
@@ -447,7 +496,11 @@ const AccessoryInvoice = () => {
       {/* Small Invoice Preview */}
       {showSmallInvoice && (
         // <SmallInvoiceComponent invoiceData={smallInvoiceData} />
-        <InvoiceComponent accessoriesData={invoiceData} termsAndConditions={shop?.termsCondition} a />
+        <InvoiceComponent
+          accessoriesData={invoiceData}
+          termsAndConditions={shop?.termsCondition}
+          a
+        />
       )}
     </div>
   );

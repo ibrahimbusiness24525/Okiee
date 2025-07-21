@@ -1,4 +1,3 @@
-
 // import React, { useRef } from 'react';
 // import html2canvas from 'html2canvas';
 // import { jsPDF } from 'jspdf';
@@ -800,7 +799,7 @@
 //         >
 //           {numberToWords(totalAmount)}
 //         </div>
-//         {/* 
+//         {/*
 //         <div style={{ color: '#000', marginBottom: '15px', fontSize: '12px' }}>
 //           <strong>Company Will be responsible for all warranty sets.</strong>
 //         </div> */}
@@ -1019,7 +1018,7 @@ export const InvoiceComponent = ({
   const getTotalAmount = () => {
     if (isAccessoryInvoice) {
       return accessoriesData.sales.reduce(
-        (sum, item) => sum + (item.perPiecePrice * item.quantity),
+        (sum, item) => sum + item.perPiecePrice * item.quantity,
         0
       );
     }
@@ -1060,7 +1059,9 @@ export const InvoiceComponent = ({
       });
 
       pdf.addImage(canvas, 'PNG', 0, 0, 148, 210);
-      pdf.save(`invoice_${isAccessoryInvoice ? 'accessory' : (saleData?.customerName || 'customer')}.pdf`);
+      pdf.save(
+        `invoice_${isAccessoryInvoice ? 'accessory' : saleData?.customerName || 'customer'}.pdf`
+      );
     } catch (error) {
       console.error('Error generating PDF:', error);
     }
@@ -1092,21 +1093,45 @@ export const InvoiceComponent = ({
           borderCollapse: 'collapse',
           fontSize: '14px',
           border: '1px solid #000',
-          marginBottom: '10px'
+          marginBottom: '10px',
         }}
       >
         <thead>
           <tr style={{ borderBottom: '1px solid #000' }}>
-            <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+            <th
+              style={{
+                textAlign: 'left',
+                padding: '5px',
+                border: '1px solid #000',
+              }}
+            >
               Accessory
             </th>
-            <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+            <th
+              style={{
+                textAlign: 'right',
+                padding: '5px',
+                border: '1px solid #000',
+              }}
+            >
               Price
             </th>
-            <th style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>
+            <th
+              style={{
+                textAlign: 'center',
+                padding: '5px',
+                border: '1px solid #000',
+              }}
+            >
               Qty
             </th>
-            <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+            <th
+              style={{
+                textAlign: 'right',
+                padding: '5px',
+                border: '1px solid #000',
+              }}
+            >
               Total
             </th>
           </tr>
@@ -1117,13 +1142,31 @@ export const InvoiceComponent = ({
               <td style={{ padding: '5px', border: '1px solid #000' }}>
                 {item.name || 'Accessory'}
               </td>
-              <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+              <td
+                style={{
+                  textAlign: 'right',
+                  padding: '5px',
+                  border: '1px solid #000',
+                }}
+              >
                 {formatNumber(item.perPiecePrice)}
               </td>
-              <td style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>
+              <td
+                style={{
+                  textAlign: 'center',
+                  padding: '5px',
+                  border: '1px solid #000',
+                }}
+              >
                 {item.quantity}
               </td>
-              <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+              <td
+                style={{
+                  textAlign: 'right',
+                  padding: '5px',
+                  border: '1px solid #000',
+                }}
+              >
                 {formatNumber(item.perPiecePrice * item.quantity)}
               </td>
             </tr>
@@ -1147,15 +1190,30 @@ export const InvoiceComponent = ({
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>Payable Now:</span>
-              <span>{formatNumber(accessoriesData.creditPaymentData?.payableAmountNow || 0)}</span>
+              <span>
+                {formatNumber(
+                  accessoriesData.creditPaymentData?.payableAmountNow || 0
+                )}
+              </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>Payable Later:</span>
-              <span>{formatNumber(accessoriesData.creditPaymentData?.payableAmountLater || 0)}</span>
+              <span>
+                {formatNumber(
+                  accessoriesData.creditPaymentData?.payableAmountLater || 0
+                )}
+              </span>
             </div>
           </>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontWeight: 'bold' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '5px',
+            fontWeight: 'bold',
+          }}
+        >
           <span>Total:</span>
           <span>{formatNumber(totalAmount)}</span>
         </div>
@@ -1287,7 +1345,9 @@ export const InvoiceComponent = ({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+    >
       <div
         style={{
           width: '100%',
@@ -1416,21 +1476,39 @@ export const InvoiceComponent = ({
         >
           <div>
             <strong>Date :</strong>{' '}
-            {formatDate(isAccessoryInvoice ? new Date() : (saleData?.date || saleData?.saleDate))}
+            {formatDate(
+              isAccessoryInvoice
+                ? new Date()
+                : saleData?.date || saleData?.saleDate
+            )}
           </div>
           <div>
-            <strong>Invoice #</strong> {invoiceNumber || (isAccessoryInvoice ? `ACC-${Math.floor(Math.random() * 10000)}` : '0000')}
+            <strong>Invoice #</strong>{' '}
+            {invoiceNumber ||
+              (isAccessoryInvoice
+                ? `ACC-${Math.floor(Math.random() * 10000)}`
+                : '0000')}
           </div>
         </div>
 
         <div style={{ marginBottom: '15px', fontSize: '14px', color: '#000' }}>
           <div>
-            <strong style={{ fontWeight: 'bold', color: '#000' }}>Customer Name:</strong>{' '}
-            {isAccessoryInvoice ? accessoriesData.entityData?.name : (saleData?.partyName || saleData?.customerName || 'CUSTOMER')}
+            <strong style={{ fontWeight: 'bold', color: '#000' }}>
+              Customer Name:
+            </strong>{' '}
+            {isAccessoryInvoice
+              ? accessoriesData.entityData?.name
+              : saleData?.partyName || saleData?.customerName || 'CUSTOMER'}
           </div>
           <div>
-            <strong style={{ fontWeight: 'bold', color: '#000' }}>Customer Number:</strong>{' '}
-            {isAccessoryInvoice ? accessoriesData.entityData?.number : (saleData?.partyLedgerId?.substr(-6) || saleData?.customerNumber || '000000')}
+            <strong style={{ fontWeight: 'bold', color: '#000' }}>
+              Customer Number:
+            </strong>{' '}
+            {isAccessoryInvoice
+              ? accessoriesData.entityData?.number
+              : saleData?.partyLedgerId?.substr(-6) ||
+                saleData?.customerNumber ||
+                '000000'}
           </div>
         </div>
 
@@ -1452,49 +1530,115 @@ export const InvoiceComponent = ({
           >
             <thead>
               <tr style={{ borderBottom: '1px solid #000' }}>
-                <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+                <th
+                  style={{
+                    textAlign: 'left',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   Model No
                 </th>
-                <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+                <th
+                  style={{
+                    textAlign: 'left',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   Brand
                 </th>
                 {color && (
-                  <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
                     Color
                   </th>
                 )}
                 {simOption && (
-                  <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
                     simOption
                   </th>
                 )}
                 {ramMemory && (
-                  <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
                     Ram Memory
                   </th>
                 )}
                 {batteryHealth && (
-                  <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
                     Battery Health
                   </th>
                 )}
                 {type && (
-                  <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
                     Type
                   </th>
                 )}
                 {warranty && (
-                  <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                  <th
+                    style={{
+                      textAlign: 'right',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
                     Wrnty
                   </th>
                 )}
-                <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                <th
+                  style={{
+                    textAlign: 'right',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   Inv. Price
                 </th>
-                <th style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>
+                <th
+                  style={{
+                    textAlign: 'center',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   QV
                 </th>
-                <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                <th
+                  style={{
+                    textAlign: 'right',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   Total Amount
                 </th>
               </tr>
@@ -1533,17 +1677,41 @@ export const InvoiceComponent = ({
                   </td>
                 )}
                 {warranty && (
-                  <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                  <td
+                    style={{
+                      textAlign: 'right',
+                      padding: '5px',
+                      border: '1px solid #000',
+                    }}
+                  >
                     {warranty}
                   </td>
                 )}
-                <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                <td
+                  style={{
+                    textAlign: 'right',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   {formatNumber(totalAmount)}
                 </td>
-                <td style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>
+                <td
+                  style={{
+                    textAlign: 'center',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   1
                 </td>
-                <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                <td
+                  style={{
+                    textAlign: 'right',
+                    padding: '5px',
+                    border: '1px solid #000',
+                  }}
+                >
                   {formatNumber(totalAmount)}
                 </td>
               </tr>
@@ -1559,10 +1727,62 @@ export const InvoiceComponent = ({
             border: '1px solid #000',
             textTransform: 'uppercase',
             padding: '5px',
-            marginBottom: '10px',
           }}
         >
           {numberToWords(totalAmount)}
+        </div>
+        <div
+          style={{
+            color: '#000',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            border: '1px solid #000',
+            textTransform: 'uppercase',
+            padding: '5px',
+            marginBottom: '10px',
+          }}
+        >
+          {!isAccessoryInvoice && saleData && (
+            <>
+              {/* IMEI Numbers */}
+              {(() => {
+                // Try to get IMEIs from different possible fields
+                if (saleData.addedImeis && saleData.addedImeis.length > 0) {
+                  return <div>IMEI: {saleData.addedImeis.join(', ')}</div>;
+                }
+                if (saleData.writtenImeis && saleData.writtenImeis.length > 0) {
+                  return <div>IMEI: {saleData.writtenImeis.join(', ')}</div>;
+                }
+                if (saleData.imei1) {
+                  return (
+                    <div>
+                      IMEI: {saleData.imei1}
+                      {saleData.imei2 ? `, ${saleData.imei2}` : ''}
+                    </div>
+                  );
+                }
+                if (
+                  saleData.ramSimDetails &&
+                  saleData.ramSimDetails.length > 0
+                ) {
+                  // Collect all imei1 from ramSimDetails
+                  const imeis = [];
+                  saleData.ramSimDetails.forEach((detail) => {
+                    if (detail.imeiNumbers && detail.imeiNumbers.length > 0) {
+                      detail.imeiNumbers.forEach((imeiObj) => {
+                        if (imeiObj.imei1) imeis.push(imeiObj.imei1);
+                        if (imeiObj.imei2) imeis.push(imeiObj.imei2);
+                      });
+                    }
+                  });
+                  if (imeis.length > 0) {
+                    return <div>IMEI: {imeis.join(', ')}</div>;
+                  }
+                }
+                return null;
+              })()}
+            </>
+          )}
         </div>
 
         <div
@@ -1577,7 +1797,13 @@ export const InvoiceComponent = ({
         >
           <div style={styles.termsSection}>
             <div style={styles.termsHeading}>Terms & conditions</div>
-            <div style={{ fontSize: '5px', display: 'flex', flexDirection: 'column' }}>
+            <div
+              style={{
+                fontSize: '5px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
               {termsAndConditions.map((item, index) => (
                 <p key={index}>
                   <strong

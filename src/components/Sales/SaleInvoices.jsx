@@ -51,16 +51,14 @@ const SaleInvoices = () => {
   const getAccessoriesRecords = async () => {
     try {
       const response = await api.get(`api/accessory/accessoryRecord`);
-      console.log("Accessories Records:", response.data);
+      console.log('Accessories Records:', response.data);
       setAccessoriesRecords(response?.data);
       return response?.data || [];
-
-
     } catch (error) {
       console.error('Error fetching accessories records:', error);
       return [];
     }
-  }
+  };
   const handlePrintClick = (invoice) => {
     const formattedInvoice = {
       editing: true,
@@ -418,7 +416,8 @@ const SaleInvoices = () => {
         customBlocks={[
           {
             index: 2,
-            component: (price) => (price === 0 ? 'Not mentioned' : `Rs. ${price}`),
+            component: (price) =>
+              price === 0 ? 'Not mentioned' : `Rs. ${price}`,
           },
           {
             index: 5,
@@ -472,8 +471,6 @@ const SaleInvoices = () => {
           ),
         ]}
       />
-
-
     </div>
   );
 };
