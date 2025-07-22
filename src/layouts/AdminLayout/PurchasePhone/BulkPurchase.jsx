@@ -654,6 +654,7 @@ import { BASE_URL } from 'config/constant';
 import { FaBarcode } from 'react-icons/fa';
 import { api } from '../../../../api/api';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import CustomSelect from 'components/CustomSelect';
 
 const BulkPurchaseModal = ({
   handleBulkPhoneModalclose,
@@ -675,6 +676,17 @@ const BulkPurchaseModal = ({
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [modelsList, setModelsList] = useState({}); // { [idx]: [models] }
+  const [entityData, setEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
+  const [showNewEntityForm, setShowNewEntityForm] = useState(false);
+  const [getAllEntities, setGetAllEntities] = useState([]);
+  const [newEntity, setNewEntity] = useState({
+    name: '',
+    number: '',
+  });
 
   const fetchCompanies = async () => {
     try {
@@ -703,6 +715,21 @@ const BulkPurchaseModal = ({
     setShowTextBox(true);
   };
 
+  const getAllEnityNameAndId = async () => {
+    try {
+      const response = await api.get('/api/person/nameAndId');
+      setGetAllEntities(response?.data || []);
+      console.log('Entity data:', response);
+    } catch (error) {
+      console.error('Error fetching entity names and ids:', error);
+    }
+  };
+  console.log('getAllEntities:', getAllEntities);
+  console.log('entityData:', entityData);
+
+  useEffect(() => {
+    getAllEnityNameAndId();
+  }, []);
   const handleRemoveTextBox = (indexToRemove) => {
     setBulkData((prev) => ({
       ...prev,
@@ -717,6 +744,21 @@ const BulkPurchaseModal = ({
       const response = await api.get('/api/partyLedger/getAllNames');
       setPartyNames(response?.data?.data);
     } catch (error) {}
+  };
+  const handleFinalSubmit = () => {
+    const entityPayload = showNewEntityForm
+      ? { name: newEntity.name, number: newEntity.number }
+      : {
+          _id: entityData._id,
+          name: entityData.name,
+          number: entityData.number,
+        };
+
+    const finalData = {
+      ...bulkData,
+      entityData: entityPayload, // Consistent spelling
+    };
+    handleSubmit(finalData);
   };
 
   useEffect(() => {
@@ -739,7 +781,164 @@ const BulkPurchaseModal = ({
           {/* Party Name and Date */}
           <Row>
             <Col>
-              <Form.Group controlId="bulkPartyName">
+              <Form.Group controlId="bulkPayment">
+                <Form.Label>Payment Type</Form.Label>
+                <Form.Select
+                  value={bulkData.paymentType}
+                  onChange={(e) =>
+                    setBulkData({ ...bulkData, paymentType: e.target.value })
+                  }
+                  required
+                >
+                  <option value="">Select Payment Type</option>
+                  <option value="full-payment">Full Payment</option>
+                  <option value="credit">Credit</option>
+                </Form.Select>
+              </Form.Group>
+
+              {bulkData.paymentType === 'credit' && (
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <label style={{ fontWeight: '600' }}>Entity *</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewEntityForm(false)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          background: !showNewEntityForm
+                            ? '#e5e7eb'
+                            : 'transparent',
+                          border: '1px solid #d1d5db',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Select Existing
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewEntityForm(true)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          background: showNewEntityForm
+                            ? '#e5e7eb'
+                            : 'transparent',
+                          border: '1px solid #d1d5db',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Create New
+                      </button>
+                    </div>
+                  </div>
+
+                  {showNewEntityForm ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '12px',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '8px',
+                            fontSize: '14px',
+                            color: '#4b5563',
+                          }}
+                        >
+                          Entity Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={newEntity.name}
+                          onChange={(e) =>
+                            setNewEntity({ ...newEntity, name: e.target.value })
+                          }
+                          placeholder="Enter entity name"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            border: '2px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '8px',
+                            fontSize: '14px',
+                            color: '#4b5563',
+                          }}
+                        >
+                          Entity Number *
+                        </label>
+                        <input
+                          name="number"
+                          type="text"
+                          value={newEntity.number}
+                          onChange={(e) =>
+                            setNewEntity({
+                              ...newEntity,
+                              number: e.target.value,
+                            })
+                          }
+                          placeholder="Enter entity number"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            border: '2px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <CustomSelect
+                        value={entityData._id}
+                        onChange={(selectedOption) => {
+                          const selectedEntity = getAllEntities.find(
+                            (entity) => entity._id === selectedOption?.value
+                          );
+                          setEntityData(
+                            selectedEntity || { name: '', number: '', _id: '' }
+                          );
+                        }}
+                        options={getAllEntities.map((entity) => ({
+                          value: entity._id,
+                          label: `${entity.name} || ${entity.number}`,
+                        }))}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
+              {/* <Form.Group controlId="bulkPartyName">
                 <Form.Label>Party Name</Form.Label>
                 <Form.Select
                   as="select"
@@ -756,7 +955,7 @@ const BulkPurchaseModal = ({
                     </option>
                   ))}
                 </Form.Select>
-              </Form.Group>
+              </Form.Group> */}
             </Col>
             <Col>
               <Form.Group controlId="bulkDate">
@@ -1235,22 +1434,7 @@ const BulkPurchaseModal = ({
               </Form.Group>
             </Col>
           </Row>
-          <Col style={{ marginTop: '10px' }}>
-            <Form.Group controlId="bulkPayment">
-              <Form.Label>Payment Type</Form.Label>
-              <Form.Select
-                value={bulkData.paymentType}
-                onChange={(e) =>
-                  setBulkData({ ...bulkData, paymentType: e.target.value })
-                }
-                required
-              >
-                <option value="">Select Payment Type</option>
-                <option value="full-payment">Full Payment</option>
-                <option value="credit">Credit</option>
-              </Form.Select>
-            </Form.Group>
-          </Col>
+
           {bulkData.paymentType === 'credit' && (
             <Row style={{ marginTop: '10px' }}>
               <Col>
@@ -1330,7 +1514,8 @@ const BulkPurchaseModal = ({
         <Button variant="secondary" onClick={handleBulkPhoneModalclose}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button variant="primary" onClick={handleFinalSubmit}>
+          {/* <Button variant="primary" onClick={handleSubmit}> */}
           Save
         </Button>
       </Modal.Footer>

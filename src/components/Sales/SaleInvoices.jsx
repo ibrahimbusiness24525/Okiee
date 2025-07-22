@@ -94,7 +94,7 @@ const SaleInvoices = () => {
     const formattedInvoice = {
       showInvoice: true,
       editing: true,
-      id: invoice._id,
+      id: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
       customerName: invoice.customerName,
       salePrice: invoice.salePrice,

@@ -19,8 +19,9 @@ const PurchasePhone = ({
 }) => {
   const today = new Date().toISOString().split('T')[0];
   const [banks, setBanks] = useState([]);
+  // const [entitiyData, setEntitiyData] = useState();
   const [bulkData, setBulkData] = useState({
-    partyName: '',
+    // partyName: '',
     date: today,
     quantity: 0,
     lp: '',
@@ -47,6 +48,7 @@ const PurchasePhone = ({
         imeiNumbers: [],
       },
     ],
+    entitiyData: null,
   });
 
   const [showSingleModal, setShowSingleModal] = useState(false); // For Single Phone Purchase Modal
@@ -432,7 +434,7 @@ const PurchasePhone = ({
     }));
   }, [bulkData.ramSimDetails]);
 
-  const handleBulkRecordSubmit = async () => {
+  const handleBulkRecordSubmit = async (finalData) => {
     if (bulkEdit) {
       try {
         const payload = {
@@ -526,6 +528,7 @@ const PurchasePhone = ({
             priceOfOne: item.priceOfOne,
             imeiNumbers: item.imeiNumbers,
           })),
+          entityData: finalData.entityData,
         };
         console.log('Payload for bulk purchase:', payload);
 

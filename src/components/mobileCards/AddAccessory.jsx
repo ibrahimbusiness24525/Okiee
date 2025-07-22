@@ -581,7 +581,7 @@ const AddAccessory = () => {
             color: '#111827',
           }}
         >
-          Add New Accessory
+          Purchase New Accessory
         </h2>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '20px' }}>
@@ -1505,24 +1505,6 @@ const AddAccessory = () => {
           >
             Sell Accessory
           </h4>
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontWeight: '600',
-            }}
-          >
-            Total Sale Price:
-          </label>
-
-          <p style={{ marginBottom: '16px' }}>
-            Rs.{' '}
-            {formData.reduce((total, accessory) => {
-              const quantity = Number(accessory.quantity) || 0;
-              const price = Number(accessory.perPiecePrice) || 0;
-              return total + quantity * price;
-            }, 0)}
-          </p>
 
           <div style={{ marginBottom: '24px' }}>
             <label
@@ -1828,9 +1810,67 @@ const AddAccessory = () => {
                     step="0.01"
                   />
                 </Form.Group>
+
                 <hr style={{ margin: '20px 0', background: '#000' }} />
               </Form>
             ))}
+          <div
+            style={{
+              backgroundColor: '#f8fafc',
+              padding: '16px',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              marginBottom: '20px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#64748b',
+                }}
+              >
+                Total Sale Price:
+              </span>
+              <span
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  color: '#1e293b',
+                }}
+              >
+                Rs.{' '}
+                {formData
+                  .reduce((total, accessory) => {
+                    const quantity = Number(accessory.quantity) || 0;
+                    const price = Number(accessory.perPiecePrice) || 0;
+                    return total + quantity * price;
+                  }, 0)
+                  .toLocaleString()}
+              </span>
+            </div>
+
+            {formData.length > 0 && (
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: '#64748b',
+                  textAlign: 'right',
+                  fontStyle: 'italic',
+                }}
+              >
+                ({formData.length} {formData.length === 1 ? 'item' : 'items'})
+              </div>
+            )}
+          </div>
           {accessoryData.paymentType === 'credit' && (
             <div style={{ marginTop: '16px' }}>
               <div

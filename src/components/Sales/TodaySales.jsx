@@ -32,7 +32,7 @@ const TodaySales = () => {
           );
         })
       );
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const getAllBulkSales = async () => {
@@ -56,7 +56,9 @@ const TodaySales = () => {
     const fetchTodayAccessories = async () => {
       const records = await getAccessoriesRecords();
       const today = new Date().toDateString();
-      const filtered = records.filter(item => new Date(item.createdAt).toDateString() === today);
+      const filtered = records.filter(
+        (item) => new Date(item.createdAt).toDateString() === today
+      );
       setAccessoriesRecords(filtered);
     };
     fetchTodayAccessories();
@@ -64,21 +66,19 @@ const TodaySales = () => {
   const getAccessoriesRecords = async () => {
     try {
       const response = await api.get(`api/accessory/accessoryRecord`);
-      console.log("Accessories Records:", response.data);
+      console.log('Accessories Records:', response.data);
       setAccessoriesRecords(response?.data);
       return response?.data || [];
-
-
     } catch (error) {
       console.error('Error fetching accessories records:', error);
       return [];
     }
-  }
+  };
 
   const handlePrintClick = (invoice) => {
     const formattedInvoice = {
       editing: true,
-      id: invoice._id,
+      id: invoice.id,
       companyName: invoice.companyName,
       modelName: invoice.modelName,
       imei1: invoice.imei1,
@@ -444,7 +444,8 @@ const TodaySales = () => {
         customBlocks={[
           {
             index: 2,
-            component: (price) => (price === 0 ? 'Not mentioned' : `Rs. ${price}`),
+            component: (price) =>
+              price === 0 ? 'Not mentioned' : `Rs. ${price}`,
           },
           {
             index: 5,
