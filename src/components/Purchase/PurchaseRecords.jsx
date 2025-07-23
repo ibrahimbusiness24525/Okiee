@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; import { FaPrint } from 'react-icons/fa';
+import axios from 'axios';
+import { FaPrint } from 'react-icons/fa';
 import { BASE_URL } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
 import Table from 'components/Table/Table';
@@ -17,12 +18,11 @@ import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import CommentIcon from '@mui/icons-material/Comment';
 const PurchaseRecords = () => {
-
   const navigate = useNavigate();
-  const [purchasedPhones, setPurchasedPhone] = useState([])
-  const [newPhones, setNewPhones] = useState([])
-  const [oldPhones, setOldPhones] = useState([])
-  // const[list,setList]= useState(false) 
+  const [purchasedPhones, setPurchasedPhone] = useState([]);
+  const [newPhones, setNewPhones] = useState([]);
+  const [oldPhones, setOldPhones] = useState([]);
+  // const[list,setList]= useState(false)
   const [checked, setChecked] = React.useState([0]);
 
   const handleToggle = (value) => () => {
@@ -41,20 +41,18 @@ const PurchaseRecords = () => {
   const getAccessoriesRecords = async () => {
     try {
       const response = await api.get(`api/accessory/accessoryRecord/purchase`);
-      console.log("Accessories Records:", response.data);
+      console.log('Accessories Records:', response.data);
       setAccessoriesRecords(response?.data);
       return response?.data || [];
-
-
     } catch (error) {
       console.error('Error fetching accessories records:', error);
       return [];
     }
-  }
+  };
   // Inline styles for the table
   const styles = {
     container: {
-      width: "100%",
+      width: '100%',
       padding: '20px',
       // backgroundColor: 'rgb(249, 250, 251)',
       borderRadius: '8px',
@@ -109,36 +107,38 @@ const PurchaseRecords = () => {
     },
   };
 
-
   const getAllPurchasedPhones = async () => {
     try {
-      const response = await api.get("api/Purchase/all-purchase-phone")
+      const response = await api.get('api/Purchase/all-purchase-phone');
       // const response = await axios.get(`${BASE_URL}api/Purchase/all-purchase-phone`)
-      setNewPhones(response?.data?.data?.singlePhones?.filter((item) => {
-        return item.phoneCondition === "New";
-      }));
-      setOldPhones(response?.data?.data?.singlePhones?.filter((item) => {
-
-
-        return item.phoneCondition === "Used";
-      }));
-      setPurchasedPhone(response?.data?.data)
-    } catch (error) {
-    }
-  }
-  const [scannedBarcodeValue, setScannedBarcodeValue] = useState("")
+      setNewPhones(
+        response?.data?.data?.singlePhones?.filter((item) => {
+          return item.phoneCondition === 'New';
+        })
+      );
+      setOldPhones(
+        response?.data?.data?.singlePhones?.filter((item) => {
+          return item.phoneCondition === 'Used';
+        })
+      );
+      setPurchasedPhone(response?.data?.data);
+    } catch (error) {}
+  };
+  const [scannedBarcodeValue, setScannedBarcodeValue] = useState('');
   const handleScan = (value) => {
-    setScannedBarcodeValue(value)
+    setScannedBarcodeValue(value);
   };
 
   useEffect(() => {
-    getAllPurchasedPhones()
+    getAllPurchasedPhones();
     getAccessoriesRecords();
-  }, [])
+  }, []);
 
   return (
     <div style={styles.container}>
-      <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Purchase Records</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>
+        Purchase Records
+      </h2>
       {/* <button
   onClick={() => setList(!list)}
   style={{
@@ -160,7 +160,15 @@ const PurchaseRecords = () => {
 
       {/* <BarcodeReader onScan={handleScan} /> */}
       <div>
-        <h3 style={{ textAlign: 'start', marginBottom: '40px', fontWeight: "700" }}>Single Purchases</h3>
+        <h3
+          style={{
+            textAlign: 'start',
+            marginBottom: '40px',
+            fontWeight: '700',
+          }}
+        >
+          Single Purchases
+        </h3>
       </div>
       <StyledHeading>New Phones</StyledHeading>
       {/* {list? 
@@ -203,124 +211,149 @@ const PurchaseRecords = () => {
       </>:
       <> */}
       <Table
-        routes={["/purchase/purchaseRecords"]}
+        routes={['/purchase/purchaseRecords']}
         array={newPhones}
-        search={"imei1"}
-        keysToDisplay={["modelName", "phoneCondition", "imei1", "warranty", "name", "date"]}
+        search={'imei1'}
+        keysToDisplay={[
+          'modelName',
+          'phoneCondition',
+          'imei1',
+          'warranty',
+          'name',
+          'date',
+        ]}
         label={[
-          "Model Name",
-          "Phone Condition",
-          "Imei of mobile",
-          "Mobile Warranty",
-          "Name of Seller",
-          "Date of Purchase",
+          'Model Name',
+          'Phone Condition',
+          'Imei of mobile',
+          'Mobile Warranty',
+          'Name of Seller',
+          'Date of Purchase',
 
-          "Actions",
+          'Actions',
         ]}
         customBlocks={[
           {
             index: 5,
             component: (date) => {
-              return dateFormatter(date)
-            }
-          }
+              return dateFormatter(date);
+            },
+          },
         ]}
-        extraColumns={[
-          (obj) => <BarcodePrinter obj={obj} />
-        ]}
+        extraColumns={[(obj) => <BarcodePrinter obj={obj} />]}
       />
       {/* </>
     }
     */}
 
-      <div style={{ marginTop: "3rem" }}>
+      <div style={{ marginTop: '3rem' }}>
         <StyledHeading>Used Phones</StyledHeading>
         <Table
-          routes={["/purchase/purchaseRecords"]}
+          routes={['/purchase/purchaseRecords']}
           array={oldPhones}
-          search={"imei1"}
-          keysToDisplay={["modelName", "phoneCondition", "imei1", "warranty", "name", "date"]}
+          search={'imei1'}
+          keysToDisplay={[
+            'modelName',
+            'phoneCondition',
+            'imei1',
+            'warranty',
+            'name',
+            'date',
+          ]}
           label={[
-            "Model Name",
-            "Phone Condition",
-            "Imei of mobile",
-            "Mobile Warranty",
-            "Name of Seller",
-            "Date of Purchase",
+            'Model Name',
+            'Phone Condition',
+            'Imei of mobile',
+            'Mobile Warranty',
+            'Name of Seller',
+            'Date of Purchase',
 
-            "Actions",
+            'Actions',
           ]}
           customBlocks={[
             {
               index: 5,
               component: (date) => {
-                return dateFormatter(date)
-              }
-            }
+                return dateFormatter(date);
+              },
+            },
           ]}
-          extraColumns={[
-            (obj) => <BarcodePrinter type={"single"} obj={obj} />
-          ]}
+          extraColumns={[(obj) => <BarcodePrinter type={'single'} obj={obj} />]}
         />
       </div>
       <div>
-        <h3 style={{ textAlign: 'start', marginBottom: '40px', fontWeight: "700", marginTop: "5rem" }}>Bulk Purchases</h3>
+        <h3
+          style={{
+            textAlign: 'start',
+            marginBottom: '40px',
+            fontWeight: '700',
+            marginTop: '5rem',
+          }}
+        >
+          Bulk Purchases
+        </h3>
       </div>
       <Table
-        routes={["/purchase/purchaseRecords/bulkPurchase"]}
-        array={purchasedPhones?.bulkPhones ? [...purchasedPhones.bulkPhones].reverse() : []}
-
-        search={"imeiNumbers"}
-        keysToDisplay={["partyName", "totalQuantity", "status", "date"]}
+        routes={['/purchase/purchaseRecords/bulkPurchase']}
+        array={
+          purchasedPhones?.bulkPhones
+            ? [...purchasedPhones.bulkPhones].reverse()
+            : []
+        }
+        search={'imeiNumbers'}
+        keysToDisplay={['partyName', 'totalQuantity', 'status', 'date']}
         label={[
-          "Party Name",
-          "No of quantity",
-          "Status",
-          "Date of Purchasing",
-          "Actions",
+          'Party Name',
+          'No of quantity',
+          'Status',
+          'Date of Purchasing',
+          'Actions',
         ]}
         customBlocks={[
           {
             index: 3,
             component: (date) => {
-              return dateFormatter(date)
-            }
-          }
+              return dateFormatter(date);
+            },
+          },
         ]}
         extraColumns={[
-          (obj) => <>
-            <div style={{ marginRight: "1rem" }}>
-              <select
-                style={{
-                  padding: '7px 16px',
-                  borderRadius: '5px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#ffffff',
-                  color: '#111827',
-                  minWidth: '100px',
-                  fontSize: '15px',
-                  fontWeight: 500,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  outline: 'none',
-                  width: '100%',
-                  marginRight: '20px',
-                  appearance: 'none', // hides default arrow
-                  backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23666\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 12px center',
-                  backgroundSize: '18px 18px',
-                }}
-              >
-                {obj?.ramSimDetails?.map((item) => (
-                  <option key={item._id} value={item._id}>
-                    {item.modelName}
-                  </option>
-                ))}
-              </select>
-            </div>
+          (obj) => (
+            <>
+              <div style={{ marginRight: '1rem' }}>
+                <select
+                  style={{
+                    padding: '7px 16px',
+                    borderRadius: '5px',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: '#ffffff',
+                    color: '#111827',
+                    minWidth: '100px',
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    outline: 'none',
+                    width: '100%',
+                    marginRight: '20px',
+                    appearance: 'none', // hides default arrow
+                    backgroundImage:
+                      "url(\"data:image/svg+xml;utf8,<svg fill='%23666' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>\")",
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 12px center',
+                    backgroundSize: '18px 18px',
+                  }}
+                >
+                  {obj?.ramSimDetails?.map((item) => (
+                    <option key={item._id} value={item._id}>
+                      {item.modelName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <BarcodePrinter type='bulk' obj={obj} />
-          </>
+              <BarcodePrinter type="bulk" obj={obj} />
+            </>
+          ),
         ]}
       />
       <h3
@@ -338,33 +371,117 @@ const PurchaseRecords = () => {
         search={'accessoryName'}
         keysToDisplay={[
           'type',
+          'personName',
           'accessoryName',
           'perPiecePrice',
           'quantity',
+          'personTakingCredit',
           'totalPrice',
           'createdAt',
         ]}
         label={[
-          'Type',
-          'Accessory Name',
-          'Per Piece Price',
-          'Quantity',
-          'Total Price',
+          'Payment',
+          'Customer',
+          'Product',
+          'Unit Price',
+          'Qty',
+          'Credit',
+          'Total',
           'Date',
         ]}
         customBlocks={[
           {
-            index: 2,
-            component: (price) => (price === 0 ? 'Not mentioned' : `Rs. ${price}`),
+            index: 0, // Type column
+            component: (_, row) => (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '4px 8px',
+                  borderRadius: '12px',
+                  backgroundColor:
+                    row.personStatus === 'Payable' ? '#FFEBEE' : '#E8F5E9',
+                  color: row.personStatus === 'Payable' ? '#D32F2F' : '#388E3C',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {row.personStatus === 'Payable' ? 'Credit' : 'Paid'}
+              </div>
+            ),
           },
           {
-            index: 5,
-            component: (date) => dateFormatter(date),
+            index: 1, // Customer name
+            component: (name) => (
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: '#1976D2',
+                }}
+              >
+                {name || 'Walk-in'}
+              </span>
+            ),
+          },
+          {
+            index: 3, // Unit price
+            component: (price) => (
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: '#2E7D32',
+                }}
+              >
+                Rs. {price?.toLocaleString() || '0'}
+              </span>
+            ),
+          },
+          {
+            index: 5, // Credit amount
+            component: (amount) => (
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: amount > 0 ? '#D32F2F' : '#388E3C',
+                }}
+              >
+                {amount > 0 ? `Rs. ${amount.toLocaleString()}` : 'Cleared'}
+              </span>
+            ),
+          },
+          {
+            index: 6, // Total price
+            component: (price) => (
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: '#1976D2',
+                }}
+              >
+                Rs. {price.toLocaleString()}
+              </span>
+            ),
+          },
+          {
+            index: 7, // Date
+            component: (date) => (
+              <span
+                style={{
+                  color: '#616161',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {new Date(date).toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </span>
+            ),
           },
         ]}
-
       />
-
     </div>
   );
 };

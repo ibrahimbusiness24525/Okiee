@@ -109,8 +109,14 @@ const AccessoryInvoice = () => {
     date: invoiceDate,
     invoiceNumber: `ACC-${Math.floor(Math.random() * 1000000)}`,
     customer: {
-      name: invoiceData.entityData?.name || 'Customer Name Not Provided',
-      phone: invoiceData.entityData?.number || '____________________',
+      name:
+        invoiceData.entityData?.name ||
+        invoiceData?.newEntity?.name ||
+        'Customer Name Not Provided',
+      phone:
+        invoiceData.entityData?.number ||
+        invoiceData?.newEntity?.number ||
+        '____________________',
     },
     items:
       invoiceData.sales?.map((item, index) => ({
@@ -278,7 +284,22 @@ const AccessoryInvoice = () => {
       marginBottom: '10px',
     },
   };
-
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('invoice');
+    if (!element) return;
+    import('html2pdf.js').then((html2pdf) => {
+      html2pdf
+        .default()
+        .from(element)
+        .set({
+          margin: 0,
+          filename: 'accessory-invoice.pdf',
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
+        })
+        .save();
+    });
+  };
   return (
     <div>
       {/* Color Selection */}
@@ -337,10 +358,7 @@ const AccessoryInvoice = () => {
                 (e.target.style.transform = 'translateY(-2px)')
               }
               onMouseLeave={(e) => (e.target.style.transform = 'none')}
-              onClick={() => {
-                const element = document.getElementById('invoice');
-                html2pdf().from(element).save('accessory-invoice.pdf');
-              }}
+              onClick={handleDownloadPDF}
             >
               Download
             </button>

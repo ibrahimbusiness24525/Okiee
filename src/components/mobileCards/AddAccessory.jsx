@@ -618,7 +618,7 @@ const AddAccessory = () => {
               </select>
             </div>
 
-            {accessoryData.paymentType === 'credit' && (
+            {accessoryData.paymentType !== '' && (
               <div>
                 <div
                   style={{
@@ -1382,12 +1382,6 @@ const AddAccessory = () => {
             </h2>
 
             <Form
-              // onSubmit={(e) => {
-              //   e.preventDefault();
-              //   // Handle add stock logic here
-              //   console.log('Adding stock:', addStockForm);
-              //   setShowAddStockModal(false);
-              // }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1407,28 +1401,11 @@ const AddAccessory = () => {
                   }
                   options={data?.data?.map((item) => ({
                     value: item._id,
-                    label: `${item.accessoryName} || Remaining: ${item.stock}`,
+                    label: `${item.accessoryName} || Remaining: ${item.stock} || Per Piece: ${item.perPiecePrice}`,
                   }))}
                   placeholder="Select Accessory"
                   noOptionsMessage="No accessories found"
                 />
-                {/* <Form.Select
-                  value={addStockForm.accessoryId}
-                  onChange={(e) =>
-                    setAddStockForm({
-                      ...addStockForm,
-                      accessoryId: e.target.value,
-                    })
-                  }
-                  required
-                >
-                  <option value="">Select an accessory</option>
-                  {data?.data?.map((item) => (
-                    <option key={item._id} value={item._id}>
-                      {item.accessoryName}
-                    </option>
-                  ))}
-                </Form.Select> */}
               </Form.Group>
 
               {/* Quantity to Add */}
@@ -1539,7 +1516,7 @@ const AddAccessory = () => {
             </select>
           </div>
 
-          {accessoryData.paymentType === 'credit' && (
+          {accessoryData.paymentType !== '' && (
             <div>
               <div
                 style={{
@@ -1549,7 +1526,7 @@ const AddAccessory = () => {
                   marginBottom: '12px',
                 }}
               >
-                <label style={{ fontWeight: '600' }}>Entity *</label>
+                <label style={{ fontWeight: '600' }}>Entity *(Optional)</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     type="button"
@@ -1720,7 +1697,7 @@ const AddAccessory = () => {
                     }}
                     options={data?.data?.map((item) => ({
                       value: item._id,
-                      label: `${item.accessoryName} || Remaining: ${item.stock}`,
+                      label: `${item.accessoryName} || Remaining: ${item.stock} || Per Piece: ${item.perPiecePrice}`,
                     }))}
                     placeholder="Select Accessory"
                     noOptionsMessage="No accessories found"
@@ -2001,7 +1978,7 @@ const AddAccessory = () => {
         >
           Proceed To Get Payment
         </Button>
-        <Button
+        {/* <Button
           variant="secondary"
           onClick={() =>
             navigate('/invoice/accessory', {
@@ -2010,7 +1987,7 @@ const AddAccessory = () => {
           }
         >
           Want To get Invoice?
-        </Button>
+        </Button> */}
       </Modal>
       <WalletTransactionModal
         show={showGetFromSaleModel}

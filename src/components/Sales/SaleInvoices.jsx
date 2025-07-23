@@ -396,32 +396,117 @@ const SaleInvoices = () => {
       </h3>
       <Table
         array={accessoriesRecords}
-        search={'accessoryName'}
+        search="accessoryName"
         keysToDisplay={[
           'type',
+          'personName',
           'accessoryName',
           'perPiecePrice',
           'quantity',
+          'personTakingCredit',
           'totalPrice',
           'createdAt',
         ]}
         label={[
-          'Type',
-          'Accessory Name',
-          'Per Piece Price',
-          'Quantity',
-          'Total Price',
+          'Payment',
+          'Customer',
+          'Product',
+          'Unit Price',
+          'Qty',
+          'Credit',
+          'Total',
           'Date',
+          'Profit/Loss & Barcode Generator',
         ]}
         customBlocks={[
           {
-            index: 2,
-            component: (price) =>
-              price === 0 ? 'Not mentioned' : `Rs. ${price}`,
+            index: 0, // Payment type
+            component: (_, row) => (
+              <div
+                style={{
+                  display: 'inline-block',
+                  padding: '4px 10px',
+                  borderRadius: '16px',
+                  backgroundColor:
+                    row.personStatus === 'Payable' ? '#ffe6e6' : '#e6f9e6',
+                  color: row.personStatus === 'Payable' ? '#c0392b' : '#27ae60',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {row.personStatus === 'Payable' ? 'Credit' : 'Paid'}
+              </div>
+            ),
           },
           {
-            index: 5,
-            component: (date) => dateFormatter(date),
+            index: 1, // Customer Name
+            component: (name) => (
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: '#1976D2',
+                }}
+              >
+                {name || 'Walk-in'}
+              </span>
+            ),
+          },
+          {
+            index: 3, // Unit Price
+            component: (price) =>
+              price === 0 ? (
+                <span style={{ color: '#888', fontStyle: 'italic' }}>
+                  Not mentioned
+                </span>
+              ) : (
+                <span style={{ fontWeight: 500, color: '#2E7D32' }}>
+                  Rs. {price.toLocaleString()}
+                </span>
+              ),
+          },
+          {
+            index: 5, // Credit
+            component: (amount) => (
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: amount > 0 ? '#c0392b' : '#388E3C',
+                }}
+              >
+                {amount > 0 ? `Rs. ${amount.toLocaleString()}` : 'Cleared'}
+              </span>
+            ),
+          },
+          {
+            index: 6, // Total Price
+            component: (price) => (
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: '#1976D2',
+                }}
+              >
+                Rs. {price.toLocaleString()}
+              </span>
+            ),
+          },
+          {
+            index: 7, // Date
+            component: (date) => (
+              <span
+                style={{
+                  color: '#616161',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {new Date(date).toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </span>
+            ),
           },
         ]}
         extraColumns={[
@@ -430,43 +515,31 @@ const SaleInvoices = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                backgroundColor: obj.profit < 0 ? '#ffe6e6' : '#e6ffe6',
-                color: obj.profit < 0 ? '#cc0000' : '#006600',
-                fontWeight: 'bold',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                width: '300px',
                 justifyContent: 'space-between',
+                gap: '12px',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                backgroundColor: obj.profit < 0 ? '#ffe5e5' : '#e6f9e6',
+                color: obj.profit < 0 ? '#c0392b' : '#27ae60',
+                fontWeight: 600,
+                fontSize: '14px',
+                width: '100%',
+                maxWidth: '320px',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
               }}
             >
-              <p
+              <span
                 style={{
-                  margin: 0,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
+                  flex: 1,
                 }}
               >
                 {obj.profit < 0
-                  ? `Loss of Rs. ${-obj.profit}`
+                  ? `Loss of Rs. ${Math.abs(obj.profit)}`
                   : `Profit of Rs. ${obj.profit}`}
-              </p>
-              {/* <Button
-                onClick={() => handlePrintBulkClick(obj)}
-                style={{
-                  backgroundColor: '#007bff',
-                  color: '#fff',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                <FaPrint style={{ marginRight: '8px' }} />
-                Get Invoice
-              </Button> */}
+              </span>
             </div>
           ),
         ]}
