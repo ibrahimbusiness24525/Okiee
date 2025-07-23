@@ -416,7 +416,7 @@ const SaleInvoices = () => {
           'Credit',
           'Total',
           'Date',
-          'Profit/Loss & Barcode Generator',
+          'Profit/Loss ',
         ]}
         customBlocks={[
           {
