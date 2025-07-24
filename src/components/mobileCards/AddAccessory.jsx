@@ -11,6 +11,13 @@ import CustomSelect from 'components/CustomSelect';
 
 const AddAccessory = () => {
   const navigate = useNavigate();
+  const [accessories, setAccessories] = useState([
+    {
+      accessoryName: '',
+      quantity: 1,
+      perPiecePrice: 0,
+    },
+  ]);
   const [showModal, setShowModal] = useState(false);
   const [allParties, setAllParties] = useState([]);
   const [showNewEntityForm, setShowNewEntityForm] = useState(false);
@@ -121,18 +128,53 @@ const AddAccessory = () => {
   console.log('accessoryList accessoryList', accessoryList);
   console.log('get payment', getPayment);
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const totalPrice =
+  //       Number(accessoryData.quantity) * Number(accessoryData.price);
+  //     const res = await api.post('/api/accessory/create', {
+  //       accessoryName: accessoryData.name,
+  //       quantity: Number(accessoryData.quantity),
+  //       perPiecePrice: Number(accessoryData.price),
+  //       totalPrice,
+  //       stock: Number(accessoryData.quantity),
+  //       givePayment: givePayment,
+  //       purchasePaymentType: accessoryData.paymentType,
+  //       creditPaymentData: {
+  //         payableAmountNow: accessoryData.payableAmountNow,
+  //         payableAmountLater: accessoryData.payableAmountLater,
+  //         dateOfPayment: accessoryData.dateOfPayment,
+  //       },
+  //       entityData: showNewEntityForm ? newEntity : entityData,
+  //     });
+  //     console.log('Accessory added:', res);
+
+  //     fetchAccessories(); // Refresh the accessory list
+  //     setAccessoryList([...accessoryList, res.data]);
+  //     toast.success('Accessory added successfully!');
+  //     setAccessoryData({ name: '', quantity: '', price: '' });
+  //     setShowModal(false);
+  //   } catch (error) {
+  //     console.error('Error adding accessory', error);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const totalPrice =
-        Number(accessoryData.quantity) * Number(accessoryData.price);
-      const res = await api.post('/api/accessory/create', {
-        accessoryName: accessoryData.name,
-        quantity: Number(accessoryData.quantity),
-        perPiecePrice: Number(accessoryData.price),
-        totalPrice,
-        stock: Number(accessoryData.quantity),
-        givePayment: givePayment,
+      const formattedAccessories = accessories.map((acc) => ({
+        accessoryName: acc.accessoryName,
+        quantity: Number(acc.quantity),
+        perPiecePrice: Number(acc.perPiecePrice),
+      }));
+      // Calculate total amount
+      const totalAmount = accessories.reduce((sum, acc) => {
+        return sum + Number(acc.quantity) * Number(acc.perPiecePrice);
+      }, 0);
+      console.log('payload', {
+        accessories,
+        givePayment,
         purchasePaymentType: accessoryData.paymentType,
         creditPaymentData: {
           payableAmountNow: accessoryData.payableAmountNow,
@@ -141,15 +183,27 @@ const AddAccessory = () => {
         },
         entityData: showNewEntityForm ? newEntity : entityData,
       });
-      console.log('Accessory added:', res);
 
-      fetchAccessories(); // Refresh the accessory list
-      setAccessoryList([...accessoryList, res.data]);
-      toast.success('Accessory added successfully!');
-      setAccessoryData({ name: '', quantity: '', price: '' });
+      const res = await api.post('/api/accessory/create', {
+        accessories: formattedAccessories,
+        givePayment,
+        purchasePaymentType: accessoryData.paymentType,
+        creditPaymentData: {
+          payableAmountNow: accessoryData.payableAmountNow,
+          payableAmountLater: accessoryData.payableAmountLater,
+          dateOfPayment: accessoryData.dateOfPayment,
+        },
+        entityData: showNewEntityForm ? newEntity : entityData,
+      });
+
+      console.log('Accessories added:', res);
+      fetchAccessories();
+      toast.success(`${accessories.length} accessories added successfully!`);
+      setAccessories([{ accessoryName: '', quantity: 1, perPiecePrice: 0 }]);
       setShowModal(false);
     } catch (error) {
-      console.error('Error adding accessory', error);
+      console.error('Error adding accessories', error);
+      toast.error('Failed to add accessories');
     }
   };
   const [formData, setFormData] = useState([
@@ -259,6 +313,17 @@ const AddAccessory = () => {
       deleteAccessory(id);
     }
   };
+  const handleAddAccessory = () => {
+    setAccessories([
+      ...accessories,
+      {
+        accessoryName: '',
+        quantity: 1,
+        perPiecePrice: 0,
+      },
+    ]);
+  };
+
   const deleteAccessory = async (id) => {
     try {
       await api.delete(`/api/accessory/${id}`);
@@ -269,6 +334,23 @@ const AddAccessory = () => {
       toast.error('Failed to delete accessory');
     }
   };
+  const handleRemoveAccessory = (index) => {
+    if (accessories.length > 1) {
+      const updated = [...accessories];
+      updated.splice(index, 1);
+      setAccessories(updated);
+    }
+  };
+
+  const handleAccessoryChange = (index, field, value) => {
+    const updated = [...accessories];
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+    setAccessories(updated);
+  };
+
   return (
     <div
       style={{
@@ -391,7 +473,6 @@ const AddAccessory = () => {
           </div>
         </div>
 
-        {/* Total Stock Value Box */}
         <div
           style={{
             flex: '1',
@@ -567,12 +648,9 @@ const AddAccessory = () => {
         >
           + Add Stock
         </button>
-        {/* <Button onClick={() => handleSaleAccessory(data)}>
-          - Sale Accessory
-        </Button> */}
       </div>
 
-      <Modal size="sm" show={showModal} toggleModal={() => setShowModal(false)}>
+      {/* <Modal size="sm" show={showModal} toggleModal={() => setShowModal(false)}>
         <h2
           style={{
             fontSize: '24px',
@@ -755,34 +833,7 @@ const AddAccessory = () => {
                       }))}
                     />
 
-                    {/* <select
-                  value={entityData._id}
-                  onChange={(e) => {
-                    const selectedEntity = getAllEntities.find(
-                      (entity) => entity._id === e.target.value
-                    );
-                    setEntityData(
-                      selectedEntity || { name: '', number: '', _id: '' }
-                    );
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '2px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    marginBottom: '16px',
-                  }}
-                >
-                  <option value="">Select Entity</option>
-                  {getAllEntities.map((entity) => (
-                    <option key={entity._id} value={entity._id}>
-                      {`                    ${entity.name} || ${entity.number} 
-                      `}
-                    </option>
-                  ))}
-                </select> */}
+            
                   </>
                 )}
               </div>
@@ -1027,6 +1078,526 @@ const AddAccessory = () => {
               }}
             >
               Submit
+            </button>
+          </div>
+        </form>
+      </Modal> */}
+      <Modal size="sm" show={showModal} toggleModal={() => setShowModal(false)}>
+        <h2
+          style={{
+            fontSize: '24px',
+            fontWeight: '700',
+            marginBottom: '24px',
+            color: '#111827',
+          }}
+        >
+          Purchase Accessories
+        </h2>
+
+        <form onSubmit={handleSubmit}>
+          {/* Payment Type Selection */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '600',
+              }}
+            >
+              Select Payment Type *
+            </label>
+            <select
+              value={accessoryData.paymentType}
+              onChange={(e) =>
+                setAccessoryData({
+                  ...accessoryData,
+                  paymentType: e.target.value,
+                })
+              }
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '2px solid #d1d5db',
+                borderRadius: '8px',
+                fontSize: '14px',
+                outline: 'none',
+              }}
+              required
+            >
+              <option value="">Select Payment Type</option>
+              <option value="full-payment">Full Payment</option>
+              <option value="credit">Credit</option>
+            </select>
+          </div>
+
+          {/* Entity Selection */}
+          {accessoryData.paymentType && (
+            <div style={{ marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '12px',
+                }}
+              >
+                <label style={{ fontWeight: '600' }}>Entity *</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewEntityForm(false)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      background: !showNewEntityForm
+                        ? '#e5e7eb'
+                        : 'transparent',
+                      border: '1px solid #d1d5db',
+                      fontWeight: '500',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Select Existing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewEntityForm(true)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      background: showNewEntityForm ? '#e5e7eb' : 'transparent',
+                      border: '1px solid #d1d5db',
+                      fontWeight: '500',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Create New
+                  </button>
+                </div>
+              </div>
+
+              {showNewEntityForm ? (
+                <div
+                  style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontSize: '14px',
+                        color: '#4b5563',
+                      }}
+                    >
+                      Entity Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={newEntity.name}
+                      onChange={(e) =>
+                        setNewEntity({ ...newEntity, name: e.target.value })
+                      }
+                      placeholder="Enter entity name"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '2px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontSize: '14px',
+                        color: '#4b5563',
+                      }}
+                    >
+                      Entity Number *
+                    </label>
+                    <input
+                      type="text"
+                      value={newEntity.number}
+                      onChange={(e) =>
+                        setNewEntity({ ...newEntity, number: e.target.value })
+                      }
+                      placeholder="Enter entity number"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '2px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ marginBottom: '16px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '14px',
+                      color: '#4b5563',
+                    }}
+                  >
+                    Select Entity *
+                  </label>
+                  <select
+                    value={entityData._id}
+                    onChange={(e) => {
+                      const selectedEntity = getAllEntities.find(
+                        (entity) => entity._id === e.target.value
+                      );
+                      setEntityData(
+                        selectedEntity || { name: '', number: '', _id: '' }
+                      );
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none',
+                    }}
+                    required
+                  >
+                    <option value="">Select Entity</option>
+                    {getAllEntities.map((entity) => (
+                      <option key={entity._id} value={entity._id}>
+                        {entity.name} ({entity.number})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Accessories List */}
+          <div style={{ marginBottom: '24px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '12px',
+              }}
+            >
+              <label style={{ fontWeight: '600' }}>Accessories</label>
+              <button
+                type="button"
+                onClick={handleAddAccessory}
+                style={{
+                  padding: '6px 12px',
+                  background: '#f3f4f6',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                }}
+              >
+                + Add Another
+              </button>
+            </div>
+
+            {accessories.map((accessory, index) => (
+              <div
+                key={index}
+                style={{
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  marginBottom: '16px',
+                  position: 'relative',
+                }}
+              >
+                {accessories.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveAccessory(index)}
+                    style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      background: '#fee2e2',
+                      color: '#dc2626',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontWeight: '500',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Accessory Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={accessory.accessoryName}
+                    onChange={(e) =>
+                      handleAccessoryChange(
+                        index,
+                        'accessoryName',
+                        e.target.value
+                      )
+                    }
+                    placeholder="Enter accessory name"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '16px',
+                  }}
+                >
+                  <div>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Quantity *
+                    </label>
+                    <input
+                      type="number"
+                      value={accessory.quantity}
+                      onChange={(e) =>
+                        handleAccessoryChange(index, 'quantity', e.target.value)
+                      }
+                      placeholder="Qty"
+                      required
+                      min="1"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Price *
+                    </label>
+                    <input
+                      type="number"
+                      value={accessory.perPiecePrice}
+                      onChange={(e) =>
+                        handleAccessoryChange(
+                          index,
+                          'perPiecePrice',
+                          e.target.value
+                        )
+                      }
+                      placeholder="Price"
+                      required
+                      min="0"
+                      step="0.01"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Credit payment fields (shown only when paymentType is credit) */}
+          {accessoryData.paymentType === 'credit' && (
+            <div style={{ marginBottom: '24px' }}>
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  marginBottom: '16px',
+                }}
+              >
+                Credit Details
+              </h3>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '16px',
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Payable Now
+                  </label>
+                  <input
+                    type="number"
+                    value={accessoryData.payableAmountNow}
+                    onChange={(e) =>
+                      setAccessoryData({
+                        ...accessoryData,
+                        payableAmountNow: e.target.value,
+                      })
+                    }
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Payable Later
+                  </label>
+                  <input
+                    type="number"
+                    value={accessoryData.payableAmountLater}
+                    onChange={(e) =>
+                      setAccessoryData({
+                        ...accessoryData,
+                        payableAmountLater: e.target.value,
+                      })
+                    }
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+              </div>
+              <div style={{ marginTop: '16px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                  }}
+                >
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  value={accessoryData.dateOfPayment}
+                  onChange={(e) =>
+                    setAccessoryData({
+                      ...accessoryData,
+                      dateOfPayment: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          <Button
+            variant="secondary"
+            onClick={() => setShowPayForPurchaseModel(!showPayForPurchaseModel)}
+          >
+            Proceed To Give Payment
+          </Button>
+          {/* Submit buttons */}
+          <div
+            style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              style={{
+                padding: '10px 20px',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                background: 'white',
+                color: '#374151',
+                fontWeight: '500',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '8px',
+                background: '#10b981',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Purchase Accessories
             </button>
           </div>
         </form>
@@ -1989,6 +2560,12 @@ const AddAccessory = () => {
           Want To get Invoice?
         </Button> */}
       </Modal>
+      <WalletTransactionModal
+        show={showPayForPurchaseModel}
+        toggleModal={() => setShowPayForPurchaseModel(!showPayForPurchaseModel)}
+        singleTransaction={givePayment}
+        setSingleTransaction={setGivePayment}
+      />
       <WalletTransactionModal
         show={showGetFromSaleModel}
         toggleModal={() => setShowGetFromSaleModel(!showGetFromSaleModel)}
