@@ -279,6 +279,7 @@ const SoldInvoice = () => {
       dataReceived?.bulkPhonePurchaseId
     ) {
       const payload = {
+        entityData: dataReceived?.entityData,
         bankAccountUsed: dataReceived?.walletTransaction?.bankAccountUsed,
         accountCash: Number(dataReceived?.walletTransaction?.amountFromBank),
         pocketCash: Number(dataReceived?.walletTransaction?.amountFromPocket),

@@ -33,6 +33,7 @@ import { MoonLoader } from 'react-spinners';
 import { useGetAccessories } from 'hooks/accessory';
 import { Eye, EyeOff } from 'lucide-react';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import CustomSelect from 'components/CustomSelect';
 const NewMobilesList = () => {
   const [showAmount, setShowAmount] = useState(false);
   const { data } = useGetAccessories();
@@ -83,6 +84,18 @@ const NewMobilesList = () => {
   const [addedImeis, setAddedImeis] = useState([]);
   const [bulkData, setBulkData] = useState([]);
   const [list, setList] = useState(true);
+  const [entityData, setEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
+  const [showNewEntityForm, setShowNewEntityForm] = useState(false);
+  const [getAllEntities, setGetAllEntities] = useState([]);
+  const [newEntity, setNewEntity] = useState({
+    name: '',
+    number: '',
+  });
+
   const navigate = useNavigate();
 
   const handleAddImei = () => {
@@ -95,8 +108,20 @@ const NewMobilesList = () => {
   const handleRemoveImei = (imeiToRemove) => {
     setAddedImeis(imeis.filter((imei) => imei !== imeiToRemove));
   };
+  const getAllEnityNameAndId = async () => {
+    try {
+      const response = await api.get('/api/person/nameAndId');
+      setGetAllEntities(response?.data || []);
+      console.log('Entity data:', response);
+    } catch (error) {
+      console.error('Error fetching entity names and ids:', error);
+    }
+  };
+  console.log('getAllEntities:', getAllEntities);
+  console.log('entityData:', entityData);
 
   useEffect(() => {
+    getAllEnityNameAndId();
     getMobiles();
   }, []);
 
@@ -291,6 +316,7 @@ const NewMobilesList = () => {
       ...soldMobile,
       walletTransaction,
       finalPrice,
+      entityData: showNewEntityForm ? newEntity : entityData,
       sellingType,
       warranty,
       saleDate,
@@ -1410,13 +1436,195 @@ const NewMobilesList = () => {
       </Modal>
 
       {/* Sold Modal */}
-      <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
+      <Modal
+        size="lg"
+        show={showSoldModal}
+        onHide={() => setShowSoldModal(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Sell Mobile</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <div>
+              <Form.Group controlId="bulkPayment">
+                <Form.Label>Payment Type</Form.Label>
+                <Form.Select
+                  value={sellingType}
+                  onChange={(e) => setSellingType(e.target.value)}
+                  required
+                >
+                  <option value="">Select Payment Type</option>
+                  <option value="Full Payment">Full Payment</option>
+                  <option value="Credit">Credit</option>
+                </Form.Select>
+              </Form.Group>
+              <Row style={{ marginTop: '10px', marginBottom: '10px' }}>
+                <Col>
+                  {sellingType !== 'none' && (
+                    <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <label style={{ fontWeight: '600' }}>Entity *</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={() => setShowNewEntityForm(false)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: !showNewEntityForm
+                                ? '#e5e7eb'
+                                : 'transparent',
+                              border: '1px solid #d1d5db',
+                              fontWeight: '500',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Select Existing
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowNewEntityForm(true)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: showNewEntityForm
+                                ? '#e5e7eb'
+                                : 'transparent',
+                              border: '1px solid #d1d5db',
+                              fontWeight: '500',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Create New
+                          </button>
+                        </div>
+                      </div>
+
+                      {showNewEntityForm ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '12px',
+                            marginBottom: '16px',
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <label
+                              style={{
+                                display: 'block',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                color: '#4b5563',
+                              }}
+                            >
+                              Entity Name *
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              value={newEntity.name}
+                              onChange={(e) =>
+                                setNewEntity({
+                                  ...newEntity,
+                                  name: e.target.value,
+                                })
+                              }
+                              placeholder="Enter entity name"
+                              required
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '2px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none',
+                              }}
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label
+                              style={{
+                                display: 'block',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                color: '#4b5563',
+                              }}
+                            >
+                              Entity Number *
+                            </label>
+                            <input
+                              name="number"
+                              type="text"
+                              value={newEntity.number}
+                              onChange={(e) =>
+                                setNewEntity({
+                                  ...newEntity,
+                                  number: e.target.value,
+                                })
+                              }
+                              placeholder="Enter entity number"
+                              required
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '2px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <CustomSelect
+                            value={entityData._id}
+                            onChange={(selectedOption) => {
+                              const selectedEntity = getAllEntities.find(
+                                (entity) => entity._id === selectedOption?.value
+                              );
+                              setEntityData(
+                                selectedEntity || {
+                                  name: '',
+                                  number: '',
+                                  _id: '',
+                                }
+                              );
+                            }}
+                            options={getAllEntities.map((entity) => ({
+                              value: entity._id,
+                              label: `${entity.name} || ${entity.number}`,
+                            }))}
+                          />
+                        </>
+                      )}
+                    </div>
+                  )}
+                </Col>
+                <Col>
+                  <Form.Group controlId="saleDate">
+                    <Form.Label>Sale Date</Form.Label>
+                    <Form.Control
+                      type="Date"
+                      style={{ marginTop: '20px' }}
+                      placeholder="Enter Sale Date"
+                      value={saleDate}
+                      onChange={(e) => setSaleDate(e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
               <Form.Group className="mb-3">
                 <Form.Label>Customer Name</Form.Label>
                 <Form.Control
@@ -1436,16 +1644,6 @@ const NewMobilesList = () => {
                 />
               </Form.Group>
 
-              <Form.Group controlId="saleDate">
-                <Form.Label>Sale Date</Form.Label>
-                <Form.Control
-                  type="Date"
-                  placeholder="Enter Sale Date"
-                  value={saleDate}
-                  onChange={(e) => setSaleDate(e.target.value)}
-                  required
-                />
-              </Form.Group>
               {/* CNIC Front Picture */}
               {/* <Form.Group className="mb-3">
                   <Form.Label>CNIC Front Picture</Form.Label>
@@ -1595,7 +1793,7 @@ const NewMobilesList = () => {
                   </Select>
                 </FormControl>
               </div>
-              <Form.Group>
+              {/* <Form.Group>
                 <Form.Label>Selling Type</Form.Label>
                 <Form.Select
                   as="select"
@@ -1603,13 +1801,11 @@ const NewMobilesList = () => {
                   onChange={(e) => setSellingType(e.target.value)}
                 >
                   <option value="">Select Selling Type</option>
-                  {/* <option value="Bank">Bank</option> */}
                   <option value="Exchange">Exchange</option>
                   <option value="Full Payment">Full Payment</option>
-                  {/* <option value="Cash">Cash</option> */}
                   <option value="Credit">Credit</option>
                 </Form.Select>
-              </Form.Group>
+              </Form.Group> */}
 
               {/* Conditional Fields Based on Selling Type */}
               {sellingType === 'Bank' && (

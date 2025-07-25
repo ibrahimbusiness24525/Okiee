@@ -400,7 +400,7 @@ const SaleInvoices = () => {
         keysToDisplay={[
           'type',
           'personName',
-          'accessoryName',
+          'accessoryList',
           'perPiecePrice',
           'quantity',
           'personTakingCredit',
@@ -449,6 +449,42 @@ const SaleInvoices = () => {
                 }}
               >
                 {name || 'Walk-in'}
+              </span>
+            ),
+          },
+          {
+            index: 2, // Product column
+            component: (accessoryList) => (
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: '#1976D2',
+                }}
+              >
+                <select
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: '#fff',
+                    color: '#1976D2',
+                    fontWeight: 500,
+                    fontSize: '0.95em',
+                    outline: 'none',
+                    minWidth: '100px',
+                  }}
+                >
+                  {Array.isArray(accessoryList) && accessoryList.length > 0 ? (
+                    accessoryList.map((item) => (
+                      <option key={item._id} value={item._id}>
+                        {item.name} quantity ({item.quantity}) price (
+                        {item?.perPiecePrice})
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No products</option>
+                  )}
+                </select>
               </span>
             ),
           },

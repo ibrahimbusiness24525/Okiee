@@ -779,24 +779,23 @@ const BulkPurchaseModal = ({
       <Modal.Body>
         <Form>
           {/* Party Name and Date */}
-          <Row>
+          <Form.Group controlId="bulkPayment">
+            <Form.Label>Payment Type</Form.Label>
+            <Form.Select
+              value={bulkData.paymentType}
+              onChange={(e) =>
+                setBulkData({ ...bulkData, paymentType: e.target.value })
+              }
+              required
+            >
+              <option value="">Select Payment Type</option>
+              <option value="full-payment">Full Payment</option>
+              <option value="credit">Credit</option>
+            </Form.Select>
+          </Form.Group>
+          <Row style={{ marginTop: '10px', marginBottom: '10px' }}>
             <Col>
-              <Form.Group controlId="bulkPayment">
-                <Form.Label>Payment Type</Form.Label>
-                <Form.Select
-                  value={bulkData.paymentType}
-                  onChange={(e) =>
-                    setBulkData({ ...bulkData, paymentType: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">Select Payment Type</option>
-                  <option value="full-payment">Full Payment</option>
-                  <option value="credit">Credit</option>
-                </Form.Select>
-              </Form.Group>
-
-              {bulkData.paymentType === 'credit' && (
+              {bulkData.paymentType !== '' && (
                 <div>
                   <div
                     style={{
@@ -938,29 +937,12 @@ const BulkPurchaseModal = ({
                   )}
                 </div>
               )}
-              {/* <Form.Group controlId="bulkPartyName">
-                <Form.Label>Party Name</Form.Label>
-                <Form.Select
-                  as="select"
-                  value={bulkData.partyName}
-                  onChange={(e) =>
-                    setBulkData({ ...bulkData, partyName: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">Select Party Name</option>
-                  {partyNames.map((name, index) => (
-                    <option key={index} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group> */}
             </Col>
             <Col>
               <Form.Group controlId="bulkDate">
                 <Form.Label>Date</Form.Label>
                 <Form.Control
+                  style={{ marginTop: '20px' }}
                   type="date"
                   value={bulkData.date}
                   onChange={(e) =>
