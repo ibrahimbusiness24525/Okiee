@@ -328,7 +328,7 @@ const TodaySales = () => {
         search={'imei1'}
         keysToDisplay={[
           'type',
-          'purchasePrice',
+          // 'purchasePrice',
           'salePrice',
           'sellingPaymentType',
           'warranty',
@@ -336,7 +336,7 @@ const TodaySales = () => {
         ]}
         label={[
           'Type of Sale',
-          'Purchase Price',
+          // 'Purchase Price',
           'Sale Price',
           'Selling Payment Type',
           'Warranty',
@@ -344,20 +344,20 @@ const TodaySales = () => {
           // "Barcode Generator"
         ]}
         customBlocks={[
+          // {
+          //   index: 1,
+          //   component: (purchasePrice) => {
+          //     return purchasePrice === 0 ? 'Not mentioned' : purchasePrice;
+          //   },
+          // },
           {
-            index: 1,
-            component: (purchasePrice) => {
-              return purchasePrice === 0 ? 'Not mentioned' : purchasePrice;
-            },
-          },
-          {
-            index: 3,
+            index: 2,
             component: (sellingType) => {
               return sellingType ? sellingType : 'Not mentioned';
             },
           },
           {
-            index: 5,
+            index: 4,
             component: (date) => {
               return dateFormatter(date);
             },

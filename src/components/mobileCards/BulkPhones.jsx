@@ -262,7 +262,7 @@ const NewMobilesList = () => {
       )
     );
   }, [searchTerm]);
-
+  console.log('bulkMobile:', bulkMobile);
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -298,7 +298,14 @@ const NewMobilesList = () => {
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
-
+  const groupedByPerson = bulkMobile.reduce((acc, mobile) => {
+    const personId = mobile.personId?._id || 'unknown';
+    if (!acc[personId]) {
+      acc[personId] = [];
+    }
+    acc[personId].push(mobile);
+    return acc;
+  }, {});
   const handleSoldSubmit = async () => {
     if (
       !finalPrice ||
@@ -791,7 +798,7 @@ const NewMobilesList = () => {
       <h3 style={{ marginTop: 'rem', marginBottom: '1rem' }}>
         New Bulk Phones
       </h3>
-      {!bulkMobile.length > 0 ? (
+      {/* {!bulkMobile.length > 0 ? (
         <div className="w-full h-full flex items-center justify-center">
           <MoonLoader size={60} color="#4f46e5" />
         </div>
@@ -1041,22 +1048,7 @@ const NewMobilesList = () => {
                         }}
                       />
 
-                      {/* Image handling */}
-                      {/* {mobile?.images?.[0] ? (
-                <Card.Img
-                  variant="top"
-                  src={bulkMobileImage}
-                  alt={`${mobile?.companyName} ${mobile?.modelName}`}
-                  style={{ height: '350px', objectFit: 'cover', borderRadius: '10px' }}
-                />
-              ) : (
-                <Card.Img
-                  variant="top"
-                  src={bulkMobileImage}  // Replace with your default image path
-                  alt={bulkMobileImage}
-                  style={{ height: '350px', objectFit: 'cover', borderRadius: '10px' }}
-                />
-              )} */}
+                   
 
                       <Card.Body
                         style={{
@@ -1079,7 +1071,6 @@ const NewMobilesList = () => {
                           {mobile?.modelName || 'No Model Name'}
                         </Card.Title>
 
-                        {/* Bulk Mobile Details */}
                         <Card.Text
                           style={{
                             fontSize: '1rem',
@@ -1126,7 +1117,6 @@ const NewMobilesList = () => {
                             </strong>
                             <p>
                               Total Buying Price :{mobile.prices?.buyingPrice}
-                              {/* {getActualPrice(mobile?.prices)} */}
                             </p>
                             <Button
                               onClick={() => handleShowPrices(mobile)}
@@ -1148,7 +1138,6 @@ const NewMobilesList = () => {
                             </Button>
                           </div>
 
-                          {/* RAM & SIM Options - Dropdowns */}
                           {mobile?.ramSimDetails?.length > 0 ? (
                             <div>
                               <div style={{ marginBottom: '20px' }}></div>
@@ -1250,7 +1239,6 @@ const NewMobilesList = () => {
                           )}
                         </Card.Text>
 
-                        {/* Action Buttons */}
                       </Card.Body>
                       <div
                         style={{
@@ -1302,7 +1290,7 @@ const NewMobilesList = () => {
               </Col>
             )}
 
-            {/* Modal for Prices */}
+   
             <Modal show={showPrices} onHide={handleClosePrices}>
               <Modal.Header closeButton>
                 <Modal.Title>
@@ -1335,6 +1323,621 @@ const NewMobilesList = () => {
                   <li>
                     <strong>Activation:</strong>{' '}
                     {selectedMobile?.prices?.activation || 'Not Available'}
+                  </li>
+                </ul>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleClosePrices}>
+                  Close
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </Row>
+        </>
+      )} */}
+      {!bulkMobile.length > 0 ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <MoonLoader size={60} color="#4f46e5" />
+        </div>
+      ) : list ? (
+        <>
+          {Object.entries(groupedByPerson).map(([personId, personData]) => {
+            const personName =
+              personData[0]?.personId?.name || 'Unknown Person';
+            const personNumber = personData[0]?.personId?.number || 'No Number';
+            const { now, later } = calculatePayables(personData);
+
+            return (
+              <div key={personId} style={{ marginBottom: '2rem' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}
+                >
+                  <StyledHeading>{personName}</StyledHeading>
+                  <span
+                    style={{
+                      backgroundColor: '#e0e7ff',
+                      color: '#4f46e5',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {personNumber}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    margin: '0.5rem 0 1.5rem 0',
+                    color: '#444',
+                    fontSize: '1.1rem',
+                    lineHeight: '1.6',
+                  }}
+                >
+                  <strong style={{ fontSize: '1.2rem' }}>Paid Amount:</strong>{' '}
+                  <span
+                    style={{
+                      color: 'green',
+                      fontWeight: '700',
+                      fontSize: '1.2rem',
+                    }}
+                  >
+                    {now.toLocaleString()} PKR
+                  </span>{' '}
+                  |{' '}
+                  <strong style={{ fontSize: '1.2rem' }}>
+                    Remaining Amount:
+                  </strong>{' '}
+                  <span
+                    style={{
+                      color: 'red',
+                      fontWeight: '700',
+                      fontSize: '1.2rem',
+                    }}
+                  >
+                    {later.toLocaleString()} PKR
+                  </span>
+                </p>
+                <Table
+                  routes={['/app/dashboard/bulkPhoneDetail']}
+                  array={personData.filter(
+                    (record) => record.dispatch === false
+                  )}
+                  keysToDisplay={[
+                    // 'companyName',
+                    // 'modelName',
+                    'actualBuyingPrice',
+                    'prices',
+                    'creditPaymentData',
+                    'status',
+                    'ramSimDetails',
+                    'purchasePaymentType',
+                  ]}
+                  label={[
+                    // 'Company',
+                    // 'Model',
+                    'Buying Price',
+                    'Payable Amount',
+                    'Remaining Amount',
+                    'Status',
+                    'Quantity',
+                    'Payment Type',
+                    'Actions',
+                  ]}
+                  customBlocks={[
+                    // {
+                    //   index: 0,
+                    //   component: (companyName) => {
+                    //     return (
+                    //       <span style={{ fontWeight: '600' }}>
+                    //         {companyName || 'N/A'}
+                    //       </span>
+                    //     );
+                    //   },
+                    // },
+                    // {
+                    //   index: 1,
+                    //   component: (modelName) => {
+                    //     return <span>{modelName || 'N/A'}</span>;
+                    //   },
+                    // },
+                    // {
+                    //   index: 2,
+                    //   component: (buyingPrice) => {
+                    //     return (
+                    //       <span>
+                    //         {buyingPrice ? `${buyingPrice} PKR` : 'N/A'}
+                    //       </span>
+                    //     );
+                    //   },
+                    // },
+                    {
+                      index: 1,
+                      component: (prices) => {
+                        return (
+                          <span
+                            style={{
+                              backgroundColor: '#d1fae5',
+                              color: '#065f46',
+                              padding: '4px 12px',
+                              borderRadius: '8px',
+                              fontWeight: '500',
+                              fontSize: '14px',
+                              display: 'inline-block',
+                            }}
+                          >
+                            {prices?.buyingPrice
+                              ? `${prices.buyingPrice} PKR`
+                              : 'N/A'}
+                          </span>
+                        );
+                      },
+                    },
+                    {
+                      index: 2,
+                      component: (creditPaymentData) => {
+                        const hasAmount = creditPaymentData?.payableAmountLater;
+
+                        const style = {
+                          backgroundColor: hasAmount ? '#fee2e2' : '#d1fae5',
+                          color: hasAmount ? '#991b1b' : '#065f46',
+                          padding: '4px 12px',
+                          borderRadius: '8px',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          display: 'inline-block',
+                        };
+
+                        return (
+                          <span style={style}>
+                            {hasAmount ? `${hasAmount} PKR` : 'Paid'}
+                          </span>
+                        );
+                      },
+                    },
+                    {
+                      index: 4,
+                      component: (ramSimDetails) => {
+                        const totalImeiNumbers = ramSimDetails.reduce(
+                          (total, ramSim) => {
+                            const imeis = Array.isArray(ramSim.imeiNumbers)
+                              ? ramSim.imeiNumbers.filter(
+                                  (imei) => imei.isDispatched === false
+                                )
+                              : [];
+                            return total + imeis.length;
+                          },
+                          0
+                        );
+
+                        return (
+                          <span
+                            style={{
+                              backgroundColor: '#e0f2fe',
+                              color: '#0369a1',
+                              padding: '4px 12px',
+                              borderRadius: '8px',
+                              fontWeight: '500',
+                              display: 'inline-block',
+                            }}
+                          >
+                            {totalImeiNumbers}
+                          </span>
+                        );
+                      },
+                    },
+                    {
+                      index: 5,
+                      component: (purchasePaymentType) => {
+                        return (
+                          <span style={{ fontWeight: 600, fontSize: '1rem' }}>
+                            {purchasePaymentType === 'full-payment' ? (
+                              <span
+                                style={{
+                                  color: 'green',
+                                  backgroundColor: '#dcfce7',
+                                  padding: '4px 12px',
+                                  borderRadius: '8px',
+                                  display: 'inline-block',
+                                }}
+                              >
+                                Full Payment
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  color: '#ea580c',
+                                  backgroundColor: '#ffedd5',
+                                  padding: '4px 12px',
+                                  borderRadius: '8px',
+                                  display: 'inline-block',
+                                }}
+                              >
+                                Partial Payment
+                              </span>
+                            )}
+                          </span>
+                        );
+                      },
+                    },
+                  ]}
+                  extraColumns={[
+                    (obj) => (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <Button
+                          onClick={() => handleSoldClick(obj, 'bulk')}
+                          style={{
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Sold
+                        </Button>
+                        <Button
+                          onClick={() => handleEdit(obj)}
+                          style={{
+                            backgroundColor: '#3b82f6',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => handleDispatchClick(obj)}
+                          style={{
+                            backgroundColor: '#FFD000',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Dispatch
+                        </Button>
+                      </div>
+                    ),
+                  ]}
+                />
+              </div>
+            );
+          })}
+        </>
+      ) : (
+        <>
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {bulkMobile.length > 0 ? (
+              bulkMobile
+                .filter((record) => record.dispatch === false)
+                .map((mobile) => (
+                  <Col key={mobile._id}>
+                    <Card
+                      className="h-100 shadow border-0"
+                      style={{
+                        borderRadius: '15px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                      }}
+                    >
+                      <FaEdit
+                        onClick={() => handleEdit(mobile)}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '50px',
+                          color: '#28a745',
+                          cursor: 'pointer',
+                          fontSize: '1.5rem',
+                        }}
+                      />
+                      <FaTrash
+                        onClick={() => handleBulkDelete(mobile._id)}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          color: 'red',
+                          cursor: 'pointer',
+                          fontSize: '1.5rem',
+                        }}
+                      />
+
+                      <Card.Body
+                        style={{
+                          padding: '1.5rem',
+                          display: 'flex',
+                          justifyContent: 'left',
+                          alignItems: 'start',
+                          flexDirection: 'column',
+                          width: '100%',
+                        }}
+                      >
+                        <Card.Text
+                          style={{
+                            fontSize: '1rem',
+                            color: '#666',
+                            lineHeight: '1.6',
+                          }}
+                        >
+                          <div>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Person:
+                            </strong>{' '}
+                            {mobile?.personId?.name || 'Not Available'}
+                            {mobile?.personId?.number && (
+                              <span
+                                style={{
+                                  marginLeft: '8px',
+                                  backgroundColor: '#e0e7ff',
+                                  color: '#4f46e5',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                                {mobile.personId.number}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Date:
+                            </strong>{' '}
+                            {mobile?.date
+                              ? new Date(mobile?.date).toLocaleDateString()
+                              : 'Not Available'}
+                          </div>
+
+                          <div>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Price:
+                            </strong>
+                            <p>
+                              Total Buying Price:{' '}
+                              {mobile.prices?.buyingPrice || 'N/A'} PKR
+                            </p>
+                            <Button
+                              onClick={() => handleShowPrices(mobile)}
+                              style={{
+                                backgroundColor: '#3f4d67',
+                                color: '#fff',
+                                border: 'none',
+                                width: '100%',
+                                padding: '6px 14px',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                fontSize: '0.9rem',
+                                transition: 'background-color 0.3s ease',
+                                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+                                margin: '5px',
+                              }}
+                            >
+                              View All Prices
+                            </Button>
+                          </div>
+
+                          {mobile?.ramSimDetails?.length > 0 ? (
+                            <div>
+                              <div style={{ marginBottom: '20px' }}></div>
+                              <strong
+                                style={{
+                                  color: '#333',
+                                  fontSize: '1.1rem',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                RAM and SIM Options:
+                              </strong>
+                              <div style={{ marginBottom: '10px' }}></div>
+                              {mobile?.ramSimDetails?.map((ramSim) => (
+                                <div
+                                  key={ramSim._id}
+                                  style={{
+                                    border: '1px solid #ddd',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    marginBottom: '20px',
+                                    backgroundColor: '#f9f9f9',
+                                    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.1)',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      fontSize: '16px',
+                                      fontWeight: 'bold',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    RAM Memory: {ramSim?.ramMemory || 'N/A'} GB
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      fontSize: '14px',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    <strong>SIM Option:</strong>{' '}
+                                    {ramSim?.simOption || 'N/A'}
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      fontSize: '14px',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    <strong style={{ marginRight: '5px' }}>
+                                      Quantity:
+                                    </strong>
+                                    <span>
+                                      {ramSim?.imeiNumbers?.length > 0
+                                        ? `${ramSim.imeiNumbers.length}`
+                                        : 'No stock'}
+                                    </span>
+                                  </div>
+
+                                  {ramSim.priceOfOne && (
+                                    <>
+                                      <div
+                                        style={{
+                                          fontSize: '14px',
+                                          fontWeight: 'bold',
+                                          color: '#333',
+                                        }}
+                                      >
+                                        Per Piece:{' '}
+                                        <span style={{ color: '#007bff' }}>
+                                          {ramSim.priceOfOne} PKR
+                                        </span>
+                                      </div>
+                                      <div
+                                        style={{
+                                          fontSize: '14px',
+                                          fontWeight: 'bold',
+                                          color: '#333',
+                                        }}
+                                      >
+                                        Total:{' '}
+                                        <span style={{ color: '#007bff' }}>
+                                          {ramSim.priceOfOne *
+                                            ramSim.imeiNumbers.length}{' '}
+                                          PKR
+                                        </span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div>RAM and SIM Options: Not Available</div>
+                          )}
+                        </Card.Text>
+                      </Card.Body>
+                      <div
+                        style={{
+                          textAlign: 'right',
+                          width: '100%',
+                          padding: '1.5rem',
+                        }}
+                      >
+                        <Button
+                          onClick={() => handleDispatchClick(mobile)}
+                          style={{
+                            backgroundColor: '#FFD000',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            marginRight: '5px',
+                          }}
+                        >
+                          Dispatch
+                        </Button>
+                        <Button
+                          onClick={() => handleSoldClick(mobile, 'bulk')}
+                          style={{
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Sold
+                        </Button>
+                      </div>
+                    </Card>
+                  </Col>
+                ))
+            ) : (
+              <Col>
+                <Card className="text-center">
+                  <Card.Body>
+                    <Card.Text>No mobiles found</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            )}
+
+            <Modal show={showPrices} onHide={handleClosePrices}>
+              <Modal.Header closeButton>
+                <Modal.Title>
+                  Prices for {selectedMobile?.companyName}{' '}
+                  {selectedMobile?.modelName}
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  <li
+                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
+                  >
+                    <strong>Buying Price:</strong>{' '}
+                    {selectedMobile?.prices?.buyingPrice || 'N/A'} PKR
+                  </li>
+                  <li
+                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
+                  >
+                    <strong>Dealer Price:</strong>{' '}
+                    {selectedMobile?.prices?.dealerPrice || 'N/A'} PKR
+                  </li>
+                  <li
+                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
+                  >
+                    <strong>LP:</strong> {selectedMobile?.prices?.lp || 'N/A'}{' '}
+                    PKR
+                  </li>
+                  <li
+                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
+                  >
+                    <strong>Lifting:</strong>{' '}
+                    {selectedMobile?.prices?.lifting || 'N/A'} PKR
+                  </li>
+                  <li
+                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
+                  >
+                    <strong>Promo:</strong>{' '}
+                    {selectedMobile?.prices?.promo || 'N/A'} PKR
+                  </li>
+                  <li style={{ padding: '8px 0' }}>
+                    <strong>Activation:</strong>{' '}
+                    {selectedMobile?.prices?.activation || 'N/A'} PKR
                   </li>
                 </ul>
               </Modal.Body>
@@ -1644,25 +2247,6 @@ const NewMobilesList = () => {
                 />
               </Form.Group>
 
-              {/* CNIC Front Picture */}
-              {/* <Form.Group className="mb-3">
-                  <Form.Label>CNIC Front Picture</Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setCnicFrontPic(e.target.files[0]?.name)}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>CNIC Back Picture</Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
-                  />
-                </Form.Group> */}
-
               <div>
                 <div>
                   {accessories.map((accessory, index) => (
@@ -1753,27 +2337,6 @@ const NewMobilesList = () => {
                 </div>
 
                 <FormControl fullWidth variant="outlined" className="mb-3">
-                  {/* Search Field Inside Dropdown */}
-                  {/* <MenuItem onMouseDown={(e) => e.stopPropagation()}>
-        <TextField
-          value={search}
-          placeholder="Search IMEI..."
-          size="small"
-          fullWidth
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </MenuItem> */}
-
-                  {/* Filtered IMEI Options */}
-                  {/* {imeiList
-        .filter((item) =>
-          item.toLowerCase().includes(search.toLowerCase())
-        )
-        .map((item, index) => (
-          <MenuItem key={index} value={item}>
-            {item}
-          </MenuItem>
-        ))} */}
                   <InputLabel>IMEI</InputLabel>
                   <Select
                     value={imei}
@@ -1793,21 +2356,7 @@ const NewMobilesList = () => {
                   </Select>
                 </FormControl>
               </div>
-              {/* <Form.Group>
-                <Form.Label>Selling Type</Form.Label>
-                <Form.Select
-                  as="select"
-                  value={sellingType}
-                  onChange={(e) => setSellingType(e.target.value)}
-                >
-                  <option value="">Select Selling Type</option>
-                  <option value="Exchange">Exchange</option>
-                  <option value="Full Payment">Full Payment</option>
-                  <option value="Credit">Credit</option>
-                </Form.Select>
-              </Form.Group> */}
 
-              {/* Conditional Fields Based on Selling Type */}
               {sellingType === 'Bank' && (
                 <Form.Group>
                   <Form.Label>Bank Name</Form.Label>
@@ -1882,10 +2431,6 @@ const NewMobilesList = () => {
 
             {type === 'bulk' && (
               <>
-                {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
-                <BarcodeReader />
-              </div> */}
-
                 <Form.Group className="mb-3">
                   <Form.Label>IMEI Number</Form.Label>
 
@@ -1907,7 +2452,6 @@ const NewMobilesList = () => {
                   </div>
                 </Form.Group>
 
-                {/* Display added IMEIs */}
                 {addedImeis.length > 0 && (
                   <div className="mt-3">
                     <h6>Added IMEIs:</h6>

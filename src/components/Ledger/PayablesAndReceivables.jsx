@@ -10,6 +10,7 @@ import {
   FaEye,
   FaStickyNote,
 } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import { api } from '../../../api/api';
 import { useNavigate } from 'react-router-dom';
 import Modal from 'components/Modal/Modal';
@@ -230,7 +231,20 @@ const PayablesAndReceivables = () => {
   useEffect(() => {
     fetchPersons();
   }, []);
-
+  const confirmDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this person?')) {
+      api
+        .delete(`/api/person/${id}`)
+        .then(() => {
+          fetchPersons();
+          alert('Person deleted successfully!');
+        })
+        .catch((error) => {
+          console.error('Error deleting person:', error);
+          alert('Error deleting person. Please try again.');
+        });
+    }
+  };
   //   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
 
   return (
@@ -827,14 +841,273 @@ const PayablesAndReceivables = () => {
               </p>
             </div>
           ) : (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                gap: '20px',
-              }}
-            >
-              {filteredPersons.map((person, index) => (
+            <div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: '20px',
+                  width: '100%',
+                  '@media (min-width: 1200px)': {
+                    gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns on large screens
+                  },
+                  '@media (min-width: 768px) and (max-width: 1199px)': {
+                    gridTemplateColumns: 'repeat(2, 1fr)', // 2 columns on medium screens
+                  },
+                  '@media (max-width: 767px)': {
+                    gridTemplateColumns: '1fr', // 1 column on small screens
+                  },
+                }}
+              >
+                {filteredPersons.map((person, index) => (
+                  <div
+                    key={person._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    style={{
+                      backgroundColor: getStatusBgColor(person.status),
+                      border: `2px solid ${getStatusColor(person.status)}20`,
+                      borderRadius: '12px',
+                      padding: '20px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      minHeight: '220px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    }}
+                    whileHover={{
+                      y: -4,
+                      boxShadow: '0 8px 25px -8px rgba(0, 0, 0, 0.2)',
+                    }}
+                  >
+                    {/* Status Badge - Responsive positioning */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          // position: 'absolute',
+                          top: '16px',
+                          right: '16px',
+                          backgroundColor: getStatusColor(person.status),
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: 'clamp(10px, 2vw, 12px)',
+                          fontWeight: '500',
+                          zIndex: 1,
+                        }}
+                      >
+                        {person.status}
+                      </div>
+                      <div>
+                        <FaTrash
+                          onClick={() => confirmDelete(person._id)}
+                          style={{
+                            color: '#e53935',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {/* Person Info Section */}
+                    <div style={{ marginBottom: '16px', zIndex: 1 }}>
+                      <h3
+                        style={{
+                          margin: '0 0 8px 0',
+                          fontSize: 'clamp(16px, 4vw, 18px)',
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          paddingRight: '60px',
+                          lineHeight: '1.3',
+                        }}
+                      >
+                        {person.name}
+                      </h3>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}
+                        >
+                          <FaPhone
+                            style={{
+                              fontSize: '14px',
+                              color: '#6b7280',
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: 'clamp(12px, 3vw, 14px)',
+                              color: '#6b7280',
+                            }}
+                          >
+                            {person.number}
+                          </span>
+                        </div>
+
+                        {person.reference && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                            }}
+                          >
+                            <FaFileAlt
+                              style={{
+                                fontSize: '14px',
+                                color: '#6b7280',
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: 'clamp(12px, 3vw, 14px)',
+                                color: '#6b7280',
+                              }}
+                            >
+                              {person.reference}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Credit Cards - Responsive grid */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(120px, 1fr))',
+                        gap: '12px',
+                        marginBottom: '16px',
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          textAlign: 'center',
+                          minWidth: '120px',
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: '0 0 4px 0',
+                            fontSize: 'clamp(10px, 2.5vw, 12px)',
+                            color: '#6b7280',
+                          }}
+                        >
+                          Taking Credit
+                        </p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 'clamp(14px, 3.5vw, 16px)',
+                            fontWeight: 'bold',
+                            color: '#ef4444',
+                          }}
+                        >
+                          {person.takingCredit.toLocaleString()} PKR
+                        </p>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          textAlign: 'center',
+                          minWidth: '120px',
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: '0 0 4px 0',
+                            fontSize: 'clamp(10px, 2.5vw, 12px)',
+                            color: '#6b7280',
+                          }}
+                        >
+                          Giving Credit
+                        </p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 'clamp(14px, 3.5vw, 16px)',
+                            fontWeight: 'bold',
+                            color: '#22c55e',
+                          }}
+                        >
+                          {person.givingCredit.toLocaleString()} PKR
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* View Details Footer */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        paddingTop: '12px',
+                        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        onClick={() => handlePersonClick(person._id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          color: getStatusColor(person.status),
+                          fontSize: 'clamp(12px, 3vw, 14px)',
+                          fontWeight: '500',
+                        }}
+                      >
+                        <FaEye />
+                        View Details
+                      </div>
+                    </div>
+
+                    {/* Background pattern for better visual */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        right: 0,
+                        width: '100px',
+                        height: '100px',
+                        background: `linear-gradient(135deg, ${getStatusColor(person.status)}10 0%, transparent 70%)`,
+                        borderRadius: '50% 0 0 0',
+                        opacity: 0.6,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* {filteredPersons.map((person, index) => (
                 <div
                   key={person._id}
                   initial={{ opacity: 0, y: 20 }}
@@ -956,93 +1229,7 @@ const PayablesAndReceivables = () => {
                         {person.takingCredit.toLocaleString()} PKR
                       </p>
                     </div>
-                    {/* {person.takingCredit === 0 && person.givingCredit === 0 ? (
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '12px',
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: '16px',
-                      }}>
-                      <p>Settled</p>
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '12px',
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: '16px',
-                      }}
-                    >
-                      {person.takingCredit !== 0 && (
-                        <div
-                          style={{
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <p
-                            style={{
-                              margin: '0 0 4px 0',
-                              fontSize: '12px',
-                              color: '#6b7280',
-                            }}
-                          >
-                            Taking Credit
-                          </p>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              color: '#ef4444',
-                            }}
-                          >
-                            {person.takingCredit.toLocaleString()} PKR
-                          </p>
-                        </div>
-                      )}
-                      {person.givingCredit !== 0 && (
-                        <div
-                          style={{
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <p
-                            style={{
-                              margin: '0 0 4px 0',
-                              fontSize: '12px',
-                              color: '#6b7280',
-                            }}
-                          >
-                            Giving Credit
-                          </p>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              color: '#22c55e',
-                            }}
-                          >
-                            {person.givingCredit.toLocaleString()} PKR
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )} */}
+
                     <div
                       style={{
                         backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -1096,7 +1283,7 @@ const PayablesAndReceivables = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
           )}
         </div>
