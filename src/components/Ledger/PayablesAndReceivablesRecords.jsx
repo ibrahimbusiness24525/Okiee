@@ -170,14 +170,15 @@ const PayablesAndReceivablesRecords = () => {
           ))}
         </div>
       )} */}
-      <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>
+
+      {/* <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>
         Transaction History
       </h3>
       {transactions.length === 0 ? (
         <p>No transactions found.</p>
       ) : (
         <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
-          {/* Column Layout Container */}
+       
           <div
             style={{
               display: 'grid',
@@ -186,7 +187,7 @@ const PayablesAndReceivablesRecords = () => {
               alignItems: 'flex-start',
             }}
           >
-            {/* Taking Credit Column */}
+   
             {transactions.some((tx) => tx.takingCredit !== 0) && (
               <div>
                 <h4
@@ -212,7 +213,7 @@ const PayablesAndReceivablesRecords = () => {
               </div>
             )}
 
-            {/* Giving Credit Column */}
+
             {transactions.some((tx) => tx.givingCredit !== 0) && (
               <div>
                 <h4
@@ -238,7 +239,7 @@ const PayablesAndReceivablesRecords = () => {
               </div>
             )}
 
-            {/* Simple Transactions Column */}
+      
             {transactions.some(
               (tx) => !tx.takingCredit && !tx.givingCredit && tx.description
             ) && (
@@ -268,6 +269,125 @@ const PayablesAndReceivablesRecords = () => {
                   ))}
               </div>
             )}
+          </div>
+        </div>
+      )} */}
+
+      <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>
+        Transaction History
+      </h3>
+      {transactions.length === 0 ? (
+        <p>No transactions found.</p>
+      ) : (
+        <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
+          {/* Single Column Layout */}
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            {transactions.map((tx) => {
+              // Determine alignment and styling based on transaction type
+              let alignment = 'center';
+              let borderColor = '#3b82f6'; // Blue for regular transactions
+              let bgColor = '#f0f9ff';
+              let amountDisplay = null;
+              let title = 'Transaction Note';
+
+              if (tx.takingCredit !== 0) {
+                alignment = 'flex-start';
+                borderColor = '#ef4444'; // Red for taking credit
+                bgColor = '#fef2f2';
+                amountDisplay = `- Rs. ${tx.takingCredit.toLocaleString()}`;
+                title = 'Credit Received';
+              } else if (tx.givingCredit !== 0) {
+                alignment = 'flex-end';
+                borderColor = '#22c55e'; // Green for giving credit
+                bgColor = '#f0fdf4';
+                amountDisplay = `+ Rs. ${tx.givingCredit.toLocaleString()}`;
+                title = 'Credit Given';
+              }
+
+              return (
+                <div
+                  key={tx._id}
+                  style={{
+                    alignSelf: alignment,
+                    width: '100%',
+                    borderLeft: `4px solid ${borderColor}`,
+                    backgroundColor: bgColor,
+                    padding: '12px',
+                    borderRadius: '4px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                    }}
+                  >
+                    {/* Transaction Title */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: '600',
+                          color: borderColor,
+                          fontSize: '15px',
+                        }}
+                      >
+                        {title}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '13px',
+                          color: '#64748b',
+                          border: `1px solid ${borderColor}`,
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          backgroundColor: '#f3f4f6',
+                        }}
+                      >
+                        {new Date(tx.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    {/* Description - shows if exists */}
+                    {tx.description && (
+                      <p
+                        style={{
+                          margin: '4px 0',
+                          color: '#334155',
+                          fontSize: '14px',
+                        }}
+                      >
+                        {tx.description}
+                      </p>
+                    )}
+
+                    {/* Amount - shows for credit transactions */}
+                    {amountDisplay && (
+                      <div
+                        style={{
+                          alignSelf: 'flex-end',
+                          fontWeight: '600',
+                          color: borderColor,
+                          fontSize: '15px',
+                          marginTop: '4px',
+                        }}
+                      >
+                        {amountDisplay}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

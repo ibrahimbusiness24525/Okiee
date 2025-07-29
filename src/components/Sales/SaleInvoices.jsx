@@ -59,6 +59,8 @@ const SaleInvoices = () => {
       return [];
     }
   };
+  console.log('accessoriesRecords', accessoriesRecords);
+
   const handlePrintClick = (invoice) => {
     const formattedInvoice = {
       editing: true,
@@ -576,6 +578,84 @@ const SaleInvoices = () => {
                   ? `Loss of Rs. ${Math.abs(obj.profit)}`
                   : `Profit of Rs. ${obj.profit}`}
               </span>
+              <Button
+                onClick={() => {
+                  // Prepare payload in the exact format used in setTimeout
+                  const payload = {
+                    sales: Array.isArray(obj.accessoriesList)
+                      ? obj.accessoriesList.map((accessory) => ({
+                          accessoryId:
+                            accessory.name ||
+                            accessory.accessoryName ||
+                            accessory._id ||
+                            accessory.accessoryId,
+                          quantity: Number(accessory.quantity),
+                          perPiecePrice: Number(accessory.perPiecePrice),
+                          name: accessory.name || accessory.accessoryName,
+                        }))
+                      : [],
+                    getPayment: {
+                      // Include payment details if available in obj
+                      amountFromBank: obj.amountFromBank || 0,
+                      amountFromPocket: obj.amountFromPocket || 0,
+                      bankAccountUsed: obj.bankAccountUsed || null,
+                    },
+                    purchasePaymentType: obj.type || 'sale',
+                    creditPaymentData: {
+                      payableAmountNow: obj.payableAmountNow || 0,
+                      payableAmountLater: obj.personGivingCredit || 0,
+                      dateOfPayment: obj.dateOfPayment || null,
+                    },
+                    entityData: {
+                      _id: obj.personId,
+                      name: obj.personName,
+                      number: obj.personNumber,
+                      // Include other person fields if needed
+                    },
+                    // Include all additional transaction details
+                    transactionDetails: {
+                      _id: obj._id,
+                      createdAt: obj.createdAt,
+                      updatedAt: obj.updatedAt,
+                      profit: obj.profit,
+                      totalPrice: obj.totalPrice,
+                      status: obj.personStatus,
+                      reference: obj.personReference,
+                    },
+                  };
+
+                  navigate('/invoice/accessory', {
+                    state: {
+                      data: {
+                        ...payload,
+                        // Include the original object for backward compatibility
+                        originalData: {
+                          accessoryId: obj.accessoryId,
+                          accessoryName: obj.accessoryName,
+                          personGivingCredit: obj.personGivingCredit,
+                          personTakingCredit: obj.personTakingCredit,
+                          // Include all other original fields
+                        },
+                      },
+                      type: 'accessory',
+                    },
+                  });
+                }}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <FaPrint style={{ marginRight: '8px' }} />
+                Get Invoice
+              </Button>
             </div>
           ),
         ]}

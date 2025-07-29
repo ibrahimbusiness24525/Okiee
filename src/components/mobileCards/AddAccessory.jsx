@@ -244,6 +244,7 @@ const AddAccessory = () => {
           accessoryId: accessory.accessoryId,
           quantity: Number(accessory.quantity),
           perPiecePrice: Number(accessory.perPiecePrice),
+          name: accessory.accessoryName,
         })),
         getPayment: getPayment,
         purchasePaymentType: accessoryData.paymentType,

@@ -17,6 +17,8 @@ import Modal from 'components/Modal/Modal';
 import { FaEyeSlash } from 'react-icons/fa';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import { Button } from 'react-bootstrap';
+import { Favorite } from '@mui/icons-material';
+import { toast } from 'react-toastify';
 // Types
 
 const PayablesAndReceivables = () => {
@@ -52,12 +54,13 @@ const PayablesAndReceivables = () => {
       setPersons(data?.data || []);
       setFilteredPersons(data?.data || []);
     } catch (error) {
-      console.error('Error fetching persons:', error);
       alert('Error fetching data. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+  console.log('Persons:', persons);
+
   const handleSearch = (searchTerm) => {
     const filtered = persons.filter(
       (person) =>
@@ -90,13 +93,6 @@ const PayablesAndReceivables = () => {
     description: '',
   });
 
-  // API call helper
-
-  // Fetch all persons
-
-  console.log('====================================');
-  console.log('Persons:', persons);
-  console.log('====================================');
   // Create person
   const handleCreatePerson = async (e) => {
     e.preventDefault();
@@ -246,7 +242,16 @@ const PayablesAndReceivables = () => {
     }
   };
   //   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
-
+  const toggleFavorite = async (id) => {
+    try {
+      await api.patch(`/api/person/${id}`);
+      toast.success('Favorite status updated successfully!');
+      fetchPersons();
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error('Error updating favorite status. Please try again.');
+    }
+  };
   return (
     <div style={{ backgroundColor: '#f8fafc', padding: '24px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -908,7 +913,21 @@ const PayablesAndReceivables = () => {
                       >
                         {person.status}
                       </div>
-                      <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '12px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Favorite
+                          onClick={() => toggleFavorite(person._id)}
+                          style={{
+                            color: person.favourite ? '#e53935' : '#6b7280',
+                            cursor: 'pointer',
+                            fontSize: '1.25rem',
+                          }}
+                        />
                         <FaTrash
                           onClick={() => confirmDelete(person._id)}
                           style={{
@@ -1567,11 +1586,15 @@ const PayablesAndReceivables = () => {
                 required
               >
                 <option value="">Select a person</option>
-                {persons.map((person) => (
-                  <option key={person._id} value={person._id}>
-                    {person.name} - {person.number}
-                  </option>
-                ))}
+                {[...persons]
+                  .sort(
+                    (a, b) => (b.favourite === true) - (a.favourite === true)
+                  )
+                  .map((person) => (
+                    <option key={person._id} value={person._id}>
+                      {person.name} - {person.number}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -1799,11 +1822,20 @@ const PayablesAndReceivables = () => {
                 required
               >
                 <option value="">Select a person</option>
-                {persons.map((person) => (
+                {/* {persons.map((person) => (
                   <option key={person._id} value={person._id}>
                     {person.name} - {person.number}
                   </option>
-                ))}
+                ))} */}
+                {[...persons]
+                  .sort(
+                    (a, b) => (b.favourite === true) - (a.favourite === true)
+                  )
+                  .map((person) => (
+                    <option key={person._id} value={person._id}>
+                      {person.name} - {person.number}
+                    </option>
+                  ))}
               </select>
             </div>
 
