@@ -44,6 +44,7 @@
     "jquery": "^3.7.1",
     "jsbarcode": "^3.11.6",
     "jspdf": "^2.5.2",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.511.0",
     "process": "^0.11.10",
     "react": "^18.2.0",

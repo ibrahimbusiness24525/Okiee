@@ -1775,136 +1775,6 @@ const SoldInvoice = () => {
                       </td>
                     )}
                   </tr>
-
-                  {/* <tr style={styles.stripedRow}>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileCompany
-                        : dataReceived?.companyName ??
-                        phoneDetail?.companyName ?? phoneDetail?.map((item) => {
-                          return <>
-                            {item.companyName}
-                            <br />
-                          </>;
-                        }) ??
-                        phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
-                          .companyName ??
-                        'Not Available'}
-                    </td>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileName
-                        : dataReceived?.modelSpecifications ??
-                        dataReceived.modelName ??
-                        phoneDetail?.modelName ?? phoneDetail?.map((item) => {
-                          return <>
-                            {item.modelName}
-                            <br />
-                          </>;
-                        })
-                        ??
-                        phoneDetail?.modelName ??
-                        phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
-                          .modelName ??
-                        'Not Available'}
-                    </td>
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.ramMemory && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.ramMemory
-                          ? phoneDetail.map((item) => item.ramMemory).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.batteryHealth && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.batteryHealth
-                          ? phoneDetail.map((item) => item.batteryHealth).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.color && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.color
-                          ? phoneDetail.map((item) => item.color).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.simOption && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.simOption
-                          ? phoneDetail.map((item) => item.simOption).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {dataReceived?.ramMemory && (
-                      <td style={styles.td}>
-                        {dataReceived?.ramMemory
-                          ? dataReceived?.ramMemory
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {dataReceived?.batteryHealth && (
-                      <td style={styles.td}>
-                        {dataReceived?.batteryHealth
-                          ? dataReceived?.batteryHealth
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {phoneDetail?.specifications && (
-                      <td style={styles.td}>
-                        {phoneDetail?.specifications
-                          ? phoneDetail?.specifications
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {dataReceived?.specifications && (
-                      <td style={styles.td}>
-                        {dataReceived?.specifications
-                          ? dataReceived?.specifications
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {!dataReceived.manual ? (
-                      <td style={styles.td}>
-                        {dataReceived?.invoice?.items
-                          ? dataReceived?.invoice?.items[0]?.imei
-                          : dataReceived?.imei1 ?? 'Not Available'}
-                      </td>
-                    ) : (
-                      <td style={styles.td}>
-                        {dataReceived?.writtenImeis?.map((items) => {
-                          return <>
-                            {items}
-                            <br />
-                          </>;
-                        })}
-                      </td>
-                    )}
-
-                    {dataReceived.imei2 && (
-                      <td style={styles.td}>
-                        {dataReceived?.invoice?.items
-                          ? dataReceived?.invoice?.items[0]?.imei2
-                          : dataReceived.imei2 ?? 'Not Available'}
-                      </td>
-                    )}
-                    <td style={styles.td}>
-                      {dataReceived?.invoice
-                        ? dataReceived?.invoice?.totalAmount
-                        : dataReceived?.finalPrice ?? 'Not Available'}
-                    </td>
-                    {
-                      dataReceived.writtenImeis.length <= 1 && (
-                        <td style={styles.td}>
-                          {dataReceived?.invoice?.items
-                            ? dataReceived?.invoice?.items[0]?.warranty
-                            : dataReceived?.warranty ??
-                            phoneDetail?.warranty ??
-                            'Not Available'}
-                        </td>
-                      )
-                    }
-                  </tr> */}
                 </tbody>
               </table>
               {dataReceived.accessoryName && (
@@ -1933,10 +1803,7 @@ const SoldInvoice = () => {
                   </div>
                 </div>
               )}
-              {/* <div style={styles.totalSection}>
-                <p>{dataReceived?.accessories?.quan}</p>
-                <h3>Total:{totalInvoice}Rs</h3>
-              </div> */}
+
               <div
                 style={{
                   ...styles.totalSection,
@@ -1949,7 +1816,6 @@ const SoldInvoice = () => {
                   borderTop: '1px solid #ddd',
                 }}
               >
-                {/* Left side - 60% width */}
                 <div style={{ width: '60%' }}>
                   {dataReceived?.accessories?.map((acc, index) => (
                     <p
@@ -1969,7 +1835,6 @@ const SoldInvoice = () => {
                   ))}
                 </div>
 
-                {/* Right side - 40% width - Total */}
                 <div
                   style={{
                     width: '40%',
@@ -1990,7 +1855,6 @@ const SoldInvoice = () => {
               </div>
 
               <div style={styles.termsSection}>
-                {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
                 <div style={styles.termsHeading}>Terms and conditions</div>
                 <div style={styles.termsText}>
                   {shop?.termsCondition.map((item, index) => (
@@ -2048,7 +1912,8 @@ const SoldInvoice = () => {
               {/* Left */}
               <div>
                 <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                  <strong>Invoice No:</strong> {dataReceived.invoiceNumber}
+                  {/* <strong>Invoice No:</strong> {dataReceived.invoiceNumber} */}
+                  <strong>Type:</strong> {dataReceived.type}
                 </p>
                 <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
                   <strong>Date:</strong>{' '}
@@ -2062,9 +1927,9 @@ const SoldInvoice = () => {
 
               {/* Right */}
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                {/* <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
                   <strong>Customer Name:</strong> {dataReceived.customerName}
-                </p>
+                </p> */}
                 {dataReceived.customerNumber && (
                   <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
                     <strong>Customer Number:</strong>{' '}
@@ -2103,7 +1968,7 @@ const SoldInvoice = () => {
                       fontWeight: 'bold',
                     }}
                   >
-                    IMEI
+                    Selling Payment Type
                   </th>
                   <th style={styles.th}>Warranty</th>
                   <th style={styles.th}>Price PKR</th>
@@ -2112,7 +1977,7 @@ const SoldInvoice = () => {
               <tbody>
                 <tr style={styles.stripedRow}>
                   <td style={styles.td}>Mobile Device</td>
-                  <td style={styles.td}>{dataReceived.imei1}</td>
+                  <td style={styles.td}>{dataReceived.sellingPaymentType}</td>
                   <td style={styles.td}>
                     {dataReceived.warranty ?? 'Not Available'}
                   </td>
@@ -2136,19 +2001,36 @@ const SoldInvoice = () => {
             </div>
 
             {/* Footer */}
-            <div
-              style={{
-                paddingTop: '10px',
-                textAlign: 'center',
-                fontSize: '13px',
-                color: '#555',
-              }}
-            >
-              <p style={{ margin: 0 }}>Thank you for your business!</p>
-              <p style={{ margin: 0 }}>
-                For any queries, contact {shop?.contactNumber?.[0] ?? 'Support'}
-              </p>
+
+            <div style={styles.termsSection}>
+              {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+              <div style={styles.termsHeading}>Terms & conditions</div>
+              <div style={styles.termsText}>
+                {shop?.termsCondition.map((item, index) => (
+                  <p key={index}>
+                    <strong
+                      style={{
+                        fontSize: '1.0rem',
+                        fontWeight: '600',
+                        color: '#333',
+                        width: '100%',
+                      }}
+                    >
+                      {index + 1}.
+                    </strong>{' '}
+                    {item}
+                  </p>
+                ))}
+              </div>
             </div>
+            <footer style={styles.footer}>
+              <p>
+                {shop?.shopName ?? 'Shop Name'} |{' '}
+                {shop?.address ?? 'Address not available'} |{' '}
+                {shop?.contactNumber?.join(' | ') ??
+                  'Contact number not available'}
+              </p>
+            </footer>
           </div>
         )}
         {/* <StockListComponent /> */}

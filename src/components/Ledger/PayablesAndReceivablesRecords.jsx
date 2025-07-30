@@ -3,13 +3,20 @@ import { useEffect, useState } from 'react';
 import { api } from '../../../api/api';
 import { TransactionCard } from 'components/TransactionCard';
 import { FaTrash } from 'react-icons/fa';
-
+import Modal from 'components/Modal/Modal';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import { DatePicker } from 'antd';
 const PayablesAndReceivablesRecords = () => {
   const { id } = useParams();
   const [person, setPerson] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [dataRange, setDataRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
   useEffect(() => {
     const fetchPersonDetail = async () => {
       try {
@@ -25,11 +32,147 @@ const PayablesAndReceivablesRecords = () => {
 
     fetchPersonDetail();
   }, [id]);
-  console.log(transactions);
+  console.log('transactions', transactions);
+  const handleDownloadPDF = async () => {
+    try {
+      // Filter transactions by selected date range
+      let filteredTransactions = transactions;
+      if (dataRange.startDate) {
+        const start = new Date(dataRange.startDate);
+        filteredTransactions = filteredTransactions.filter(
+          (tx) => new Date(tx.createdAt) >= start
+        );
+      }
+      if (dataRange.endDate) {
+        const end = new Date(dataRange.endDate);
+        end.setHours(23, 59, 59, 999); // Include full end day
+        filteredTransactions = filteredTransactions.filter(
+          (tx) => new Date(tx.createdAt) <= end
+        );
+      }
+
+      // Dynamically import jsPDF and autoTable
+      const { jsPDF } = await import('jspdf');
+      const autoTable = (await import('jspdf-autotable')).default;
+
+      // Create new PDF document
+      const doc = new jsPDF();
+
+      // Add title
+      doc.setFontSize(16);
+      doc.setTextColor(40);
+      doc.text(`${person.name}'s Accessory Transactions`, 14, 16);
+
+      // Add subtitle with date range if specified
+      doc.setFontSize(10);
+      let subtitle = 'All Transactions';
+      if (dataRange.startDate || dataRange.endDate) {
+        const startStr = dataRange.startDate
+          ? new Date(dataRange.startDate).toLocaleDateString()
+          : 'Beginning';
+        const endStr = dataRange.endDate
+          ? new Date(dataRange.endDate).toLocaleDateString()
+          : 'Today';
+        subtitle = `From ${startStr} to ${endStr}`;
+      }
+      doc.text(subtitle, 14, 22);
+
+      // Generate table
+      autoTable(doc, {
+        startY: 30,
+        head: [
+          [
+            'Date',
+            'Type',
+            // 'Accessory', 'Qty', 'Price', 'Total',
+            'Description',
+          ],
+        ],
+        body: filteredTransactions.map((tx) => {
+          const type = tx.type === 'purchase' ? 'Purchase' : 'Sale';
+          const date = new Date(tx.createdAt).toLocaleDateString();
+
+          // Handle accessories list
+          let accessoryName = tx.accessoryName || '';
+          let quantity = tx.quantity || '';
+          let price = tx.perPiecePrice
+            ? `Rs. ${tx.perPiecePrice.toLocaleString()}`
+            : '';
+          let total = tx.totalPrice
+            ? `Rs. ${tx.totalPrice.toLocaleString()}`
+            : '';
+
+          // For transactions with multiple accessories
+          if (tx.accessoriesList?.length > 0) {
+            accessoryName = tx.accessoriesList
+              .map((a) => a.name || a.accessoryName)
+              .join(', ');
+            quantity = tx.accessoriesList.reduce(
+              (sum, a) => sum + (a.quantity || 0),
+              0
+            );
+            price = `Multiple`;
+            total = `Rs. ${tx.totalPrice.toLocaleString()}`;
+          }
+
+          return [
+            date,
+            type,
+            // accessoryName,
+            // quantity,
+            // price,
+            // total,
+            tx.description || '',
+          ];
+        }),
+        styles: {
+          fontSize: 9,
+          cellPadding: 2,
+          overflow: 'linebreak',
+        },
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          fontSize: 10,
+        },
+        columnStyles: {
+          0: { cellWidth: 20 }, // Date
+          1: { cellWidth: 15 }, // Type
+          // 2: { cellWidth: 40 }, // Accessory
+          // 3: { cellWidth: 15 }, // Qty
+          // 4: { cellWidth: 20 }, // Price
+          // 5: { cellWidth: 20 }, // Total
+          6: { cellWidth: 'auto' }, // Description
+        },
+      });
+
+      // Add footer
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.width - 30,
+          doc.internal.pageSize.height - 10
+        );
+      }
+
+      // Save the PDF
+      doc.save(
+        `${person.name}_accessory_transactions_${new Date().toISOString().slice(0, 10)}.pdf`
+      );
+      setShowPDFModal(false);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      // Optionally show error to user
+      // setError('Failed to generate PDF. Please try again.');
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
   if (!person) return <p>Person not found.</p>;
-
   return (
     <div
       style={{
@@ -273,124 +416,231 @@ const PayablesAndReceivablesRecords = () => {
         </div>
       )} */}
 
-      <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>
-        Transaction History
-      </h3>
+      <div
+        style={{
+          width: '100%',
+          marginBottom: '20px',
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>
+          Transaction History
+        </h3>
+        <button
+          onClick={() => setShowPDFModal(true)}
+          style={{
+            padding: '6px 12px',
+            fontSize: '14px',
+            borderRadius: '4px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+          }}
+        >
+          Download PDF
+        </button>
+      </div>
       {transactions.length === 0 ? (
         <p>No transactions found.</p>
       ) : (
-        <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
-          {/* Single Column Layout */}
+        <div style={{ paddingTop: '8px' }}>
           <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
           >
             {transactions.map((tx) => {
-              // Determine alignment and styling based on transaction type
-              let alignment = 'center';
-              let borderColor = '#3b82f6'; // Blue for regular transactions
-              let bgColor = '#f0f9ff';
-              let amountDisplay = null;
-              let title = 'Transaction Note';
+              const isCreditReceived = tx.takingCredit !== 0;
+              const isCreditGiven = tx.givingCredit !== 0;
 
-              if (tx.takingCredit !== 0) {
-                alignment = 'flex-start';
-                borderColor = '#ef4444'; // Red for taking credit
-                bgColor = '#fef2f2';
-                amountDisplay = `- Rs. ${tx.takingCredit.toLocaleString()}`;
-                title = 'Credit Received';
-              } else if (tx.givingCredit !== 0) {
-                alignment = 'flex-end';
-                borderColor = '#22c55e'; // Green for giving credit
-                bgColor = '#f0fdf4';
-                amountDisplay = `+ Rs. ${tx.givingCredit.toLocaleString()}`;
-                title = 'Credit Given';
-              }
+              const borderColor = isCreditReceived
+                ? '#ef4444'
+                : isCreditGiven
+                  ? '#22c55e'
+                  : '#3b82f6';
+
+              const bgColor = isCreditReceived
+                ? '#fef2f2'
+                : isCreditGiven
+                  ? '#f0fdf4'
+                  : '#f0f9ff';
+
+              const amount = isCreditReceived
+                ? -tx.takingCredit
+                : isCreditGiven
+                  ? tx.givingCredit
+                  : 0;
+
+              const title = isCreditReceived
+                ? 'Credit Received'
+                : isCreditGiven
+                  ? 'Credit Given'
+                  : 'Transaction';
+
+              const formattedAmount =
+                amount !== 0 ? `Rs. ${Math.abs(amount).toLocaleString()}` : '';
+
+              const balanceText =
+                amount !== 0
+                  ? amount > 0
+                    ? `Balance Added: ${formattedAmount}`
+                    : `Balance Deducted: ${formattedAmount}`
+                  : '';
 
               return (
                 <div
                   key={tx._id}
                   style={{
-                    alignSelf: alignment,
-                    width: '100%',
-                    borderLeft: `4px solid ${borderColor}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderLeft: `3px solid ${borderColor}`,
                     backgroundColor: bgColor,
-                    padding: '12px',
-                    borderRadius: '4px',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    padding: '12px 14px',
+                    borderRadius: '6px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    position: 'relative',
                   }}
                 >
+                  {/* Top Row: Title and Date */}
                   <div
                     style={{
                       display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
                     }}
                   >
-                    {/* Transaction Title */}
-                    <div
+                    <span
                       style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        color: borderColor,
                       }}
                     >
-                      <span
-                        style={{
-                          fontWeight: '600',
-                          color: borderColor,
-                          fontSize: '15px',
-                        }}
-                      >
-                        {title}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '13px',
-                          color: '#64748b',
-                          border: `1px solid ${borderColor}`,
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          backgroundColor: '#f3f4f6',
-                        }}
-                      >
-                        {new Date(tx.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-
-                    {/* Description - shows if exists */}
-                    {tx.description && (
-                      <p
-                        style={{
-                          margin: '4px 0',
-                          color: '#334155',
-                          fontSize: '14px',
-                        }}
-                      >
-                        {tx.description}
-                      </p>
-                    )}
-
-                    {/* Amount - shows for credit transactions */}
-                    {amountDisplay && (
-                      <div
-                        style={{
-                          alignSelf: 'flex-end',
-                          fontWeight: '600',
-                          color: borderColor,
-                          fontSize: '15px',
-                          marginTop: '4px',
-                        }}
-                      >
-                        {amountDisplay}
-                      </div>
-                    )}
+                      {title}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '13px',
+                        color: '#475569',
+                        fontWeight: '500',
+                        backgroundColor: '#e2e8f0',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      {new Date(tx.createdAt).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </span>
                   </div>
+
+                  {/* Description */}
+                  {tx.description && (
+                    <p
+                      style={{
+                        margin: '6px 0 4px',
+                        color: '#334155',
+                        fontSize: '13.5px',
+                        lineHeight: '1.4',
+                      }}
+                    >
+                      {tx.description}
+                    </p>
+                  )}
+
+                  {/* Balance Summary */}
+                  {amount !== 0 && (
+                    <div
+                      style={{
+                        marginTop: '4px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: borderColor,
+                      }}
+                    >
+                      {balanceText}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
       )}
+      <Modal
+        size="sm"
+        show={showPDFModal}
+        toggleModal={() => setShowPDFModal(false)}
+      >
+        <div
+          style={{
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '8px',
+              color: '#333',
+            }}
+          >
+            Select Date Range
+          </p>
+
+          <DatePicker
+            getPopupContainer={(triggerNode) => triggerNode.parentNode} // Important!
+            dropdownStyle={{ zIndex: 1000000 }} // Higher than modal
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+            }}
+            placeholder="Start Date"
+            onChange={(date, dateString) =>
+              setDataRange((prev) => ({ ...prev, startDate: dateString }))
+            }
+          />
+
+          <DatePicker
+            getPopupContainer={(triggerNode) => triggerNode.parentNode} // Important!
+            dropdownStyle={{ zIndex: 1000000 }} // Higher than modal
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+            }}
+            placeholder="End Date"
+            onChange={(date, dateString) =>
+              setDataRange((prev) => ({ ...prev, endDate: dateString }))
+            }
+          />
+
+          <button
+            onClick={handleDownloadPDF}
+            style={{
+              marginTop: '12px',
+              padding: '10px',
+              borderRadius: '6px',
+              border: 'none',
+              backgroundColor: '#3b82f6',
+              color: '#fff',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Download PDF
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import {
   FaArrowDown,
   FaEye,
   FaStickyNote,
+  FaEdit,
 } from 'react-icons/fa';
 import { FaTrash } from 'react-icons/fa';
 import { api } from '../../../api/api';
@@ -26,6 +27,14 @@ const PayablesAndReceivables = () => {
   const [persons, setPersons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editPersonData, setEditPersonData] = useState({
+    id: '',
+    name: '',
+    number: '',
+    reference: '',
+  });
+
   const [showGiveCreditModal, setShowGiveCreditModal] = useState(false);
   const [showGiveCreditChildModal, setShowGiveCreditChildModal] =
     useState(false);
@@ -252,9 +261,49 @@ const PayablesAndReceivables = () => {
       toast.error('Error updating favorite status. Please try again.');
     }
   };
+
+  const editPerson = (person) => {
+    setEditPersonData({
+      id: person._id,
+      name: person.name,
+      number: person.number,
+      reference: person.reference,
+    });
+    setShowEditModal(true);
+  };
+  const handleEditPerson = async (e) => {
+    e.preventDefault();
+    if (
+      !editPersonData.name ||
+      !editPersonData.number ||
+      !editPersonData.reference
+    ) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.put(`/api/person/update/${editPersonData.id}`, {
+        name: editPersonData.name,
+        number: Number.parseInt(editPersonData.number),
+        reference: editPersonData.reference,
+      });
+
+      setShowEditModal(false);
+      setEditPersonData({ name: '', number: '', reference: '' });
+      fetchPersons();
+      toast.success('Person updated successfully!');
+    } catch (error) {
+      console.error('Error updating person:', error);
+      toast.error('Error updating person. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
-    <div style={{ backgroundColor: '#f8fafc', padding: '24px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ backgroundColor: '#f8fafc' }}>
+      <div style={{ margin: '0 auto' }}>
         {/* Header */}
         <div
           style={{
@@ -346,7 +395,8 @@ const PayablesAndReceivables = () => {
                   (e.currentTarget.style.backgroundColor = '#10b981')
                 }
               >
-                <FaArrowUp /> Give Credit
+                <FaArrowUp /> MAINE DIYE
+                {/* <FaArrowUp /> Give Credit */}
               </button>
 
               <button
@@ -372,7 +422,8 @@ const PayablesAndReceivables = () => {
                   (e.currentTarget.style.backgroundColor = '#f59e0b')
                 }
               >
-                <FaArrowDown /> Take Credit
+                <FaArrowDown /> MAINE LIYE
+                {/* <FaArrowDown /> Take Credit */}
               </button>
             </div>
           </div>
@@ -455,7 +506,7 @@ const PayablesAndReceivables = () => {
                         marginBottom: '4px',
                       }}
                     >
-                      Taking Credit
+                      MAINE LIYE
                     </div>
                     <div
                       style={{
@@ -537,7 +588,7 @@ const PayablesAndReceivables = () => {
                         marginBottom: '4px',
                       }}
                     >
-                      Giving Credit
+                      MAINE DIYE
                     </div>
                     <div
                       style={{
@@ -846,7 +897,7 @@ const PayablesAndReceivables = () => {
               </p>
             </div>
           ) : (
-            <div>
+            <div style={{ width: '100%' }}>
               <div
                 style={{
                   display: 'grid',
@@ -854,7 +905,7 @@ const PayablesAndReceivables = () => {
                   gap: '20px',
                   width: '100%',
                   '@media (min-width: 1200px)': {
-                    gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns on large screens
+                    gridTemplateColumns: 'repeat(5, 1fr)', // 5 columns on large screens
                   },
                   '@media (min-width: 768px) and (max-width: 1199px)': {
                     gridTemplateColumns: 'repeat(2, 1fr)', // 2 columns on medium screens
@@ -932,6 +983,14 @@ const PayablesAndReceivables = () => {
                           onClick={() => confirmDelete(person._id)}
                           style={{
                             color: '#e53935',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                        />
+                        <FaEdit
+                          onClick={() => editPerson(person)}
+                          style={{
+                            color: '#3b82f6',
                             cursor: 'pointer',
                             fontSize: '1rem',
                           }}
@@ -1309,6 +1368,7 @@ const PayablesAndReceivables = () => {
 
         {/* Create Person Modal */}
         <Modal
+          toggleModal={() => setShowCreateModal(false)}
           show={showCreateModal}
           size="sm"
           onClick={() => setShowCreateModal(false)}
@@ -1529,6 +1589,232 @@ const PayablesAndReceivables = () => {
                 }}
               >
                 {isSubmitting ? 'Creating...' : 'Create Person'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+        <Modal
+          toggleModal={() => setShowEditModal(false)}
+          show={showEditModal}
+          size="sm"
+          onClick={() => setShowEditModal(false)}
+        >
+          <h2
+            style={{
+              margin: '0 0 24px 0',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#1f2937',
+            }}
+          >
+            Edit Person
+          </h2>
+
+          <form onSubmit={handleEditPerson}>
+            <div style={{ marginBottom: '20px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                }}
+              >
+                Name *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <FaUser
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '16px',
+                  }}
+                />
+                <input
+                  type="text"
+                  value={editPersonData.name}
+                  onChange={(e) =>
+                    setEditPersonData({
+                      ...editPersonData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Enter person name"
+                  style={{
+                    width: '100%',
+                    padding: '12px 12px 12px 40px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                }}
+              >
+                Phone Number *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <FaPhone
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '16px',
+                  }}
+                />
+                <input
+                  type="tel"
+                  value={editPersonData.number}
+                  onChange={(e) =>
+                    setEditPersonData({
+                      ...editPersonData,
+                      number: e.target.value,
+                    })
+                  }
+                  placeholder="Enter phone number"
+                  style={{
+                    width: '100%',
+                    padding: '12px 12px 12px 40px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '32px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                }}
+              >
+                Reference *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <FaFileAlt
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '16px',
+                  }}
+                />
+                <input
+                  type="text"
+                  value={editPersonData.reference}
+                  onChange={(e) =>
+                    setEditPersonData({
+                      ...editPersonData,
+                      reference: e.target.value,
+                    })
+                  }
+                  placeholder="Enter reference"
+                  style={{
+                    width: '100%',
+                    padding: '12px 12px 12px 40px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  required
+                />
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  padding: '12px 24px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  color: '#6b7280',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = '#f9fafb')
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = 'white')
+                }
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  backgroundColor: isSubmitting ? '#9ca3af' : '#3b82f6',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => {
+                  if (!isSubmitting)
+                    e.currentTarget.style.backgroundColor = '#2563eb';
+                }}
+                onMouseOut={(e) => {
+                  if (!isSubmitting)
+                    e.currentTarget.style.backgroundColor = '#3b82f6';
+                }}
+              >
+                {isSubmitting ? 'Updating...' : 'Update Person'}
               </button>
             </div>
           </form>

@@ -108,6 +108,7 @@ const TodaySales = () => {
 
     const formattedInvoice = {
       editing: true,
+      showInvoice: true,
       id: invoice._id,
       invoiceNumber: invoice.invoiceNumber,
       customerName: invoice.customerName,
@@ -145,6 +146,8 @@ const TodaySales = () => {
     // };
     navigate('/invoice/shop', { state: formattedInvoice });
   };
+  console.log('allBulkInvoice', allbulkSales);
+
   const styles = {
     container: {
       padding: '20px',
