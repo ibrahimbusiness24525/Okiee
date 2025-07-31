@@ -1032,6 +1032,7 @@ export const InvoiceComponent = ({
       saleData?.finalPrice ||
       saleData?.price?.finalPrice ||
       saleData?.price ||
+      saleData?.totalInvoice ||
       0
     );
   };
@@ -1479,7 +1480,7 @@ export const InvoiceComponent = ({
             {formatDate(
               isAccessoryInvoice
                 ? new Date()
-                : saleData?.date || saleData?.saleDate
+                : saleData?.date || saleData?.saleDate || saleData.createdAt
             )}
           </div>
           <div>
@@ -1756,7 +1757,7 @@ export const InvoiceComponent = ({
                 if (saleData.imei1) {
                   return (
                     <div>
-                      IMEI: {saleData.imei1}
+                      IMEI: {saleData.imei1.join(',')}
                       {saleData.imei2 ? `, ${saleData.imei2}` : ''}
                     </div>
                   );

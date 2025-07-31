@@ -69,7 +69,7 @@ const SaleInvoices = () => {
       modelName: invoice.modelName,
       imei1: invoice.imei1,
       imei2: invoice.imei2 ? invoice.imei2 : undefined,
-      customerNumber: invoice.customerNumber,
+      customerNumber: invoice?.customerNumber,
       finalPrice: invoice.finalPrice,
       sellingType: invoice.sellingPaymentType,
       warranty: invoice.warranty,
@@ -99,12 +99,18 @@ const SaleInvoices = () => {
       id: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
       customerName: invoice.customerName,
+      customerNumber: invoice?.customerNumber,
+      salePrice: invoice.salePrice,
+      profit: invoice.profit,
       salePrice: invoice.salePrice,
       totalInvoice: invoice.totalInvoice,
       sellingPaymentType: invoice.sellingPaymentType,
       warranty: invoice.warranty,
+      accessoriesList: invoice.accessories || [],
       dateSold: invoice.dateSold,
       imei1: invoice.imei1,
+      createdAt: invoice.createdAt,
+      invoiceNumber: invoice.invoiceNumber,
       imei2: invoice.imei2,
       cnicFrontPic: invoice.cnicFrontPic,
       cnicBackPic: invoice.cnicBackPic,
@@ -174,7 +180,7 @@ const SaleInvoices = () => {
   const handleScan = (value) => {
     setScannedBarcodeValue(value);
   };
-
+  console.log('allbulkSales', allbulkSales);
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Sale Invoices</h2>

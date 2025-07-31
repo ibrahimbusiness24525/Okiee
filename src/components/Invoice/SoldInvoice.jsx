@@ -1910,38 +1910,54 @@ const SoldInvoice = () => {
               }}
             >
               {/* Left */}
-              <div>
-                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                  {/* <strong>Invoice No:</strong> {dataReceived.invoiceNumber} */}
-                  <strong>Type:</strong> {dataReceived.type}
-                </p>
-                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                  <strong>Date:</strong>{' '}
-                  {new Date(dataReceived.dateSold).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
+                >
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Invoice No:</strong> {dataReceived.invoiceNumber}
+                  </p>
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Date of sale:</strong>{' '}
+                    {new Date(dataReceived.dateSold).toLocaleDateString(
+                      'en-IN',
+                      {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      }
+                    )}
+                  </p>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
+                >
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Customer Name:</strong> {dataReceived.customerName}
+                  </p>
 
-              {/* Right */}
-              <div style={{ textAlign: 'right' }}>
-                {/* <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                  <strong>Customer Name:</strong> {dataReceived.customerName}
-                </p> */}
-                {dataReceived.customerNumber && (
                   <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
                     <strong>Customer Number:</strong>{' '}
                     {dataReceived.customerNumber}
                   </p>
-                )}
-                {dataReceived.customerCNIC && (
-                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                    <strong>Customer CNIC:</strong> {dataReceived?.customerCNIC}
-                  </p>
-                )}
+                </div>
               </div>
+              {/* Right */}
             </section>
 
             {/* Table */}
@@ -1968,15 +1984,59 @@ const SoldInvoice = () => {
                       fontWeight: 'bold',
                     }}
                   >
+                    Imeis
+                  </th>
+                  <th
+                    style={{
+                      padding: '15px',
+                      backgroundColor: `${selectedColor}`,
+                      color: '#fff',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
                     Selling Payment Type
                   </th>
                   <th style={styles.th}>Warranty</th>
                   <th style={styles.th}>Price PKR</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody
+                style={{
+                  backgroundColor: '#fafafa',
+                }}
+              >
                 <tr style={styles.stripedRow}>
-                  <td style={styles.td}>Mobile Device</td>
+                  <td style={styles.td}>{dataReceived?.type}</td>
+                  <td
+                    style={{
+                      display: 'flex',
+                      maxWidth: '220px',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      gap: '10px',
+                      justifyContent: 'center',
+                      padding: '12px',
+                      backgroundColor: '#fafafa',
+                      borderBottom: '1px solid #eee',
+                      color: '#333',
+                    }}
+                  >
+                    {dataReceived?.imei1.map((imei) => {
+                      return (
+                        <span
+                          style={{
+                            background: '#f0f0f0',
+                            padding: '3px 5px',
+                            fontSize: '12px',
+                            borderRadius: '10px',
+                          }}
+                        >
+                          {imei}
+                        </span>
+                      );
+                    })}
+                  </td>
                   <td style={styles.td}>{dataReceived.sellingPaymentType}</td>
                   <td style={styles.td}>
                     {dataReceived.warranty ?? 'Not Available'}
@@ -2038,7 +2098,9 @@ const SoldInvoice = () => {
           <SmallInvoiceComponent invoiceData={smallInvoiceData} />
         )}
         <InvoiceComponent
-          invoiceNumber={invoiceData.invoiceNumber}
+          invoiceNumber={
+            invoiceData.invoiceNumber ?? dataReceived?.invoiceNumber
+          }
           companyName={
             dataReceived?.companyName ??
             phoneDetail?.companyName ??
@@ -2051,6 +2113,7 @@ const SoldInvoice = () => {
               );
             }) ??
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].companyName ??
+            dataReceived?.type ??
             ''
           }
           modelName={
@@ -2065,6 +2128,7 @@ const SoldInvoice = () => {
               );
             }) ??
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].modelName ??
+            dataReceived?.type ??
             ''
           }
           batteryHealth={
@@ -2122,11 +2186,7 @@ const SoldInvoice = () => {
           type={
             dataReceived?.specifications ?? phoneDetail?.specifications ?? ''
           }
-          warranty={
-            phoneDetail?.warranty ??
-            // dataReceived?.warranty ??
-            null
-          }
+          warranty={phoneDetail?.warranty ?? dataReceived?.warranty ?? null}
           display={displayHalfP4}
           saleData={dataReceived}
           shopName={shop?.shopName ?? ''}

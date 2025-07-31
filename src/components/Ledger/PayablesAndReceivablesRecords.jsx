@@ -446,124 +446,175 @@ const PayablesAndReceivablesRecords = () => {
       {transactions.length === 0 ? (
         <p>No transactions found.</p>
       ) : (
-        <div style={{ paddingTop: '8px' }}>
+        <div style={{ padding: '12px 0' }}>
           <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             {transactions.map((tx) => {
               const isCreditReceived = tx.takingCredit !== 0;
               const isCreditGiven = tx.givingCredit !== 0;
+              const isPayment = !isCreditReceived && !isCreditGiven;
 
-              const borderColor = isCreditReceived
-                ? '#ef4444'
-                : isCreditGiven
-                  ? '#22c55e'
-                  : '#3b82f6';
-
-              const bgColor = isCreditReceived
-                ? '#fef2f2'
-                : isCreditGiven
-                  ? '#f0fdf4'
-                  : '#f0f9ff';
+              const colors = {
+                border: isCreditReceived
+                  ? '#ef4444'
+                  : isCreditGiven
+                    ? '#22c55e'
+                    : '#3b82f6',
+                bg: isCreditReceived
+                  ? '#fef2f2'
+                  : isCreditGiven
+                    ? '#f0fdf4'
+                    : '#f0f9ff',
+                text: isCreditReceived
+                  ? '#b91c1c'
+                  : isCreditGiven
+                    ? '#15803d'
+                    : '#1d4ed8',
+              };
 
               const amount = isCreditReceived
-                ? -tx.takingCredit
+                ? tx.takingCredit
                 : isCreditGiven
                   ? tx.givingCredit
                   : 0;
+              const formattedAmount = `Rs. ${Math.abs(amount).toLocaleString()}`;
 
-              const title = isCreditReceived
-                ? 'Credit Received'
+              const transactionType = isCreditReceived
+                ? 'Taking Credit'
                 : isCreditGiven
-                  ? 'Credit Given'
-                  : 'Transaction';
-
-              const formattedAmount =
-                amount !== 0 ? `Rs. ${Math.abs(amount).toLocaleString()}` : '';
-
-              const balanceText =
-                amount !== 0
-                  ? amount > 0
-                    ? `Balance Added: ${formattedAmount}`
-                    : `Balance Deducted: ${formattedAmount}`
-                  : '';
+                  ? 'Giving Credit'
+                  : 'Payment';
 
               return (
                 <div
                   key={tx._id}
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
-                    borderLeft: `3px solid ${borderColor}`,
-                    backgroundColor: bgColor,
-                    padding: '12px 14px',
-                    borderRadius: '6px',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                    position: 'relative',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                   }}
                 >
-                  {/* Top Row: Title and Date */}
+                  {/* Left Box (75%) - Transaction Details */}
                   <div
                     style={{
+                      width: '75%',
+                      padding: '14px',
+                      backgroundColor: colors.bg,
+                      borderLeft: `4px solid ${colors.border}`,
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
+                      gap: '16px',
+                    }}
+                  >
+                    {/* Date/Time Column */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span
+                        style={{
+                          fontWeight: '700',
+                          fontSize: '14px',
+                          color: '#334155',
+                        }}
+                      >
+                        {new Date(tx.createdAt).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                        })}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          color: '#64748b',
+                          marginTop: '2px',
+                        }}
+                      >
+                        {new Date(tx.createdAt).toLocaleTimeString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true,
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Transaction Info Column */}
+                    <div style={{ flex: 1 }}>
+                      <div
+                        style={{
+                          fontWeight: '600',
+                          fontSize: '15px',
+                          color: colors.text,
+                          marginBottom: '4px',
+                        }}
+                      >
+                        {transactionType}
+                      </div>
+
+                      {tx.description && (
+                        <p
+                          style={{
+                            margin: 0,
+                            color: '#475569',
+                            fontSize: '13.5px',
+                            lineHeight: '1.4',
+                          }}
+                        >
+                          {tx.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Box (25%) - Amount */}
+                  <div
+                    style={{
+                      width: '25%',
+                      padding: '14px',
+                      backgroundColor: '#ffffff',
+                      border: `1px solid ${colors.border}`,
+                      borderLeft: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
                   >
                     <span
                       style={{
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        color: borderColor,
+                        fontSize: '12px',
+                        color: '#64748b',
+                        marginBottom: '4px',
                       }}
                     >
-                      {title}
+                      {isPayment ? 'Amount' : 'Credit'}
                     </span>
+
                     <span
                       style={{
-                        fontSize: '13px',
-                        color: '#475569',
-                        fontWeight: '500',
-                        backgroundColor: '#e2e8f0',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                        color: colors.text,
                       }}
                     >
-                      {new Date(tx.createdAt).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+                      {formattedAmount}
                     </span>
+
+                    {isPayment && (
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          color: '#94a3b8',
+                          marginTop: '4px',
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        {amount === 0
+                          ? 'Settled'
+                          : amount > 0
+                            ? 'To Receive'
+                            : 'To Pay'}
+                      </span>
+                    )}
                   </div>
-
-                  {/* Description */}
-                  {tx.description && (
-                    <p
-                      style={{
-                        margin: '6px 0 4px',
-                        color: '#334155',
-                        fontSize: '13.5px',
-                        lineHeight: '1.4',
-                      }}
-                    >
-                      {tx.description}
-                    </p>
-                  )}
-
-                  {/* Balance Summary */}
-                  {amount !== 0 && (
-                    <div
-                      style={{
-                        marginTop: '4px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: borderColor,
-                      }}
-                    >
-                      {balanceText}
-                    </div>
-                  )}
                 </div>
               );
             })}
