@@ -702,6 +702,7 @@ const PayablesAndReceivablesRecords = () => {
                 <div
                   key={tx._id}
                   style={{
+                    width: '70%',
                     display: 'flex',
                     borderRadius: '8px',
                     overflow: 'hidden',
@@ -711,7 +712,7 @@ const PayablesAndReceivablesRecords = () => {
                   {/* Left Box (75%) - Transaction Details */}
                   <div
                     style={{
-                      width: '75%',
+                      width: '100%',
                       padding: '14px',
                       backgroundColor: colors.bg,
                       borderLeft: `4px solid ${colors.border}`,
@@ -779,19 +780,19 @@ const PayablesAndReceivablesRecords = () => {
 
                   {/* Right Box (25%) - Amount */}
                   <div
-                    style={{
-                      width: '25%',
-                      padding: '14px',
-                      backgroundColor: '#ffffff',
-                      border: `1px solid ${colors.border}`,
-                      borderLeft: 'none',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
+                  // style={{
+                  //   width: '25%',
+                  //   padding: '14px',
+                  //   backgroundColor: '#ffffff',
+                  //   border: `1px solid ${colors.border}`,
+                  //   borderLeft: 'none',
+                  //   display: 'flex',
+                  //   flexDirection: 'column',
+                  //   justifyContent: 'center',
+                  //   alignItems: 'center',
+                  // }}
                   >
-                    <span
+                    {/* <span
                       style={{
                         fontSize: '12px',
                         color: '#64748b',
@@ -799,9 +800,9 @@ const PayablesAndReceivablesRecords = () => {
                       }}
                     >
                       {isPayment ? 'Amount' : 'Credit'}
-                    </span>
+                    </span> */}
 
-                    <span
+                    {/* <span
                       style={{
                         fontWeight: '700',
                         fontSize: '16px',
@@ -809,9 +810,9 @@ const PayablesAndReceivablesRecords = () => {
                       }}
                     >
                       {formattedAmount}
-                    </span>
+                    </span> */}
 
-                    {isPayment && (
+                    {/* {isPayment && (
                       <span
                         style={{
                           fontSize: '11px',
@@ -826,7 +827,7 @@ const PayablesAndReceivablesRecords = () => {
                             ? 'To Receive'
                             : 'To Pay'}
                       </span>
-                    )}
+                    )} */}
                   </div>
                 </div>
               );

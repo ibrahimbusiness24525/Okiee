@@ -1170,13 +1170,7 @@ const PayablesAndReceivables = () => {
                             fontSize: 'clamp(10px, 2.5vw, 12px)',
                             color: '#6b7280',
                           }}
-                        >
-                          {person.takingCredit > person.givingCredit
-                            ? 'Net Taking Credit'
-                            : person.givingCredit > person.takingCredit
-                              ? 'Net Giving Credit'
-                              : 'All Settled'}
-                        </p>
+                        ></p>
                         <p
                           style={{
                             margin: 0,
