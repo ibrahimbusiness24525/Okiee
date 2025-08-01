@@ -1072,7 +1072,7 @@ const PayablesAndReceivables = () => {
                     </div>
 
                     {/* Credit Cards - Responsive grid */}
-                    <div
+                    {/* <div
                       style={{
                         display: 'grid',
                         gridTemplateColumns:
@@ -1141,8 +1141,62 @@ const PayablesAndReceivables = () => {
                           {person.givingCredit.toLocaleString()} PKR
                         </p>
                       </div>
+                    </div> */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        marginBottom: '16px',
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor:
+                            person.takingCredit > person.givingCredit
+                              ? 'rgba(239, 68, 68, 0.1)'
+                              : person.givingCredit > person.takingCredit
+                                ? 'rgba(34, 197, 94, 0.1)'
+                                : 'rgba(156, 163, 175, 0.1)',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          textAlign: 'center',
+                          minWidth: '120px',
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: '0 0 4px 0',
+                            fontSize: 'clamp(10px, 2.5vw, 12px)',
+                            color: '#6b7280',
+                          }}
+                        >
+                          {person.takingCredit > person.givingCredit
+                            ? 'Net Taking Credit'
+                            : person.givingCredit > person.takingCredit
+                              ? 'Net Giving Credit'
+                              : 'All Settled'}
+                        </p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 'clamp(14px, 3.5vw, 16px)',
+                            fontWeight: 'bold',
+                            color:
+                              person.takingCredit > person.givingCredit
+                                ? '#ef4444'
+                                : person.givingCredit > person.takingCredit
+                                  ? '#22c55e'
+                                  : '#6b7280',
+                          }}
+                        >
+                          {Math.abs(
+                            person.takingCredit - person.givingCredit
+                          ).toLocaleString()}{' '}
+                          PKR
+                        </p>
+                      </div>
                     </div>
-
                     {/* View Details Footer */}
                     <div
                       style={{
@@ -2057,7 +2111,6 @@ const PayablesAndReceivables = () => {
           </form>
         </Modal>
 
-        {/* Take Credit Modal */}
         <Modal
           size="sm"
           show={showTakeCreditModal}

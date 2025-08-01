@@ -2,21 +2,45 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { api } from '../../../api/api';
 import { TransactionCard } from 'components/TransactionCard';
-import { FaTrash } from 'react-icons/fa';
+import {
+  FaArrowDown,
+  FaArrowUp,
+  FaDollarSign,
+  FaPlus,
+  FaStickyNote,
+  FaTrash,
+} from 'react-icons/fa';
 import Modal from 'components/Modal/Modal';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { DatePicker } from 'antd';
+import { Button } from 'react-bootstrap';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 const PayablesAndReceivablesRecords = () => {
   const { id } = useParams();
   const [person, setPerson] = useState(null);
+  const [giveCredit, setGiveCredit] = useState([]);
+  const [takeCredit, setTakeCredit] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showTakingCredit, setShowTakingCredit] = useState(false);
+  const [showGivingCredit, setShowGivingCredit] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showPDFModal, setShowPDFModal] = useState(false);
+  const [showGiveCreditModal, setShowGiveCreditModal] = useState(false);
+  const [showGiveCreditChildModal, setShowGiveCreditChildModal] =
+    useState(false);
+  const [showTakeCreditModal, setShowTakeCreditModal] = useState(false);
   const [dataRange, setDataRange] = useState({
     startDate: null,
     endDate: null,
   });
+  const [creditData, setCreditData] = useState({
+    personId: id,
+    amount: '',
+    description: '',
+  });
+
   useEffect(() => {
     const fetchPersonDetail = async () => {
       try {
@@ -170,6 +194,60 @@ const PayablesAndReceivablesRecords = () => {
       // setError('Failed to generate PDF. Please try again.');
     }
   };
+  const handleGiveCredit = async (e) => {
+    e.preventDefault();
+    if (!creditData.personId || !creditData.amount) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.post('/api/person/give-credit', {
+        personId: creditData.personId,
+        amount: Number.parseFloat(creditData.amount),
+        description: creditData.description || '',
+        giveCredit: giveCredit,
+      });
+
+      setShowGiveCreditModal(false);
+      setCreditData({ personId: '', amount: '' });
+      alert('Credit given successfully!');
+    } catch (error) {
+      console.error('Error giving credit:', error);
+      alert('Error giving credit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Take credit
+  const handleTakeCredit = async (e) => {
+    e.preventDefault();
+    if (!creditData.personId || !creditData.amount) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.post('/api/person/take-credit', {
+        personId: creditData.personId,
+        amount: Number.parseFloat(creditData.amount),
+        description: creditData.description || '',
+        takeCredit: takeCredit,
+      });
+
+      setShowTakeCreditModal(false);
+      setCreditData({ personId: '', amount: '' });
+      alert('Credit taken successfully!');
+    } catch (error) {
+      console.error('Error taking credit:', error);
+      alert('Error taking credit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
   if (!person) return <p>Person not found.</p>;
@@ -195,16 +273,43 @@ const PayablesAndReceivablesRecords = () => {
         }}
       >
         <p>
-          <strong>Phone:</strong> {person.number}
+          <strong
+            style={{
+              fontSize: '18px',
+              color: '#333',
+              fontWeight: 'bold',
+            }}
+          >
+            Phone:
+          </strong>{' '}
+          {person.number}
         </p>
         <p>
-          <strong>Reference:</strong> {person.reference}
+          <strong
+            style={{
+              fontSize: '18px',
+              color: '#333',
+              fontWeight: 'bold',
+            }}
+          >
+            Reference:
+          </strong>{' '}
+          {person.reference}
         </p>
         <p>
-          <strong>Status:</strong> {person.status}
+          <strong
+            style={{
+              fontSize: '18px',
+              color: '#333',
+              fontWeight: 'bold',
+            }}
+          >
+            Status:
+          </strong>{' '}
+          {person.status}
         </p>
 
-        <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+        {/* <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
           <div
             style={{
               background: '#fef2f2',
@@ -232,6 +337,113 @@ const PayablesAndReceivablesRecords = () => {
             <p style={{ margin: 0, fontWeight: 'bold', color: '#047857' }}>
               {person.givingCredit.toLocaleString()} PKR
             </p>
+          </div>
+        </div> */}
+        <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+          <div
+            style={{
+              background:
+                person.takingCredit > person.givingCredit
+                  ? '#fef2f2'
+                  : person.givingCredit > person.takingCredit
+                    ? '#ecfdf5'
+                    : '#f3f4f6',
+              padding: '10px',
+              borderRadius: '6px',
+              flex: 1,
+              textAlign: 'center',
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: '12px',
+                color:
+                  person.takingCredit > person.givingCredit
+                    ? '#b91c1c'
+                    : person.givingCredit > person.takingCredit
+                      ? '#047857'
+                      : '#4b5563',
+              }}
+            >
+              {person.takingCredit > person.givingCredit
+                ? 'Net Taking Credit'
+                : person.givingCredit > person.takingCredit
+                  ? 'Net Giving Credit'
+                  : 'All Settled'}
+            </p>
+            <p
+              style={{
+                margin: 0,
+                fontWeight: 'bold',
+                color:
+                  person.takingCredit > person.givingCredit
+                    ? '#b91c1c'
+                    : person.givingCredit > person.takingCredit
+                      ? '#047857'
+                      : '#4b5563',
+              }}
+            >
+              {Math.abs(
+                person.takingCredit - person.givingCredit
+              ).toLocaleString()}{' '}
+              PKR
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setShowGiveCreditModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '12px 20px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = '#059669')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = '#10b981')
+              }
+            >
+              <FaArrowUp /> MAINE DIYE
+              {/* <FaArrowUp /> Give Credit */}
+            </button>
+
+            <button
+              onClick={() => setShowTakeCreditModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#f59e0b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '12px 20px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = '#d97706')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = '#f59e0b')
+              }
+            >
+              <FaArrowDown /> MAINE LIYE
+              {/* <FaArrowDown /> Take Credit */}
+            </button>
           </div>
         </div>
       </div>
@@ -547,6 +759,7 @@ const PayablesAndReceivablesRecords = () => {
                         }}
                       >
                         {transactionType}
+                        {` ${formattedAmount}`}
                       </div>
 
                       {tx.description && (
@@ -691,6 +904,388 @@ const PayablesAndReceivablesRecords = () => {
             Download PDF
           </button>
         </div>
+      </Modal>
+      <Modal
+        size="sm"
+        show={showGiveCreditModal}
+        toggleModal={() => setShowGiveCreditModal(false)}
+      >
+        <h2
+          style={{
+            margin: '0 0 24px 0',
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#1f2937',
+          }}
+        >
+          Give Credit
+        </h2>
+
+        <form onSubmit={handleGiveCredit}>
+          <div style={{ marginBottom: '20px' }}></div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}
+            >
+              Amount (PKR) *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaDollarSign
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="number"
+                value={creditData.amount}
+                onChange={(e) =>
+                  setCreditData({ ...creditData, amount: e.target.value })
+                }
+                placeholder="Enter amount"
+                min="0"
+                step="0.01"
+                style={{
+                  width: '100%',
+                  padding: '12px 12px 12px 40px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                required
+              />
+            </div>
+          </div>
+          <div style={{ marginBottom: '32px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}
+            >
+              Desciption *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaStickyNote
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="text"
+                value={creditData.description}
+                onChange={(e) =>
+                  setCreditData({
+                    ...creditData,
+                    description: e.target.value,
+                  })
+                }
+                placeholder="Enter description"
+                style={{
+                  width: '100%',
+                  padding: '12px 12px 12px 40px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                required
+              />
+            </div>
+          </div>
+          {/* <Button
+            variant="secondary"
+            onClick={() =>
+              setShowGiveCreditChildModal(!showGiveCreditChildModal)
+            }
+          >
+            Proceed To Pay
+          </Button> */}
+          <WalletTransactionModal
+            show={showGiveCreditChildModal}
+            toggleModal={() =>
+              setShowGiveCreditChildModal(!showGiveCreditChildModal)
+            }
+            singleTransaction={giveCredit}
+            setSingleTransaction={setGiveCredit}
+          />
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowGiveCreditModal(false)}
+              style={{
+                padding: '12px 24px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                color: '#6b7280',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = '#f9fafb')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = 'white')
+              }
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                padding: '12px 24px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: isSubmitting ? '#9ca3af' : '#10b981',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) => {
+                if (!isSubmitting)
+                  e.currentTarget.style.backgroundColor = '#059669';
+              }}
+              onMouseOut={(e) => {
+                if (!isSubmitting)
+                  e.currentTarget.style.backgroundColor = '#10b981';
+              }}
+            >
+              {isSubmitting ? 'Processing...' : 'Give Credit'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        size="sm"
+        show={showTakeCreditModal}
+        toggleModal={() => setShowTakeCreditModal(false)}
+      >
+        <h2
+          style={{
+            margin: '0 0 24px 0',
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#1f2937',
+          }}
+        >
+          Take Credit
+        </h2>
+
+        <form onSubmit={handleTakeCredit}>
+          <div style={{ marginBottom: '20px' }}></div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}
+            >
+              Amount (PKR) *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaDollarSign
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="number"
+                value={creditData.amount}
+                onChange={(e) =>
+                  setCreditData({ ...creditData, amount: e.target.value })
+                }
+                placeholder="Enter amount"
+                min="0"
+                step="0.01"
+                style={{
+                  width: '100%',
+                  padding: '12px 12px 12px 40px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                required
+              />
+            </div>
+          </div>
+          <div style={{ marginBottom: '32px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}
+            >
+              Desciption *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaStickyNote
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="text"
+                value={creditData.description}
+                onChange={(e) =>
+                  setCreditData({
+                    ...creditData,
+                    description: e.target.value,
+                  })
+                }
+                placeholder="Enter description"
+                style={{
+                  width: '100%',
+                  padding: '12px 12px 12px 40px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                required
+              />
+            </div>
+          </div>
+          {/* <Button
+            variant="secondary"
+            onClick={() =>
+              setShowWalletTransactionModal(!showWalletTransactionModal)
+            }
+          >
+            Proceed To Get Payment
+          </Button> */}
+          {/* <WalletTransactionModal
+            show={showWalletTransactionModal}
+            toggleModal={() =>
+              setShowWalletTransactionModal(!showWalletTransactionModal)
+            }
+            singleTransaction={takeCredit}
+            setSingleTransaction={setTakeCredit}
+          /> */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowTakeCreditModal(false)}
+              style={{
+                padding: '12px 24px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                color: '#6b7280',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = '#f9fafb')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = 'white')
+              }
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                padding: '12px 24px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: isSubmitting ? '#9ca3af' : '#f59e0b',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) => {
+                if (!isSubmitting)
+                  e.currentTarget.style.backgroundColor = '#d97706';
+              }}
+              onMouseOut={(e) => {
+                if (!isSubmitting)
+                  e.currentTarget.style.backgroundColor = '#f59e0b';
+              }}
+            >
+              {isSubmitting ? 'Processing...' : 'Take Credit'}
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );
