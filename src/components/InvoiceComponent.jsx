@@ -1757,8 +1757,13 @@ export const InvoiceComponent = ({
                 if (saleData.imei1) {
                   return (
                     <div>
-                      IMEI: {saleData.imei1.join(',')}
+                      IMEI:{' '}
+                      {Array.isArray(saleData?.imei1)
+                        ? saleData.imei1.join(',')
+                        : saleData?.imei1}
                       {saleData.imei2 ? `, ${saleData.imei2}` : ''}
+                      {/* IMEI: {saleData?.imei1?.join(',')}
+                      {saleData.imei2 ? `, ${saleData.imei2}` : ''} */}
                     </div>
                   );
                 }

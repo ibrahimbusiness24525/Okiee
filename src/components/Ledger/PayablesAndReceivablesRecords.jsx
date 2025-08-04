@@ -306,7 +306,18 @@ const PayablesAndReceivablesRecords = () => {
           >
             Status:
           </strong>{' '}
-          {person.status}
+          <span
+            style={{
+              color:
+                person.status === 'Payable'
+                  ? '#ef4444'
+                  : person.status === 'Receivable'
+                    ? '#10b981'
+                    : '#3b82f6',
+            }}
+          >
+            {person.status}
+          </span>
         </p>
 
         {/* <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
@@ -700,99 +711,105 @@ const PayablesAndReceivablesRecords = () => {
 
               return (
                 <div
-                  key={tx._id}
                   style={{
-                    width: '70%',
+                    width: '100%',
+                    padding: '14px',
+                    backgroundColor: colors.bg,
+                    borderLeft: `4px solid ${colors.border}`,
                     display: 'flex',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
+                    flexDirection: 'column',
+                    width: '70%',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                    borderRadius: '8px',
                   }}
                 >
-                  {/* Left Box (75%) - Transaction Details */}
                   <div
+                    key={tx._id}
                     style={{
-                      width: '100%',
-                      padding: '14px',
-                      backgroundColor: colors.bg,
-                      borderLeft: `4px solid ${colors.border}`,
+                      overflow: 'hidden',
                       display: 'flex',
-                      gap: '16px',
                     }}
                   >
-                    {/* Date/Time Column */}
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span
-                        style={{
-                          fontWeight: '700',
-                          fontSize: '14px',
-                          color: '#334155',
-                        }}
-                      >
-                        {new Date(tx.createdAt).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                        })}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '12px',
-                          color: '#64748b',
-                          marginTop: '2px',
-                        }}
-                      >
-                        {new Date(tx.createdAt).toLocaleTimeString('en-GB', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: true,
-                        })}
-                      </span>
-                    </div>
-
-                    {/* Transaction Info Column */}
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontWeight: '600',
-                          fontSize: '15px',
-                          color: colors.text,
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {transactionType}
-                        {` ${formattedAmount}`}
-                      </div>
-
-                      {tx.description && (
-                        <p
+                    {/* Left Box (75%) - Transaction Details */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '16px',
+                      }}
+                    >
+                      {/* Date/Time Column */}
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span
                           style={{
-                            margin: 0,
-                            color: '#475569',
-                            fontSize: '13.5px',
-                            lineHeight: '1.4',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            color: '#334155',
                           }}
                         >
-                          {tx.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                          {new Date(tx.createdAt).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                          })}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '12px',
+                            color: '#64748b',
+                            marginTop: '2px',
+                          }}
+                        >
+                          {new Date(tx.createdAt).toLocaleTimeString('en-GB', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                          })}
+                        </span>
+                      </div>
 
-                  {/* Right Box (25%) - Amount */}
-                  <div
-                  // style={{
-                  //   width: '25%',
-                  //   padding: '14px',
-                  //   backgroundColor: '#ffffff',
-                  //   border: `1px solid ${colors.border}`,
-                  //   borderLeft: 'none',
-                  //   display: 'flex',
-                  //   flexDirection: 'column',
-                  //   justifyContent: 'center',
-                  //   alignItems: 'center',
-                  // }}
-                  >
-                    {/* <span
+                      {/* Transaction Info Column */}
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            fontWeight: '600',
+                            fontSize: '15px',
+                            color: colors.text,
+                            marginBottom: '4px',
+                          }}
+                        >
+                          {transactionType}
+                          {` ${formattedAmount}`}
+                        </div>
+
+                        {tx.description && (
+                          <p
+                            style={{
+                              margin: 0,
+                              color: '#475569',
+                              fontSize: '13.5px',
+                              lineHeight: '1.4',
+                            }}
+                          >
+                            {tx.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Box (25%) - Amount */}
+                    <div
+                    // style={{
+                    //   width: '25%',
+                    //   padding: '14px',
+                    //   backgroundColor: '#ffffff',
+                    //   border: `1px solid ${colors.border}`,
+                    //   borderLeft: 'none',
+                    //   display: 'flex',
+                    //   flexDirection: 'column',
+                    //   justifyContent: 'center',
+                    //   alignItems: 'center',
+                    // }}
+                    >
+                      {/* <span
                       style={{
                         fontSize: '12px',
                         color: '#64748b',
@@ -802,7 +819,7 @@ const PayablesAndReceivablesRecords = () => {
                       {isPayment ? 'Amount' : 'Credit'}
                     </span> */}
 
-                    {/* <span
+                      {/* <span
                       style={{
                         fontWeight: '700',
                         fontSize: '16px',
@@ -812,7 +829,7 @@ const PayablesAndReceivablesRecords = () => {
                       {formattedAmount}
                     </span> */}
 
-                    {/* {isPayment && (
+                      {/* {isPayment && (
                       <span
                         style={{
                           fontSize: '11px',
@@ -828,7 +845,18 @@ const PayablesAndReceivablesRecords = () => {
                             : 'To Pay'}
                       </span>
                     )} */}
+                    </div>
                   </div>
+                  <span>
+                    <span
+                      style={{
+                        fontWeight: '700',
+                      }}
+                    >
+                      Balance Amount:
+                    </span>{' '}
+                    {tx?.balanceAmount}
+                  </span>
                 </div>
               );
             })}
