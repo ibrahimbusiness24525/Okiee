@@ -307,8 +307,8 @@ const NewMobilesList = () => {
               .map(
                 (imei) =>
                   imei.imei2
-                    ? `${imei.imei1} / ${imei.imei2}  price: ${ramSim?.priceOfOne}` // Show both if imei2 exists
-                    : `Imei ${imei.imei1} of Buying price: ${ramSim?.priceOfOne}` // Otherwise, just imei1
+                    ? `${imei.imei1} / ${imei.imei2} ` // Show both if imei2 exists
+                    : imei.imei1 // Otherwise, just imei1
               );
           }) || [];
 
