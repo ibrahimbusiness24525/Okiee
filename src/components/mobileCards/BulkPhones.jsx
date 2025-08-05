@@ -55,6 +55,30 @@ const NewMobilesList = () => {
   const [accessories, setAccessories] = useState([
     { id: '', name: '', quantity: 1, price: '' },
   ]);
+  const [addedImeis, setAddedImeis] = useState([]);
+  const [imeiPrices, setImeiPrices] = useState({}); // Use object to store IMEI-price pairs
+  const handleAddedImei = (newImei) => {
+    setAddedImeis((prev) => [...prev, newImei]);
+    setImeiPrices((prev) => ({ ...prev, [newImei]: '' }));
+  };
+
+  const handleImeiPriceChange = (imei, price) => {
+    setImeiPrices((prev) => ({
+      ...prev,
+      [imei]: price,
+    }));
+  };
+
+  const handleRemoveAddedImei = (imeiToRemove) => {
+    setAddedImeis((prev) => prev.filter((imei) => imei !== imeiToRemove));
+    setImeiPrices((prev) => {
+      const newPrices = { ...prev };
+      delete newPrices[imeiToRemove];
+      return newPrices;
+    });
+  };
+  console.log('addedImeis:', addedImeis);
+  console.log('imeiPrices:', imeiPrices);
   const [showWalletTransactionModal, setShowWalletTransactionModal] =
     useState(false);
   const [walletTransaction, setWalletTransaction] = useState({
@@ -81,7 +105,6 @@ const NewMobilesList = () => {
   const [id, setId] = useState('');
   const [personName, setPersonName] = useState('');
   const [imeiInput, setImeiInput] = useState(''); // Input field for new IMEI
-  const [addedImeis, setAddedImeis] = useState([]);
   const [bulkData, setBulkData] = useState([]);
   const [list, setList] = useState(true);
   const [entityData, setEntityData] = useState({
@@ -284,8 +307,8 @@ const NewMobilesList = () => {
               .map(
                 (imei) =>
                   imei.imei2
-                    ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
-                    : imei.imei1 // Otherwise, just imei1
+                    ? `${imei.imei1} / ${imei.imei2}  price: ${ramSim?.priceOfOne}` // Show both if imei2 exists
+                    : `Imei ${imei.imei1} of Buying price: ${ramSim?.priceOfOne}` // Otherwise, just imei1
               );
           }) || [];
 
@@ -306,12 +329,15 @@ const NewMobilesList = () => {
     acc[personId].push(mobile);
     return acc;
   }, {});
+  console.log('finalprice:', finalPrice);
   const handleSoldSubmit = async () => {
+    console.log(finalPrice, warranty, saleDate, sellingType);
+
     if (
       !finalPrice ||
       !warranty ||
-      !customerName ||
-      !customerNumber ||
+      // !customerName ||
+      // !customerNumber ||
       !saleDate ||
       sellingType === ''
     ) {
@@ -330,14 +356,16 @@ const NewMobilesList = () => {
       addedImeis,
       cnicBackPic,
       cnicFrontPic,
-      customerName,
+      customerName: entityData.name || newEntity.name || customerName || '',
       accessories,
       bankName,
       payableAmountNow,
       payableAmountLater,
       payableAmountLaterDate,
       exchangePhoneDetail,
-      customerNumber,
+      imeisWithPrices: imeiPrices,
+      customerNumber:
+        entityData.number || newEntity.number || customerNumber || '',
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -529,6 +557,7 @@ const NewMobilesList = () => {
     (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
     0
   );
+
   const handleChange = (event) => {
     const selectedImeis = event.target.value;
     setImei(selectedImeis);
@@ -570,6 +599,15 @@ const NewMobilesList = () => {
 
     return { now, later };
   };
+  useEffect(() => {
+    const total = Object.values(imeiPrices).reduce(
+      (sum, price) => sum + (Number(price) || 0),
+      0
+    );
+    if (total > 0) {
+      setFinalPrice(total); // Auto-update when imeiPrices change
+    }
+  }, [imeiPrices]);
 
   return (
     <>
@@ -2108,7 +2146,7 @@ const NewMobilesList = () => {
                               cursor: 'pointer',
                             }}
                           >
-                            Create New
+                            New Customer
                           </button>
                         </div>
                       </div>
@@ -2228,7 +2266,7 @@ const NewMobilesList = () => {
                   </Form.Group>
                 </Col>
               </Row>
-              <Form.Group className="mb-3">
+              {/* <Form.Group className="mb-3">
                 <Form.Label>Customer Name</Form.Label>
                 <Form.Control
                   type="text"
@@ -2245,7 +2283,7 @@ const NewMobilesList = () => {
                   onChange={(e) => setCustomerNumber(e.target.value)}
                   placeholder="Enter number in +923XXXXXXXXX format"
                 />
-              </Form.Group>
+              </Form.Group> */}
 
               <div>
                 <div>
@@ -2336,6 +2374,19 @@ const NewMobilesList = () => {
                   </Button>
                 </div>
 
+                <InputLabel
+                  style={{
+                    background:
+                      'linear-gradient(90deg, #fef9c3 0%, #fde68a 100%)',
+                    border: '2px solid #f59e42',
+                    borderRadius: '12px',
+                    padding: '24px 18px',
+                    margin: '24px 0',
+                    boxShadow: '0 4px 18px rgba(245, 158, 66, 0.15)',
+                  }}
+                >
+                  Select Imei is compulsory
+                </InputLabel>
                 <FormControl fullWidth variant="outlined" className="mb-3">
                   <InputLabel>IMEI</InputLabel>
                   <Select
@@ -2443,7 +2494,7 @@ const NewMobilesList = () => {
                     />
                     <Button
                       variant="success"
-                      onClick={handleAddImei}
+                      onClick={() => handleAddedImei(imeiInput)}
                       backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)"
                       className="ms-2"
                     >
@@ -2452,6 +2503,43 @@ const NewMobilesList = () => {
                   </div>
                 </Form.Group>
 
+                {/* {addedImeis.length > 0 && (
+                  <div className="mt-3">
+                    <h6>Added IMEIs:</h6>
+                    <ul className="list-group">
+                      {addedImeis.map((imei, index) => (
+                        <li
+                          key={index}
+                          className="list-group-item d-flex justify-content-between align-items-center"
+                        >
+                          {imei}
+                          <input
+                            type="number"
+                            value={imeiPrices[imei] || ''}
+                            onChange={(e) =>
+                              handleImeiPriceChange(imei, e.target.value)
+                            }
+                            placeholder="Price"
+                            style={{
+                              width: '100px',
+                              marginRight: '10px',
+                              borderRadius: '4px',
+                              border: '1px solid #ccc',
+                              padding: '5px',
+                            }}
+                          />
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleRemoveImei(imei)}
+                          >
+                            Remove
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )} */}
                 {addedImeis.length > 0 && (
                   <div className="mt-3">
                     <h6>Added IMEIs:</h6>
@@ -2462,13 +2550,29 @@ const NewMobilesList = () => {
                           className="list-group-item d-flex justify-content-between align-items-center"
                         >
                           {imei}
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleRemoveImei(imei)}
-                          >
-                            Remove
-                          </Button>
+                          <div>
+                            <input
+                              type="number"
+                              value={imeiPrices[imei] || ''}
+                              onChange={(e) =>
+                                handleImeiPriceChange(imei, e.target.value)
+                              }
+                              placeholder="Price"
+                              style={{
+                                marginRight: '10px',
+                                borderRadius: '4px',
+                                border: '1px solid #ccc',
+                                padding: '5px',
+                              }}
+                            />
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleRemoveAddedImei(imei)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
                         </li>
                       ))}
                     </ul>

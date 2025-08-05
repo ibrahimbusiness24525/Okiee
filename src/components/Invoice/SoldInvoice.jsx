@@ -253,8 +253,8 @@ const SoldInvoice = () => {
   function formatPhoneNumber(number) {
     if (!number) return null;
 
-    // Remove all non-digit characters first
-    const digitsOnly = number.replace(/\D/g, '');
+    // Ensure number is a string before replacing
+    const digitsOnly = String(number).replace(/\D/g, '');
 
     // If number is in international format (+923057903867)
     if (digitsOnly.startsWith('92')) {
@@ -279,6 +279,7 @@ const SoldInvoice = () => {
       dataReceived?.bulkPhonePurchaseId
     ) {
       const payload = {
+        imeisWithPrices: dataReceived?.imeisWithPrices,
         entityData: dataReceived?.entityData,
         bankAccountUsed: dataReceived?.walletTransaction?.bankAccountUsed,
         accountCash: Number(dataReceived?.walletTransaction?.amountFromBank),
