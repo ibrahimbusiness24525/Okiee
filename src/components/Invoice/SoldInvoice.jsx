@@ -161,9 +161,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-      dataReceived?.finalPrice ??
-      dataReceived?.demandPrice ??
-      0
+    dataReceived?.finalPrice ??
+    dataReceived?.demandPrice ??
+    0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -530,133 +530,271 @@ const SoldInvoice = () => {
   };
   console.log('termsAndConditions', shop);
 
+  // const smallInvoiceData = {
+  //   termsAndConditions:
+  //     shop?.termsCondition || 'No terms and conditions provided',
+  //   shopInfo: shop?.address || 'Shop Address Not Mentioned',
+  //   title: 'INVOICE',
+  //   subtitle:
+  //     dataReceived?.sellingType || phoneDetail?.sellingType || 'Counter Sale',
+  //   date:
+  //     dataReceived?.saleDate || phoneDetail?.saleDate
+  //       ? new Date(
+  //         dataReceived?.saleDate || phoneDetail?.saleDate
+  //       ).toLocaleDateString('en-GB')
+  //       : 'N/A',
+  //   invoiceNumber:
+  //     (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() ||
+  //     '000000',
+  //   customer: {
+  //     name:
+  //       dataReceived?.customerName ||
+  //       phoneDetail?.customerName ||
+  //       'Customer Name Not Provided',
+  //     phone:
+  //       dataReceived?.customerNumber ||
+  //       phoneDetail?.customerNumber ||
+  //       '____________________',
+  //   },
+  //   items: [
+  //     // Handle both ramSimDetails (bulk) and single phone cases
+  //     ...(dataReceived?.ramSimDetails?.flatMap((ramSim, index) => {
+  //       return ramSim?.imeiNumbers?.map((imeiItem, subIndex) => ({
+  //         no: index * 2 + subIndex + 1,
+  //         name: `${ramSim.companyName || phoneDetail?.companyName || 'Brand'} ${ramSim.modelName || phoneDetail?.modelName || 'Model'} ${ramSim.ramMemory || phoneDetail?.ramMemory || ''}`,
+  //         code:
+  //           imeiItem.imei1 || dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+  //         qty: 1,
+  //         rate: String(
+  //           ramSim.priceOfOne ||
+  //           dataReceived?.finalPrice ||
+  //           phoneDetail?.finalPrice ||
+  //           0
+  //         ),
+  //         amount: String(
+  //           ramSim.priceOfOne ||
+  //           dataReceived?.finalPrice ||
+  //           phoneDetail?.finalPrice ||
+  //           0
+  //         ),
+  //       }));
+  //     }) || []),
+
+  //     // Fallback to single phone if no ramSimDetails
+  //     ...(!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
+  //       ? [
+  //         {
+  //           no: 1,
+  //           name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+  //           code: dataReceived?.addedImei1s||dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+  //           qty: 1,
+  //           rate: String(
+  //             dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+  //           ),
+  //           amount: String(
+  //             dataReceived?.totalInvoice ||
+  //             phoneDetail?.totalInvoice ||
+  //             dataReceived?.finalPrice ||
+  //             phoneDetail?.finalPrice ||
+  //             0
+  //           ),
+  //         },
+  //       ]
+  //       : []),
+
+  //     // Handle accessories from either source
+  //     ...((dataReceived?.accessories || phoneDetail?.accessories)?.map(
+  //       (item, index) => ({
+  //         no:
+  //           (dataReceived?.ramSimDetails?.length ||
+  //             phoneDetail?.ramSimDetails?.length ||
+  //             0) +
+  //           index +
+  //           1,
+  //         name: `Accessory: ${item.name || 'Unknown'}`,
+  //         code: item.name || '-',
+  //         qty: Number(item.quantity) || 1,
+  //         rate: String(item.price || 0),
+  //         amount: String(Number(item.price || 0) * Number(item.quantity || 1)),
+  //       })
+  //     ) || []),
+  //   ],
+  //   summary: {
+  //     items:
+  //       (dataReceived?.ramSimDetails?.reduce(
+  //         (sum, ramSim) => sum + (ramSim.imeiNumbers?.length || 0),
+  //         0
+  //       ) || 0) +
+  //       (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
+  //       (dataReceived?.accessories?.length ||
+  //         phoneDetail?.accessories?.length ||
+  //         0),
+
+  //     cashReturn: '–',
+  //     bankReturn: '–',
+  //     freight: '–',
+  //     subTotal: String(
+  //       Number(
+  //         dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0
+  //       ) +
+  //       ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
+  //         (sum, acc) =>
+  //           sum + Number(acc.price || 0) * Number(acc.quantity || 0),
+  //         0
+  //       ) || 0)
+  //     ),
+  //     discount: '–',
+  //     netTotal: String(
+  //       dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+  //     ),
+  //     previousBal: '–',
+  //     total: String(
+  //       dataReceived?.totalInvoice ||
+  //       phoneDetail?.totalInvoice ||
+  //       dataReceived?.finalPrice ||
+  //       phoneDetail?.finalPrice ||
+  //       0
+  //     ),
+  //     bankDeposit:
+  //       dataReceived?.walletTransaction?.amountFromBank ||
+  //       phoneDetail?.walletTransaction?.amountFromBank ||
+  //       '–',
+  //     currentTotal: '–',
+  //   },
+  //   operator: 'admin',
+  //   timestamp: new Date().toLocaleString('en-GB', {
+  //     dateStyle: 'medium',
+  //     timeStyle: 'short',
+  //   }),
+  //   pending: [
+  //     // Only add pending items if this is a credit sale
+  //     ...(dataReceived?.sellingPaymentType === 'Credit' ||
+  //       phoneDetail?.sellingPaymentType === 'Credit'
+  //       ? [
+  //         {
+  //           no: 1,
+  //           name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+  //           qty: 1,
+  //         },
+  //       ]
+  //       : []),
+  //   ],
+  //   social: {
+  //     url: 'http://www.conceptmobiles.net',
+  //     text: 'www.conceptmobiles.net',
+  //   },
+  //   qr: 'qr-code.png',
+  // };
   const smallInvoiceData = {
-    termsAndConditions:
-      shop?.termsCondition || 'No terms and conditions provided',
+    termsAndConditions: shop?.termsCondition || 'No terms and conditions provided',
     shopInfo: shop?.address || 'Shop Address Not Mentioned',
     title: 'INVOICE',
-    subtitle:
-      dataReceived?.sellingType || phoneDetail?.sellingType || 'Counter Sale',
-    date:
-      dataReceived?.saleDate || phoneDetail?.saleDate
-        ? new Date(
-            dataReceived?.saleDate || phoneDetail?.saleDate
-          ).toLocaleDateString('en-GB')
-        : 'N/A',
-    invoiceNumber:
-      (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() ||
-      '000000',
+    subtitle: dataReceived?.sellingType || phoneDetail?.sellingType || 'Counter Sale',
+    date: dataReceived?.saleDate || phoneDetail?.saleDate
+      ? new Date(dataReceived?.saleDate || phoneDetail?.saleDate).toLocaleDateString('en-GB')
+      : 'N/A',
+    invoiceNumber: (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() || '000000',
     customer: {
-      name:
-        dataReceived?.customerName ||
-        phoneDetail?.customerName ||
-        'Customer Name Not Provided',
-      phone:
-        dataReceived?.customerNumber ||
-        phoneDetail?.customerNumber ||
-        '____________________',
+      name: dataReceived?.customerName || phoneDetail?.customerName || 'Customer Name Not Provided',
+      phone: dataReceived?.customerNumber || phoneDetail?.customerNumber || '____________________',
     },
     items: [
-      // Handle both ramSimDetails (bulk) and single phone cases
+      // Handle ramSimDetails with addedImeis filter
       ...(dataReceived?.ramSimDetails?.flatMap((ramSim, index) => {
-        return ramSim?.imeiNumbers?.map((imeiItem, subIndex) => ({
+        const filteredImeis = ramSim?.imeiNumbers?.filter(imeiItem =>
+          dataReceived.addedImeis?.includes(imeiItem.imei1)
+        ) || [];
+
+        return filteredImeis.map((imeiItem, subIndex) => ({
           no: index * 2 + subIndex + 1,
           name: `${ramSim.companyName || phoneDetail?.companyName || 'Brand'} ${ramSim.modelName || phoneDetail?.modelName || 'Model'} ${ramSim.ramMemory || phoneDetail?.ramMemory || ''}`,
-          code:
-            imeiItem.imei1 || dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+          code: imeiItem.imei1 || '-',
           qty: 1,
           rate: String(
+            dataReceived.imeisWithPrices?.[imeiItem.imei1] ||
             ramSim.priceOfOne ||
-              dataReceived?.finalPrice ||
-              phoneDetail?.finalPrice ||
-              0
+            dataReceived?.finalPrice ||
+            phoneDetail?.finalPrice ||
+            0
           ),
           amount: String(
+            dataReceived.imeisWithPrices?.[imeiItem.imei1] ||
             ramSim.priceOfOne ||
-              dataReceived?.finalPrice ||
-              phoneDetail?.finalPrice ||
-              0
+            dataReceived?.finalPrice ||
+            phoneDetail?.finalPrice ||
+            0
           ),
         }));
       }) || []),
 
       // Fallback to single phone if no ramSimDetails
       ...(!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
-        ? [
-            {
-              no: 1,
-              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
-              code: dataReceived?.imei1 || phoneDetail?.imei1 || '-',
-              qty: 1,
-              rate: String(
-                dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
-              ),
-              amount: String(
-                dataReceived?.totalInvoice ||
-                  phoneDetail?.totalInvoice ||
-                  dataReceived?.finalPrice ||
-                  phoneDetail?.finalPrice ||
-                  0
-              ),
-            },
-          ]
+        ? [{
+          no: 1,
+          name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+          code: dataReceived?.addedImeis?.[0] || dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+          qty: 1,
+          rate: String(
+            dataReceived?.imeisWithPrices?.[dataReceived?.addedImeis?.[0]] ||
+            dataReceived?.finalPrice ||
+            phoneDetail?.finalPrice ||
+            0
+          ),
+          amount: String(
+            dataReceived?.imeisWithPrices?.[dataReceived?.addedImeis?.[0]] ||
+            dataReceived?.totalInvoice ||
+            phoneDetail?.totalInvoice ||
+            dataReceived?.finalPrice ||
+            phoneDetail?.finalPrice ||
+            0
+          ),
+        }]
         : []),
 
       // Handle accessories from either source
-      ...((dataReceived?.accessories || phoneDetail?.accessories)?.map(
-        (item, index) => ({
-          no:
-            (dataReceived?.ramSimDetails?.length ||
-              phoneDetail?.ramSimDetails?.length ||
-              0) +
-            index +
-            1,
-          name: `Accessory: ${item.name || 'Unknown'}`,
-          code: item.name || '-',
-          qty: Number(item.quantity) || 1,
-          rate: String(item.price || 0),
-          amount: String(Number(item.price || 0) * Number(item.quantity || 1)),
-        })
-      ) || []),
+      ...((dataReceived?.accessories || phoneDetail?.accessories)?.map((item, index) => ({
+        no: (dataReceived?.ramSimDetails?.reduce((sum, ramSim) =>
+          sum + (ramSim.imeiNumbers?.filter(imeiItem =>
+            dataReceived.addedImeis?.includes(imeiItem.imei1)
+          )?.length || 0), 0) || 0) +
+          (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
+          index + 1,
+        name: `Accessory: ${item.name || 'Unknown'}`,
+        code: item.name || '-',
+        qty: Number(item.quantity) || 1,
+        rate: String(item.price || 0),
+        amount: String(Number(item.price || 0) * Number(item.quantity || 1)),
+      })) || []),
     ],
     summary: {
-      items:
-        (dataReceived?.ramSimDetails?.reduce(
-          (sum, ramSim) => sum + (ramSim.imeiNumbers?.length || 0),
-          0
-        ) || 0) +
+      items: (dataReceived?.ramSimDetails?.reduce((sum, ramSim) =>
+        sum + (ramSim.imeiNumbers?.filter(imeiItem =>
+          dataReceived.addedImeis?.includes(imeiItem.imei1)
+        )?.length || 0), 0) || 0) +
         (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
-        (dataReceived?.accessories?.length ||
-          phoneDetail?.accessories?.length ||
-          0),
+        (dataReceived?.accessories?.length || phoneDetail?.accessories?.length || 0),
 
       cashReturn: '–',
       bankReturn: '–',
       freight: '–',
       subTotal: String(
-        Number(
-          dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0
-        ) +
-          ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
-            (sum, acc) =>
-              sum + Number(acc.price || 0) * Number(acc.quantity || 0),
-            0
-          ) || 0)
+        Number(dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0) +
+        ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
+          (sum, acc) => sum + Number(acc.price || 0) * Number(acc.quantity || 0),
+          0
+        ) || 0)
       ),
       discount: '–',
-      netTotal: String(
-        dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
-      ),
+      netTotal: String(dataReceived?.finalPrice || phoneDetail?.finalPrice || 0),
       previousBal: '–',
       total: String(
         dataReceived?.totalInvoice ||
-          phoneDetail?.totalInvoice ||
-          dataReceived?.finalPrice ||
-          phoneDetail?.finalPrice ||
-          0
+        phoneDetail?.totalInvoice ||
+        dataReceived?.finalPrice ||
+        phoneDetail?.finalPrice ||
+        0
       ),
-      bankDeposit:
-        dataReceived?.walletTransaction?.amountFromBank ||
+      bankDeposit: dataReceived?.walletTransaction?.amountFromBank ||
         phoneDetail?.walletTransaction?.amountFromBank ||
         '–',
       currentTotal: '–',
@@ -667,16 +805,13 @@ const SoldInvoice = () => {
       timeStyle: 'short',
     }),
     pending: [
-      // Only add pending items if this is a credit sale
       ...(dataReceived?.sellingPaymentType === 'Credit' ||
-      phoneDetail?.sellingPaymentType === 'Credit'
-        ? [
-            {
-              no: 1,
-              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
-              qty: 1,
-            },
-          ]
+        phoneDetail?.sellingPaymentType === 'Credit'
+        ? [{
+          no: 1,
+          name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+          qty: 1,
+        }]
         : []),
     ],
     social: {
@@ -987,7 +1122,7 @@ const SoldInvoice = () => {
       {originalInvoice &&
         !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-        dataReceived?.bulkPhonePurchaseId ? (
+          dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
@@ -1060,7 +1195,7 @@ const SoldInvoice = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {dataReceived.addedImeis.length > 0 ? (
+                  {/* {dataReceived.addedImeis.length > 0 ? (
                     <>
                       {dataReceived?.ramSimDetails
                         ?.filter((detail) =>
@@ -1084,7 +1219,6 @@ const SoldInvoice = () => {
                               {detail?.simOption ?? 'Not Available'}
                             </td>
 
-                            {/* Count of matched IMEIs */}
                             <td style={styles.td}>
                               {
                                 detail.imeiNumbers.filter((imeiObj) =>
@@ -1099,13 +1233,65 @@ const SoldInvoice = () => {
                                 : dataReceived?.finalPrice ?? 'Not Available'}
                             </td>
 
-                            {/* <td style={styles.td}>
-                       {dataReceived?.invoice?.items
-                         ? dataReceived.invoice.items[0]?.warranty
-                         : dataReceived?.warranty ?? 'Not Available'}
-                     </td> */}
+            
                           </tr>
                         ))}
+                    </> */}
+                  {dataReceived.addedImeis.length > 0 ? (
+                    <>
+                      {dataReceived?.ramSimDetails
+                        ?.filter((detail) =>
+                          detail.imeiNumbers.some((imeiObj) =>
+                            addedImei1s.includes(imeiObj.imei1)
+                          )
+                        )
+                        .map((detail, index) => {
+                          // Get matched IMEIs for this detail
+                          const matchedImeis = detail.imeiNumbers.filter(imeiObj =>
+                            addedImei1s.includes(imeiObj.imei1)
+                          );
+
+                          // Format prices for display (only prices, no IMEIs)
+                          const imeiPricesDisplay = matchedImeis.map(imeiObj =>
+                            dataReceived.imeisWithPrices[imeiObj.imei1] || 'N/A'
+                          ).join(', ');
+
+                          return (
+                            <tr key={index} style={styles.stripedRow}>
+                              <td style={styles.td}>
+                                {detail?.companyName ?? 'Not Available'}
+                              </td>
+
+                              <td style={styles.td}>
+                                {detail?.modelName ?? 'Not Available'}
+                              </td>
+                              <td style={styles.td}>
+                                {detail?.ramMemory ?? 'Not Available'}
+                              </td>
+                              <td style={styles.td}>
+                                {detail?.simOption ?? 'Not Available'}
+                              </td>
+
+                              {/* Count of matched IMEIs */}
+                              <td style={styles.td}>
+                                {matchedImeis.length}
+                              </td>
+
+                              {/* Column for prices only */}
+                              <td style={styles.td}>
+                                {imeiPricesDisplay || 'Not Available'}
+                              </td>
+
+                              {!imeiPricesDisplay && (
+                                <td style={styles.td}>
+                                  {dataReceived?.invoice
+                                    ? dataReceived.invoice.totalAmount
+                                    : dataReceived?.finalPrice ?? 'Not Available'}
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
                     </>
                   ) : (
                     <>
@@ -1586,12 +1772,12 @@ const SoldInvoice = () => {
                           dataReceived?.companyName ||
                           (Array.isArray(phoneDetail)
                             ? phoneDetail.map((item, i) => (
-                                <div key={i}>
-                                  {item.companyName || 'Not Available'}
-                                </div>
-                              ))
+                              <div key={i}>
+                                {item.companyName || 'Not Available'}
+                              </div>
+                            ))
                             : phoneDetail?.bulkPhonePurchase?.ramSimDetails?.[0]
-                                ?.companyName || 'Not Available')}
+                              ?.companyName || 'Not Available')}
                       </div>
                     </td>
 
@@ -1630,7 +1816,7 @@ const SoldInvoice = () => {
                       }}
                     >
                       {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.ramMemory ? (
+                        phoneDetail[0]?.ramMemory ? (
                         <div>
                           {phoneDetail.map((item, i) => (
                             <div key={i}>{item.ramMemory || 'N/A'}</div>
@@ -1653,7 +1839,7 @@ const SoldInvoice = () => {
                       }}
                     >
                       {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.batteryHealth ? (
+                        phoneDetail[0]?.batteryHealth ? (
                         <div>
                           {phoneDetail.map((item, i) => (
                             <div key={i}>{item.batteryHealth || 'N/A'}</div>

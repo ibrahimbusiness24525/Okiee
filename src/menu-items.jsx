@@ -93,7 +93,7 @@ const menuItems = {
       type: 'group',
       icon: 'icon-navigation',
       children: [
-       
+
         // {
         //   id: 'mobile',
         //   title: 'Pocket Cash',
@@ -101,7 +101,7 @@ const menuItems = {
         //   icon: 'feather icon-server',
         //   url: '/app/dashboard/pocketCash'
         // },
-         {
+        {
           id: 'mobile',
           title: 'My Wallet',
           type: 'item',
@@ -122,20 +122,20 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/app/dashboard/addLedger'
         },
-        {
-          id: 'mobile',
-          title: 'Party Ledger',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/app/dashboard/partyLedger'
-        },
-        {
-          id: 'mobile',
-          title: 'Commety Ledger',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/app/dashboard/commetyLedger'
-        },
+        // {
+        //   id: 'mobile',
+        //   title: 'Party Ledger',
+        //   type: 'item',
+        //   icon: 'feather icon-server',
+        //   url: '/app/dashboard/partyLedger'
+        // },
+        // {
+        //   id: 'mobile',
+        //   title: 'Commety Ledger',
+        //   type: 'item',
+        //   icon: 'feather icon-server',
+        //   url: '/app/dashboard/commetyLedger'
+        // },
         // {
         //   id: 'mobile',
         //   title: 'Ledger Records',
@@ -145,28 +145,7 @@ const menuItems = {
         // },
       ]
     },
-    {
-      id: 'ui-forms',
-      title: 'Shop Details',
-      type: 'group',
-      icon: 'icon-group',
-      children: [
-        {
-          id: 'forms',
-          title: 'My Shop',
-          type: 'item',
-          icon: 'feather icon-server',
-          url: '/setup/shop'
-        },
-        {
-          id: 'tabel',
-          title: 'Shop Invoice',
-          type: 'item',
-          icon: 'feather icon-file-text',
-          url: '/invoice/shop'
-        }
-      ]
-    },
+
     {
       id: 'ui-forms',
       title: 'Purchase',
@@ -209,7 +188,29 @@ const menuItems = {
           icon: 'feather icon-server',
           url: '/sales/saleInvoices'
         },
-       
+
+      ]
+    },
+    {
+      id: 'ui-forms',
+      title: 'Shop Details',
+      type: 'group',
+      icon: 'icon-group',
+      children: [
+        {
+          id: 'forms',
+          title: 'My Shop',
+          type: 'item',
+          icon: 'feather icon-server',
+          url: '/setup/shop'
+        },
+        {
+          id: 'tabel',
+          title: 'Shop Invoice',
+          type: 'item',
+          icon: 'feather icon-file-text',
+          url: '/invoice/shop'
+        }
       ]
     },
     {

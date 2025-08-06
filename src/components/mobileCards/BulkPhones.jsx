@@ -1384,6 +1384,7 @@ const NewMobilesList = () => {
               personData[0]?.personId?.name || 'Unknown Person';
             const personNumber = personData[0]?.personId?.number || 'No Number';
             const { now, later } = calculatePayables(personData);
+            console.log("person Data", personData);
 
             return (
               <div key={personId} style={{ marginBottom: '2rem' }}>
@@ -1540,8 +1541,8 @@ const NewMobilesList = () => {
                           (total, ramSim) => {
                             const imeis = Array.isArray(ramSim.imeiNumbers)
                               ? ramSim.imeiNumbers.filter(
-                                  (imei) => imei.isDispatched === false
-                                )
+                                (imei) => imei.isDispatched === false
+                              )
                               : [];
                             return total + imeis.length;
                           },
@@ -2553,7 +2554,17 @@ const NewMobilesList = () => {
                           <div>
                             <input
                               type="number"
-                              value={imeiPrices[imei] || ''}
+                              value={imeiPrices[imei] || bulkData.reduce((price, bulkItem) => {
+                                // Search through all ramSimDetails
+                                for (const detail of bulkItem.ramSimDetails) {
+                                  // Check if this detail has the IMEI we're looking for
+                                  const hasImei = detail.imeiNumbers.some(imeiObj => imeiObj.imei1 === imei);
+                                  if (hasImei) {
+                                    return detail.priceOfOne;
+                                  }
+                                }
+                                return price;
+                              }, '') || ''}
                               onChange={(e) =>
                                 handleImeiPriceChange(imei, e.target.value)
                               }

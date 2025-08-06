@@ -47,6 +47,13 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
       text: 'www.conceptmobiles.net',
     },
     qr: 'qr-code.png',
+    termsAndConditions: [
+      'All sales are final.',
+      'No returns or exchanges after purchase.',
+      'Please keep your receipt for warranty purposes.',
+      'Warranty claims must be made within 30 days of purchase.',
+      'For any issues, contact our customer service.',
+    ]
   };
 
   const data = invoiceData || staticInvoiceData;
@@ -59,9 +66,11 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
     printWindow.focus();
     printWindow.print();
   };
-  const termsHtml = data?.termsAndConditions
-    ?.map(
-      (item, index) => `
+  const termsHtml = Array.isArray(data?.termsAndConditions)
+    ? data.termsAndConditions
+    : []
+      ?.map(
+        (item, index) => `
     <p style="margin: 0; padding: 0; display: flex; align-items: flex-start; line-height: 1.2">
       <strong style="font-weight: 600; color: #333; margin-right: 4px">
         ${index + 1}.
@@ -69,8 +78,8 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
       ${item}
     </p>
   `
-    )
-    .join('');
+      )
+      .join('');
   const generateInvoiceHTML = () => {
     // Helper to render items rows
     const itemsRows = data.items
