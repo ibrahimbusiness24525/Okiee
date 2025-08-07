@@ -53,7 +53,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
       'Please keep your receipt for warranty purposes.',
       'Warranty claims must be made within 30 days of purchase.',
       'For any issues, contact our customer service.',
-    ]
+    ],
   };
 
   const data = invoiceData || staticInvoiceData;
@@ -69,8 +69,8 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
   const termsHtml = Array.isArray(data?.termsAndConditions)
     ? data.termsAndConditions
     : []
-      ?.map(
-        (item, index) => `
+        ?.map(
+          (item, index) => `
     <p style="margin: 0; padding: 0; display: flex; align-items: flex-start; line-height: 1.2">
       <strong style="font-weight: 600; color: #333; margin-right: 4px">
         ${index + 1}.
@@ -78,8 +78,8 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
       ${item}
     </p>
   `
-      )
-      .join('');
+        )
+        .join('');
   const generateInvoiceHTML = () => {
     // Helper to render items rows
     const itemsRows = data.items
@@ -665,16 +665,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                 <span>SubTotal:</span>
                 <span>{data.summary.subTotal}</span>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '3px',
-                }}
-              >
-                <span>Discount:</span>
-                <span>{data.summary.discount}</span>
-              </div>
+
               <div
                 style={{
                   display: 'flex',
@@ -687,16 +678,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   {data.summary.netTotal}
                 </span>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '3px',
-                }}
-              >
-                <span>Previous Bal:</span>
-                <span>{data.summary.previousBal}</span>
-              </div>
+
               <div
                 style={{
                   display: 'flex',

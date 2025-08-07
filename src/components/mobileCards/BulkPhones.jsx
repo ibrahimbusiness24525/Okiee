@@ -34,6 +34,7 @@ import { useGetAccessories } from 'hooks/accessory';
 import { Eye, EyeOff } from 'lucide-react';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import CustomSelect from 'components/CustomSelect';
+import { set } from 'immutable';
 const NewMobilesList = () => {
   const [showAmount, setShowAmount] = useState(false);
   const { data } = useGetAccessories();
@@ -95,7 +96,7 @@ const NewMobilesList = () => {
   const [soldMobile, setSoldMobile] = useState(null);
   const [saleDate, setSaleDate] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [finalPrice, setFinalPrice] = useState('');
+  const [finalPrice, setFinalPrice] = useState(0);
   const [warranty, setWarranty] = useState('12 months');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteMobileId, setDeleteMobileId] = useState(null);
@@ -604,10 +605,8 @@ const NewMobilesList = () => {
       (sum, price) => sum + (Number(price) || 0),
       0
     );
-    if (total > 0) {
-      setFinalPrice(total); // Auto-update when imeiPrices change
-    }
-  }, [imeiPrices]);
+    setFinalPrice(total); // Auto-update when imeiPrices change
+  }, [imeiPrices, addedImeis, imeiList, imei]);
 
   return (
     <>
@@ -1384,7 +1383,7 @@ const NewMobilesList = () => {
               personData[0]?.personId?.name || 'Unknown Person';
             const personNumber = personData[0]?.personId?.number || 'No Number';
             const { now, later } = calculatePayables(personData);
-            console.log("person Data", personData);
+            console.log('person Data', personData);
 
             return (
               <div key={personId} style={{ marginBottom: '2rem' }}>
@@ -1541,8 +1540,8 @@ const NewMobilesList = () => {
                           (total, ramSim) => {
                             const imeis = Array.isArray(ramSim.imeiNumbers)
                               ? ramSim.imeiNumbers.filter(
-                                (imei) => imei.isDispatched === false
-                              )
+                                  (imei) => imei.isDispatched === false
+                                )
                               : [];
                             return total + imeis.length;
                           },
@@ -2375,7 +2374,7 @@ const NewMobilesList = () => {
                   </Button>
                 </div>
 
-                <InputLabel
+                {/* <InputLabel
                   style={{
                     background:
                       'linear-gradient(90deg, #fef9c3 0%, #fde68a 100%)',
@@ -2387,7 +2386,7 @@ const NewMobilesList = () => {
                   }}
                 >
                   Select Imei is compulsory
-                </InputLabel>
+                </InputLabel> */}
                 <FormControl fullWidth variant="outlined" className="mb-3">
                   <InputLabel>IMEI</InputLabel>
                   <Select
@@ -2471,16 +2470,30 @@ const NewMobilesList = () => {
               )}
 
               <Form.Group className="mb-3">
-                <Form.Label>Sold Price</Form.Label>
+                {/* <Form.Label>Sold Price</Form.Label> */}
                 <Form.Control
                   type="number"
+                  hidden={true}
                   value={finalPrice}
                   onChange={(e) => setFinalPrice(e.target.value)}
                   placeholder="Enter Sold price"
                 />
               </Form.Group>
             </div>
-
+            {/* <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  color: '#4b5563',
+                }}
+                htmlFor=""
+              >
+                Select Imei Mobiles Model
+              </label>
+              <span>{}</span>
+            </div> */}
             {type === 'bulk' && (
               <>
                 <Form.Group className="mb-3">
@@ -2541,48 +2554,147 @@ const NewMobilesList = () => {
                     </ul>
                   </div>
                 )} */}
+
                 {addedImeis.length > 0 && (
                   <div className="mt-3">
                     <h6>Added IMEIs:</h6>
-                    <ul className="list-group">
+                    <ul
+                      style={{
+                        listStyle: 'none',
+                        padding: 0,
+                        margin: 0,
+                        maxHeight: '400px',
+                        overflowY: 'auto',
+                      }}
+                    >
                       {addedImeis.map((imei, index) => (
                         <li
                           key={index}
-                          className="list-group-item d-flex justify-content-between align-items-center"
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '12px 15px',
+                            borderBottom: '1px solid #e0e0e0',
+                            backgroundColor: '#fff',
+                            transition: 'background-color 0.2s',
+                          }}
                         >
-                          {imei}
-                          <div>
-                            <input
-                              type="number"
-                              value={imeiPrices[imei] || bulkData.reduce((price, bulkItem) => {
-                                // Search through all ramSimDetails
-                                for (const detail of bulkItem.ramSimDetails) {
-                                  // Check if this detail has the IMEI we're looking for
-                                  const hasImei = detail.imeiNumbers.some(imeiObj => imeiObj.imei1 === imei);
-                                  if (hasImei) {
-                                    return detail.priceOfOne;
-                                  }
-                                }
-                                return price;
-                              }, '') || ''}
-                              onChange={(e) =>
-                                handleImeiPriceChange(imei, e.target.value)
-                              }
-                              placeholder="Price"
+                          <span
+                            style={{
+                              fontFamily: 'monospace',
+                              fontSize: '14px',
+                              color: '#333',
+                            }}
+                          >
+                            {imei}
+                          </span>
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '15px',
+                            }}
+                          >
+                            <div
                               style={{
-                                marginRight: '10px',
-                                borderRadius: '4px',
-                                border: '1px solid #ccc',
-                                padding: '5px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px',
                               }}
-                            />
-                            <Button
-                              variant="danger"
-                              size="sm"
+                            >
+                              <label
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  marginBottom: '2px',
+                                }}
+                              >
+                                Purchase Price
+                              </label>
+                              <input
+                                type="text"
+                                value={
+                                  bulkData.reduce((price, bulkItem) => {
+                                    for (const detail of bulkItem.ramSimDetails) {
+                                      const hasImei = detail.imeiNumbers.some(
+                                        (imeiObj) => imeiObj.imei1 === imei
+                                      );
+                                      if (hasImei) return detail.priceOfOne;
+                                    }
+                                    return price;
+                                  }, '') || ''
+                                }
+                                style={{
+                                  width: '120px',
+                                  padding: '6px 8px',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  fontSize: '13px',
+                                }}
+                                readOnly
+                              />
+                            </div>
+
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px',
+                              }}
+                            >
+                              <label
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  marginBottom: '2px',
+                                }}
+                              >
+                                Selling Price
+                              </label>
+                              <input
+                                type="number"
+                                value={imeiPrices[imei] || ''}
+                                onChange={(e) =>
+                                  handleImeiPriceChange(imei, e.target.value)
+                                }
+                                placeholder="Enter price"
+                                style={{
+                                  width: '120px',
+                                  padding: '6px 8px',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  fontSize: '13px',
+                                }}
+                              />
+                            </div>
+
+                            <button
                               onClick={() => handleRemoveAddedImei(imei)}
+                              style={{
+                                backgroundColor: '#dc3545',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s',
+                                height: '32px',
+                                alignSelf: 'flex-end',
+                              }}
+                              onMouseOver={(e) =>
+                                (e.currentTarget.style.backgroundColor =
+                                  '#c82333')
+                              }
+                              onMouseOut={(e) =>
+                                (e.currentTarget.style.backgroundColor =
+                                  '#dc3545')
+                              }
                             >
                               Remove
-                            </Button>
+                            </button>
                           </div>
                         </li>
                       ))}

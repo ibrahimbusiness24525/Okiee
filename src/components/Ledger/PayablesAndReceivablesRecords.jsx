@@ -16,6 +16,7 @@ import 'jspdf-autotable';
 import { DatePicker } from 'antd';
 import { Button } from 'react-bootstrap';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import { toast } from 'react-toastify';
 const PayablesAndReceivablesRecords = () => {
   const { id } = useParams();
   const [person, setPerson] = useState(null);
@@ -248,7 +249,20 @@ const PayablesAndReceivablesRecords = () => {
       setIsSubmitting(false);
     }
   };
-
+  const handleDeleteRecord = async (id) => {
+    window.alert('coming soon');
+    // if (!window.confirm('Are you sure you want to delete this record?')) {
+    //   return;
+    // } else {
+    //   try {
+    //     await api.delete(`/api/partyLedger/credit-transaction/${id}`);
+    //     toast.success('Record deleted successfully');
+    //   } catch (error) {
+    //     toast.error('Failed to delete record');
+    //     console.error('Error deleting record:', error);
+    //   }
+    // }
+  };
   if (loading) return <p>Loading...</p>;
   if (!person) return <p>Person not found.</p>;
   return (
@@ -767,17 +781,39 @@ const PayablesAndReceivablesRecords = () => {
                       </div>
 
                       {/* Transaction Info Column */}
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, width: '100%' }}>
                         <div
                           style={{
                             fontWeight: '600',
                             fontSize: '15px',
                             color: colors.text,
                             marginBottom: '4px',
+                            widowst: '100%',
+                            textOverflow: 'ellipsis',
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between',
                           }}
                         >
-                          {transactionType}
-                          {` ${formattedAmount}`}
+                          <div>
+                            {transactionType}
+                            {` ${formattedAmount}`}
+                          </div>
+                          <div>
+                            <span
+                              style={{
+                                fontSize: '12px',
+                                color: '#6b7280',
+                                marginLeft: '4px',
+                                color: '#6b7280',
+                              }}
+                            >
+                              <FaTrash
+                                onClick={() => handleDeleteRecord(tx._id)}
+                                style={{ cursor: 'pointer', color: '#ef4444' }}
+                              />
+                            </span>
+                          </div>
                         </div>
 
                         {tx.description && (
