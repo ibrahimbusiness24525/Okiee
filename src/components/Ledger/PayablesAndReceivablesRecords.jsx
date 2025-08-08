@@ -250,18 +250,17 @@ const PayablesAndReceivablesRecords = () => {
     }
   };
   const handleDeleteRecord = async (id) => {
-    window.alert('coming soon');
-    // if (!window.confirm('Are you sure you want to delete this record?')) {
-    //   return;
-    // } else {
-    //   try {
-    //     await api.delete(`/api/partyLedger/credit-transaction/${id}`);
-    //     toast.success('Record deleted successfully');
-    //   } catch (error) {
-    //     toast.error('Failed to delete record');
-    //     console.error('Error deleting record:', error);
-    //   }
-    // }
+    if (!window.confirm('Are you sure you want to delete this record?')) {
+      return;
+    } else {
+      try {
+        await api.delete(`/api/person/delete-transaction/${id}`);
+        toast.success('Record deleted successfully');
+      } catch (error) {
+        toast.error('Failed to delete record');
+        console.error('Error deleting record:', error);
+      }
+    }
   };
   if (loading) return <p>Loading...</p>;
   if (!person) return <p>Person not found.</p>;
@@ -741,7 +740,6 @@ const PayablesAndReceivablesRecords = () => {
                     key={tx._id}
                     style={{
                       overflow: 'hidden',
-                      display: 'flex',
                     }}
                   >
                     {/* Left Box (75%) - Transaction Details */}

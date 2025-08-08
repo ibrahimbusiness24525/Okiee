@@ -1443,7 +1443,6 @@ const NewMobilesList = () => {
                   )}
                   keysToDisplay={[
                     // 'companyName',
-                    // 'modelName',
                     'actualBuyingPrice',
                     'prices',
                     'creditPaymentData',
@@ -1453,7 +1452,6 @@ const NewMobilesList = () => {
                   ]}
                   label={[
                     // 'Company',
-                    // 'Model',
                     'Buying Price',
                     'Payable Amount',
                     'Remaining Amount',
@@ -1536,7 +1534,7 @@ const NewMobilesList = () => {
                     {
                       index: 4,
                       component: (ramSimDetails) => {
-                        const totalImeiNumbers = ramSimDetails.reduce(
+                        const totalImeiNumbers = ramSimDetails?.reduce(
                           (total, ramSim) => {
                             const imeis = Array.isArray(ramSim.imeiNumbers)
                               ? ramSim.imeiNumbers.filter(

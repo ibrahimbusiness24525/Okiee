@@ -784,131 +784,189 @@ const UsedMobilesList = () => {
             </>
           ) : (
             <Row xs={1} md={2} lg={3} className="g-4">
-              {filteredMobiles.length > 0 ? (
-                filteredMobiles
-                  .filter(record => record.dispatch === false)
-                  .filter(record => {
-                    if (!selectedCompany) return true;
-                    const normalize = str => str?.toLowerCase().replace(/\s+/g, '');
-                    return normalize(record.companyName) === normalize(selectedCompany);
-                  })
-                  .map(mobile => (
-                    <Col key={mobile._id}>
-                      <Card style={{
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                        borderRadius: '16px',
-                        height: '100%',
-                        backgroundColor: '#fafafa'
+            {filteredMobiles.length > 0 ? (
+              filteredMobiles
+                .filter(record => record.dispatch === false)
+                .filter(record => {
+                  if (!selectedCompany) return true;
+                  const normalize = str => str?.toLowerCase().replace(/\s+/g, '');
+                  return normalize(record.companyName) === normalize(selectedCompany);
+                })
+                .map(mobile => (
+                  <Col key={mobile._id}>
+                    <Card style={{
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+                      borderRadius: '5px',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: '#fafafa'
+                    }}>
+                      {/* Card Header */}
+                      <div style={{
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #eee',
+                        backgroundColor: '#f5f5f5',
+                        borderTopLeftRadius: '10px',
+                        borderTopRightRadius: '10px'
                       }}>
-                        {/* Card Header */}
-                        <div style={{
-                          padding: '12px',
-                          borderBottom: '1px solid #eee',
-                          position: 'relative',
-                          backgroundColor: '#f5f5f5'
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <div>
-                              <div style={{
-                                fontSize: '1.1rem',
-                                fontWeight: '600',
-                                color: '#333'
-                              }}>
-                                {mobile.companyName}
-                              </div>
-                              <div style={{
-                                fontSize: '0.9rem',
-                                color: '#666',
-                                marginTop: '4px'
-                              }}>
-                                {mobile.modelSpecifications}
-                              </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: '#333',
+                              lineHeight: '1.2'
+                            }}>
+                              {mobile.companyName}
                             </div>
                             <div style={{
-                              backgroundColor: '#e3f2fd',
-                              color: '#1976d2',
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              fontSize: '0.8rem',
-                              fontWeight: '500'
+                              fontSize: '0.85rem',
+                              color: '#666',
+                              marginTop: '4px'
                             }}>
-                              {mobile.specs}
+                              {mobile.modelSpecifications}
+                            </div>
+                          </div>
+                          <div style={{
+                            backgroundColor: '#e3f2fd',
+                            color: '#1976d2',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {mobile.specs}
+                          </div>
+                        </div>
+                      </div>
+          
+                      {/* Card Body */}
+                      <Card.Body style={{
+                        padding: '16px',
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        alignItems: 'start'
+                      }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {/* Row 1: IMEIs */}
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: '500',
+                              color: '#0056b3',
+                              flex: 1
+                            }}>
+                              <span style={{ color: '#666', fontSize: '0.7rem', display: 'block' }}>IMEI 1</span>
+                              {mobile.imei1}
+                            </div>
+                            
+                            {mobile.imei2 && (
+                              <div style={{
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                fontSize: '0.8rem',
+                                fontWeight: '500',
+                                color: '#0056b3',
+                                flex: 1
+                              }}>
+                                <span style={{ color: '#666', fontSize: '0.7rem', display: 'block' }}>IMEI 2</span>
+                                {mobile.imei2}
+                              </div>
+                            )}
+                          </div>
+          
+                          {/* Row 2: Color & Battery */}
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: '500',
+                              color: '#d97706',
+                              flex: 1
+                            }}>
+                              <span style={{ color: '#666', fontSize: '0.7rem', display: 'block' }}>Color</span>
+                              {mobile.color}
+                            </div>
+                            
+                            <div style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: '500',
+                              color: '#065f46',
+                              flex: 1
+                            }}>
+                              <span style={{ color: '#666', fontSize: '0.7rem', display: 'block' }}>Battery</span>
+                              {mobile.batteryHealth || 'N/A'}
+                            </div>
+                          </div>
+          
+                          {/* Row 3: Pricing */}
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: '500',
+                              color: '#7e22ce',
+                              flex: 1
+                            }}>
+                              <span style={{ color: '#666', fontSize: '0.7rem', display: 'block' }}>Purchase</span>
+                              {mobile.purchasePrice}
+                            </div>
+                            
+                            <div style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: '500',
+                              color: '#e11d48',
+                              flex: 1
+                            }}>
+                              <span style={{ color: '#666', fontSize: '0.7rem', display: 'block' }}>Demand</span>
+                              {mobile.demandPrice}
+                            </div>
+                            
+                            <div style={{
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: '500',
+                              color: mobile.finalPrice ? '#166534' : '#6b7280',
+                              flex: 1
+                            }}>
+                              <span style={{ color: '#666', fontSize: '0.7rem', display: 'block' }}>Final</span>
+                              {mobile.finalPrice || 'Not Sold'}
                             </div>
                           </div>
                         </div>
-
-                        {/* Card Body */}
-                        <Card.Body style={{ width: "100%", padding: '12px', display: 'flex', justifyContent: 'space-between', }}>
-                          <div style={{ marginBottom: '12px' }}>
-                            <DetailRow label="IMEI 1" value={mobile.imei1} />
-                            {mobile.imei2 && <DetailRow label="IMEI 2" value={mobile.imei2} />}
-                            <DetailRow label="Color" value={mobile.color} />
-                            <DetailRow label="Battery" value={mobile.batteryHealth || 'N/A'} />
-                            <DetailRow label="Purchase" value={mobile.purchasePrice} />
-                            <DetailRow label="Demand" value={mobile.demandPrice} />
-                            <DetailRow
-                              label="Final Price"
-                              value={mobile.finalPrice || 'Not Sold'}
-                              highlight={!!mobile.finalPrice}
-                            />
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div style={{
-                            display: 'flex',
-                            gap: '8px',
-                            marginTop: '16px'
-                          }}>
-                            <button
-                              onClick={() => handleDispatchClick(mobile)}
-                              style={{
-                                flex: 1,
-                                padding: '6px 12px',
-                                backgroundColor: '#fff',
-                                border: '1px solid #FFD000',
-                                color: '#FFD000',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                bottom: "0",
-                              }}
-                            >
-                              Dispatch
-                            </button>
-                            <button
-                              onClick={() => handleSoldClick(mobile, "single")}
-                              style={{
-                                flex: 1,
-                                padding: '6px 12px',
-                                backgroundColor: '#28a745',
-                                border: 'none',
-                                color: 'white',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '0.85rem'
-                              }}
-                            >
-                              Sold
-                            </button>
-                          </div>
-                        </Card.Body>
-
-                        {/* Card Footer (Edit/Delete) */}
-                        <div style={{
-                          padding: '8px 12px',
-                          borderTop: '1px solid #eee',
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          gap: '12px',
-
-                          backgroundColor: '#f5f5f5'
-                        }}>
+                      </Card.Body>
+          
+                      {/* Card Footer - Action Buttons */}
+                      <div style={{
+                        padding: '12px 16px',
+                        borderTop: '1px solid #eee',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: '#f5f5f5',
+                        borderBottomLeftRadius: '10px',
+                        borderBottomRightRadius: '10px'
+                      }}>
+                        <div style={{ display: 'flex', gap: '12px' }}>
                           <FaEdit
                             onClick={() => handleEdit(mobile)}
                             style={{
                               color: '#5c6bc0',
                               cursor: 'pointer',
-                              fontSize: '1rem'
+                              fontSize: '1.1rem'
                             }}
                           />
                           <FaTrash
@@ -916,30 +974,66 @@ const UsedMobilesList = () => {
                             style={{
                               color: '#e53935',
                               cursor: 'pointer',
-                              fontSize: '1rem'
+                              fontSize: '1.1rem'
                             }}
                           />
                         </div>
-                      </Card>
-                    </Col>
-                  ))
-              ) : (
-                <Col>
-                  <Card style={{
-                    textAlign: 'center',
-                    padding: '20px',
-                    backgroundColor: '#fafafa',
-                    border: '1px solid #e0e0e0'
-                  }}>
-                    <Card.Body>
-                      <Card.Text style={{ color: '#757575' }}>
-                        No mobiles found
-                      </Card.Text>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              )}
-            </Row>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => handleDispatchClick(mobile)}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: '#fff',
+                              border: '1px solid #FFD000',
+                              color: '#FFD000',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: '600',
+                              minWidth: '90px'
+                            }}
+                          >
+                            Dispatch
+                          </button>
+                          <button
+                            onClick={() => handleSoldClick(mobile, "single")}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: '#28a745',
+                              border: 'none',
+                              color: 'white',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: '600',
+                              minWidth: '90px'
+                            }}
+                          >
+                            Sold
+                          </button>
+                        </div>
+                      </div>
+                    </Card>
+                  </Col>
+                ))
+            ) : (
+              <Col>
+                <Card style={{
+                  textAlign: 'center',
+                  padding: '20px',
+                  backgroundColor: '#fafafa',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '10px'
+                }}>
+                  <Card.Body>
+                    <Card.Text style={{ color: '#757575' }}>
+                      No mobiles found
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            )}
+          </Row>
 
             /* <Row xs={1} md={2} lg={3} className="g-4">
               {filteredMobiles.length > 0 ? (
