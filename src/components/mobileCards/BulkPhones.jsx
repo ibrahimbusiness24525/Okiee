@@ -273,6 +273,7 @@ const NewMobilesList = () => {
       console.error('error in getting bulk mobiles', error);
     }
   };
+
   useEffect(() => {
     setBulkMobiles(
       bulkData.filter((item) =>
@@ -318,10 +319,10 @@ const NewMobilesList = () => {
     if (type === 'single') {
       setType('single');
     }
-
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
+
   const groupedByPerson = bulkMobile.reduce((acc, mobile) => {
     const personId = mobile.personId?._id || 'unknown';
     if (!acc[personId]) {
@@ -608,6 +609,7 @@ const NewMobilesList = () => {
     setFinalPrice(total); // Auto-update when imeiPrices change
   }, [imeiPrices, addedImeis, imeiList, imei]);
 
+  console.log('bulk mobile', bulkMobile);
   return (
     <>
       <InputGroup className="mb-3">
@@ -1383,7 +1385,12 @@ const NewMobilesList = () => {
               personData[0]?.personId?.name || 'Unknown Person';
             const personNumber = personData[0]?.personId?.number || 'No Number';
             const { now, later } = calculatePayables(personData);
-            console.log('person Data', personData);
+
+            const totalCredit = personData.reduce((acc, curr) => {
+              const taking = Number(curr.personId?.takingCredit) || 0;
+              const giving = Number(curr.personId?.givingCredit) || 0;
+              return acc + (taking - giving);
+            }, 0);
 
             return (
               <div key={personId} style={{ marginBottom: '2rem' }}>
@@ -1404,45 +1411,40 @@ const NewMobilesList = () => {
                     {personNumber}
                   </span>
                 </div>
-                <p
+
+                <div
                   style={{
-                    margin: '0.5rem 0 1.5rem 0',
+                    margin: '0 0 1.5rem 0',
                     color: '#444',
                     fontSize: '1.1rem',
                     lineHeight: '1.6',
+                    display: 'flex',
+                    gap: '2rem',
+                    alignItems: 'center',
                   }}
                 >
-                  <strong style={{ fontSize: '1.2rem' }}>Paid Amount:</strong>{' '}
-                  <span
-                    style={{
-                      color: 'green',
-                      fontWeight: '700',
-                      fontSize: '1.2rem',
-                    }}
-                  >
-                    {now.toLocaleString()} PKR
-                  </span>{' '}
-                  |{' '}
-                  <strong style={{ fontSize: '1.2rem' }}>
-                    Remaining Amount:
-                  </strong>{' '}
-                  <span
-                    style={{
-                      color: 'red',
-                      fontWeight: '700',
-                      fontSize: '1.2rem',
-                    }}
-                  >
-                    {later.toLocaleString()} PKR
+                  <span>
+                    <strong style={{ fontSize: '1.2rem' }}>Net Credit:</strong>{' '}
+                    <span
+                      style={{
+                        color: totalCredit > 0 ? 'green' : totalCredit < 0 ? 'red' : '#333',
+                        fontWeight: '700',
+                        fontSize: '1.2rem',
+                      }}
+                    >
+                      {Math.abs(totalCredit).toLocaleString()} PKR{' '}
+                      {totalCredit > 0 ? '(Receiveable)' : totalCredit < 0 ? '(Payable)' : ''}
+                    </span>
                   </span>
-                </p>
+
+                </div>
+
                 <Table
                   routes={['/app/dashboard/bulkPhoneDetail']}
                   array={personData.filter(
                     (record) => record.dispatch === false
                   )}
                   keysToDisplay={[
-                    // 'companyName',
                     'actualBuyingPrice',
                     'prices',
                     'creditPaymentData',
@@ -1451,7 +1453,6 @@ const NewMobilesList = () => {
                     'purchasePaymentType',
                   ]}
                   label={[
-                    // 'Company',
                     'Buying Price',
                     'Payable Amount',
                     'Remaining Amount',
@@ -1461,32 +1462,6 @@ const NewMobilesList = () => {
                     'Actions',
                   ]}
                   customBlocks={[
-                    // {
-                    //   index: 0,
-                    //   component: (companyName) => {
-                    //     return (
-                    //       <span style={{ fontWeight: '600' }}>
-                    //         {companyName || 'N/A'}
-                    //       </span>
-                    //     );
-                    //   },
-                    // },
-                    // {
-                    //   index: 1,
-                    //   component: (modelName) => {
-                    //     return <span>{modelName || 'N/A'}</span>;
-                    //   },
-                    // },
-                    // {
-                    //   index: 2,
-                    //   component: (buyingPrice) => {
-                    //     return (
-                    //       <span>
-                    //         {buyingPrice ? `${buyingPrice} PKR` : 'N/A'}
-                    //       </span>
-                    //     );
-                    //   },
-                    // },
                     {
                       index: 1,
                       component: (prices) => {
@@ -1538,8 +1513,8 @@ const NewMobilesList = () => {
                           (total, ramSim) => {
                             const imeis = Array.isArray(ramSim.imeiNumbers)
                               ? ramSim.imeiNumbers.filter(
-                                  (imei) => imei.isDispatched === false
-                                )
+                                (imei) => imei.isDispatched === false
+                              )
                               : [];
                             return total + imeis.length;
                           },
@@ -2683,12 +2658,12 @@ const NewMobilesList = () => {
                                 alignSelf: 'flex-end',
                               }}
                               onMouseOver={(e) =>
-                                (e.currentTarget.style.backgroundColor =
-                                  '#c82333')
+                              (e.currentTarget.style.backgroundColor =
+                                '#c82333')
                               }
                               onMouseOut={(e) =>
-                                (e.currentTarget.style.backgroundColor =
-                                  '#dc3545')
+                              (e.currentTarget.style.backgroundColor =
+                                '#dc3545')
                               }
                             >
                               Remove

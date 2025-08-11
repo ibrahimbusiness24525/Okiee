@@ -66,20 +66,16 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
     printWindow.focus();
     printWindow.print();
   };
-  const termsHtml = Array.isArray(data?.termsAndConditions)
-    ? data.termsAndConditions
-    : []
-        ?.map(
-          (item, index) => `
-    <p style="margin: 0; padding: 0; display: flex; align-items: flex-start; line-height: 1.2">
-      <strong style="font-weight: 600; color: #333; margin-right: 4px">
+  const termsHtml = (Array.isArray(data?.termsAndConditions) ? data.termsAndConditions : [])
+    .map((item, index) => `
+    <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+      <strong style="font-weight: 600; color: #333; margin-right: 4px;">
         ${index + 1}.
       </strong>
-      ${item}
-    </p>
-  `
-        )
-        .join('');
+      <span>${item}</span>
+    </div>
+  `)
+    .join('');
   const generateInvoiceHTML = () => {
     // Helper to render items rows
     const itemsRows = data.items
@@ -97,18 +93,17 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
       .join('');
 
     // Helper to render pending rows
-    const pendingRows = data.pending
-      .map(
-        (item) => `
-          <tr>
-              <td>${item.no}</td>
-              <td>${item.name}</td>
-              <td>${item.qty}</td>
-          </tr>
-          `
-      )
-      .join('');
 
+    // <div><span class="label">Discount:</span><span class="value">${data.summary.discount}</span></div>
+    // <div><span class="label">Previous Bal:</span><span class="value">${data.summary.previousBal}</span></div>
+    // <div class="deposit"><span class="label">Bank Deposit:</span><span class="value">${data.summary.bankDeposit}</span></div>
+    // <div><span class="label">Current Total:</span><span class="value">${data.summary.currentTotal}</span></div>
+    // <div class="left">
+    // <div><span>Items:</span><span class="box">${data.summary.items}</span></div>
+    // <div><span>Cash Return:</span><span class="box">${data.summary.cashReturn}</span></div>
+    // <div><span>Bank Return:</span><span class="box">${data.summary.bankReturn}</span></div>
+    // <div><span>Freight:</span><span class="box">${data.summary.freight}</span></div>
+    // </div>
     return `<!DOCTYPE html>
       <html lang="en">
       <head>
@@ -319,27 +314,14 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               </tbody>
           </table>
           <div class="summary">
-              <div class="left">
-              <div><span>Items:</span><span class="box">${data.summary.items}</span></div>
-              <div><span>Cash Return:</span><span class="box">${data.summary.cashReturn}</span></div>
-              <div><span>Bank Return:</span><span class="box">${data.summary.bankReturn}</span></div>
-              <div><span>Freight:</span><span class="box">${data.summary.freight}</span></div>
-              </div>
+          
               <div class="right">
               <div><span class="label">SubTotal:</span><span class="value">${data.summary.subTotal}</span></div>
-              <div><span class="label">Discount:</span><span class="value">${data.summary.discount}</span></div>
               <div class="net"><span class="label">Net Total:</span><span class="value">${data.summary.netTotal}</span></div>
-              <div><span class="label">Previous Bal:</span><span class="value">${data.summary.previousBal}</span></div>
               <div><span class="label">Total:</span><span class="value">${data.summary.total}</span></div>
-              <div class="deposit"><span class="label">Bank Deposit:</span><span class="value">${data.summary.bankDeposit}</span></div>
-              <div><span class="label">Current Total:</span><span class="value">${data.summary.currentTotal}</span></div>
+            
               </div>
           </div>
-          <div class="operator"><div>${data.timestamp}</div><div>Operator: ${data.operator}</div></div>
-          <div class="pending-title">Pending Delivery</div>
-          <div class="meta"><div><strong>Date:</strong> ${data.date}</div><div><strong>Inv#:</strong> ${data.invoiceNumber}</div></div>
-          <table class="small-table"><thead><tr><th>No</th><th>Items</th><th>Qty</th></tr></thead><tbody>${pendingRows}</tbody></table>
-          <div class="small-footer"><div class="social"><div>Follow Us On Social Media</div><a href="${data.social.url}" target="_blank">${data.social.text}</a></div><img src="${data.qr}" alt="QR Code" class="qr"></div>
              <div
             style={{
               marginTop: '10px',
@@ -363,10 +345,10 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
             </div>
 
             <div style="margin-top: 10px; padding: 8px; border-top: 1px solid #ccc; font-size: 6px; color: #333; font-family: Arial, sans-serif">
-        <div style="font-weight: bold; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; color: #111">
+        <div  style="font-weight: bold; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; color: #111">
           Terms & Conditions
         </div>
-        <div style="font-size: 5px; display: flex; flex-direction: column; gap: 2px">
+        <div style="font-size: 8px; display: flex; flex-direction: column; gap: 2px">
           ${termsHtml}
         </div>
       </div>
@@ -581,7 +563,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               margin: '10px 0',
             }}
           >
-            <div style={{ width: '48%' }}>
+            {/* <div style={{ width: '48%' }}>
               <div
                 style={{
                   display: 'flex',
@@ -652,7 +634,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   {data.summary.freight}
                 </span>
               </div>
-            </div>
+            </div> */}
 
             <div style={{ width: '48%' }}>
               <div
@@ -689,7 +671,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                 <span>Total:</span>
                 <span>{data.summary.total}</span>
               </div>
-              <div
+              {/* <div
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -702,11 +684,11 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Current Total:</span>
                 <span>{data.summary.currentTotal}</span>
-              </div>
+              </div> */}
             </div>
           </div>
 
-          <div
+          {/* <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -716,7 +698,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
           >
             <div>{data.timestamp}</div>
             <div>Operator: {data.operator}</div>
-          </div>
+          </div> */}
 
           {/* <div
             style={{
@@ -780,7 +762,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               ))}
             </tbody>
           </table> */}
-
+          {/* 
           <div
             style={{
               display: 'flex',
@@ -813,7 +795,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
             >
               [QR Code]
             </div>
-          </div>
+          </div> */}
           <div
             style={{
               marginTop: '10px',

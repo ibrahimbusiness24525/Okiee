@@ -171,9 +171,6 @@ const SoldInvoice = () => {
       dataReceived?.invoice?.invoiceNumber ?? dataReceived.invoice
         ? dataReceived.invoice?.invoiceNumber
         : `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    // invoiceDate: dataReceived?.invoice
-    // ? new Date(dataReceived?.invoice?.invoiceDate).toISOString().split('T')[0]
-    // : new Date().toISOString().split('T')[0],
     invoiceDate: getValidDate(dataReceived?.invoice?.invoiceDate),
 
     items: dataReceived.invoice ? dataReceived.invoice?.items : [],
@@ -273,7 +270,10 @@ const SoldInvoice = () => {
     (dataReceived?.addedImeis?.length !== 0 &&
       dataReceived?.addedImeis?.map((imei) => imei.split(' / ')[0])) ||
     [];
+
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (type) => {
+    setLoading(true);
     if (
       dataReceived?.prices?.buyingPrice ||
       dataReceived?.bulkPhonePurchaseId
@@ -331,8 +331,10 @@ const SoldInvoice = () => {
 
         if (response) {
           alert('Bulk invoice submitted successfully');
+          setLoading(false);
         }
       } catch (error) {
+        setLoading(false);
         alert('Error in submitting bulk invoice: ' + error.message);
       }
     } else {
@@ -1095,14 +1097,20 @@ const SoldInvoice = () => {
         </button>
         {!dataReceived?.invoice && !dataReceived.manual && (
           <button
-            style={{ ...styles.button, ...styles.submitBtn }}
+            style={{
+              ...styles.button,
+              ...styles.submitBtn,
+              backgroundColor: loading ? '#ccc' : styles.submitBtn.backgroundColor,
+              color: loading ? '#666' : styles.submitBtn.color,
+            }}
             onMouseEnter={(e) =>
               (e.target.style.transform = 'translateY(-2px)')
             }
             onMouseLeave={(e) => (e.target.style.transform = 'none')}
             onClick={handleSubmit}
+            disabled={loading}
           >
-            Submit Invoice
+            {loading ? 'Submitting...' : 'Submit Invoice'}
           </button>
         )}
         {dataReceived.manual && (
