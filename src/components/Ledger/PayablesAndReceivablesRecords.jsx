@@ -823,8 +823,20 @@ const PayablesAndReceivablesRecords = () => {
                               lineHeight: '1.4',
                             }}
                           >
-                            {tx.description}
-                          </p>
+                            <strong>
+                              {(() => {
+                                // Filter out "||" and make the rest bold and clear
+                                return tx.description
+                                  .split('||')
+                                  .filter((part) => part.trim() !== '')
+                                  .map((part, idx) => (
+                                    <span key={idx} style={{ fontWeight: 700 }}>
+                                      {part.trim()}
+                                      {idx !== tx.description.split('||').filter((p) => p.trim() !== '').length - 1 ? ' | ' : ''}
+                                    </span>
+                                  ));
+                              })()}
+                            </strong>                          </p>
                         )}
                       </div>
                     </div>

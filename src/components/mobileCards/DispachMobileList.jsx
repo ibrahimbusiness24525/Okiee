@@ -21,6 +21,8 @@ import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 const DispachMobilesList = () => {
   const [mobiles, setMobiles] = useState([]);
+  const [selectedDispatchId, setSelectedDispatchId] = useState(null);
+  const [showSinglePhoneDispatchModal, setShowSinglePhoneDispatchModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editMobile, setEditMobile] = useState(null);
@@ -483,7 +485,11 @@ const DispachMobilesList = () => {
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={() => handleReturn(phone)}
+                          // onClick={() => handleReturn(phone)}
+                          onClick={() => {
+                            setSelectedDispatchId(phone._id);
+                            setShowSinglePhoneDispatchModal(true);
+                          }}
                           style={{
                             marginRight: '0.5rem',
                             padding: '5px 10px',
@@ -748,7 +754,11 @@ const DispachMobilesList = () => {
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={() => handleReturn(phone)}
+                          // onClick={() => handleReturn(phone)}
+                          onClick={() => {
+                            setSelectedDispatchId(phone._id);
+                            setShowSinglePhoneDispatchModal(true);
+                          }}
                           style={{
                             marginRight: '0.5rem',
                             padding: '5px 10px',
@@ -1320,6 +1330,79 @@ const DispachMobilesList = () => {
           </Button>
           <Button variant="primary" onClick={handleSoldSubmit}>
             Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
+        show={showSinglePhoneDispatchModal}
+        onHide={() => setShowSinglePhoneDispatchModal(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Dispatch Mobile</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>
+                Purchase Price <span style={{ color: '#888' }}>(Optional)</span>
+              </Form.Label>
+              <Form.Control
+                type="number"
+                value={finalPrice}
+                onChange={(e) => setFinalPrice(e.target.value)}
+                placeholder="Enter purchase price"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>
+                Warranty <span style={{ color: '#888' }}>(Optional)</span>
+              </Form.Label>
+              <Form.Select
+                value={warranty}
+                onChange={(e) => setWarranty(e.target.value)}
+              >
+                <option value="">Select Warranty</option>
+                <option value="No Warranty">No Warranty</option>
+                <option value="1 Month">1 Month</option>
+                <option value="2 Months">2 Months</option>
+                <option value="3 Months">3 Months</option>
+                <option value="4 Months">4 Months</option>
+                <option value="5 Months">5 Months</option>
+                <option value="6 Months">6 Months</option>
+                <option value="7 Months">7 Months</option>
+                <option value="8 Months">8 Months</option>
+                <option value="9 Months">9 Months</option>
+                <option value="10 Months">10 Months</option>
+                <option value="11 Months">11 Months</option>
+                <option value="12 Months">12 Months</option>
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              // Call your dispatch integrated function here
+              try {
+                await api.patch(`/api/Purchase/single-dispatch-return/${selectedDispatchId}`, {
+                  purchasePrice: finalPrice,
+                  warranty,
+                  // Add other required fields as needed
+                });
+                toast.success('Mobile dispatched successfully');
+                setShowModal(false);
+                getSingleDispatches();
+                getBulkDispatches();
+              } catch (error) {
+                toast.error('Failed to dispatch mobile');
+              }
+            }}
+          >
+            Dispatch
           </Button>
         </Modal.Footer>
       </Modal>
