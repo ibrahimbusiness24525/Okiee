@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../api/api';
 import { useParams } from 'react-router-dom';
+import { FaTrash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const PocketCashTransactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -23,6 +25,20 @@ const PocketCashTransactions = () => {
       setLoading(false);
     }
   };
+  const deletePocketCashTransaction = async (id) => {
+    if (!confirm('Are you sure you want to delete this pocket cash transaction?')) return;
+
+    try {
+      const response = await api.delete(`/api/pocketCash/delete/${id}`);
+      getTransactions();
+      toast.success('Transaction deleted successfully');
+      return response?.data || [];
+    } catch (error) {
+      toast.error('Failed to delete transaction');
+      console.error('Error fetching pocket cash transactions:', error);
+      throw error;
+    }
+  }
 
   useEffect(() => {
     getTransactions();
@@ -178,6 +194,15 @@ const PocketCashTransactions = () => {
               >
                 Balance
               </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'right',
+                  fontWeight: 600,
+                }}
+              >
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -239,6 +264,19 @@ const PocketCashTransactions = () => {
                     }}
                   >
                     {(txn.remainingAmount ?? txn.accountCash)?.toLocaleString()}
+                  </td>
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      fontWeight: 500,
+                      textAlign: 'right',
+                      color: '#2c3e50',
+                    }}
+                  >
+                    <FaTrash
+                      onClick={() => deletePocketCashTransaction(txn._id)}
+                      style={{ cursor: 'pointer', color: '#e74c3c' }}
+                    />
                   </td>
                 </tr>
               );

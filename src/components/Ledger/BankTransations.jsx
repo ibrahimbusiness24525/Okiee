@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap'; // assuming you're using react-bootstrap Button
 import Table from 'components/Table/Table';
 import { dateFormatter } from 'utils/dateFormatter';
+import { toast } from 'react-toastify';
+import { FaTrash } from 'react-icons/fa';
 
 const BankTransactions = () => {
+
   const [transactions, setTransactions] = useState([]);
   const { id } = useParams();
 
@@ -13,8 +16,28 @@ const BankTransactions = () => {
     try {
       const response = await api.get(`/api/banks/getBankTransaction/${id}`);
       setTransactions(response?.data?.transactions || []);
-    } catch (error) {}
+    } catch (error) {
+      toast.error('Failed to fetch bank transactions');
+      console.error('Error fetching bank transactions:', error);
+    }
+
   };
+
+  const deleteBankTransaction = async (id) => {
+    if (!confirm('Are you sure you want to delete this bank transaction?')) return;
+
+    try {
+      const response = await api.delete(`/api/banks/deleteTransaction/${id}`);
+      getBankTransactions();
+      toast.success('Transaction deleted successfully');
+      return response?.data || [];
+    } catch (error) {
+      toast.error('Failed to delete transaction');
+      console.error('Error fetching bank transactions:', error);
+      throw error;
+    }
+  };
+
 
   useEffect(() => {
     getBankTransactions();
@@ -52,7 +75,7 @@ const BankTransactions = () => {
           'createdAt',
           'updatedAt',
         ]}
-        label={['Amount (Cash)', 'Source', 'Created At', 'Updated At']}
+        label={['Amount (Cash)', 'Source', 'Created At', 'Updated At', 'Actions']}
         customBlocks={[
           {
             index: 0, // accountCash formatting
@@ -113,9 +136,23 @@ const BankTransactions = () => {
             },
           },
         ]}
+        extraColumns={[
+          (obj) => (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <FaTrash
+                onClick={() => deleteBankTransaction(obj._id)}
+                style={{
+                  color: '#e74c3c',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+          ),
+        ]}
       />
     </div>
   );
 };
 
 export default BankTransactions;
+
