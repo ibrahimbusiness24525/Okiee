@@ -51,17 +51,17 @@ const PocketCashTransactions = () => {
   };
 
   // Helper to get transaction type and amount
-  const getType = (txn) => {
-    if (txn.amountAdded)
-      return { type: 'Credit', amount: txn.amountAdded, color: '#27ae60' };
-    if (txn.amountDeducted)
-      return { type: 'Debit', amount: txn.amountDeducted, color: '#c0392b' };
-    return {
-      type: txn.accountCash >= 0 ? 'Credit' : 'Debit',
-      amount: Math.abs(txn.accountCash),
-      color: txn.accountCash >= 0 ? '#27ae60' : '#c0392b',
-    };
-  };
+  // const getType = (txn) => {
+  //   if (txn.amountAdded)
+  //     return { type: 'Credit', amount: txn.amountAdded, color: '#27ae60' };
+  //   if (txn.amountDeducted)
+  //     return { type: 'Debit', amount: txn.amountDeducted, color: '#c0392b' };
+  //   return {
+  //     type: txn.accountCash >= 0 ? 'Credit' : 'Debit',
+  //     amount: Math.abs(txn.accountCash),
+  //     color: txn.accountCash >= 0 ? '#27ae60' : '#c0392b',
+  //   };
+  // };
 
   const handleViewMore = () => {
     setDisplayCount((prev) => prev + 20);
@@ -158,15 +158,7 @@ const PocketCashTransactions = () => {
               >
                 Date
               </th>
-              <th
-                style={{
-                  padding: '12px 10px',
-                  textAlign: 'left',
-                  fontWeight: 600,
-                }}
-              >
-                Type
-              </th>
+
               <th
                 style={{
                   padding: '12px 10px',
@@ -206,8 +198,11 @@ const PocketCashTransactions = () => {
             </tr>
           </thead>
           <tbody>
-            {transactions.slice(0, displayCount).map((txn) => {
-              const { type, amount, color } = getType(txn);
+            {transactions.map((txn) => {
+              // {transactions.slice(0, displayCount).map((txn) => {
+              const { color } = txn;
+              const amount = txn.amountAdded || txn.amountDeducted;
+              // const { type, amount, color } = getType(txn);
               return (
                 <tr
                   key={txn._id}
@@ -226,7 +221,7 @@ const PocketCashTransactions = () => {
                   >
                     {formatDate(txn.createdAt)}
                   </td>
-                  <td
+                  {/* <td
                     style={{
                       padding: '12px 10px',
                       color,
@@ -234,7 +229,7 @@ const PocketCashTransactions = () => {
                     }}
                   >
                     {type}
-                  </td>
+                  </td> */}
                   <td
                     style={{
                       padding: '12px 10px',
@@ -243,7 +238,7 @@ const PocketCashTransactions = () => {
                       textAlign: 'right',
                     }}
                   >
-                    {amount.toLocaleString()}
+                    {amount && amount.toLocaleString()}
                   </td>
                   <td
                     style={{

@@ -71,11 +71,15 @@ const BankTransactions = () => {
         array={transactions.reverse()}
         keysToDisplay={[
           'accountCash',
-          'sourceOfAmountAddition',
+          // 'sourceOfAmountAddition',
           'createdAt',
-          'updatedAt',
+          // 'updatedAt',
         ]}
-        label={['Amount (Cash)', 'Source', 'Created At', 'Updated At', 'Actions']}
+        label={['Amount (Cash)',
+          // 'Source', 
+          'Created At',
+          // 'Updated At', 
+          'Actions']}
         customBlocks={[
           {
             index: 0, // accountCash formatting
@@ -100,23 +104,23 @@ const BankTransactions = () => {
               );
             },
           },
+          // {
+          //   index: 1, // sourceOfAmountAddition handling
+          //   component: (source) => {
+          //     return (
+          //       <span
+          //         style={{
+          //           color: source ? '#34495e' : '#95a5a6',
+          //           fontStyle: source ? 'normal' : 'italic',
+          //         }}
+          //       >
+          //         {source || 'Not Mentioned'}
+          //       </span>
+          //     );
+          //   },
+          // },
           {
-            index: 1, // sourceOfAmountAddition handling
-            component: (source) => {
-              return (
-                <span
-                  style={{
-                    color: source ? '#34495e' : '#95a5a6',
-                    fontStyle: source ? 'normal' : 'italic',
-                  }}
-                >
-                  {source || 'Not Mentioned'}
-                </span>
-              );
-            },
-          },
-          {
-            index: 2, // createdAt formatting
+            index: 1, // createdAt formatting
             component: (date) => {
               return (
                 <span style={{ color: '#2980b9', fontSize: '14px' }}>
@@ -125,20 +129,23 @@ const BankTransactions = () => {
               );
             },
           },
-          {
-            index: 3, // updatedAt formatting
-            component: (date) => {
-              return (
-                <span style={{ color: '#8e44ad', fontSize: '14px' }}>
-                  {dateFormatter(date)}
-                </span>
-              );
-            },
-          },
+          // {
+          //   index: 3, // updatedAt formatting
+          //   component: (date) => {
+          //     return (
+          //       <span style={{ color: '#8e44ad', fontSize: '14px' }}>
+          //         {dateFormatter(date)}
+          //       </span>
+          //     );
+          //   },
+          // },
         ]}
         extraColumns={[
           (obj) => (
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ color: '#7f8c8d', fontSize: '14px' }}>
+                {obj.sourceOfAmountAddition || obj.reasonOfAmountDeduction || "not mentioned"}
+              </div>
               <FaTrash
                 onClick={() => deleteBankTransaction(obj._id)}
                 style={{

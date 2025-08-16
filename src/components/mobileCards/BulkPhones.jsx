@@ -148,6 +148,7 @@ const NewMobilesList = () => {
     getAllEnityNameAndId();
     getMobiles();
   }, []);
+  console.log("accessory", data);
 
   const getMobiles = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -2283,9 +2284,9 @@ const NewMobilesList = () => {
                           }}
                         >
                           <option value="">Select accessory</option>
-                          {data?.data?.map((item) => (
+                          {data?.data?.filter(item => item.quantity > 0).map((item) => (
                             <option key={item._id} value={item._id}>
-                              {item.accessoryName}
+                              {item.accessoryName} | Qty: {item.quantity} | Unit Price: {item.perPiecePrice}
                             </option>
                           ))}
                         </Form.Select>
@@ -2710,7 +2711,7 @@ const NewMobilesList = () => {
             Submit
           </Button>
         </Modal.Footer>
-      </Modal>
+      </Modal >
     </>
   );
 };
