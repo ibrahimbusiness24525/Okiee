@@ -2444,10 +2444,10 @@ const NewMobilesList = () => {
               )}
 
               <Form.Group className="mb-3">
-                {/* <Form.Label>Sold Price</Form.Label> */}
+                <Form.Label>Sold Price</Form.Label>
                 <Form.Control
                   type="number"
-                  hidden={true}
+                  // hidden={true}
                   value={finalPrice}
                   onChange={(e) => setFinalPrice(e.target.value)}
                   placeholder="Enter Sold price"

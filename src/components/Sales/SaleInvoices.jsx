@@ -395,17 +395,21 @@ const SaleInvoices = () => {
         search={'imei1'}
         keysToDisplay={[
           'type',
+          'imei1',
           // 'purchasePrice',
           'salePrice',
           'sellingPaymentType',
+          'customerName',
           'warranty',
           'dateSold',
         ]}
         label={[
           'Type of Sale',
           // 'Purchase Price',
+          "IMEI",
           'Sale Price',
           'Selling Payment Type',
+          'Customer Name',
           'Warranty',
           'Invoice Date',
           // "Barcode Generator"
@@ -418,13 +422,19 @@ const SaleInvoices = () => {
           //   },
           // },
           {
-            index: 2,
+            index: 1,
+            component: (imei1) => {
+              return imei1 ? imei1.join(",") : 'Not mentioned';
+            },
+          },
+          {
+            index: 3,
             component: (sellingType) => {
               return sellingType ? sellingType : 'Not mentioned';
             },
           },
           {
-            index: 4,
+            index: 6,
             component: (date) => {
               return dateFormatter(date);
             },
@@ -677,15 +687,15 @@ const SaleInvoices = () => {
                   const payload = {
                     sales: Array.isArray(obj.accessoriesList)
                       ? obj.accessoriesList.map((accessory) => ({
-                          accessoryId:
-                            accessory.name ||
-                            accessory.accessoryName ||
-                            accessory._id ||
-                            accessory.accessoryId,
-                          quantity: Number(accessory.quantity),
-                          perPiecePrice: Number(accessory.perPiecePrice),
-                          name: accessory.name || accessory.accessoryName,
-                        }))
+                        accessoryId:
+                          accessory.name ||
+                          accessory.accessoryName ||
+                          accessory._id ||
+                          accessory.accessoryId,
+                        quantity: Number(accessory.quantity),
+                        perPiecePrice: Number(accessory.perPiecePrice),
+                        name: accessory.name || accessory.accessoryName,
+                      }))
                       : [],
                     getPayment: {
                       // Include payment details if available in obj

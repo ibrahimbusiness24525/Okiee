@@ -1743,9 +1743,9 @@ const SoldInvoice = () => {
                       phoneDetail[0]?.simOption && (
                         <th style={styles.th}>Sim Option</th>
                       )}
-                    {dataReceived?.modelName && (
+                    {/* {dataReceived?.modelName && (
                       <th style={styles.th}>Ram Memory</th>
-                    )}
+                    )} */}
                     {dataReceived?.batteryHealth && (
                       <th style={styles.th}>Battery Health</th>
                     )}
@@ -1815,70 +1815,77 @@ const SoldInvoice = () => {
                     </td>
 
                     {/* RAM */}
-                    <td
-                      style={{
-                        padding: '8px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {Array.isArray(phoneDetail) &&
-                        phoneDetail[0]?.ramMemory ? (
-                        <div>
-                          {phoneDetail.map((item, i) => (
-                            <div key={i}>{item.ramMemory || 'N/A'}</div>
-                          ))}
-                        </div>
-                      ) : dataReceived?.ramMemory ? (
-                        <span>{dataReceived.ramMemory}</span>
-                      ) : (
-                        'Not Available'
-                      )}
-                    </td>
+                    {Array.isArray(phoneDetail) && <>
+
+                      <td
+                        style={{
+                          padding: '8px',
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {Array.isArray(phoneDetail) &&
+                          phoneDetail[0]?.ramMemory ? (
+                          <div>
+                            {phoneDetail.map((item, i) => (
+                              <div key={i}>{item.ramMemory || 'N/A'}</div>
+                            ))}
+                          </div>
+                        ) : dataReceived?.ramMemory ? (
+                          <span>{dataReceived.ramMemory}</span>
+                        ) : (
+                          'Not Available'
+                        )}
+                      </td></>}
 
                     {/* Battery Health */}
-                    <td
-                      style={{
-                        padding: '8px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {Array.isArray(phoneDetail) &&
-                        phoneDetail[0]?.batteryHealth ? (
-                        <div>
-                          {phoneDetail.map((item, i) => (
-                            <div key={i}>{item.batteryHealth || 'N/A'}</div>
-                          ))}
-                        </div>
-                      ) : dataReceived?.batteryHealth ? (
-                        <span>{dataReceived.batteryHealth}</span>
-                      ) : (
-                        'Not Available'
-                      )}
-                    </td>
+                    {Array.isArray(phoneDetail) &&
+                      <>
+                        <td
+                          style={{
+                            padding: '8px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            textAlign: 'center',
+                          }}
+                        >
+                          {Array.isArray(phoneDetail) &&
+                            phoneDetail[0]?.batteryHealth ? (
+                            <div>
+                              {phoneDetail.map((item, i) => (
+                                <div key={i}>{item.batteryHealth || 'N/A'}</div>
+                              ))}
+                            </div>
+                          ) : dataReceived?.batteryHealth ? (
+                            <span>{dataReceived.batteryHealth}</span>
+                          ) : (
+                            'Not Available'
+                          )}
+                        </td>
+                      </>}
 
                     {/* Color */}
-                    <td
-                      style={{
-                        padding: '8px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {Array.isArray(phoneDetail) && phoneDetail[0]?.color ? (
-                        <div>
-                          {phoneDetail.map((item, i) => (
-                            <div key={i}>{item.color || 'N/A'}</div>
-                          ))}
-                        </div>
-                      ) : (
-                        'Not Available'
-                      )}
-                    </td>
+                    {Array.isArray(phoneDetail) && <>
+                      <td
+                        style={{
+                          padding: '8px',
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {Array.isArray(phoneDetail) && phoneDetail[0]?.color ? (
+                          <div>
+                            {phoneDetail.map((item, i) => (
+                              <div key={i}>{item.color || 'N/A'}</div>
+                            ))}
+                          </div>
+                        ) : (
+                          'Not Available'
+                        )}
+                      </td>
+                    </>}
 
                     {/* SIM Option */}
                     {Array.isArray(phoneDetail) &&
