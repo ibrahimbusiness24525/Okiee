@@ -86,7 +86,7 @@ const PayablesAndReceivablesRecords = () => {
       // Add title
       doc.setFontSize(16);
       doc.setTextColor(40);
-      doc.text(`${person.name}'s Accessory Transactions`, 14, 16);
+      doc.text(`${person.name}'s Ledger Transactions`, 14, 16);
 
       // Add subtitle with date range if specified
       doc.setFontSize(10);
@@ -109,45 +109,31 @@ const PayablesAndReceivablesRecords = () => {
           [
             'Date',
             'Type',
-            // 'Accessory', 'Qty', 'Price', 'Total',
+            'Transaction',
             'Description',
+            'Balance Amount',
           ],
         ],
         body: filteredTransactions.map((tx) => {
           const type = tx.type === 'purchase' ? 'Purchase' : 'Sale';
           const date = new Date(tx.createdAt).toLocaleDateString();
 
-          // Handle accessories list
-          let accessoryName = tx.accessoryName || '';
-          let quantity = tx.quantity || '';
-          let price = tx.perPiecePrice
-            ? `Rs. ${tx.perPiecePrice.toLocaleString()}`
-            : '';
-          let total = tx.totalPrice
-            ? `Rs. ${tx.totalPrice.toLocaleString()}`
-            : '';
-
-          // For transactions with multiple accessories
-          if (tx.accessoriesList?.length > 0) {
-            accessoryName = tx.accessoriesList
-              .map((a) => a.name || a.accessoryName)
-              .join(', ');
-            quantity = tx.accessoriesList.reduce(
-              (sum, a) => sum + (a.quantity || 0),
-              0
-            );
-            price = `Multiple`;
-            total = `Rs. ${tx.totalPrice.toLocaleString()}`;
+          // Determine transaction type: Taking Credit, Giving Credit, or Payment
+          let transactionType = '';
+          if (tx.takingCredit && tx.takingCredit !== 0) {
+            transactionType = `Taking Credit (Rs. ${tx.takingCredit.toLocaleString()})`;
+          } else if (tx.givingCredit && tx.givingCredit !== 0) {
+            transactionType = `Giving Credit (Rs. ${tx.givingCredit.toLocaleString()})`;
+          } else {
+            transactionType = 'Payment';
           }
 
           return [
             date,
             type,
-            // accessoryName,
-            // quantity,
-            // price,
-            // total,
+            transactionType,
             tx.description || '',
+            tx.balanceAmount || '',
           ];
         }),
         styles: {
@@ -163,10 +149,6 @@ const PayablesAndReceivablesRecords = () => {
         columnStyles: {
           0: { cellWidth: 20 }, // Date
           1: { cellWidth: 15 }, // Type
-          // 2: { cellWidth: 40 }, // Accessory
-          // 3: { cellWidth: 15 }, // Qty
-          // 4: { cellWidth: 20 }, // Price
-          // 5: { cellWidth: 20 }, // Total
           6: { cellWidth: 'auto' }, // Description
         },
       });
@@ -191,8 +173,6 @@ const PayablesAndReceivablesRecords = () => {
       setShowPDFModal(false);
     } catch (error) {
       console.error('Failed to generate PDF:', error);
-      // Optionally show error to user
-      // setError('Failed to generate PDF. Please try again.');
     }
   };
   const handleGiveCredit = async (e) => {
