@@ -46,7 +46,7 @@
 //     const printWindow = window.open('', '_blank');
 //     if (printWindow) {
 //       printWindow.document.write(`        
-                
+
 //         <!doctype html>
 //                 <html>
 // <head>
@@ -63,7 +63,7 @@
 //                 padding: 0;
 //         }
 //         body { 
-            
+
 //             margin: 0;
 //         }
 
@@ -109,7 +109,7 @@
 //     </style>
 // </head>
 // <body>
-    
+
 //     <div class="barcode">
 //         <div class="img-holder">
 //             <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
@@ -119,9 +119,9 @@
 //             <div class="battery-health">${batteryHealth ? `<p>${batteryHealth}</p>` : ''}</div>
 //         </div>
 //     </div>
-         
-    
-    
+
+
+
 // </body>
 // <script>
 // window.onload = function() {
@@ -131,7 +131,7 @@
 // };
 // </script>
 //                 </html>
-            
+
 //                 `);
 //       printWindow.document.close();
 //     }
@@ -459,96 +459,182 @@ const BarcodePrinter = ({ obj, type }) => {
     }
 
     // Open a new print window
+    //     <!doctype html>
+    //             <html>
+    // <head>
+    // <title>Print Barcode</title>
+    // <meta name="viewport" content="width=device-width, initial-scale=1, shirt-to-fit=no">
+    // <style>
+    //     @page { 
+    //         size: 3in 1in;
+    //         margin: 0; 
+    //     }
+    //         @media print {
+    //           html, body {
+    //             margin: 0;
+    //             padding: 0;
+    //     }
+    //     body { 
+
+    //         margin: 0;
+    //     }
+
+    //     .battery-health {
+    //         writing-mode: vertical-rl;
+    // transform: rotate(180deg);
+    // font-size: 18px;
+    // font-weight: bold;
+    // text-align: left;
+    // white-space: nowrap;
+    // margin-right: 40mm;
+    // position: absolute;
+    // top: 16px;
+    // left: 150px;
+    //     }
+
+    //     .barcode{
+    //         padding-left: 0px;
+    //         max-width: 192px;
+    //         max-height: 96px;
+    //         border-radius: 3px;
+    //         font-weight: 500;
+    //         text-align: center;
+    //         margin: 0 auto;
+    //     }
+    //     .barcode .img-holder{
+    //         position:relative;
+    //         width:100%;
+    //         text-align:center;
+    //     }
+    //     .barcode .img-holder img{
+    //         width:160px;
+    //         height:30px;
+    //         display:block;
+    //         margin:0px auto;
+    //     }
+    //         .after-text{
+    //         margin: 1px 0px 0px 0px;
+    // line-height: 10px;
+    // font-size: 11px;
+    // text-align: center;
+    //         }
+    // </style>
+    // </head>
+    // <body>
+
+    // <div class="barcode">
+    //     <div class="img-holder">
+    //         <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
+    //         <p class="after-text">${companyName} ${modelName} ${ramMemory} ${specifications} </p>
+    //         <p class="after-text">${shopName}</p>
+    //         ${imei2 ? <img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" /> : ''}
+    //         <div class="battery-health">${batteryHealth ? <p>${batteryHealth}</p> : ''}</div>
+    //     </div>
+    // </div>
+
+
+
+    // </body>
+    // <script>
+    // window.onload = function() {
+    // window.focus();
+    // window.print();
+    // window.close();
+    // };
+    // </script>
+    //             </html>
+
+    //             `);
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`        
-                
-        <!doctype html>
-                <html>
-<head>
-    <title>Print Barcode</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shirt-to-fit=no">
-    <style>
+            <!doctype html>
+        <html>
+    <head>
+        <title>Print Barcode</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shirt-to-fit=no">
+        <style>
         @page { 
-            size: 3in 1in;
-            margin: 0; 
+        size: 3in 1in;
+        margin: 0; 
         }
-            @media print {
-              html, body {
-                margin: 0;
-                padding: 0;
+        @media print {
+        html, body {
+            margin: 0;
+            padding: 0;
         }
         body { 
-            
             margin: 0;
         }
-
-        .battery-health {
-            writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-size: 18px;
-    font-weight: bold;
-    text-align: left;
-    white-space: nowrap;
-    margin-right: 40mm;
-    position: absolute;
-    top: 16px;
-    left: 150px;
         }
-
+        .battery-health {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        font-size: 18px;
+        font-weight: bold;
+        text-align: left;
+        white-space: nowrap;
+        margin-right: 40mm;
+        position: absolute;
+        top: 16px;
+        left: 150px;
+        }
         .barcode{
-            padding-left: 0px;
-            max-width: 192px;
-            max-height: 96px;
-            border-radius: 3px;
-            font-weight: 500;
-            text-align: center;
-            margin: 0 auto;
+        padding-left: 0px;
+        max-width: 192px;
+        max-height: 96px;
+        border-radius: 3px;
+        font-weight: 500;
+        text-align: center;
+        margin: 0 auto;
         }
         .barcode .img-holder{
-            position:relative;
-            width:100%;
-            text-align:center;
+        position:relative;
+        width:100%;
+        text-align:center;
         }
         .barcode .img-holder img{
-            width:160px;
-            height:30px;
-            display:block;
-            margin:0px auto;
+        width:160px;
+        height:30px;
+        display:block;
+        margin:0px auto;
         }
-            .after-text{
-            margin: 1px 0px 0px 0px;
-    line-height: 10px;
-    font-size: 11px;
-    text-align: center;
-            }
-    </style>
-</head>
-<body>
-    
-    <div class="barcode">
+        .after-text{
+        margin: 1px 0px 0px 0px;
+        line-height: 10px;
+        font-size: 11px;
+        text-align: center;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="barcode">
         <div class="img-holder">
-            <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-            <p class="after-text">${companyName} ${modelName} ${ramMemory} ${specifications} </p>
-            <p class="after-text">${shopName}</p>
-            ${imei2 ? <img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" /> : ''}
-            <div class="battery-health">${batteryHealth ? <p>${batteryHealth}</p> : ''}</div>
+        ${imei1 ? `<img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />` : ''}
+        ${(companyName || modelName || ramMemory || specifications)
+          ? `<p class="after-text">${companyName ? companyName : ''
+          } ${modelName ? modelName : ''
+          } ${ramMemory ? ramMemory : ''
+          } ${specifications ? specifications : ''
+          }</p>`
+          : ''
+        }
+        ${shopName ? `<p class="after-text">${shopName}</p>` : ''}
+        ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ''}
+        ${batteryHealth ? `<div class="battery-health"><p>${batteryHealth}</p></div>` : ''}
         </div>
-    </div>
-         
-    
-    
-</body>
-<script>
-window.onload = function() {
-window.focus();
-window.print();
-window.close();
-};
-</script>
-                </html>
-            
-                `);
+        </div>
+    </body>
+    <script>
+    window.onload = function() {
+        window.focus();
+        window.print();
+        window.close();
+    };
+    </script>
+    </html>
+        `);
+
       printWindow.document.close();
     }
   };
@@ -592,8 +678,8 @@ window.close();
 
       return isAlreadySelected
         ? prevSelected.filter(
-            (item) => item.imei1 !== imei.imei1 || item.imei2 !== imei.imei2
-          ) // Remove selected IMEI pair
+          (item) => item.imei1 !== imei.imei1 || item.imei2 !== imei.imei2
+        ) // Remove selected IMEI pair
         : [...prevSelected, imei]; // Add new IMEI pair
     });
   };
@@ -724,14 +810,14 @@ p {
     font-weight: bold;
 }
 
-                    </style>
+      </style>
         </head>
         <body>
             <div class="container">
                 <div class="barcode-section">
                     <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
-                     <p> ${modelName} ${ramMemory}GB</p>
-                     <p>${shopName}</p>
+                     <p> ${modelName && modelName} ${ramMemory && ramMemory}GB</p>
+                   ${shopName ? `<p class="shop-name">${shopName}</p>` : ''}
                     ${imei2 ? <img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" /> : ''}
                 </div>
             </div>

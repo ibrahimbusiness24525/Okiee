@@ -7,7 +7,7 @@ const PurchaseDetail = () => {
     const [purchase, setPurchase] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+
     const fetchBulkPurchaseDetail = async () => {
         try {
             const response = await fetch(`${BASE_URL}api/Purchase/bulk-phone-purchase/${id}`);
@@ -37,7 +37,7 @@ const PurchaseDetail = () => {
                 <p><strong>Model:</strong> {purchase.modelName}</p>
                 <p><strong>Date:</strong> {new Date(purchase.date).toLocaleDateString()}</p>
                 <p><strong>Status:</strong> {purchase.status}</p>
-                
+
                 <h3 style={{ marginTop: "15px", borderBottom: "2px solid #ccc", paddingBottom: "5px" }}>Prices</h3>
                 <p><strong>Buying Price:</strong> {purchase.prices.buyingPrice}</p>
                 <p><strong>Dealer Price:</strong> {purchase.prices.dealerPrice}</p>

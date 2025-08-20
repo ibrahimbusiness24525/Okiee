@@ -122,7 +122,7 @@ const PurchaseRecords = () => {
         })
       );
       setPurchasedPhone(response?.data?.data);
-    } catch (error) {}
+    } catch (error) { }
   };
   const [scannedBarcodeValue, setScannedBarcodeValue] = useState('');
   const handleScan = (value) => {
@@ -301,7 +301,7 @@ const PurchaseRecords = () => {
             : []
         }
         search={'imeiNumbers'}
-        keysToDisplay={['partyName', 'totalQuantity', 'status', 'date']}
+        keysToDisplay={['personId', 'totalQuantity', 'status', 'date']}
         label={[
           'Party Name',
           'No of quantity',
@@ -310,6 +310,12 @@ const PurchaseRecords = () => {
           'Actions',
         ]}
         customBlocks={[
+          {
+            index: 0,
+            component: (personObject) => {
+              return <p>{personObject.name}</p>
+            },
+          },
           {
             index: 3,
             component: (date) => {
