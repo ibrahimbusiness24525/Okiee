@@ -96,24 +96,60 @@ const BulkSalesDetail = () => {
                     </div>
                   </div>
 
-                  {/* Prices from Purchase */}
+                  {/* Prices from Purchase - Only Buying Price */}
                   {saleDetail.bulkPhonePurchaseId.prices && (
                     <>
                       <h4 style={styles.subSectionTitle}>Purchase Prices</h4>
                       <div style={styles.gridContainer}>
                         <div style={styles.column}>
-                          <DetailPill label="Buying Price" value={formatValue(saleDetail.bulkPhonePurchaseId.prices.buyingPrice)} />
-                          {/* <DetailPill label="Dealer Price" value={formatValue(saleDetail.bulkPhonePurchaseId.prices.dealerPrice)} /> */}
-                          {/* <DetailPill label="LP" value={formatValue(saleDetail.bulkPhonePurchaseId.prices.lp)} /> */}
-                        </div>
-                        <div style={styles.column}>
-                          {/* <DetailPill label="Lifting" value={formatValue(saleDetail.bulkPhonePurchaseId.prices.lifting)} /> */}
-                          {/* <DetailPill label="Promo" value={formatValue(saleDetail.bulkPhonePurchaseId.prices.promo)} /> */}
-                          {/* <DetailPill label="Activation" value={formatValue(saleDetail.bulkPhonePurchaseId.prices.activation)} /> */}
+                          <DetailPill label="Buying Price" value={formatCurrency(saleDetail.bulkPhonePurchaseId.prices.buyingPrice)} />
                         </div>
                       </div>
                     </>
                   )}
+
+                  {/* Supplier Information */}
+                  {saleDetail.bulkPhonePurchaseId.personId && (
+                    <>
+                      <h4 style={styles.subSectionTitle}>Supplier Information</h4>
+                      <div style={styles.gridContainer}>
+                        <div style={styles.column}>
+                          <DetailPill label="Supplier Name" value={formatValue(saleDetail.bulkPhonePurchaseId.personId.name)} />
+                          <DetailPill label="Supplier Number" value={formatValue(saleDetail.bulkPhonePurchaseId.personId.number)} />
+                        </div>
+                        <div style={styles.column}>
+                          <DetailPill label="Reference" value={formatValue(saleDetail.bulkPhonePurchaseId.personId.reference)} />
+                          {/* <DetailPill label="Status" value={formatValue(saleDetail.bulkPhonePurchaseId.personId.status)} /> */}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* RAM & SIM Details Section */}
+            {saleDetail.bulkPhonePurchaseId?.ramSimDetails && saleDetail.bulkPhonePurchaseId.ramSimDetails.length > 0 && (
+              <div style={styles.section}>
+                <h3 style={styles.sectionTitle}>Device Specifications</h3>
+                <div style={styles.ramSimGrid}>
+                  {saleDetail.bulkPhonePurchaseId.ramSimDetails.map((device, index) => (
+                    <div key={device._id} style={styles.deviceCard}>
+                      <h4 style={styles.deviceName}>{formatValue(device.companyName, `Device ${index + 1}`)}</h4>
+                      <div style={styles.deviceDetails}>
+                        <DetailPill label="Model" value={formatValue(device.modelName)} />
+                        <DetailPill label="RAM" value={formatValue(device.ramMemory)} />
+                        <DetailPill label="SIM" value={formatValue(device.simOption)} />
+                        <DetailPill label="Price" value={formatCurrency(device.priceOfOne)} />
+                        {device.imeiNumbers && device.imeiNumbers.length > 0 && (
+                          <DetailPill 
+                            label="IMEI" 
+                            value={device.imeiNumbers.map(imei => imei.imei1).join(", ")} 
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -133,32 +169,7 @@ const BulkSalesDetail = () => {
               <h3 style={styles.sectionTitle}>Payment Information</h3>
               {saleDetail.sellingPaymentType ? (
                 <div style={styles.paymentCard}>
-                  {saleDetail.sellingPaymentType === "Credit" && (
-                    <>
-                      <DetailPill label="Type" value="Credit" highlight="info" />
-                      <DetailPill label="Payable Now" value={formatCurrency(saleDetail.payableAmountNow)} />
-                      <DetailPill label="Payable Later" value={formatCurrency(saleDetail.payableAmountLater)} />
-                      <DetailPill label="Due Date" value={formatDate(saleDetail.payableAmountLaterDate)} />
-                    </>
-                  )}
-                  {saleDetail.sellingPaymentType === "Bank" && (
-                    <>
-                      <DetailPill label="Type" value="Bank" highlight="info" />
-                      <DetailPill label="Bank Name" value={formatValue(saleDetail.bankName)} />
-                    </>
-                  )}
-                  {saleDetail.sellingPaymentType === "Exchange" && (
-                    <>
-                      <DetailPill label="Type" value="Exchange" highlight="info" />
-                      <DetailPill label="Details" value={formatValue(saleDetail.exchangePhoneDetail)} />
-                    </>
-                  )}
-                  {saleDetail.sellingPaymentType === "Full Payment" && (
-                    <DetailPill label="Type" value="Full Payment" highlight="info" />
-                  )}
-                  {saleDetail.sellingPaymentType === "Cash" && (
-                    <DetailPill label="Type" value="Cash" highlight="info" />
-                  )}
+                  <DetailPill label="Type" value={saleDetail.sellingPaymentType} highlight="info" />
                 </div>
               ) : (
                 <p style={styles.notAvailable}>No payment information available</p>
@@ -184,37 +195,6 @@ const BulkSalesDetail = () => {
                 <p style={styles.notAvailable}>No accessories included</p>
               )}
             </div>
-
-            {/* CNIC Images Section */}
-            {/* <div style={styles.section}>
-              <h3 style={styles.sectionTitle}>CNIC Images</h3>
-              <div style={styles.cnicContainer}>
-                <div style={styles.cnicImageWrapper}>
-                  <p style={styles.cnicLabel}>Front Side</p>
-                  {saleDetail.cnicFrontPic ? (
-                    <img
-                      src={saleDetail.cnicFrontPic}
-                      alt="CNIC Front"
-                      style={styles.cnicImage}
-                    />
-                  ) : (
-                    <div style={styles.cnicPlaceholder}>Not uploaded</div>
-                  )}
-                </div>
-                <div style={styles.cnicImageWrapper}>
-                  <p style={styles.cnicLabel}>Back Side</p>
-                  {saleDetail.cnicBackPic ? (
-                    <img
-                      src={saleDetail.cnicBackPic}
-                      alt="CNIC Back"
-                      style={styles.cnicImage}
-                    />
-                  ) : (
-                    <div style={styles.cnicPlaceholder}>Not uploaded</div>
-                  )}
-                </div>
-              </div>
-            </div> */}
           </>
         ) : (
           <p style={styles.notAvailable}>No sale details available.</p>
@@ -328,6 +308,30 @@ const styles = {
     flexDirection: "column",
     gap: "12px",
   },
+  ramSimGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "16px",
+  },
+  deviceCard: {
+    backgroundColor: "#FFFFFF",
+    border: "1px solid #E5E7EB",
+    borderRadius: "8px",
+    padding: "16px",
+    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+  },
+  deviceName: {
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: "12px",
+    fontSize: "16px",
+    textTransform: "capitalize",
+  },
+  deviceDetails: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
   accessoriesGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
@@ -357,35 +361,6 @@ const styles = {
   accessoryPrice: {
     fontWeight: "600",
     color: "#1E40AF",
-  },
-  cnicContainer: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "24px",
-    flexWrap: "wrap",
-  },
-  cnicImageWrapper: {
-    flex: "1",
-    minWidth: "200px",
-  },
-  cnicLabel: {
-    fontWeight: "500",
-    color: "#374151",
-    marginBottom: "8px",
-  },
-  cnicImage: {
-    width: "100%",
-    maxWidth: "300px",
-    border: "1px solid #E5E7EB",
-    borderRadius: "8px",
-  },
-  cnicPlaceholder: {
-    backgroundColor: "#F3F4F6",
-    border: "1px dashed #D1D5DB",
-    borderRadius: "8px",
-    padding: "16px",
-    textAlign: "center",
-    color: "#6B7280",
   },
   pill: {
     display: "flex",

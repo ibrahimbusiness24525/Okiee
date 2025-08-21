@@ -510,6 +510,8 @@ const NewMobilesList = () => {
   }, []);
   const [showPrices, setShowPrices] = useState(false);
   const [selectedMobile, setSelectedMobile] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
   const [imeis, setImeis] = useState([]);
   const [scanning, setScanning] = useState(false);
   const handleScan = (err, result) => {
@@ -534,6 +536,14 @@ const NewMobilesList = () => {
   const handleClosePrices = () => {
     setShowPrices(false);
     setSelectedMobile(null);
+  };
+  const handleOpenDetails = (record) => {
+    setSelectedRecord(record);
+    setShowDetails(true);
+  };
+  const handleCloseDetails = () => {
+    setSelectedRecord(null);
+    setShowDetails(false);
   };
   const handleBulkDelete = (id) => {
     setDeleteMobileId(id);
@@ -1107,8 +1117,8 @@ const NewMobilesList = () => {
                             color: '#333',
                           }}
                         >
-                          {mobile?.companyName || 'No Company Name'}{' '}
-                          {mobile?.modelName || 'No Model Name'}
+                          {(mobile?.companyName || mobile?.ramSimDetails?.[0]?.companyName || mobile?.phoneDetails?.[0]?.companyName || 'No Company Name')}{' '}
+                          {(mobile?.modelName || mobile?.ramSimDetails?.[0]?.modelName || mobile?.phoneDetails?.[0]?.modelName || 'No Model Name')}
                         </Card.Title>
 
                         <Card.Text
@@ -1174,9 +1184,33 @@ const NewMobilesList = () => {
                                 margin: '5px', // Slight margin to separate buttons
                               }}
                             >
-                              View All Prices
+                              View Buying Price
                             </Button>
                           </div>
+
+                          <div style={{ marginTop: '8px' }}>
+                            <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Payment:</strong>
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ backgroundColor: '#eef2ff', color: '#3730a3', padding: '4px 10px', borderRadius: '12px' }}>
+                                Status: {mobile.purchasePaymentStatus || 'N/A'}
+                              </span>
+                              <span style={{ backgroundColor: '#ecfeff', color: '#155e75', padding: '4px 10px', borderRadius: '12px' }}>
+                                Type: {mobile.purchasePaymentType || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {mobile?.phoneStatistics && (
+                            <div style={{ marginTop: '8px' }}>
+                              <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Stats:</strong>
+                              <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                                <span style={{ background:'#e0f2fe', color:'#0369a1', padding:'4px 10px', borderRadius:'12px' }}>T: {mobile.phoneStatistics.totalPhones || 0}</span>
+                                <span style={{ background:'#dcfce7', color:'#166534', padding:'4px 10px', borderRadius:'12px' }}>A: {mobile.phoneStatistics.availablePhones || 0}</span>
+                                <span style={{ background:'#fee2e2', color:'#991b1b', padding:'4px 10px', borderRadius:'12px' }}>D: {mobile.phoneStatistics.dispatchedPhones || 0}</span>
+                                <span style={{ background:'#fef9c3', color:'#854d0e', padding:'4px 10px', borderRadius:'12px' }}>S: {mobile.phoneStatistics.soldPhones || 0}</span>
+                              </div>
+                            </div>
+                          )}
 
                           {mobile?.ramSimDetails?.length > 0 ? (
                             <div>
@@ -1333,36 +1367,13 @@ const NewMobilesList = () => {
    
             <Modal show={showPrices} onHide={handleClosePrices}>
               <Modal.Header closeButton>
-                <Modal.Title>
-                  Prices for {selectedMobile?.companyName}{' '}
-                  {selectedMobile?.modelName}
-                </Modal.Title>
+                <Modal.Title>Buying Price</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <ul>
                   <li>
                     <strong>Buying Price:</strong>{' '}
                     {selectedMobile?.prices?.buyingPrice || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>Dealer Price:</strong>{' '}
-                    {selectedMobile?.prices?.dealerPrice || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>LP:</strong>{' '}
-                    {selectedMobile?.prices?.lp || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>Lifting:</strong>{' '}
-                    {selectedMobile?.prices?.lifting || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>Promo:</strong>{' '}
-                    {selectedMobile?.prices?.promo || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>Activation:</strong>{' '}
-                    {selectedMobile?.prices?.activation || 'Not Available'}
                   </li>
                 </ul>
               </Modal.Body>
@@ -1446,136 +1457,127 @@ const NewMobilesList = () => {
                     (record) => record.dispatch === false
                   )}
                   keysToDisplay={[
-                    'actualBuyingPrice',
+                    'personId',
+                    'date',
                     'prices',
                     'creditPaymentData',
+                    'phoneStatistics',
                     'status',
-                    'ramSimDetails',
                     'purchasePaymentType',
                   ]}
                   label={[
+                    'Supplier',
+                    'Date',
                     'Buying Price',
-                    'Payable Amount',
-                    'Remaining Amount',
+                    'Remaining',
+                    'Stats',
                     'Status',
-                    'Quantity',
                     'Payment Type',
                     'Actions',
                   ]}
                   customBlocks={[
                     {
+                      index: 0,
+                      component: (person) => (
+                        <span style={{ fontWeight: 500 }}>
+                          {(person && person.name) || 'Unknown'}
+                          {person?.number ? (
+                            <span
+                              style={{
+                                marginLeft: '8px',
+                                backgroundColor: '#e0e7ff',
+                                color: '#4f46e5',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.8rem',
+                              }}
+                            >
+                              {person.number}
+                            </span>
+                          ) : null}
+                        </span>
+                      ),
+                    },
+                    {
                       index: 1,
-                      component: (prices) => {
-                        return (
-                          <span
-                            style={{
-                              backgroundColor: '#d1fae5',
-                              color: '#065f46',
-                              padding: '4px 12px',
-                              borderRadius: '8px',
-                              fontWeight: '500',
-                              fontSize: '14px',
-                              display: 'inline-block',
-                            }}
-                          >
-                            {prices?.buyingPrice
-                              ? `${prices.buyingPrice} PKR`
-                              : 'N/A'}
-                          </span>
-                        );
-                      },
+                      component: (date) => (
+                        <span>{date ? new Date(date).toLocaleDateString() : 'N/A'}</span>
+                      ),
                     },
                     {
                       index: 2,
+                      component: (prices) => (
+                        <span
+                          style={{
+                            backgroundColor: '#d1fae5',
+                            color: '#065f46',
+                            padding: '4px 12px',
+                            borderRadius: '8px',
+                            fontWeight: '500',
+                            fontSize: '14px',
+                            display: 'inline-block',
+                          }}
+                        >
+                          {prices?.buyingPrice ? `${prices.buyingPrice} PKR` : 'N/A'}
+                        </span>
+                      ),
+                    },
+                    {
+                      index: 3,
                       component: (creditPaymentData) => {
-                        const hasAmount = creditPaymentData?.payableAmountLater;
-
+                        const amt = creditPaymentData?.payableAmountLater;
                         const style = {
-                          backgroundColor: hasAmount ? '#fee2e2' : '#d1fae5',
-                          color: hasAmount ? '#991b1b' : '#065f46',
+                          backgroundColor: amt ? '#fee2e2' : '#d1fae5',
+                          color: amt ? '#991b1b' : '#065f46',
                           padding: '4px 12px',
                           borderRadius: '8px',
                           fontWeight: '500',
                           fontSize: '14px',
                           display: 'inline-block',
                         };
-
-                        return (
-                          <span style={style}>
-                            {hasAmount ? `${hasAmount} PKR` : 'Paid'}
-                          </span>
-                        );
+                        return <span style={style}>{amt ? `${amt} PKR` : 'Paid'}</span>;
                       },
                     },
                     {
                       index: 4,
-                      component: (ramSimDetails) => {
-                        const totalImeiNumbers = ramSimDetails?.reduce(
-                          (total, ramSim) => {
-                            const imeis = Array.isArray(ramSim.imeiNumbers)
-                              ? ramSim.imeiNumbers.filter(
-                                (imei) => imei.isDispatched === false
-                              )
-                              : [];
-                            return total + imeis.length;
-                          },
-                          0
-                        );
-
-                        return (
-                          <span
-                            style={{
-                              backgroundColor: '#e0f2fe',
-                              color: '#0369a1',
-                              padding: '4px 12px',
-                              borderRadius: '8px',
-                              fontWeight: '500',
-                              display: 'inline-block',
-                            }}
-                          >
-                            {totalImeiNumbers}
-                          </span>
-                        );
-                      },
+                      component: (stats) => (
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ background:'#e0f2fe', color:'#0369a1', padding:'2px 8px', borderRadius:'8px' }}>T: {stats?.totalPhones || 0}</span>
+                          <span style={{ background:'#dcfce7', color:'#166534', padding:'2px 8px', borderRadius:'8px' }}>A: {stats?.availablePhones || 0}</span>
+                          {/* <span style={{ background:'#fef9c3', color:'#854d0e', padding:'2px 8px', borderRadius:'8px' }}>S: {stats?.soldPhones || 0}</span> */}
+                        </div>
+                      ),
                     },
                     {
-                      index: 5,
-                      component: (purchasePaymentType) => {
-                        return (
-                          <span style={{ fontWeight: 600, fontSize: '1rem' }}>
-                            {purchasePaymentType === 'full-payment' ? (
-                              <span
-                                style={{
-                                  color: 'green',
-                                  backgroundColor: '#dcfce7',
-                                  padding: '4px 12px',
-                                  borderRadius: '8px',
-                                  display: 'inline-block',
-                                }}
-                              >
-                                Full Payment
-                              </span>
-                            ) : (
-                              <span
-                                style={{
-                                  color: '#ea580c',
-                                  backgroundColor: '#ffedd5',
-                                  padding: '4px 12px',
-                                  borderRadius: '8px',
-                                  display: 'inline-block',
-                                }}
-                              >
-                                Partial Payment
-                              </span>
-                            )}
-                          </span>
-                        );
-                      },
+                      index: 6,
+                      component: (purchasePaymentType) => (
+                        <span style={{ fontWeight: 600, fontSize: '1rem' }}>
+                          {purchasePaymentType === 'full-payment' ? (
+                            <span style={{ color: 'green', backgroundColor: '#dcfce7', padding: '4px 12px', borderRadius: '8px', display: 'inline-block' }}>Full Payment</span>
+                          ) : (
+                            <span style={{ color: '#ea580c', backgroundColor: '#ffedd5', padding: '4px 12px', borderRadius: '8px', display: 'inline-block' }}>Partial Payment</span>
+                          )}
+                        </span>
+                      ),
                     },
                   ]}
                   extraColumns={[
                     (obj) => (
                       <div style={{ display: 'flex', gap: '8px' }}>
+                        <Button
+                          onClick={() => handleOpenDetails(obj)}
+                          style={{
+                            backgroundColor: '#111827',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Details
+                        </Button>
                         <Button
                           onClick={() => handleSoldClick(obj, 'bulk')}
                           style={{
@@ -1753,9 +1755,33 @@ const NewMobilesList = () => {
                                 margin: '5px',
                               }}
                             >
-                              View All Prices
+                              View Buying Price
                             </Button>
                           </div>
+
+                          <div style={{ marginTop: '8px' }}>
+                            <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Payment:</strong>
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ background: '#eef2ff', color: '#3730a3', padding: '4px 10px', borderRadius: '12px' }}>
+                                Status: {mobile.purchasePaymentStatus || 'N/A'}
+                              </span>
+                              <span style={{ background: '#ecfeff', color: '#155e75', padding: '4px 10px', borderRadius: '12px' }}>
+                                Type: {mobile.purchasePaymentType || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {mobile?.phoneStatistics && (
+                            <div style={{ marginTop: '8px' }}>
+                              <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Stats:</strong>
+                              <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                                <span style={{ background:'#e0f2fe', color:'#0369a1', padding:'4px 10px', borderRadius:'12px' }}>T: {mobile.phoneStatistics.totalPhones || 0}</span>
+                                <span style={{ background:'#dcfce7', color:'#166534', padding:'4px 10px', borderRadius:'12px' }}>A: {mobile.phoneStatistics.availablePhones || 0}</span>
+                                <span style={{ background:'#fee2e2', color:'#991b1b', padding:'4px 10px', borderRadius:'12px' }}>D: {mobile.phoneStatistics.dispatchedPhones || 0}</span>
+                                <span style={{ background:'#fef9c3', color:'#854d0e', padding:'4px 10px', borderRadius:'12px' }}>S: {mobile.phoneStatistics.soldPhones || 0}</span>
+                              </div>
+                            </div>
+                          )}
 
                           {mobile?.ramSimDetails?.length > 0 ? (
                             <div>
@@ -1910,46 +1936,13 @@ const NewMobilesList = () => {
 
             <Modal show={showPrices} onHide={handleClosePrices}>
               <Modal.Header closeButton>
-                <Modal.Title>
-                  Prices for {selectedMobile?.companyName}{' '}
-                  {selectedMobile?.modelName}
-                </Modal.Title>
+                <Modal.Title>Buying Price</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
-                  <li
-                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
-                  >
+                  <li style={{ padding: '8px 0' }}>
                     <strong>Buying Price:</strong>{' '}
                     {selectedMobile?.prices?.buyingPrice || 'N/A'} PKR
-                  </li>
-                  <li
-                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
-                  >
-                    <strong>Dealer Price:</strong>{' '}
-                    {selectedMobile?.prices?.dealerPrice || 'N/A'} PKR
-                  </li>
-                  <li
-                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
-                  >
-                    <strong>LP:</strong> {selectedMobile?.prices?.lp || 'N/A'}{' '}
-                    PKR
-                  </li>
-                  <li
-                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
-                  >
-                    <strong>Lifting:</strong>{' '}
-                    {selectedMobile?.prices?.lifting || 'N/A'} PKR
-                  </li>
-                  <li
-                    style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}
-                  >
-                    <strong>Promo:</strong>{' '}
-                    {selectedMobile?.prices?.promo || 'N/A'} PKR
-                  </li>
-                  <li style={{ padding: '8px 0' }}>
-                    <strong>Activation:</strong>{' '}
-                    {selectedMobile?.prices?.activation || 'N/A'} PKR
                   </li>
                 </ul>
               </Modal.Body>
@@ -1962,6 +1955,107 @@ const NewMobilesList = () => {
           </Row>
         </>
       )}
+
+      {/* Details Modal */}
+      <Modal size="lg" show={showDetails} onHide={handleCloseDetails}>
+        <Modal.Header closeButton>
+          <Modal.Title>Bulk Purchase Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedRecord && (
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <strong>Supplier:</strong> {selectedRecord.personId?.name || 'N/A'}
+                </div>
+                <div>
+                  <strong>Number:</strong> {selectedRecord.personId?.number || 'N/A'}
+                </div>
+                <div>
+                  <strong>Date:</strong> {selectedRecord.date ? new Date(selectedRecord.date).toLocaleDateString() : 'N/A'}
+                </div>
+                <div>
+                  <strong>Buying Price:</strong> {selectedRecord.prices?.buyingPrice || 'N/A'} PKR
+                </div>
+                <div>
+                  <strong>Payment Status:</strong> {selectedRecord.purchasePaymentStatus || 'N/A'}
+                </div>
+                <div>
+                  <strong>Payment Type:</strong> {selectedRecord.purchasePaymentType || 'N/A'}
+                </div>
+                <div>
+                  <strong>Status:</strong> {selectedRecord.status || 'N/A'}
+                </div>
+                <div>
+                  <strong>Dispatch:</strong> {selectedRecord.dispatch ? 'Yes' : 'No'}
+                </div>
+              </div>
+
+              {selectedRecord.creditPaymentData && (
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Credit Payment:</strong>
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ background:'#fef9c3', color:'#854d0e', padding:'4px 10px', borderRadius:'12px' }}>Pay Now: {selectedRecord.creditPaymentData.payableAmountNow || '0'} PKR</span>
+                    <span style={{ background:'#fee2e2', color:'#991b1b', padding:'4px 10px', borderRadius:'12px' }}>Pay Later: {selectedRecord.creditPaymentData.payableAmountLater || '0'} PKR</span>
+                    <span style={{ background:'#e0f2fe', color:'#0369a1', padding:'4px 10px', borderRadius:'12px' }}>Due: {selectedRecord.creditPaymentData.dateOfPayment ? new Date(selectedRecord.creditPaymentData.dateOfPayment).toLocaleDateString() : 'N/A'}</span>
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.phoneStatistics && (
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Stats:</strong>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ background:'#e0f2fe', color:'#0369a1', padding:'4px 10px', borderRadius:'12px' }}>T: {selectedRecord.phoneStatistics.totalPhones || 0}</span>
+                    <span style={{ background:'#dcfce7', color:'#166534', padding:'4px 10px', borderRadius:'12px' }}>A: {selectedRecord.phoneStatistics.availablePhones || 0}</span>
+                    <span style={{ background:'#fee2e2', color:'#991b1b', padding:'4px 10px', borderRadius:'12px' }}>D: {selectedRecord.phoneStatistics.dispatchedPhones || 0}</span>
+                    <span style={{ background:'#fef9c3', color:'#854d0e', padding:'4px 10px', borderRadius:'12px' }}>S: {selectedRecord.phoneStatistics.soldPhones || 0}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Device Details */}
+              <div>
+                <strong>Devices</strong>
+                {Array.isArray(selectedRecord.phoneDetails) && selectedRecord.phoneDetails.length > 0 ? (
+                  <div style={{ marginTop: '8px' }}>
+                    {selectedRecord.phoneDetails.map((d, idx) => (
+                      <div key={idx} style={{ border:'1px solid #e5e7eb', borderRadius:'8px', padding:'10px', marginBottom:'10px', background:'#fafafa' }}>
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0, 1fr))', gap:'8px' }}>
+                          <div><strong>Company:</strong> {d.companyName || 'N/A'}</div>
+                          <div><strong>Model:</strong> {d.modelName || 'N/A'}</div>
+                          <div><strong>RAM:</strong> {d.ramMemory || 'N/A'}</div>
+                          <div><strong>SIM:</strong> {d.simOption || 'N/A'}</div>
+                        </div>
+                        <div style={{ marginTop:'6px' }}>
+                          <strong>Price:</strong> {d.priceOfOne ?? 'N/A'}
+                        </div>
+                        <div style={{ marginTop:'6px' }}>
+                          <strong>IMEIs:</strong>
+                          {Array.isArray(d.imeiDetails) && d.imeiDetails.length > 0 ? (
+                            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', marginTop:'4px' }}>
+                              {d.imeiDetails.map((im, i2) => (
+                                <span key={i2} style={{ background:'#eef2ff', color:'#3730a3', padding:'2px 8px', borderRadius:'12px' }}>{im.imei1}{im.imei2 ? ` / ${im.imei2}` : ''}</span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span> N/A</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ marginTop:'6px' }}>No device details</div>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDetails}>Close</Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
       <PurchasePhone
