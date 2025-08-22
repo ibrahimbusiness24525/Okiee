@@ -58,6 +58,7 @@ const PayablesAndReceivablesRecords = () => {
     fetchPersonDetail();
   }, [id]);
   console.log('transactions', transactions);
+  
   const handleDownloadPDF = async () => {
     try {
       // Filter transactions by selected date range
@@ -76,6 +77,9 @@ const PayablesAndReceivablesRecords = () => {
         );
       }
 
+      // Sort transactions by date (newest to oldest)
+      filteredTransactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
       // Dynamically import jsPDF and autoTable
       const { jsPDF } = await import('jspdf');
       const autoTable = (await import('jspdf-autotable')).default;
@@ -88,23 +92,9 @@ const PayablesAndReceivablesRecords = () => {
       doc.setTextColor(40);
       doc.text(`${person.name}'s Ledger Transactions`, 14, 16);
 
-      // Add subtitle with date range if specified
-      doc.setFontSize(10);
-      let subtitle = 'All Transactions';
-      if (dataRange.startDate || dataRange.endDate) {
-        const startStr = dataRange.startDate
-          ? new Date(dataRange.startDate).toLocaleDateString()
-          : 'Beginning';
-        const endStr = dataRange.endDate
-          ? new Date(dataRange.endDate).toLocaleDateString()
-          : 'Today';
-        subtitle = `From ${startStr} to ${endStr}`;
-      }
-      doc.text(subtitle, 14, 22);
-
       // Generate table
       autoTable(doc, {
-        startY: 30,
+        startY: 25,
         head: [
           [
             'Date',
@@ -153,17 +143,34 @@ const PayablesAndReceivablesRecords = () => {
         },
       });
 
-      // Add footer
+      // Add date range information at the bottom
       const pageCount = doc.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(100);
+        
+        // Add page number
         doc.text(
           `Page ${i} of ${pageCount}`,
           doc.internal.pageSize.width - 30,
           doc.internal.pageSize.height - 10
         );
+        
+        // Add date range information at the bottom
+        if (i === pageCount) { // Only on the last page
+          let dateRangeText = 'All Transactions';
+          if (dataRange.startDate || dataRange.endDate) {
+            const startStr = dataRange.startDate
+              ? new Date(dataRange.startDate).toLocaleDateString()
+              : 'Beginning';
+            const endStr = dataRange.endDate
+              ? new Date(dataRange.endDate).toLocaleDateString()
+              : 'Today';
+            dateRangeText = `Date Range: ${startStr} to ${endStr}`;
+          }
+          doc.text(dateRangeText, 14, doc.internal.pageSize.height - 20);
+        }
       }
 
       // Save the PDF
