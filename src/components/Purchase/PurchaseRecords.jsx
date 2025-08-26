@@ -313,7 +313,7 @@ const PurchaseRecords = () => {
           {
             index: 0,
             component: (personObject) => {
-              return <p>{personObject.name}</p>
+              return <p>{personObject?.name || "Not Added"}</p>
             },
           },
           {

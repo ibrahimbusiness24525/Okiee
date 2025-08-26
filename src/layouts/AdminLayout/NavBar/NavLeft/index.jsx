@@ -166,7 +166,7 @@
 // export default NavLeft;
 
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormControl, ListGroup, Modal } from 'react-bootstrap';
+import { Button, Form, FormControl, ListGroup, Modal, Col } from 'react-bootstrap';
 import ModalComponent from '../../../../components/Modal/Modal';
 import useWindowSize from '../../../../hooks/useWindowSize';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
@@ -178,6 +178,7 @@ import { InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
 import { useGetAccessories } from 'hooks/accessory';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import CustomSelect from 'components/CustomSelect';
 import { FaFileAlt, FaPhone, FaPlus, FaUser } from 'react-icons/fa';
 
 const NavLeft = () => {
@@ -187,7 +188,7 @@ const NavLeft = () => {
   const [showPurchasePhoneModal, setShowPurchasePhoneModal] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
   const [showAddModelModal, setShowAddModelModal] = useState(false);
-  const [show, setShow] = useState(false);
+
   const [companyName, setCompanyName] = useState('');
   const [modelName, setModelName] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
@@ -243,6 +244,22 @@ const NavLeft = () => {
     list: true,
     showSoldModal: false,
   });
+
+  // Add missing state variables
+  const [sellingType, setSellingType] = useState('');
+  const [showNewEntityForm, setShowNewEntityForm] = useState(false);
+  const [newEntity, setNewEntity] = useState({
+    name: '',
+    number: '',
+  });
+  const [entityData, setEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
+  const [getAllEntities, setGetAllEntities] = useState([]);
+  const [customerNumber, setCustomerNumber] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [createPersonData, setCreatePersonData] = useState({
     name: '',
     number: '',
@@ -262,7 +279,7 @@ const NavLeft = () => {
     }
 
     try {
-      setIsSubmitting(true);
+      setIsCreatingEntity(true);
       await api.post('/api/person/create', {
         name: createPersonData.name,
         number: Number.parseInt(createPersonData.number),
@@ -276,7 +293,7 @@ const NavLeft = () => {
       console.error('Error creating person:', error);
       alert('Error creating person. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setIsCreatingEntity(false);
     }
   };
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -317,6 +334,7 @@ const NavLeft = () => {
       });
 
       toast.success('Phone sold successfully!');
+      setImei(''); // Clear the IMEI after successful sale
     } catch (error) {
       console.log('Error selling phone:', error);
     }
@@ -336,6 +354,118 @@ const NavLeft = () => {
     }
   }, [showAddModelModal]);
 
+  // Add useEffect to fetch all entities
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        console.log('Fetching entities...');
+        const response = await api.get('/api/person/all');
+        console.log('Entities response:', response);
+        console.log('Response data:', response?.data);
+        console.log('Response data.persons:', response?.data?.persons);
+        
+        // Try different response structures
+        let entities = [];
+        if (response?.data?.persons) {
+          entities = response.data.persons;
+        } else if (response?.data) {
+          entities = response.data;
+        } else if (Array.isArray(response)) {
+          entities = response;
+        }
+        
+        console.log('Final entities data:', entities);
+        setGetAllEntities(entities);
+      } catch (error) {
+        console.error('Failed to fetch entities:', error);
+        // Try fallback endpoint
+        try {
+          console.log('Trying fallback endpoint /api/person/nameAndId...');
+          const fallbackResponse = await api.get('/api/person/nameAndId');
+          console.log('Fallback response:', fallbackResponse);
+          console.log('Fallback data:', fallbackResponse?.data);
+          
+          let entities = [];
+          if (fallbackResponse?.data?.persons) {
+            entities = fallbackResponse.data.persons;
+          } else if (fallbackResponse?.data) {
+            entities = fallbackResponse.data;
+          } else if (Array.isArray(fallbackResponse)) {
+            entities = fallbackResponse;
+          }
+          
+          console.log('Fallback entities data:', entities);
+          setGetAllEntities(entities);
+        } catch (fallbackError) {
+          console.error('Fallback endpoint also failed:', fallbackError);
+        }
+      }
+    };
+
+    fetchEntities();
+  }, []);
+
+  // Also fetch entities when the modal opens
+  useEffect(() => {
+    if (showSoldModal) {
+      const fetchEntities = async () => {
+        try {
+          console.log('Fetching entities when modal opens...');
+          const response = await api.get('/api/person/all');
+          console.log('Modal entities response:', response);
+          console.log('Modal response data:', response?.data);
+          console.log('Modal response data.persons:', response?.data?.persons);
+          
+          // Try different response structures
+          let entities = [];
+          if (response?.data?.persons) {
+            entities = response.data.persons;
+          } else if (response?.data) {
+            entities = response.data;
+          } else if (Array.isArray(response)) {
+            entities = response;
+          }
+          
+          console.log('Modal final entities data:', entities);
+          setGetAllEntities(entities);
+        } catch (error) {
+          console.error('Failed to fetch entities when modal opens:', error);
+          // Try fallback endpoint
+          try {
+            console.log('Modal: Trying fallback endpoint /api/person/nameAndId...');
+            const fallbackResponse = await api.get('/api/person/nameAndId');
+            console.log('Modal fallback response:', fallbackResponse);
+            console.log('Modal fallback data:', fallbackResponse?.data);
+            
+            let entities = [];
+            if (fallbackResponse?.data?.persons) {
+              entities = fallbackResponse.data.persons;
+            } else if (fallbackResponse?.data) {
+              entities = fallbackResponse.data;
+            } else if (Array.isArray(fallbackResponse)) {
+              entities = fallbackResponse;
+            }
+            
+            console.log('Modal fallback entities data:', entities);
+            setGetAllEntities(entities);
+          } catch (fallbackError) {
+            console.error('Modal fallback endpoint also failed:', fallbackError);
+          }
+        }
+      };
+
+      fetchEntities();
+    }
+  }, [showSoldModal]);
+
+  // Debug useEffect to monitor getAllEntities state
+  useEffect(() => {
+    console.log('getAllEntities state changed:', getAllEntities);
+  }, [getAllEntities]);
+  console.log('====================================');
+  console.log("getAllEntities",getAllEntities);
+  console.log('====================================');  
+
   const handleAddPhoneShow = () => setShowAddPhoneModal(true);
   const handleAddPhoneClose = () => setShowAddPhoneModal(false);
 
@@ -348,7 +478,8 @@ const NavLeft = () => {
   const handleAddModelShow = () => setShowAddModelModal(true);
   const handleAddModelClose = () => setShowAddModelModal(false);
   console.log('====================================');
-  console.log(companies);
+  console.log('Companies:', companies);
+  console.log('All Entities:', getAllEntities);
   console.log('====================================');
   const handleAddCompany = async (e) => {
     e.preventDefault();
@@ -692,27 +823,174 @@ const NavLeft = () => {
         <Modal.Body>
           <Form>
             <div>
-              <Form.Group className="mb-3">
-                <Form.Label>Customer Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="customerName"
-                  value={formData.customerName}
-                  onChange={handleChange}
-                  placeholder="Enter Customer Name"
-                />
-              </Form.Group>
+            <Col>
+                                     {console.log('Rendering entity section, sellingType:', formData.sellingType)}
+                   {formData.sellingType !== 'none' && (
+                    <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <label style={{ fontWeight: '600' }}>Entity *</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={() => setShowNewEntityForm(false)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: !showNewEntityForm
+                                ? '#e5e7eb'
+                                : 'transparent',
+                              border: '1px solid #d1d5db',
+                              fontWeight: '500',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Select Existing
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowNewEntityForm(true)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: showNewEntityForm
+                                ? '#e5e7eb'
+                                : 'transparent',
+                              border: '1px solid #d1d5db',
+                              fontWeight: '500',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            New Customer
+                          </button>
+                        </div>
+                      </div>
 
-              <Form.Group className="mb-3">
-                <Form.Label>Customer Number</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="customerNumber"
-                  value={formData.customerNumber}
-                  onChange={handleChange}
-                  placeholder="Enter number in +923XXXXXXXXX format"
-                />
-              </Form.Group>
+                      {showNewEntityForm ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '12px',
+                            marginBottom: '16px',
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <label
+                              style={{
+                                display: 'block',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                color: '#4b5563',
+                              }}
+                            >
+                              Entity Name *
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              value={newEntity.name}
+                              onChange={(e) =>
+                                setNewEntity({
+                                  ...newEntity,
+                                  name: e.target.value,
+                                })
+                              }
+                              placeholder="Enter entity name"
+                              required
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '2px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none',
+                              }}
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label
+                              style={{
+                                display: 'block',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                color: '#4b5563',
+                              }}
+                            >
+                              Entity Number *
+                            </label>
+                            <input
+                              name="number"
+                              type="text"
+                              value={newEntity.number}
+                              onChange={(e) =>
+                                setNewEntity({
+                                  ...newEntity,
+                                  number: e.target.value,
+                                })
+                              }
+                              placeholder="Enter entity number"
+                              required
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '2px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none',
+                              }}
+                            />
+                          </div>
+                        </div>
+                                                                      ) : (
+                          <>
+                            {console.log('Rendering CustomSelect with options:', getAllEntities.map((entity) => ({
+                              value: entity._id,
+                              label: `${entity.name} || ${entity.number}`,
+                            })))}
+                            <div style={{ }}>
+                              <CustomSelect
+                                key={`custom-select-${getAllEntities.length}`} // Force re-render when entities change
+                                value={entityData._id}
+                                onChange={(selectedOption) => {
+                                  console.log('Selected option:', selectedOption);
+                                  const selectedEntity = getAllEntities.find(
+                                    (entity) => entity._id === selectedOption?.value
+                                  );
+                                  console.log('Selected entity:', selectedEntity);
+                                  setEntityData(
+                                    selectedEntity || {
+                                      name: '',
+                                      number: '',
+                                      _id: '',
+                                    }
+                                  );
+                                }}
+                                options={[
+                                  ...getAllEntities.map((entity) => ({
+                                    value: entity._id,
+                                    label: `${entity.name} || ${entity.number}`,
+                                  })),
+                                  // Add a test option to see if component works
+                                  { value: 'test', label: 'Test Option - Component Working' }
+                                ]}
+                              />
+                            </div>
+                            {/* Debug info */}
+                           
+                          </>
+                        )}
+                    </div>
+                  )}
+                </Col>
+                
 
               <Form.Group controlId="saleDate" className="mb-3">
                 <Form.Label>Sale Date</Form.Label>
@@ -725,6 +1003,30 @@ const NavLeft = () => {
                   required
                 />
               </Form.Group>
+
+              {/* <Form.Group className="mb-3">
+                <Form.Label>Customer Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="customerName"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter customer name"
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Customer Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="customerNumber"
+                  value={customerNumber}
+                  onChange={(e) => setCustomerNumber(e.target.value)}
+                  placeholder="Enter customer number"
+                  required
+                />
+              </Form.Group> */}
 
               <div>
                 {formData.accessories.map((accessory, index) => (
@@ -837,16 +1139,28 @@ const NavLeft = () => {
                   Add This IMEI
                 </Button>
 
-                <p style={{ marginTop: '10px' }}>
-                  {formData.addedImeis && formData.addedImeis.length > 0
-                    ? formData.addedImeis.map((imei, idx) => (
-                        <span key={idx}>
-                          {imei}
-                          {idx < formData.addedImeis.length - 1 ? ', ' : ''}
-                        </span>
-                      ))
-                    : 'No IMEIs added yet'}
+                <p style={{ marginTop: "10px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {formData.addedImeis && formData.addedImeis.length > 0 ? (
+                    formData.addedImeis.map((imei, idx) => (
+                      <span
+                        key={idx}
+                        style={{
+                          backgroundColor: "#f0f0f0",
+                          padding: "4px 8px",
+                          borderRadius: "6px",
+                          fontSize: "14px",
+                          color: "#333",
+                          border: "1px solid #ddd",
+                        }}
+                      >
+                        {imei}
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{ color: "#888", fontStyle: "italic" }}>No IMEIs added yet</span>
+                  )}
                 </p>
+
 
                 {/* <FormControl fullWidth variant="outlined" className="mb-3">
                   <InputLabel>IMEI</InputLabel>
@@ -1048,8 +1362,8 @@ const NavLeft = () => {
               if (
                 !formData.finalPrice ||
                 !formData.warranty ||
-                !formData.customerName ||
-                !formData.customerNumber ||
+                !(entityData.name || newEntity.name || customerName) ||
+                !(entityData.number || newEntity.number || customerNumber) ||
                 !formData.saleDate ||
                 formData.sellingType === ''
               ) {
@@ -1067,8 +1381,8 @@ const NavLeft = () => {
                 saleDate: formData.saleDate,
                 cnicBackPic: formData.cnicBackPic,
                 cnicFrontPic: formData.cnicFrontPic,
-                customerName: formData.customerName,
-                addedImeis: [],
+                customerName: entityData.name || newEntity.name || customerName || '',
+                addedImeis: formData.addedImeis || [],
                 bankAccountUsed: walletTransaction.bankAccountUsed,
                 accountCash: walletTransaction.amountFromBank,
                 pocketCash: walletTransaction.amountFromPocket,
@@ -1078,8 +1392,9 @@ const NavLeft = () => {
                 payableAmountLater: formData.payableAmountLater,
                 payableAmountLaterDate: formData.payableAmountLaterDate,
                 exchangePhoneDetail: formData.exchangePhoneDetail,
-                customerNumber: formData.customerNumber,
+                customerNumber: entityData.number || newEntity.number || customerNumber || '',
                 manual: true,
+                entityData: showNewEntityForm ? newEntity : entityData,
               };
               setShowSoldModal(false);
 

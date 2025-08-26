@@ -450,8 +450,9 @@ const SoldInvoice = () => {
     try {
       const payload = {
         // imeis: dataReceived.imei,
-        customerName: dataReceived.customerName,
-        customerNumber: dataReceived.customerNumber,
+        entityData: dataReceived?.entityData,
+        customerName: dataReceived?.customerName,
+        customerNumber: dataReceived?.customerNumber,
         warranty: dataReceived.warranty,
         saleDate: dataReceived.saleDate,
         finalPrice: dataReceived.finalPrice,
@@ -465,8 +466,8 @@ const SoldInvoice = () => {
         exchangePhoneDetail: dataReceived.exchangePhoneDetail,
         cnicFrontPic: dataReceived.cnicFrontPic,
         cnicBackPic: dataReceived.cnicBackPic,
-        payableAmountNow: dataReceived.payableAmountNow,
-        payableAmountLater: dataReceived.payableAmountLater,
+        payableAmountNow: Number(dataReceived.payableAmountNow) || 0,
+        payableAmountLater: Number(dataReceived.payableAmountLater) || 0,
         payableAmountLaterDate: dataReceived.payableAmountLaterDate,
         bankName: dataReceived.bankName,
         salePrice: dataReceived.finalPrice,
@@ -475,7 +476,7 @@ const SoldInvoice = () => {
         mobileNumber: dataReceived.customerNumber,
         // ...any other fields you want
       };
-
+      console.log('payload', payload);
       const response = await api.post(
         '/api/purchase/general-mobile-sale',
         payload

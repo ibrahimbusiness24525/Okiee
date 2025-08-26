@@ -353,13 +353,15 @@ const NewMobilesList = () => {
       walletTransaction,
       finalPrice,
       entityData: showNewEntityForm ? newEntity : entityData,
+      customerNumber:
+        entityData.number || newEntity.number || customerNumber || '',
+      customerName: entityData.name || newEntity.name || customerName || '',
       sellingType,
       warranty,
       saleDate,
       addedImeis,
       cnicBackPic,
       cnicFrontPic,
-      customerName: entityData.name || newEntity.name || customerName || '',
       accessories,
       bankName,
       payableAmountNow,
@@ -367,8 +369,6 @@ const NewMobilesList = () => {
       payableAmountLaterDate,
       exchangePhoneDetail,
       imeisWithPrices: imeiPrices,
-      customerNumber:
-        entityData.number || newEntity.number || customerNumber || '',
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -2320,6 +2320,7 @@ const NewMobilesList = () => {
                     </div>
                   )}
                 </Col>
+
                 <Col>
                   <Form.Group controlId="saleDate">
                     <Form.Label>Sale Date</Form.Label>
