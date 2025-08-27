@@ -453,6 +453,7 @@ const SoldInvoice = () => {
         entityData: dataReceived?.entityData,
         customerName: dataReceived?.customerName,
         customerNumber: dataReceived?.customerNumber,
+         imeiPrices: dataReceived?.imeiPrices || [], // Array of {imei: '', price: ''} objects
         warranty: dataReceived.warranty,
         saleDate: dataReceived.saleDate,
         finalPrice: dataReceived.finalPrice,
