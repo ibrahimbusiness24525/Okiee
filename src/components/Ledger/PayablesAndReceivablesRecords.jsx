@@ -58,7 +58,7 @@ const PayablesAndReceivablesRecords = () => {
     fetchPersonDetail();
   }, [id]);
   console.log('transactions', transactions);
-  
+  // ... existing code ...
   const handleDownloadPDF = async () => {
     try {
       // Filter transactions by selected date range
@@ -77,8 +77,8 @@ const PayablesAndReceivablesRecords = () => {
         );
       }
 
-      // Sort transactions by date (newest to oldest)
-      filteredTransactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      // Sort transactions by date (oldest to newest)
+      filteredTransactions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
       // Dynamically import jsPDF and autoTable
       const { jsPDF } = await import('jspdf');
@@ -92,9 +92,25 @@ const PayablesAndReceivablesRecords = () => {
       doc.setTextColor(40);
       doc.text(`${person.name}'s Ledger Transactions`, 14, 16);
 
+      // Add date range information after the title
+      let dateRangeText = 'All Transactions';
+      if (dataRange.startDate || dataRange.endDate) {
+        const startStr = dataRange.startDate
+          ? new Date(dataRange.startDate).toLocaleDateString()
+          : 'Beginning';
+        const endStr = dataRange.endDate
+          ? new Date(dataRange.endDate).toLocaleDateString()
+          : 'Today';
+        dateRangeText = `Date Range: ${startStr} to ${endStr}`;
+      }
+      
+      doc.setFontSize(12);
+      doc.setTextColor(80);
+      doc.text(dateRangeText, 14, 28);
+
       // Generate table
       autoTable(doc, {
-        startY: 25,
+        startY: 35,
         head: [
           [
             'Date',
@@ -115,7 +131,7 @@ const PayablesAndReceivablesRecords = () => {
           } else if (tx.givingCredit && tx.givingCredit !== 0) {
             transactionType = `Giving Credit (Rs. ${tx.givingCredit.toLocaleString()})`;
           } else {
-            transactionType = 'Payment';
+            transactionType = 'Full Payment';
           }
 
           return [
@@ -143,7 +159,7 @@ const PayablesAndReceivablesRecords = () => {
         },
       });
 
-      // Add date range information at the bottom
+      // Add status summary at the end
       const pageCount = doc.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -157,19 +173,36 @@ const PayablesAndReceivablesRecords = () => {
           doc.internal.pageSize.height - 10
         );
         
-        // Add date range information at the bottom
-        if (i === pageCount) { // Only on the last page
-          let dateRangeText = 'All Transactions';
-          if (dataRange.startDate || dataRange.endDate) {
-            const startStr = dataRange.startDate
-              ? new Date(dataRange.startDate).toLocaleDateString()
-              : 'Beginning';
-            const endStr = dataRange.endDate
-              ? new Date(dataRange.endDate).toLocaleDateString()
-              : 'Today';
-            dateRangeText = `Date Range: ${startStr} to ${endStr}`;
+        // Add status summary on the last page
+        if (i === pageCount) {
+          // Calculate net status
+          let netStatus = '';
+          let netAmount = 0;
+          
+          if (person.takingCredit > person.givingCredit) {
+            netStatus = 'Net Taking Credit';
+            netAmount = person.takingCredit - person.givingCredit;
+          } else if (person.givingCredit > person.takingCredit) {
+            netStatus = 'Net Giving Credit';
+            netAmount = person.givingCredit - person.takingCredit;
+          } else {
+            netStatus = 'All Settled';
+            netAmount = 0;
           }
-          doc.text(dateRangeText, 14, doc.internal.pageSize.height - 20);
+
+          // Add status summary
+          doc.setFontSize(10);
+          doc.setTextColor(40);
+          doc.text('Status Summary:', 14, doc.internal.pageSize.height - 25);
+          
+          doc.setFontSize(9);
+          doc.setTextColor(60);
+          doc.text(`${netStatus}: Rs. ${netAmount.toLocaleString()}`, 14, doc.internal.pageSize.height - 20);
+          
+          // Add date range information
+          doc.setFontSize(8);
+          doc.setTextColor(100);
+          doc.text(dateRangeText, 14, doc.internal.pageSize.height - 15);
         }
       }
 
@@ -182,6 +215,130 @@ const PayablesAndReceivablesRecords = () => {
       console.error('Failed to generate PDF:', error);
     }
   };
+// ... existing code ...
+  // const handleDownloadPDF = async () => {
+  //   try {
+  //     // Filter transactions by selected date range
+  //     let filteredTransactions = transactions;
+  //     if (dataRange.startDate) {
+  //       const start = new Date(dataRange.startDate);
+  //       filteredTransactions = filteredTransactions.filter(
+  //         (tx) => new Date(tx.createdAt) >= start
+  //       );
+  //     }
+  //     if (dataRange.endDate) {
+  //       const end = new Date(dataRange.endDate);
+  //       end.setHours(23, 59, 59, 999); // Include full end day
+  //       filteredTransactions = filteredTransactions.filter(
+  //         (tx) => new Date(tx.createdAt) <= end
+  //       );
+  //     }
+
+  //     // Sort transactions by date (newest to oldest)
+  //     filteredTransactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  //     // Dynamically import jsPDF and autoTable
+  //     const { jsPDF } = await import('jspdf');
+  //     const autoTable = (await import('jspdf-autotable')).default;
+
+  //     // Create new PDF document
+  //     const doc = new jsPDF();
+
+  //     // Add title
+  //     doc.setFontSize(16);
+  //     doc.setTextColor(40);
+  //     doc.text(`${person.name}'s Ledger Transactions`, 14, 16);
+
+  //     // Generate table
+  //     autoTable(doc, {
+  //       startY: 25,
+  //       head: [
+  //         [
+  //           'Date',
+  //           'Type',
+  //           'Transaction',
+  //           'Description',
+  //           'Balance Amount',
+  //         ],
+  //       ],
+  //       body: filteredTransactions.map((tx) => {
+  //         const type = tx.type === 'purchase' ? 'Purchase' : 'Sale';
+  //         const date = new Date(tx.createdAt).toLocaleDateString();
+
+  //         // Determine transaction type: Taking Credit, Giving Credit, or Payment
+  //         let transactionType = '';
+  //         if (tx.takingCredit && tx.takingCredit !== 0) {
+  //           transactionType = `Taking Credit (Rs. ${tx.takingCredit.toLocaleString()})`;
+  //         } else if (tx.givingCredit && tx.givingCredit !== 0) {
+  //           transactionType = `Giving Credit (Rs. ${tx.givingCredit.toLocaleString()})`;
+  //         } else {
+  //           transactionType = 'Payment';
+  //         }
+
+  //         return [
+  //           date,
+  //           type,
+  //           transactionType,
+  //           tx.description || '',
+  //           tx.balanceAmount || '',
+  //         ];
+  //       }),
+  //       styles: {
+  //         fontSize: 9,
+  //         cellPadding: 2,
+  //         overflow: 'linebreak',
+  //       },
+  //       headStyles: {
+  //         fillColor: [41, 128, 185],
+  //         textColor: 255,
+  //         fontSize: 10,
+  //       },
+  //       columnStyles: {
+  //         0: { cellWidth: 20 }, // Date
+  //         1: { cellWidth: 15 }, // Type
+  //         6: { cellWidth: 'auto' }, // Description
+  //       },
+  //     });
+
+  //     // Add date range information at the bottom
+  //     const pageCount = doc.getNumberOfPages();
+  //     for (let i = 1; i <= pageCount; i++) {
+  //       doc.setPage(i);
+  //       doc.setFontSize(8);
+  //       doc.setTextColor(100);
+        
+  //       // Add page number
+  //       doc.text(
+  //         `Page ${i} of ${pageCount}`,
+  //         doc.internal.pageSize.width - 30,
+  //         doc.internal.pageSize.height - 10
+  //       );
+        
+  //       // Add date range information at the bottom
+  //       if (i === pageCount) { // Only on the last page
+  //         let dateRangeText = 'All Transactions';
+  //         if (dataRange.startDate || dataRange.endDate) {
+  //           const startStr = dataRange.startDate
+  //             ? new Date(dataRange.startDate).toLocaleDateString()
+  //             : 'Beginning';
+  //           const endStr = dataRange.endDate
+  //             ? new Date(dataRange.endDate).toLocaleDateString()
+  //             : 'Today';
+  //           dateRangeText = `Date Range: ${startStr} to ${endStr}`;
+  //         }
+  //         doc.text(dateRangeText, 14, doc.internal.pageSize.height - 20);
+  //       }
+  //     }
+
+  //     // Save the PDF
+  //     doc.save(
+  //       `${person.name}_accessory_transactions_${new Date().toISOString().slice(0, 10)}.pdf`
+  //     );
+  //     setShowPDFModal(false);
+  //   } catch (error) {
+  //     console.error('Failed to generate PDF:', error);
+  //   }
+  // };
   const handleGiveCredit = async (e) => {
     e.preventDefault();
     if (!creditData.personId || !creditData.amount) {
