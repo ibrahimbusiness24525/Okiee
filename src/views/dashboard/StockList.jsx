@@ -483,17 +483,35 @@ const StockList = () => {
   // Helper to count items for a company under current type filter
   const getCompanyCountUnderFilter = (company) => {
     let count = 0;
-    baseBulkForFilter.forEach(phone => {
-      if (phone.ramSimDetails?.some(detail => detail.companyName === company)) count++;
+    // For bulk, count total IMEI entries for the given company across ramSimDetails
+    baseBulkForFilter.forEach((bulk) => {
+      (bulk.ramSimDetails || [])
+        .filter((detail) => detail.companyName === company)
+        .forEach((detail) => {
+          const imeis = Array.isArray(detail.imeiNumbers) ? detail.imeiNumbers.length : 0;
+          count += imeis;
+        });
     });
-    baseSingleForFilter.forEach(phone => {
+    // For single, each phone counts as 1 if company matches
+    baseSingleForFilter.forEach((phone) => {
       if (phone.companyName === company) count++;
     });
     return count;
   };
 
   // Total items under current type filter (without company filter)
-  const totalUnderCurrentFilter = baseBulkForFilter.length + baseSingleForFilter.length;
+  // Bulk counts total IMEI entries; single counts number of phones
+  const totalUnderCurrentFilter = (() => {
+    const bulkQty = baseBulkForFilter.reduce((sum, bulk) => {
+      const qty = (bulk.ramSimDetails || []).reduce((acc, detail) => {
+        const imeis = Array.isArray(detail.imeiNumbers) ? detail.imeiNumbers.length : 0;
+        return acc + imeis;
+      }, 0);
+      return sum + qty;
+    }, 0);
+    const singleQty = baseSingleForFilter.length;
+    return bulkQty + singleQty;
+  })();
 
   // If selectedCompany is not available under current filter, reset to 'all'
   useEffect(() => {
