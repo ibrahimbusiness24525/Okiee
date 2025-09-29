@@ -369,6 +369,9 @@ import avatar1 from '../../../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../../../assets/images/user/avatar-3.jpg';
 import avatar4 from '../../../../assets/images/user/avatar-4.jpg';
+import Modal from 'components/Modal/Modal';
+import { toast } from 'react-toastify';
+import { api } from '../../../../../api/api';
 
 const NavRight = () => {
   const [listOpen, setListOpen] = useState(false);
@@ -376,7 +379,34 @@ const NavRight = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+  const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
+  const [password, setPassword] = useState({
+    previousPassword: '',
+    newPassword: '',  
+  });
+const editPassword = () => {
+  setShowEditPasswordModal(true);
+};
 
+const handleConfirmEditPassword = async() => {
+  try {
+   const response = await api.patch('/api/password/edit', {
+      previousPassword: password.previousPassword,
+      newPassword: password.newPassword,
+    });
+    if (response) {
+      toast.success('Password edited successfully');
+      setPassword({
+        previousPassword: '',
+        newPassword: '',
+      });
+      setShowEditPasswordModal(false);
+    }
+  } catch (error) {
+    console.error('Error editing password:', error);
+    toast.error(error.response.data.message || error.message || error.data.message || 'Error editing password');
+  }
+};
   const logout = () => {
     navigate('/login');
     localStorage.removeItem('token');
@@ -604,11 +634,170 @@ const NavRight = () => {
                     <i className="feather icon-user" /> For Support
                   </Link>
                 </ListGroup.Item>
+                <ListGroup.Item as="li" bsPrefix=" " onClick={editPassword}>
+                  <Link to="/help/forsupport" className="dropdown-item">
+                    <i className="feather icon-user" /> Change Password
+                  </Link>
+                </ListGroup.Item>
               </ListGroup>
             </Dropdown.Menu>
           </Dropdown>
         </ListGroup.Item>
       </ListGroup>
+      <Modal show={showEditPasswordModal} toggleModal={() => setShowEditPasswordModal(false)} onHide={() => setShowEditPasswordModal(false)}>
+        <div style={{
+          padding: '30px',
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+          width: '100%',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '30px'
+          }}>
+            <h2 style={{
+              color: '#2c3e50',
+              fontSize: '28px',
+              fontWeight: '600',
+              margin: '0 0 10px 0',
+              fontFamily: 'Arial, sans-serif'
+            }}>
+              Change Password
+            </h2>
+            <p style={{
+              color: '#7f8c8d',
+              fontSize: '14px',
+              margin: '0',
+              fontFamily: 'Arial, sans-serif'
+            }}>
+              Enter your new password below
+            </p>
+          </div>
+          
+          <div style={{ marginBottom: '25px' }}>
+            <input 
+              type="password" 
+              placeholder="Enter Your Current Password" 
+              value={password.previousPassword} 
+              onChange={(e) => setPassword({...password, previousPassword: e.target.value})}
+              style={{
+                width: '100%',
+                padding: '15px 20px',
+                border: '2px solid #e1e8ed',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontFamily: 'Arial, sans-serif',
+                outline: 'none',
+                transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+                backgroundColor: '#f8f9fa'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3498db';
+                e.target.style.boxShadow = '0 0 0 3px rgba(52, 152, 219, 0.1)';
+                e.target.style.backgroundColor = '#ffffff';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#e1e8ed';
+                e.target.style.boxShadow = 'none';
+                e.target.style.backgroundColor = '#f8f9fa';
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '25px' }}>
+            <input 
+              type="password" 
+              placeholder="Enter New Password" 
+                value={password.newPassword} 
+              onChange={(e) => setPassword({...password, newPassword: e.target.value})}
+              style={{
+                width: '100%',
+                padding: '15px 20px',
+                border: '2px solid #e1e8ed',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontFamily: 'Arial, sans-serif',
+                outline: 'none',
+                transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+                backgroundColor: '#f8f9fa'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3498db';
+                e.target.style.boxShadow = '0 0 0 3px rgba(52, 152, 219, 0.1)';
+                e.target.style.backgroundColor = '#ffffff';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#e1e8ed';
+                e.target.style.boxShadow = 'none';
+                e.target.style.backgroundColor = '#f8f9fa';
+              }}
+            />
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            gap: '15px',
+            justifyContent: 'center'
+          }}>
+            <button 
+              onClick={() => setShowEditPasswordModal(false)}
+              style={{
+                padding: '12px 30px',
+                border: '2px solid #e1e8ed',
+                borderRadius: '8px',
+                backgroundColor: '#ffffff',
+                color: '#7f8c8d',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                fontFamily: 'Arial, sans-serif',
+                minWidth: '120px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = '#bdc3c7';
+                e.target.style.color = '#2c3e50';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = '#e1e8ed';
+                e.target.style.color = '#7f8c8d';
+              }}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleConfirmEditPassword}
+              style={{
+                padding: '12px 30px',
+                border: 'none',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #3498db, #2980b9)',
+                color: '#ffffff',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                fontFamily: 'Arial, sans-serif',
+                minWidth: '120px',
+                boxShadow: '0 4px 15px rgba(52, 152, 219, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #2980b9, #1f4e79)';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(52, 152, 219, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 15px rgba(52, 152, 219, 0.3)';
+              }}
+            >
+              Update Password
+            </button>
+          </div>
+        </div>
+      </Modal>
       <ChatList listOpen={listOpen} closed={() => setListOpen(false)} />
 
       <style jsx>{`

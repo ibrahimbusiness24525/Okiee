@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import Modal from 'components/Modal/Modal';
 import { FaEyeSlash } from 'react-icons/fa';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
-import { Button } from 'react-bootstrap';
+import { Button, Toast } from 'react-bootstrap';
 import { Favorite } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 // Types
@@ -34,7 +34,7 @@ const PayablesAndReceivables = () => {
     number: '',
     reference: '',
   });
-
+  const [isVerifying, setIsVerifying] = useState(false);
   const [showGiveCreditModal, setShowGiveCreditModal] = useState(false);
   const [showGiveCreditChildModal, setShowGiveCreditChildModal] =
     useState(false);
@@ -56,6 +56,40 @@ const PayablesAndReceivables = () => {
     (acc, person) => acc + person.givingCredit,
     0
   );
+  const [deletePersonId, setDeletePersonId] = useState('');
+  const [showVerifyByPasswordModal, setShowVerifyByPasswordModal] = useState(false);
+  const [password, setPassword] = useState('');
+
+
+  const handleVerifyByPassword = async (e) => {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (!password) {
+      toast.error('Please enter your password');
+      return;
+    }
+    try {
+      setIsVerifying(true);
+      const response = await api.post('/api/person/verify-password', { password });
+      const ok = response?.data === true || response?.data?.success === true || response?.data?.valid === true;
+      if (ok) {
+        // toast.success('Password verified');
+        setShowVerifyByPasswordModal(false);
+        api.delete(`/api/person/${deletePersonId}`)
+        fetchPersons();
+        setPassword('');
+        toast.success('Person deleted successfully!');
+      } else {
+        toast.error('Invalid password');
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Error verifying password');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+  const handleCancelVerifyByPassword = () =>{
+    setShowVerifyByPasswordModal(false);
+  }
   const fetchPersons = async () => {
     try {
       setIsLoading(true);
@@ -128,7 +162,8 @@ const PayablesAndReceivables = () => {
       alert('Person created successfully!');
     } catch (error) {
       console.error('Error creating person:', error);
-      alert('Error creating person. Please try again.');
+      toast.error(error?.response?.data?.message || error?.message || error?.data?.message || "Error creating person");
+
     } finally {
       setIsSubmitting(false);
     }
@@ -232,23 +267,112 @@ const PayablesAndReceivables = () => {
 
   //     return { totalPayable, totalReceivable, netAmount }
   //   }
+  const handlePrint = () => {
+    // Calculate totals
+    const totalPayable = persons.reduce((sum, p) => sum + (p.takingCredit || 0), 0);
+    const totalReceivable = persons.reduce((sum, p) => sum + (p.givingCredit || 0), 0);
 
+    // Payables: persons with takingCredit > givingCredit
+    const payables = persons.filter(p => (p.takingCredit || 0) > (p.givingCredit || 0));
+    // Receivables: persons with givingCredit > takingCredit
+    const receivables = persons.filter(p => (p.givingCredit || 0) > (p.takingCredit || 0));
+
+    // Table rows for payables with numbering
+    const payablesRows = payables.map((p, idx) => `
+      <tr>
+        <td style='border:1px solid #ccc;padding:6px;'>${idx + 1}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>${p.name}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>Rs. ${(p.takingCredit - p.givingCredit).toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    // Table rows for receivables with numbering
+    const receivablesRows = receivables.map((p, idx) => `
+      <tr>
+        <td style='border:1px solid #ccc;padding:6px;'>${idx + 1}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>${p.name}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>Rs. ${(p.givingCredit - p.takingCredit).toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    // Print window HTML
+    const printWindow = window.open('', '', 'width=900,height=700');
+    if (!printWindow) {
+      alert('Popup blocked! Please allow popups for this site to print.');
+      return;
+    }
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Payables & Receivables Print</title>
+          <style>
+            @media print {
+              @page { size: A4 portrait; margin: 20mm; }
+              html, body { width: 210mm; height: 297mm; font-size: 18px !important; }
+              body { margin: 0; font-size: 18px !important; }
+              h2, .summary, .section-title, th, td, table { font-size: 18px !important; }
+            }
+            body { font-family: sans-serif; margin: 24px; font-size: 18px; }
+            h2 { margin-bottom: 12px; font-size: 28px; }
+            table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+            th, td { border: 1px solid #ccc; padding: 10px 7px; text-align: left; font-size: 18px; }
+            th { background: #f3f4f6; font-size: 19px; }
+            .summary { font-size: 20px; margin-bottom: 24px; }
+            .section-title { margin: 18px 0 8px 0; font-size: 17px; color: #1d4ed8; }
+          </style>
+        </head>
+        <body>
+          <h2>Payables & Receivables Summary</h2>
+          <div class='summary'>
+            <strong>Total Payable:</strong> Rs. ${totalPayable.toLocaleString()}<br/>
+            <strong>Total Receivable:</strong> Rs. ${totalReceivable.toLocaleString()}
+          </div>
+          <div class='section-title'>Payables (You have to pay)</div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Person Name</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              ${payablesRows || `<tr><td colspan='3'>No payables</td></tr>`}
+            </tbody>
+          </table>
+          <div class='section-title'>Receivables (You have to receive)</div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Person Name</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              ${receivablesRows || `<tr><td colspan='3'>No receivables</td></tr>`}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  }
   useEffect(() => {
     fetchPersons();
   }, []);
   const confirmDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this person?')) {
-      api
-        .delete(`/api/person/${id}`)
-        .then(() => {
-          fetchPersons();
-          alert('Person deleted successfully!');
-        })
-        .catch((error) => {
-          console.error('Error deleting person:', error);
-          alert('Error deleting person. Please try again.');
-        });
-    }
+    // if (window.confirm('Are you sure you want to delete this person?')) {
+    //   api
+    //     .delete(`/api/person/${id}`)
+    //     .then(() => {
+    //       fetchPersons();
+    //       alert('Person deleted successfully!');
+    //     })
+    //     .catch((error) => {
+    //       console.error('Error deleting person:', error);
+    //       alert('Error deleting person. Please try again.');
+    //     });
+    // }
+    setDeletePersonId(id);
+    setShowVerifyByPasswordModal(true);
   };
   //   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
   const toggleFavorite = async (id) => {
@@ -395,7 +519,7 @@ const PayablesAndReceivables = () => {
                   (e.currentTarget.style.backgroundColor = '#10b981')
                 }
               >
-                <FaArrowUp /> MAINE DIYE
+                <FaArrowUp /> GIVING CREDIT
                 {/* <FaArrowUp /> Give Credit */}
               </button>
 
@@ -422,7 +546,7 @@ const PayablesAndReceivables = () => {
                   (e.currentTarget.style.backgroundColor = '#f59e0b')
                 }
               >
-                <FaArrowDown /> MAINE LIYE
+                <FaArrowDown /> TAKING CREDIT
                 {/* <FaArrowDown /> Take Credit */}
               </button>
             </div>
@@ -506,7 +630,7 @@ const PayablesAndReceivables = () => {
                         marginBottom: '4px',
                       }}
                     >
-                      MAINE LIYE
+                      TAKING CREDIT
                     </div>
                     <div
                       style={{
@@ -588,7 +712,7 @@ const PayablesAndReceivables = () => {
                         marginBottom: '4px',
                       }}
                     >
-                      MAINE DIYE
+                      GIVING CREDIT
                     </div>
                     <div
                       style={{
@@ -730,6 +854,25 @@ const PayablesAndReceivables = () => {
                   Payable
                 </button>
               </div>
+              <button
+                style={{
+                  alignSelf: "center",
+                  maxWidth: "15rem",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "10px 24px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                  background: "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
+                  boxShadow: "0 2px 8px rgba(59,130,246,0.08)"
+                }}
+                onClick={handlePrint}
+              >
+                Print
+              </button>
             </div>
           </div>
         </div>
@@ -2342,6 +2485,77 @@ const PayablesAndReceivables = () => {
               </button>
             </div>
           </form>
+        </Modal>
+        <Modal
+          size="sm"
+          show={showVerifyByPasswordModal}
+          toggleModal={() => setShowVerifyByPasswordModal(false)}
+        >
+          <h2 style={{ margin: '0 0 12px 0', fontSize: '20px', fontWeight: 'bold', color: '#111827' }}>
+            Verify Password
+          </h2>
+          <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280' }}>
+            Enter your account password to continue.
+          </p>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: '#374151', fontWeight: 600 }}>
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+              onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+              autoFocus
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={() => setShowVerifyByPasswordModal(false)}
+              disabled={isVerifying}
+              style={{
+                padding: '10px 16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                color: '#6b7280',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={(e) => handleVerifyByPassword(e)}
+              disabled={isVerifying}
+              style={{
+                padding: '10px 16px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: isVerifying ? '#9ca3af' : '#3b82f6',
+                color: 'white',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: isVerifying ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {isVerifying ? 'Verifying…' : 'Verify'}
+            </button>
+          </div>
         </Modal>
       </div>
     </div>

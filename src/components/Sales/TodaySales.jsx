@@ -525,7 +525,7 @@ const TodaySales = () => {
         Accessory Record
       </h3>
       <Table
-        array={accessoriesRecords}
+        array={accessoriesRecords.reverse()}
         search="accessoryName"
         keysToDisplay={[
           'type',

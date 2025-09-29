@@ -7,4 +7,3 @@ export const BASE_TITLE = ' | Okiiee';
 export const CONFIG = {
   layout: 'vertical',
 };
-// 

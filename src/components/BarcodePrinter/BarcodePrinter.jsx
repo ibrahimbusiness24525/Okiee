@@ -687,7 +687,7 @@ const BarcodePrinter = ({ obj, type }) => {
   const printBulkBarcode = (data) => {
     console.log(data, 'printing');
     const imei = data.imei1 ? data.imei1.toString() : null;
-    const imei2 = data.imei2 ? data.imei2.toString() : null;
+    const imei2 = data.imei2 ? data?.imei2.toString() : null;
     const modelName = data?.modelName || 'Unknown Model';
     const companyName = data?.companyName || 'Unknown Model';
     const ramMemory = data?.ramMemory || 'Unknown Ram';
@@ -720,6 +720,7 @@ const BarcodePrinter = ({ obj, type }) => {
     iframe.style.height = '0';
     iframe.style.border = 'none';
     document.body.appendChild(iframe);
+    // ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ''}
 
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     doc.open();
@@ -798,8 +799,8 @@ body {
 }
 
 .barcode-img { 
-     width:160px;
-            height:20px;
+          width:160px;
+            height:30px;
             display:block;
             margin:0px auto;
 }
@@ -818,7 +819,7 @@ p {
                     <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
                      <p> ${modelName && modelName} ${ramMemory && ramMemory}GB</p>
                    ${shopName ? `<p class="shop-name">${shopName}</p>` : ''}
-                    ${imei2 ? <img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" /> : ''}
+                    ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ''}
                 </div>
             </div>
             <script>

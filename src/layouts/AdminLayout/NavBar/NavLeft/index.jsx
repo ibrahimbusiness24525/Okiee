@@ -176,7 +176,6 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
 import { useGetAccessories } from 'hooks/accessory';
-import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import CustomSelect from 'components/CustomSelect';
 import { FaFileAlt, FaPhone, FaPlus, FaUser } from 'react-icons/fa';
@@ -294,7 +293,7 @@ const NavLeft = () => {
       alert('Person created successfully!');
     } catch (error) {
       console.error('Error creating person:', error);
-      alert('Error creating person. Please try again.');
+      toast.error(error?.response?.data?.message ||error?.message || error?.data?.message || "Error creating person");
     } finally {
       setIsCreatingEntity(false);
     }
@@ -824,7 +823,6 @@ const NavLeft = () => {
           {/* <Modal.Title>Sell Mobile</Modal.Title> */}
         </Modal.Header>
         <Modal.Body>
-          <Form>
             <div>
             <Col>
                                      {console.log('Rendering entity section, sellingType:', formData.sellingType)}
@@ -1264,41 +1262,6 @@ const NavLeft = () => {
                     <span style={{ color: "#888", fontStyle: "italic" }}>No IMEIs added yet</span>
                   )}
                 </div>
-
-
-                {/* <FormControl fullWidth variant="outlined" className="mb-3">
-                  <InputLabel>IMEI</InputLabel>
-                  <Select
-                    value={formData.imei}
-                    onChange={(e) => handleSelectChange('imei', e.target.value)} // ← Use event object
-                    displayEmpty
-                    multiple
-                    input={<OutlinedInput label="IMEI" />} // ← Required for proper styling
-                  >
-                    {formData.imeiList
-                      .filter((item) =>
-                        item
-                          .toLowerCase()
-                          .includes(formData.search.toLowerCase())
-                      )
-                      .map((item, index) => (
-                        <MenuItem key={index} value={item}>
-                          {item}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl> */}
-                {/* <BarcodeReader
-                  onScan={(data) => {
-                    if (data) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        imeiList: [...prev.imeiList, data], // ← Fixed: should be imeiList, not imeis
-                        barcodeScan: data,
-                      }));
-                    }
-                  }}
-                /> */}
               </div>
 
               <Form.Group className="mb-3">
@@ -1447,7 +1410,6 @@ const NavLeft = () => {
                 )}
               </>
             )}
-          </Form>
           <div style={{ textAlign: 'right', marginTop: '20px' }}>
             <Button
               variant="secondary"
@@ -1735,7 +1697,7 @@ const NavLeft = () => {
               Cancel
             </button>
             <button
-              type="submit"
+              // type="submit"
               disabled={isCreatingEntity}
               style={{
                 padding: '12px 24px',

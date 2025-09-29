@@ -9,6 +9,7 @@ import {
   FaPlus,
   FaStickyNote,
   FaTrash,
+  FaEdit,
 } from 'react-icons/fa';
 import Modal from 'components/Modal/Modal';
 import { jsPDF } from 'jspdf';
@@ -41,6 +42,18 @@ const PayablesAndReceivablesRecords = () => {
     amount: '',
     description: '',
   });
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({
+    givingCredit: '',
+    takingCredit: '',
+    description: '',
+    balanceAmount: '',
+    date: '',
+    createdAt: '',
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchPersonDetail = async () => {
@@ -103,7 +116,7 @@ const PayablesAndReceivablesRecords = () => {
           : 'Today';
         dateRangeText = `Date Range: ${startStr} to ${endStr}`;
       }
-      
+
       doc.setFontSize(12);
       doc.setTextColor(80);
       doc.text(dateRangeText, 14, 28);
@@ -159,26 +172,74 @@ const PayablesAndReceivablesRecords = () => {
         },
       });
 
+      // Totals summary table (after main table)
+      const totalTaking = filteredTransactions.reduce(
+        (sum, tx) => sum + (tx.takingCredit || 0),
+        0
+      );
+      const totalGiving = filteredTransactions.reduce(
+        (sum, tx) => sum + (tx.givingCredit || 0),
+        0
+      );
+
+      // Calculate net status from total amounts (not filtered)
+      let netStatus = '';
+      let netAmount = 0;
+
+      if (person.takingCredit > person.givingCredit) {
+        netStatus = 'Net Taking Credit';
+        netAmount = person.takingCredit - person.givingCredit;
+      } else if (person.givingCredit > person.takingCredit) {
+        netStatus = 'Net Giving Credit';
+        netAmount = person.givingCredit - person.takingCredit;
+      } else {
+        netStatus = 'All Settled';
+        netAmount = 0;
+      }
+
+      const summaryStartY = (doc.lastAutoTable && doc.lastAutoTable.finalY)
+        ? doc.lastAutoTable.finalY + 10
+        : 35;
+
+      autoTable(doc, {
+        startY: summaryStartY,
+        head: [['Total Taking', 'Total Giving', 'Net Status']],
+        body: [[
+          `Rs. ${totalTaking.toLocaleString()}`,
+          `Rs. ${totalGiving.toLocaleString()}`,
+          `${netStatus}: Rs. ${netAmount.toLocaleString()}`,
+        ]],
+        styles: {
+          fontSize: 10,
+          cellPadding: 3,
+        },
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          fontSize: 11,
+        },
+      });
+
       // Add status summary at the end
       const pageCount = doc.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(100);
-        
+
         // Add page number
         doc.text(
           `Page ${i} of ${pageCount}`,
           doc.internal.pageSize.width - 30,
           doc.internal.pageSize.height - 10
         );
-        
+
         // Add status summary on the last page
         if (i === pageCount) {
           // Calculate net status
           let netStatus = '';
           let netAmount = 0;
-          
+
           if (person.takingCredit > person.givingCredit) {
             netStatus = 'Net Taking Credit';
             netAmount = person.takingCredit - person.givingCredit;
@@ -194,11 +255,11 @@ const PayablesAndReceivablesRecords = () => {
           doc.setFontSize(10);
           doc.setTextColor(40);
           doc.text('Status Summary:', 14, doc.internal.pageSize.height - 25);
-          
+
           doc.setFontSize(9);
           doc.setTextColor(60);
           doc.text(`${netStatus}: Rs. ${netAmount.toLocaleString()}`, 14, doc.internal.pageSize.height - 20);
-          
+
           // Add date range information
           doc.setFontSize(8);
           doc.setTextColor(100);
@@ -215,130 +276,7 @@ const PayablesAndReceivablesRecords = () => {
       console.error('Failed to generate PDF:', error);
     }
   };
-// ... existing code ...
-  // const handleDownloadPDF = async () => {
-  //   try {
-  //     // Filter transactions by selected date range
-  //     let filteredTransactions = transactions;
-  //     if (dataRange.startDate) {
-  //       const start = new Date(dataRange.startDate);
-  //       filteredTransactions = filteredTransactions.filter(
-  //         (tx) => new Date(tx.createdAt) >= start
-  //       );
-  //     }
-  //     if (dataRange.endDate) {
-  //       const end = new Date(dataRange.endDate);
-  //       end.setHours(23, 59, 59, 999); // Include full end day
-  //       filteredTransactions = filteredTransactions.filter(
-  //         (tx) => new Date(tx.createdAt) <= end
-  //       );
-  //     }
 
-  //     // Sort transactions by date (newest to oldest)
-  //     filteredTransactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-  //     // Dynamically import jsPDF and autoTable
-  //     const { jsPDF } = await import('jspdf');
-  //     const autoTable = (await import('jspdf-autotable')).default;
-
-  //     // Create new PDF document
-  //     const doc = new jsPDF();
-
-  //     // Add title
-  //     doc.setFontSize(16);
-  //     doc.setTextColor(40);
-  //     doc.text(`${person.name}'s Ledger Transactions`, 14, 16);
-
-  //     // Generate table
-  //     autoTable(doc, {
-  //       startY: 25,
-  //       head: [
-  //         [
-  //           'Date',
-  //           'Type',
-  //           'Transaction',
-  //           'Description',
-  //           'Balance Amount',
-  //         ],
-  //       ],
-  //       body: filteredTransactions.map((tx) => {
-  //         const type = tx.type === 'purchase' ? 'Purchase' : 'Sale';
-  //         const date = new Date(tx.createdAt).toLocaleDateString();
-
-  //         // Determine transaction type: Taking Credit, Giving Credit, or Payment
-  //         let transactionType = '';
-  //         if (tx.takingCredit && tx.takingCredit !== 0) {
-  //           transactionType = `Taking Credit (Rs. ${tx.takingCredit.toLocaleString()})`;
-  //         } else if (tx.givingCredit && tx.givingCredit !== 0) {
-  //           transactionType = `Giving Credit (Rs. ${tx.givingCredit.toLocaleString()})`;
-  //         } else {
-  //           transactionType = 'Payment';
-  //         }
-
-  //         return [
-  //           date,
-  //           type,
-  //           transactionType,
-  //           tx.description || '',
-  //           tx.balanceAmount || '',
-  //         ];
-  //       }),
-  //       styles: {
-  //         fontSize: 9,
-  //         cellPadding: 2,
-  //         overflow: 'linebreak',
-  //       },
-  //       headStyles: {
-  //         fillColor: [41, 128, 185],
-  //         textColor: 255,
-  //         fontSize: 10,
-  //       },
-  //       columnStyles: {
-  //         0: { cellWidth: 20 }, // Date
-  //         1: { cellWidth: 15 }, // Type
-  //         6: { cellWidth: 'auto' }, // Description
-  //       },
-  //     });
-
-  //     // Add date range information at the bottom
-  //     const pageCount = doc.getNumberOfPages();
-  //     for (let i = 1; i <= pageCount; i++) {
-  //       doc.setPage(i);
-  //       doc.setFontSize(8);
-  //       doc.setTextColor(100);
-        
-  //       // Add page number
-  //       doc.text(
-  //         `Page ${i} of ${pageCount}`,
-  //         doc.internal.pageSize.width - 30,
-  //         doc.internal.pageSize.height - 10
-  //       );
-        
-  //       // Add date range information at the bottom
-  //       if (i === pageCount) { // Only on the last page
-  //         let dateRangeText = 'All Transactions';
-  //         if (dataRange.startDate || dataRange.endDate) {
-  //           const startStr = dataRange.startDate
-  //             ? new Date(dataRange.startDate).toLocaleDateString()
-  //             : 'Beginning';
-  //           const endStr = dataRange.endDate
-  //             ? new Date(dataRange.endDate).toLocaleDateString()
-  //             : 'Today';
-  //           dateRangeText = `Date Range: ${startStr} to ${endStr}`;
-  //         }
-  //         doc.text(dateRangeText, 14, doc.internal.pageSize.height - 20);
-  //       }
-  //     }
-
-  //     // Save the PDF
-  //     doc.save(
-  //       `${person.name}_accessory_transactions_${new Date().toISOString().slice(0, 10)}.pdf`
-  //     );
-  //     setShowPDFModal(false);
-  //   } catch (error) {
-  //     console.error('Failed to generate PDF:', error);
-  //   }
-  // };
   const handleGiveCredit = async (e) => {
     e.preventDefault();
     if (!creditData.personId || !creditData.amount) {
@@ -406,6 +344,133 @@ const PayablesAndReceivablesRecords = () => {
       }
     }
   };
+
+  const openEditModal = (tx) => {
+    setEditingId(tx._id);
+    setEditData({
+      givingCredit: tx.givingCredit || 0,
+      takingCredit: tx.takingCredit || 0,
+      description: tx.description || '',
+      balanceAmount: tx.balanceAmount || 0,
+      date: tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : '',
+      createdAt: tx.createdAt || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateTransaction = async (e) => {
+    e.preventDefault();
+    if (!editingId) return;
+    try {
+      setIsUpdating(true);
+      const response = await api.put(`/api/person/update-transaction/${editingId}`, {
+        givingCredit: Number(editData.givingCredit) || 0,
+        takingCredit: Number(editData.takingCredit) || 0,
+        description: editData.description || '',
+        balanceAmount: Number(editData.balanceAmount) || 0,
+        createdAt: editData.date || '',
+        updatedAt: editData.date || '',
+      });
+      const updatedTx = response?.data?.transaction || null;
+      if (updatedTx) {
+        setTransactions((prev) => prev.map((tx) => (tx._id === editingId ? updatedTx : tx)));
+        toast.success('Transaction updated successfully');
+      } else {
+        toast.success('Transaction updated');
+      }
+      setShowEditModal(false);
+      setEditingId(null);
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      toast.error('Failed to update transaction');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  const handlePrint = () => {
+    // Prepare table rows
+    let tableRows = '';
+    let totalTaking = 0;
+    let totalGiving = 0;
+    let totalFullPayments = 0;
+
+    transactions.forEach((tx) => {
+      const date = new Date(tx.createdAt).toLocaleDateString();
+      const type = tx.takingCredit !== 0
+        ? 'Taking Credit'
+        : tx.givingCredit !== 0
+          ? 'Giving Credit'
+          : 'Full Payment';
+      const amount = tx.takingCredit !== 0
+        ? tx.takingCredit
+        : tx.givingCredit !== 0
+          ? tx.givingCredit
+          : 0;
+      if (tx.takingCredit !== 0) totalTaking += tx.takingCredit;
+      if (tx.givingCredit !== 0) totalGiving += tx.givingCredit;
+      if (tx.takingCredit === 0 && tx.givingCredit === 0) totalFullPayments++;
+      tableRows += `
+        <tr>
+          <td style='border:1px solid #ccc;padding:6px;'>${date}</td>
+          <td style='border:1px solid #ccc;padding:6px;'>${type}</td>
+          <td style='border:1px solid #ccc;padding:6px;'>${amount !== 0 ? 'Rs. ' + amount.toLocaleString() : '-'}</td>
+          <td style='border:1px solid #ccc;padding:6px;'>${tx.description || '-'}</td>
+          <td style='border:1px solid #ccc;padding:6px;'>${tx.balanceAmount !== undefined ? tx.balanceAmount : '-'}</td>
+        </tr>
+      `;
+    });
+
+    // Print window HTML
+    const printWindow = window.open('', '', 'width=900,height=700');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Transaction Print</title>
+          <style>
+            body { font-family: sans-serif; margin: 24px; }
+            h2 { margin-bottom: 12px; }
+            table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+            th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            th { background: #f3f4f6; }
+            tfoot td { font-weight: bold; background: #f9fafb; }
+            .summary-table { margin-top: 24px; width: 60%; }
+            .summary-table td { font-size: 15px; }
+          </style>
+        </head>
+        <body>
+          <h2>${person?.name || 'Person'}'s Ledger Transactions</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Balance Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+          <table class='summary-table'>
+            <tbody>
+              <tr><td>Total Taking</td><td>Rs. ${totalTaking.toLocaleString()}</td></tr>
+              <tr><td>Total Giving</td><td>Rs. ${totalGiving.toLocaleString()}</td></tr>
+              <tr><td>Total Full Payments</td><td>${totalFullPayments}</td></tr>
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  }
+  console.log("this is data",)
   if (loading) return <p>Loading...</p>;
   if (!person) return <p>Person not found.</p>;
   return (
@@ -466,15 +531,20 @@ const PayablesAndReceivablesRecords = () => {
           <span
             style={{
               color:
-                person.status === 'Payable'
-                  ? '#ef4444'
-                  : person.status === 'Receivable'
-                    ? '#10b981'
-                    : '#3b82f6',
+                person.givingCredit > person.takingCredit
+                  ? '#10b981' // green
+                  : person.takingCredit > person.givingCredit
+                    ? '#ef4444' : "#4b5563" // red
+
             }}
           >
-            {person.status}
+            {person.givingCredit > person.takingCredit
+              ? 'Giving'
+              : person.takingCredit > person.givingCredit
+                ? 'Taking'
+                : 'Settled'}
           </span>
+
         </p>
 
         {/* <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
@@ -582,7 +652,7 @@ const PayablesAndReceivablesRecords = () => {
                 (e.currentTarget.style.backgroundColor = '#10b981')
               }
             >
-              <FaArrowUp /> MAINE DIYE
+              <FaArrowUp /> GIVING CREDIT
               {/* <FaArrowUp /> Give Credit */}
             </button>
 
@@ -609,7 +679,7 @@ const PayablesAndReceivablesRecords = () => {
                 (e.currentTarget.style.backgroundColor = '#f59e0b')
               }
             >
-              <FaArrowDown /> MAINE LIYE
+              <FaArrowDown /> TAKING CREDIT
               {/* <FaArrowDown /> Take Credit */}
             </button>
           </div>
@@ -809,19 +879,39 @@ const PayablesAndReceivablesRecords = () => {
         <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>
           Transaction History
         </h3>
-        <button
-          onClick={() => setShowPDFModal(true)}
+        <div
           style={{
-            padding: '6px 12px',
-            fontSize: '14px',
-            borderRadius: '4px',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
+            display: "flex",
+            gap: "10px"
           }}
         >
-          Download PDF
-        </button>
+          {/* <button
+            onClick={() => handlePrint()}
+            style={{
+              padding: '6px 12px',
+              fontSize: '14px',
+              borderRadius: '4px',
+              backgroundColor: '#200246ff',
+              color: 'white',
+              border: 'none',
+            }}
+          >
+            Print
+          </button> */}
+          <button
+            onClick={() => setShowPDFModal(true)}
+            style={{
+              padding: '6px 12px',
+              fontSize: '14px',
+              borderRadius: '4px',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+            }}
+          >
+            Download PDF
+          </button>
+        </div>
       </div>
       {transactions.length === 0 ? (
         <p>No transactions found.</p>
@@ -948,8 +1038,15 @@ const PayablesAndReceivablesRecords = () => {
                                 color: '#6b7280',
                                 marginLeft: '4px',
                                 color: '#6b7280',
+                                display: 'flex',
+                                gap: '10px',
+                                alignItems: 'center',
                               }}
                             >
+                              <FaEdit
+                                onClick={() => openEditModal(tx)}
+                                style={{ cursor: 'pointer', color: '#3b82f6' }}
+                              />
                               <FaTrash
                                 onClick={() => handleDeleteRecord(tx._id)}
                                 style={{ cursor: 'pointer', color: '#ef4444' }}
@@ -1124,6 +1221,125 @@ const PayablesAndReceivablesRecords = () => {
           </button>
         </div>
       </Modal>
+
+      {/* Edit Transaction Modal */}
+      <Modal
+        size="sm"
+        show={showEditModal}
+        toggleModal={() => setShowEditModal(false)}
+      >
+        <h2
+          style={{
+            margin: '0 0 24px 0',
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#1f2937',
+          }}
+        >
+          Edit Transaction
+        </h2>
+        <form onSubmit={handleUpdateTransaction}>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px' }}>Giving Credit</label>
+              <input
+                type="number"
+                value={editData.givingCredit}
+                onChange={(e) => setEditData({ ...editData, givingCredit: e.target.value })}
+                placeholder="0"
+                style={{ width: '100%', padding: '10px', border: '1px solid #e5e7eb', borderRadius: '6px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px' }}>Taking Credit</label>
+              <input
+                type="number"
+                value={editData.takingCredit}
+                onChange={(e) => setEditData({ ...editData, takingCredit: e.target.value })}
+                placeholder="0"
+                style={{ width: '100%', padding: '10px', border: '1px solid #e5e7eb', borderRadius: '6px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px' }}>Description</label>
+              <input
+                type="text"
+                value={editData.description}
+                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                placeholder="Description"
+                style={{ width: '100%', padding: '10px', border: '1px solid #e5e7eb', borderRadius: '6px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px' }}>Balance Amount</label>
+              <input
+                type="number"
+                value={editData.balanceAmount}
+                onChange={(e) => setEditData({ ...editData, balanceAmount: e.target.value })}
+                placeholder="0"
+                style={{ width: '100%', padding: '10px', border: '1px solid #e5e7eb', borderRadius: '6px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px' }}>Original Created Date</label>
+              <input
+                type="text"
+                value={editData.createdAt ? new Date(editData.createdAt).toLocaleString() : ''}
+                readOnly
+                style={{ 
+                  width: '100%', 
+                  padding: '10px', 
+                  border: '1px solid #e5e7eb', 
+                  borderRadius: '6px',
+                  backgroundColor: '#f9fafb',
+                  color: '#6b7280'
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px' }}>Update Date</label>
+              <input
+                type="date"
+                value={editData.date}
+                onChange={(e) => setEditData({ ...editData, date: e.target.value })}
+                placeholder="Date"
+                style={{ width: '100%', padding: '10px', border: '1px solid #e5e7eb', borderRadius: '6px' }}
+              />
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={() => setShowEditModal(false)}
+              style={{
+                padding: '10px 16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '6px',
+                backgroundColor: 'white',
+                color: '#6b7280',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isUpdating}
+              style={{
+                padding: '10px 16px',
+                border: 'none',
+                borderRadius: '6px',
+                backgroundColor: isUpdating ? '#9ca3af' : '#3b82f6',
+                color: 'white',
+                cursor: isUpdating ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {isUpdating ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal
         size="sm"
         show={showGiveCreditModal}

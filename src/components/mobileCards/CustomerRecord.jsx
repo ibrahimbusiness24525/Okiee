@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { api } from "../../../api/api";
 import { StyledHeading } from "components/StyledHeading/StyledHeading";
@@ -57,7 +56,10 @@ const CustomerRecord = () => {
   const [soldRecord, setSoldRecord] = useState([]);
   const [allParties, setAllParties] = useState([]);
   const [partyDetails, setPartyDetails] = useState(null);
-
+  const [persons, setPersons] = useState([]);
+  const [selectedPartyId, setSelectedPartyId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const getSoldRecord = async () => {
     try {
       const response = await api.get(`/api/Purchase/customer-sold-record/${customerNumber}`);
@@ -78,22 +80,36 @@ const CustomerRecord = () => {
   }
   console.log("All parties:", allParties);
 
-  const getPartyDetails = async (id) => {
+  const getPartyDetails = async (personId) => {
     try {
-      const response = await api.get(`/api/partyLedger/partyDetail/${id}`);
-      setPartyDetails(response?.data?.data || {});
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      
+      const queryString = params.toString();
+      const url = `/api/person/detail-of-purchase-sale-by-person/${personId}${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await api.get(url);
+      setPartyDetails(response?.data || {});
     }
     catch (error) {
       console.error("Error fetching party details:", error);
     }
   }
+  const fetchPersons = async () => {
+    try {
+      const data = await api.get('/api/person/all');
+      setPersons(data?.data || []);
+    } catch (error) {
+      console.log('Error fetching data. Please try again.');
+    }
+  };
+  console.log("persons", persons);
   console.log("partyDetails", partyDetails);
 
   useEffect(() => {
-    getAllParties();
-    // Fetch initial sold records if needed
+    fetchPersons();
   }, []);
-  const [selectedPartyId, setSelectedPartyId] = useState("");
 
   const handleSelectChange = (e) => {
     setSelectedPartyId(e.target.value);
@@ -107,6 +123,8 @@ const CustomerRecord = () => {
     getPartyDetails(selectedPartyId);
     // Add your logic to fetch or show the party record here
   };
+  console.log("partyDetails", partyDetails);
+
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <div
@@ -178,12 +196,15 @@ const CustomerRecord = () => {
               cursor: "pointer",
               transition: "background-color 0.2s ease",
             }}
+            
             onMouseOver={(e) =>
               (e.currentTarget.style.backgroundColor = "#0069d9")
             }
+
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = "#007BFF")
             }
+
           >
             Get Record
           </button>
@@ -308,7 +329,6 @@ const CustomerRecord = () => {
       </>
       <div style={{
         fontFamily: "'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
-        maxWidth: "900px",
         margin: "0 auto",
         padding: "20px"
       }}>
@@ -318,12 +338,29 @@ const CustomerRecord = () => {
           alignItems: "center",
           gap: "12px",
           marginBottom: "24px",
-          padding: "16px",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "10px",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+          padding: "20px",
+          backgroundColor: "#ffffff",
+          borderRadius: "14px",
+          boxShadow: "0 10px 24px rgba(0,0,0,0.06)",
+          border: "1px solid #eef2f7",
+          flexWrap: "wrap"
         }}>
-          <select
+          <div style={{ width: "100%" }}>
+            <h3 style={{
+              margin: 0,
+              marginBottom: "12px",
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#1f2937"
+            }}>Filter Ledger Analytics</h3>
+            <p style={{
+              margin: 0,
+              marginBottom: "16px",
+              fontSize: "13px",
+              color: "#6b7280"
+            }}>Choose a person and optional date range to load sales and purchases.</p>
+          </div>
+          {/* <select
             value={selectedPartyId}
             onChange={handleSelectChange}
             style={{
@@ -349,39 +386,152 @@ const CustomerRecord = () => {
                 {party.partyName}
               </option>
             ))}
-          </select>
-
+          </select> */}
+           <select
+                value={selectedPartyId}
+                onChange={(e) =>
+                  setSelectedPartyId(e.target.value)
+                }
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '10px',
+                  fontSize: '15px',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  boxSizing: 'border-box',
+                  backgroundColor: 'white',
+                  boxShadow: '0 2px 8px rgba(17,24,39,0.06)'
+                }}
+                onFocus={(e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = '0 2px 8px rgba(17,24,39,0.06)'; }}
+                required
+              >
+                <option value="">Select a person</option>
+                {[...persons]
+                  .sort(
+                    (a, b) => (b.favourite === true) - (a.favourite === true)
+                  )
+                  .map((person) => (
+                    <option key={person._id} value={person._id}>
+                      {person.name} - {person.number}
+                    </option>
+                  ))}
+              </select>
+  
+         {/* Date Range */}
+         <div style={{
+           display: "grid",
+           gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+           gap: "12px",
+           width: "100%"
+         }}>
+           <div>
+             <label style={{
+               display: "block",
+               fontSize: "12px",
+               color: "#6b7280",
+               marginBottom: "6px",
+               fontWeight: 600
+             }}>Start Date</label>
+             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+               <span style={{ fontSize: "16px" }}>📅</span>
+               <input
+                 type="date"
+                 value={startDate}
+                 onChange={(e) => setStartDate(e.target.value)}
+                 style={{
+                   width: "100%",
+                   padding: "12px 14px",
+                   border: "2px solid #e5e7eb",
+                   borderRadius: "10px",
+                   fontSize: "14px",
+                   outline: "none",
+                   transition: "border-color 0.2s, box-shadow 0.2s",
+                   boxShadow: '0 2px 8px rgba(17,24,39,0.06)'
+                 }}
+                 onFocus={(e) => { e.target.style.borderColor = '#10b981'; e.target.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.15)'; }}
+                 onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = '0 2px 8px rgba(17,24,39,0.06)'; }}
+               />
+             </div>
+           </div>
+           <div>
+             <label style={{
+               display: "block",
+               fontSize: "12px",
+               color: "#6b7280",
+               marginBottom: "6px",
+               fontWeight: 600
+             }}>End Date</label>
+             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+               <span style={{ fontSize: "16px" }}>📅</span>
+               <input
+                 type="date"
+                 value={endDate}
+                 onChange={(e) => setEndDate(e.target.value)}
+                 style={{
+                   width: "100%",
+                   padding: "12px 14px",
+                   border: "2px solid #e5e7eb",
+                   borderRadius: "10px",
+                   fontSize: "14px",
+                   outline: "none",
+                   transition: "border-color 0.2s, box-shadow 0.2s",
+                   boxShadow: '0 2px 8px rgba(17,24,39,0.06)'
+                 }}
+                 onFocus={(e) => { e.target.style.borderColor = '#10b981'; e.target.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.15)'; }}
+                 onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = '0 2px 8px rgba(17,24,39,0.06)'; }}
+               />
+             </div>
+           </div>
+           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-start" }}>
+             <button
+               onClick={() => { setStartDate(''); setEndDate(''); }}
+               style={{
+                 padding: "10px 14px",
+                 fontSize: "13px",
+                 fontWeight: 600,
+                 background: "linear-gradient(135deg,#94a3b8 0%, #6b7280 100%)",
+                 color: "#fff",
+                 border: "none",
+                 borderRadius: "10px",
+                 cursor: "pointer",
+                 transition: "transform 0.15s ease, box-shadow 0.2s ease",
+                 boxShadow: '0 6px 14px rgba(107,114,128,0.25)'
+               }}
+               onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+               onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+             >
+               Clear
+             </button>
+           </div>
+         </div>
           <button
             onClick={handleGetPartyRecord}
             disabled={!selectedPartyId}
             style={{
-              padding: "10px 18px",
+              padding: "12px 18px",
               fontSize: "14px",
-              fontWeight: "500",
+              fontWeight: 700,
               cursor: selectedPartyId ? "pointer" : "not-allowed",
-              backgroundColor: selectedPartyId ? "#4a6bff" : "#b0b0b0",
+              background: selectedPartyId ? "linear-gradient(135deg,#6366f1 0%, #8b5cf6 100%)" : "#b0b0b0",
               color: "#fff",
               border: "none",
-              borderRadius: "6px",
-              transition: "all 0.2s ease",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              ":hover": {
-                backgroundColor: selectedPartyId ? "#3a5bef" : "#b0b0b0",
-                boxShadow: selectedPartyId ? "0 4px 8px rgba(0,0,0,0.15)" : "none",
-                transform: selectedPartyId ? "translateY(-1px)" : "none"
-              },
-              ":active": {
-                transform: selectedPartyId ? "translateY(0)" : "none"
-              }
+              borderRadius: "10px",
+              transition: "transform 0.15s ease, box-shadow 0.2s ease",
+              boxShadow: selectedPartyId ? '0 10px 20px rgba(99,102,241,0.25)' : '0 4px 8px rgba(0,0,0,0.1)'
             }}
+            onMouseOver={(e) => { if (selectedPartyId) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseOut={(e) => { if (selectedPartyId) e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            Get Party Record
+            Get Person Record
           </button>
         </div>
 
-        {partyDetails ? (
+        {partyDetails && partyDetails.person && partyDetails.saleDetails && partyDetails.purchaseDetails && (
           <div>
-            {/* Party Details Card */}
+            {/* Person Ledger Analytics */}
             <div style={{
               border: "1px solid #e9ecef",
               borderRadius: "12px",
@@ -406,7 +556,7 @@ const CustomerRecord = () => {
                   fontWeight: "600",
                   color: "#212529"
                 }}>
-                  Party Overview
+                  📊 {partyDetails?.person?.name}'s Ledger Analytics
                 </h2>
                 <div style={{
                   fontSize: "13px",
@@ -416,25 +566,95 @@ const CustomerRecord = () => {
                   borderRadius: "50px",
                   fontWeight: "500"
                 }}>
-                  Created: {new Date(partyDetails.party.createdAt).toLocaleDateString()}
+                  Status: {partyDetails.person.status}
                 </div>
               </div>
 
-              {/* Main Content */}
+              {/* Analytics Content */}
               <div style={{ padding: "20px 24px" }}>
+                {/* Key Metrics Row */}
                 <div style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "24px",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                  gap: "12px",
                   marginBottom: "24px"
                 }}>
-                  {/* Basic Information */}
+                  {/* Total Sales Count */}
                   <div style={{
-                    backgroundColor: "#f8fafc",
+                    backgroundColor: "#e8f5e8",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    borderLeft: "4px solid #28a745",
+                    textAlign: "center"
+                  }}>
+                    <div style={{ fontSize: "24px", fontWeight: "700", color: "#28a745", marginBottom: "4px" }}>
+                      {partyDetails.summary.totalBulkSales + partyDetails.summary.totalSingleSales}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#6c757d", fontWeight: "500" }}>Total Sales</div>
+                  </div>
+
+                  {/* Total Sales Amount */}
+                  <div style={{
+                    backgroundColor: "#e3f2fd",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    borderLeft: "4px solid #2196f3",
+                    textAlign: "center"
+                  }}>
+                    <div style={{ fontSize: "18px", fontWeight: "700", color: "#2196f3", marginBottom: "4px" }}>
+                      {(() => {
+                        const bulkSalesTotal = (partyDetails.saleDetails?.bulkSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0);
+                        const singleSalesTotal = (partyDetails.saleDetails?.singleSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0);
+                        return (bulkSalesTotal + singleSalesTotal).toLocaleString();
+                      })()}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#6c757d", fontWeight: "500" }}>Sales Amount</div>
+                  </div>
+
+                  {/* Total Purchases Count */}
+                  <div style={{
+                    backgroundColor: "#fff3e0",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    borderLeft: "4px solid #ff9800",
+                    textAlign: "center"
+                  }}>
+                    <div style={{ fontSize: "24px", fontWeight: "700", color: "#ff9800", marginBottom: "4px" }}>
+                      {partyDetails.summary.totalBulkPurchases + partyDetails.summary.totalSinglePurchases}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#6c757d", fontWeight: "500" }}>Total Purchases</div>
+                  </div>
+
+                  {/* Net Credit Status */}
+                  <div style={{
+                    backgroundColor: partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#f8d7da" : "#d4edda",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#dc3545" : "#28a745"}`,
+                    textAlign: "center"
+                  }}>
+                    <div style={{ 
+                      fontSize: "18px", 
+                      fontWeight: "700", 
+                      color: partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#dc3545" : "#28a745", 
+                      marginBottom: "4px" 
+                    }}>
+                      {Math.abs(partyDetails.person.givingCredit - partyDetails.person.takingCredit).toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#6c757d", fontWeight: "500" }}>
+                      {partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "Net Receivable" : "Net Payable"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Receivables/Payables Summary */}
+                <div style={{
+                  backgroundColor: partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#f8d7da" : "#d4edda",
                     padding: "18px",
                     borderRadius: "8px",
-                    borderLeft: "4px solid #4a6bff",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                  borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#dc3545" : "#28a745"}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                  marginBottom: "24px"
                   }}>
                     <h3 style={{
                       color: "#495057",
@@ -450,46 +670,158 @@ const CustomerRecord = () => {
                         display: "inline-block",
                         width: "24px",
                         height: "24px",
-                        backgroundColor: "#4a6bff",
+                      backgroundColor: partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#dc3545" : "#28a745",
                         color: "#fff",
                         borderRadius: "50%",
                         textAlign: "center",
                         lineHeight: "24px",
                         fontSize: "12px"
-                      }}>1</span>
-                      Basic Information
+                    }}>
+                      {partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "📈" : "📉"}
+                    </span>
+                    {partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "Total Receivables" : "Total Payables"}
                     </h3>
-                    <div style={{ display: "grid", gap: "12px" }}>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "120px",
-                          color: "#495057",
+
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "16px"
+                  }}>
+                    {/* Main Amount */}
+                    <div style={{
+                      backgroundColor: "#fff",
+                      padding: "16px",
+                      borderRadius: "8px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                      textAlign: "center"
+                    }}>
+                      <div style={{
+                        color: partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#dc3545" : "#28a745",
+                        fontWeight: "600",
+                        marginBottom: "8px",
                           fontSize: "14px"
-                        }}>Party Name:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.party.partyName}</span>
+                      }}>
+                        {partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "Amount to Receive" : "Amount to Pay"}
                       </div>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "120px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>User ID:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.party.userId}</span>
+                      <div style={{
+                        fontSize: "24px",
+                        fontWeight: "700",
+                        color: "#212529"
+                      }}>
+                        PKR {Math.abs(partyDetails.person.givingCredit - partyDetails.person.takingCredit).toLocaleString()}
                       </div>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "120px",
-                          color: "#495057",
+                      <div style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginTop: "4px"
+                      }}>
+                        {partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "From customer" : "To customer"}
+                      </div>
+                    </div>
+
+                    {/* Taking Credit */}
+                    <div style={{
+                      backgroundColor: "#fff",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                    }}>
+                      <div style={{
+                        color: "#28a745",
+                        fontWeight: "600",
+                        marginBottom: "6px",
                           fontSize: "14px"
-                        }}>Last Updated:</strong>
-                        <span style={{ color: "#212529" }}>
-                          {new Date(partyDetails.party.updatedAt).toLocaleString()}
-                        </span>
+                      }}>
+                        Taking Credit
+                      </div>
+                      <div style={{
+                        fontSize: "18px",
+                        fontWeight: "700",
+                        color: "#212529"
+                      }}>
+                        PKR {partyDetails.person.takingCredit.toLocaleString()}
+                      </div>
+                      <div style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginTop: "4px"
+                      }}>
+                        Amount to receive
+                      </div>
+                    </div>
+
+                    {/* Giving Credit */}
+                    <div style={{
+                      backgroundColor: "#fff",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                    }}>
+                      <div style={{
+                        color: "#dc3545",
+                        fontWeight: "600",
+                        marginBottom: "6px",
+                        fontSize: "14px"
+                      }}>
+                        Giving Credit
+                      </div>
+                      <div style={{
+                        fontSize: "18px",
+                        fontWeight: "700",
+                        color: "#212529"
+                      }}>
+                        PKR {partyDetails.person.givingCredit.toLocaleString()}
+                      </div>
+                      <div style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginTop: "4px"
+                      }}>
+                        Amount to pay
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div style={{
+                      backgroundColor: "#fff",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}>
+                      <div style={{
+                          color: "#495057",
+                        fontWeight: "600",
+                        marginBottom: "8px",
+                          fontSize: "14px"
+                      }}>
+                        Current Status
+                      </div>
+                      <div style={{
+                        padding: "8px 16px",
+                        borderRadius: "20px",
+                        backgroundColor: partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#dc3545" : "#28a745",
+                        color: "#fff",
+                        fontSize: "14px",
+                        fontWeight: "600"
+                      }}>
+                        {partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "RECEIVABLE" : "PAYABLE"}
+                      </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Financial Summary */}
+                {/* Detailed Analytics Grid */}
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gap: "16px",
+                  marginBottom: "24px"
+                }}>
+                  {/* Sales Analytics */}
                   <div style={{
                     backgroundColor: "#f8fafc",
                     padding: "18px",
@@ -517,45 +849,125 @@ const CustomerRecord = () => {
                         textAlign: "center",
                         lineHeight: "24px",
                         fontSize: "12px"
-                      }}>2</span>
-                      Mobile Transactions
+                      }}>📈</span>
+                      Sales Analytics
                     </h3>
                     <div style={{ display: "grid", gap: "12px" }}>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>Total Purchased Mobiles:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalPurchasedMobiles}</span>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Bulk Sales:</span>
+                        <span style={{ fontWeight: "600", color: "#212529" }}>
+                          {partyDetails.summary.totalBulkSales} items
+                        </span>
                       </div>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>Total Buying Price:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalBuyingPrice}</span>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Bulk Sales Amount:</span>
+                        <span style={{ fontWeight: "600", color: "#28a745" }}>
+                          PKR{(partyDetails.saleDetails?.bulkSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0).toLocaleString()}
+                        </span>
                       </div>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Single Sales:</span>
+                        <span style={{ fontWeight: "600", color: "#212529" }}>
+                          {partyDetails.summary.totalSingleSales} items
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Single Sales Amount:</span>
+                        <span style={{ fontWeight: "600", color: "#28a745" }}>
+                          PKR{(partyDetails.saleDetails?.singleSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e9ecef", paddingTop: "8px" }}>
+                        <span style={{ color: "#495057", fontSize: "14px", fontWeight: "600" }}>Total Sales:</span>
+                        <span style={{ fontWeight: "700", color: "#28a745", fontSize: "16px" }}>
+                          PKR{(() => {
+                            const bulkSalesTotal = (partyDetails.saleDetails?.bulkSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0);
+                            const singleSalesTotal = (partyDetails.saleDetails?.singleSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0);
+                            return (bulkSalesTotal + singleSalesTotal).toLocaleString();
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Purchase Analytics */}
+                  <div style={{
+                    backgroundColor: "#f8fafc",
+                    padding: "18px",
+                    borderRadius: "8px",
+                    borderLeft: "4px solid #ff9800",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                  }}>
+                    <h3 style={{
                           color: "#495057",
-                          fontSize: "14px"
-                        }}>Total Dealer Price:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalDealerPrice}</span>
+                      marginTop: "0",
+                      marginBottom: "16px",
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px"
+                    }}>
+                      <span style={{
+                        display: "inline-block",
+                        width: "24px",
+                        height: "24px",
+                        backgroundColor: "#ff9800",
+                        color: "#fff",
+                        borderRadius: "50%",
+                        textAlign: "center",
+                        lineHeight: "24px",
+                        fontSize: "12px"
+                      }}>📦</span>
+                      Purchase Analytics
+                    </h3>
+                    <div style={{ display: "grid", gap: "12px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Bulk Purchases:</span>
+                        <span style={{ fontWeight: "600", color: "#212529" }}>
+                          {partyDetails.summary.totalBulkPurchases} items
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Bulk Purchase Amount:</span>
+                        <span style={{ fontWeight: "600", color: "#ff9800" }}>
+                          PKR{(partyDetails.purchaseDetails?.bulkPurchases || []).reduce((sum, purchase) => sum + parseInt(purchase.prices?.buyingPrice || 0), 0).toLocaleString()}
+                        </span>
+                    </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Single Purchases:</span>
+                        <span style={{ fontWeight: "600", color: "#212529" }}>
+                          {partyDetails.summary.totalSinglePurchases} items
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "#495057", fontSize: "14px" }}>Single Purchase Amount:</span>
+                        <span style={{ fontWeight: "600", color: "#ff9800" }}>
+                          PKR{(partyDetails.purchaseDetails?.singlePurchases || []).reduce((sum, purchase) => sum + (purchase.price?.purchasePrice || 0), 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e9ecef", paddingTop: "8px" }}>
+                        <span style={{ color: "#495057", fontSize: "14px", fontWeight: "600" }}>Total Purchases:</span>
+                        <span style={{ fontWeight: "700", color: "#ff9800", fontSize: "16px" }}>
+                          PKR{(() => {
+                            const bulkPurchasesTotal = (partyDetails.purchaseDetails?.bulkPurchases || []).reduce((sum, purchase) => sum + parseInt(purchase.prices?.buyingPrice || 0), 0);
+                            const singlePurchasesTotal = (partyDetails.purchaseDetails?.singlePurchases || []).reduce((sum, purchase) => sum + (purchase.price?.purchasePrice || 0), 0);
+                            return (bulkPurchasesTotal + singlePurchasesTotal).toLocaleString();
+                          })()}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Payment Status */}
+                {/* Payment & Cash Analytics */}
                 <div style={{
                   backgroundColor: "#f0f8ff",
                   padding: "18px",
                   borderRadius: "8px",
                   borderLeft: "4px solid #17a2b8",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                  marginBottom: "24px"
                 }}>
                   <h3 style={{
                     color: "#495057",
@@ -577,30 +989,16 @@ const CustomerRecord = () => {
                       textAlign: "center",
                       lineHeight: "24px",
                       fontSize: "12px"
-                    }}>3</span>
-                    Payment Status (Mobiles)
+                    }}>💳</span>
+                    Payment & Cash Analytics
                   </h3>
 
-                  {partyDetails.stats.totalPayableAmountNow === 0 &&
-                    partyDetails.stats.totalPayableAmountLater === 0 &&
-                    partyDetails.stats.totalPaidAmount === 0 ? (
-                    <div style={{
-                      backgroundColor: "#fff",
-                      padding: "16px",
-                      borderRadius: "6px",
-                      textAlign: "center",
-                      color: "#6c757d",
-                      border: "1px dashed #dee2e6"
-                    }}>
-                      No credit transactions found for mobiles
-                    </div>
-                  ) : (
                     <div style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "20px"
+                    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                    gap: "12px"
                     }}>
-                      {partyDetails.stats.totalPayableAmountNow > 0 && (
+                    {/* Credit Sales Count */}
                         <div style={{
                           backgroundColor: "#fff",
                           padding: "12px",
@@ -613,26 +1011,26 @@ const CustomerRecord = () => {
                             marginBottom: "6px",
                             fontSize: "14px"
                           }}>
-                            Payable Now
+                        Credit Sales
                           </div>
                           <div style={{
                             fontSize: "18px",
                             fontWeight: "700",
                             color: "#212529"
                           }}>
-                            ₹{partyDetails.stats.totalPayableAmountNow.toLocaleString()}
+                        {(partyDetails.saleDetails?.bulkSales || []).filter(sale => sale.sellingPaymentType === "Credit").length + 
+                         (partyDetails.saleDetails?.singleSales || []).filter(sale => sale.sellingPaymentType === "Credit").length}
                           </div>
                           <div style={{
                             fontSize: "12px",
                             color: "#6c757d",
                             marginTop: "4px"
                           }}>
-                            Due immediately
+                        Pending payments
                           </div>
                         </div>
-                      )}
 
-                      {partyDetails.stats.totalPayableAmountLater > 0 && (
+                    {/* Full Payment Sales Count */}
                         <div style={{
                           backgroundColor: "#fff",
                           padding: "12px",
@@ -640,31 +1038,31 @@ const CustomerRecord = () => {
                           boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
                         }}>
                           <div style={{
-                            color: "#fd7e14",
+                        color: "#28a745",
                             fontWeight: "600",
                             marginBottom: "6px",
                             fontSize: "14px"
                           }}>
-                            Payable Later
+                        Full Payment Sales
                           </div>
                           <div style={{
                             fontSize: "18px",
                             fontWeight: "700",
                             color: "#212529"
                           }}>
-                            ₹{partyDetails.stats.totalPayableAmountLater.toLocaleString()}
+                        {(partyDetails.saleDetails?.bulkSales || []).filter(sale => sale.sellingPaymentType === "Full Payment").length + 
+                         (partyDetails.saleDetails?.singleSales || []).filter(sale => sale.sellingPaymentType === "Full Payment").length}
                           </div>
                           <div style={{
                             fontSize: "12px",
                             color: "#6c757d",
                             marginTop: "4px"
                           }}>
-                            Future payments
+                        Completed payments
                           </div>
                         </div>
-                      )}
 
-                      {partyDetails.stats.totalPaidAmount > 0 && (
+                    {/* Total Credit Amount */}
                         <div style={{
                           backgroundColor: "#fff",
                           padding: "12px",
@@ -672,138 +1070,82 @@ const CustomerRecord = () => {
                           boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
                         }}>
                           <div style={{
-                            color: "#28a745",
+                        color: "#fd7e14",
                             fontWeight: "600",
                             marginBottom: "6px",
                             fontSize: "14px"
                           }}>
-                            Total Paid
+                        Total Credit Amount
                           </div>
                           <div style={{
-                            fontSize: "18px",
+                        fontSize: "16px",
                             fontWeight: "700",
                             color: "#212529"
                           }}>
-                            ₹{partyDetails.stats.totalPaidAmount.toLocaleString()}
+                        PKR{(() => {
+                          const bulkCreditTotal = (partyDetails.saleDetails?.bulkSales || [])
+                            .filter(sale => sale.sellingPaymentType === "Credit")
+                            .reduce((sum, sale) => sum + (sale.payableAmountNow || 0) + (sale.payableAmountLater || 0), 0);
+                          const singleCreditTotal = (partyDetails.saleDetails?.singleSales || [])
+                            .filter(sale => sale.sellingPaymentType === "Credit")
+                            .reduce((sum, sale) => sum + (sale.payableAmountNow || 0) + (sale.payableAmountLater || 0), 0);
+                          return (bulkCreditTotal + singleCreditTotal).toLocaleString();
+                        })()}
                           </div>
                           <div style={{
                             fontSize: "12px",
                             color: "#6c757d",
                             marginTop: "4px"
                           }}>
-                            Amount received
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                        Outstanding amount
               </div>
             </div>
 
-            {/* Accessories Section */}
+                    {/* Cash Flow Status */}
             <div style={{
-              border: "1px solid #e9ecef",
-              borderRadius: "12px",
-              padding: "0",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
               backgroundColor: "#fff",
-              overflow: "hidden"
+                      padding: "12px",
+                      borderRadius: "6px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
             }}>
-              {/* Header Section */}
               <div style={{
-                padding: "18px 24px",
-                backgroundColor: "#f8f9fa",
-                borderBottom: "1px solid #e9ecef",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}>
-                <h2 style={{
-                  margin: "0",
-                  fontSize: "20px",
+                        color: "#6f42c1",
                   fontWeight: "600",
-                  color: "#212529"
+                        marginBottom: "6px",
+                        fontSize: "14px"
                 }}>
-                  Accessories Transactions
-                </h2>
-                <div style={{
-                  fontSize: "13px",
-                  color: "#6c757d",
-                  backgroundColor: "#e9ecef",
-                  padding: "4px 10px",
-                  borderRadius: "50px",
-                  fontWeight: "500"
-                }}>
-                  Total: {partyDetails.accessories.length} items
-                </div>
-              </div>
-
-              {/* Accessories Summary */}
-              <div style={{ padding: "20px 24px" }}>
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "24px",
-                  marginBottom: "24px"
-                }}>
-                  {/* Accessories Financial Summary */}
-                  <div style={{
-                    backgroundColor: "#f8fafc",
-                    padding: "18px",
-                    borderRadius: "8px",
-                    borderLeft: "4px solid #6f42c1",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
-                  }}>
-                    <h3 style={{
-                      color: "#495057",
-                      marginTop: "0",
-                      marginBottom: "16px",
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px"
-                    }}>
-                      <span style={{
-                        display: "inline-block",
-                        width: "24px",
-                        height: "24px",
-                        backgroundColor: "#6f42c1",
-                        color: "#fff",
-                        borderRadius: "50%",
-                        textAlign: "center",
-                        lineHeight: "24px",
-                        fontSize: "12px"
-                      }}>4</span>
-                      Accessories Summary
-                    </h3>
-                    <div style={{ display: "grid", gap: "12px" }}>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>Total Accessories Quantity:</strong>
-                        <span style={{ color: "#212529" }}>{partyDetails.stats.totalAccessoryQuantity}</span>
+                        Cash Flow Status
                       </div>
-                      <div style={{ display: "flex" }}>
-                        <strong style={{
-                          minWidth: "180px",
-                          color: "#495057",
-                          fontSize: "14px"
-                        }}>Total Accessories Price:</strong>
-                        <span style={{ color: "#212529" }}>₹{partyDetails.stats.totalAccessoryPrice.toLocaleString()}</span>
+                <div style={{
+                        fontSize: "16px",
+                        fontWeight: "700",
+                        color: "#212529"
+                      }}>
+                        {(() => {
+                          const totalSales = (partyDetails.saleDetails?.bulkSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0) +
+                                           (partyDetails.saleDetails?.singleSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0);
+                          const totalPurchases = (partyDetails.purchaseDetails?.bulkPurchases || []).reduce((sum, purchase) => sum + parseInt(purchase.prices?.buyingPrice || 0), 0) +
+                                               (partyDetails.purchaseDetails?.singlePurchases || []).reduce((sum, purchase) => sum + (purchase.price?.purchasePrice || 0), 0);
+                          return totalSales > totalPurchases ? "Positive" : "Negative";
+                        })()}
+                </div>
+                <div style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginTop: "4px"
+                      }}>
+                        Net cash flow
+                      </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Accessories Payment Status */}
-                  <div style={{
-                    backgroundColor: "#f8fafc",
+                {/* Performance Summary */}
+                  {/* <div style={{
+                  backgroundColor: "#f8f9fa",
                     padding: "18px",
                     borderRadius: "8px",
-                    borderLeft: "4px solid #fd7e14",
+                  borderLeft: "4px solid #6c757d",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
                   }}>
                     <h3 style={{
@@ -820,202 +1162,385 @@ const CustomerRecord = () => {
                         display: "inline-block",
                         width: "24px",
                         height: "24px",
-                        backgroundColor: "#fd7e14",
+                      backgroundColor: "#6c757d",
                         color: "#fff",
                         borderRadius: "50%",
                         textAlign: "center",
                         lineHeight: "24px",
                         fontSize: "12px"
-                      }}>5</span>
-                      Payment Status (Accessories)
+                    }}>📊</span>
+                    Performance Summary
                     </h3>
 
-                    {partyDetails.stats.totalAccessoryPayableNow === 0 &&
-                      partyDetails.stats.totalAccessoryPayableLater === 0 &&
-                      partyDetails.stats.totalAccessoryPaidAmount === 0 ? (
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "16px"
+                  }}>
                       <div style={{
                         backgroundColor: "#fff",
                         padding: "12px",
                         borderRadius: "6px",
-                        textAlign: "center",
-                        color: "#6c757d",
-                        border: "1px dashed #dee2e6"
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                    }}>
+                      <div style={{
+                        color: "#495057",
+                        fontWeight: "600",
+                        marginBottom: "6px",
+                              fontSize: "14px"
                       }}>
-                        No credit transactions found for accessories
-                      </div>
-                    ) : (
-                      <div style={{ display: "grid", gap: "12px" }}>
-                        {partyDetails.stats.totalAccessoryPayableNow > 0 && (
-                          <div style={{ display: "flex" }}>
-                            <strong style={{
-                              minWidth: "180px",
-                              color: "#dc3545",
-                              fontSize: "14px"
-                            }}>Payable Now:</strong>
-                            <span style={{ color: "#212529", fontWeight: "500" }}>
-                              ₹{partyDetails.stats.totalAccessoryPayableNow.toLocaleString()}
-                            </span>
+                        Sales vs Purchases Ratio
                           </div>
-                        )}
-                        {partyDetails.stats.totalAccessoryPayableLater > 0 && (
-                          <div style={{ display: "flex" }}>
-                            <strong style={{
-                              minWidth: "180px",
-                              color: "#fd7e14",
-                              fontSize: "14px"
-                            }}>Payable Later:</strong>
-                            <span style={{ color: "#212529", fontWeight: "500" }}>
-                              ₹{partyDetails.stats.totalAccessoryPayableLater.toLocaleString()}
-                            </span>
+                      <div style={{
+                        fontSize: "16px",
+                        fontWeight: "700",
+                        color: "#212529"
+                      }}>
+                        {(() => {
+                          const totalSales = partyDetails.summary.totalBulkSales + partyDetails.summary.totalSingleSales;
+                          const totalPurchases = partyDetails.summary.totalBulkPurchases + partyDetails.summary.totalSinglePurchases;
+                          return totalPurchases > 0 ? (totalSales / totalPurchases).toFixed(2) : "N/A";
+                        })()}:1
                           </div>
-                        )}
-                        {partyDetails.stats.totalAccessoryPaidAmount > 0 && (
-                          <div style={{ display: "flex" }}>
-                            <strong style={{
-                              minWidth: "180px",
-                              color: "#28a745",
-                              fontSize: "14px"
-                            }}>Total Paid:</strong>
-                            <span style={{ color: "#212529", fontWeight: "500" }}>
-                              ₹{partyDetails.stats.totalAccessoryPaidAmount.toLocaleString()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      <div style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginTop: "4px"
+                      }}>
+                        Sales per purchase
                   </div>
                 </div>
 
-                {/* Individual Accessories List */}
-                <div>
-                  <h3 style={{
-                    color: "#495057",
-                    margin: "0 0 16px 0",
-                    fontSize: "16px",
-                    fontWeight: "600"
-                  }}>
-                    Accessories Items
-                  </h3>
-
-                  {partyDetails.accessories.length > 0 ? (
                     <div style={{
-                      border: "1px solid #e9ecef",
-                      borderRadius: "8px",
-                      overflow: "hidden"
+                      backgroundColor: "#fff",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
                     }}>
-                      {/* Table Header */}
                       <div style={{
-                        display: "grid",
-                        gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
-                        backgroundColor: "#f8f9fa",
-                        padding: "12px 16px",
+                    color: "#495057",
                         fontWeight: "600",
-                        fontSize: "14px",
-                        color: "#495057",
-                        borderBottom: "1px solid #e9ecef"
+                        marginBottom: "6px",
+                        fontSize: "14px"
                       }}>
-                        <div>Accessory Name</div>
-                        <div>Quantity</div>
-                        <div>Price</div>
-                        <div>Payment Type</div>
-                        <div>Status</div>
+                        Average Sale Price
                       </div>
+                      <div style={{
+                    fontSize: "16px",
+                        fontWeight: "700",
+                        color: "#212529"
+                      }}>
+                        PKR{(() => {
+                          const totalSales = partyDetails.summary.totalBulkSales + partyDetails.summary.totalSingleSales;
+                          if (totalSales === 0) return "0";
+                          const totalSalesAmount = (partyDetails.saleDetails?.bulkSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0) +
+                                                 (partyDetails.saleDetails?.singleSales || []).reduce((sum, sale) => sum + (sale.salePrice || 0), 0);
+                          return Math.round(totalSalesAmount / totalSales).toLocaleString();
+                        })()}
+                      </div>
+                      <div style={{
+                        fontSize: "12px",
+                        color: "#6c757d",
+                        marginTop: "4px"
+                      }}>
+                        Per transaction
+                      </div>
+                    </div>
 
-                      {/* Table Rows */}
-                      {partyDetails.accessories.map((accessory, index) => (
-                        <div
-                          key={accessory._id}
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
-                            padding: "12px 16px",
-                            fontSize: "14px",
-                            color: "#212529",
-                            backgroundColor: index % 2 === 0 ? "#fff" : "#f8f9fa",
-                            borderBottom: index === partyDetails.accessories.length - 1 ? "none" : "1px solid #e9ecef"
-                          }}
-                        >
-                          <div>{accessory.accessoryName}</div>
-                          <div>{accessory.quantity}</div>
-                          <div>₹{accessory.totalPrice.toLocaleString()}</div>
-                          <div>
-                            <span style={{
-                              display: "inline-block",
-                              padding: "2px 8px",
-                              borderRadius: "4px",
-                              backgroundColor: accessory.purchasePaymentType === "credit" ? "#fff3cd" : "#d4edda",
-                              color: accessory.purchasePaymentType === "credit" ? "#856404" : "#155724",
-                              fontSize: "12px",
-                              fontWeight: "500"
-                            }}>
-                              {accessory.purchasePaymentType}
-                            </span>
+                    <div style={{
+                      backgroundColor: "#fff",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                    }}>
+                      <div style={{
+                        color: "#495057",
+                        fontWeight: "600",
+                        marginBottom: "6px",
+                        fontSize: "14px"
+                      }}>
+                        Credit vs Cash Ratio
+                      </div>
+                      <div style={{
+                        fontSize: "16px",
+                        fontWeight: "700",
+                        color: "#212529"
+                      }}>
+                        {(() => {
+                          const creditSales = (partyDetails.saleDetails?.bulkSales || []).filter(sale => sale.sellingPaymentType === "Credit").length +
+                                            (partyDetails.saleDetails?.singleSales || []).filter(sale => sale.sellingPaymentType === "Credit").length;
+                          const totalSales = partyDetails.summary.totalBulkSales + partyDetails.summary.totalSingleSales;
+                          return totalSales > 0 ? Math.round((creditSales / totalSales) * 100) : 0;
+                        })()}%
                           </div>
-                          <div>
-                            <span style={{
-                              display: "inline-block",
-                              padding: "2px 8px",
-                              borderRadius: "4px",
-                              backgroundColor: accessory.purchasePaymentStatus === "pending" ? "#f8d7da" : "#d4edda",
-                              color: accessory.purchasePaymentStatus === "pending" ? "#721c24" : "#155724",
+                      <div style={{
                               fontSize: "12px",
-                              fontWeight: "500"
+                        color: "#6c757d",
+                        marginTop: "4px"
                             }}>
-                              {accessory.purchasePaymentStatus}
-                            </span>
+                        Credit sales
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
+
                     <div style={{
-                      padding: "20px",
-                      textAlign: "center",
-                      color: "#6c757d",
-                      backgroundColor: "#f8f9fa",
-                      borderRadius: "8px",
-                      border: "1px dashed #dee2e6"
+                      backgroundColor: "#fff",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
                     }}>
-                      No accessories transactions found for this party.
+                      <div style={{
+                        color: "#495057",
+                        fontWeight: "600",
+                        marginBottom: "6px",
+                        fontSize: "14px"
+                      }}>
+                        Net Credit Status
                     </div>
-                  )}
+                    <div style={{
+                        fontSize: "16px",
+                        fontWeight: "700",
+                        color: partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "#dc3545" : "#28a745"
+                      }}>
+                        {partyDetails.person.givingCredit > partyDetails.person.takingCredit ? "Receivable" : "Payable"}
+                      </div>
+                      <div style={{
+                        fontSize: "12px",
+                      color: "#6c757d",
+                        marginTop: "4px"
+                    }}>
+                        Current status
+                    </div>
                 </div>
               </div>
+            </div> */}
+
+
+            {/* Purchase Tables */}
+            <div style={{ marginBottom: "32px" }}>
+              {/* Bulk Purchases Table */}
+              {partyDetails.purchaseDetails?.bulkPurchases?.length > 0 && (
+                <div style={{
+                  backgroundColor: "#fff",
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  marginBottom: "24px",
+                  overflow: "hidden"
+                }}>
+                  <div style={{
+                    backgroundColor: "#ff9800",
+                    color: "#fff",
+                    padding: "16px 20px",
+                    fontSize: "18px",
+                    fontWeight: "600",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}>
+                    📦 Bulk Purchases ({partyDetails.purchaseDetails.bulkPurchases.length} items)
+                  </div>
+                  
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#f8f9fa" }}>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Model</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Company</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>IMEI</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Color</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Battery</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Buying Price</th>
+                          <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Status</th>
+                          <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {partyDetails.purchaseDetails.bulkPurchases.map((purchase, index) => (
+                          purchase.ramSimDetails?.map((phone, i) => (
+                            <tr key={`${purchase._id}-${i}`} style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f8f9fa", borderBottom: "1px solid #dee2e6" }}>
+                              <td style={{ padding: "12px", fontWeight: "500" }}>{phone.modelName || purchase.modelName || "N/A"}</td>
+                              <td style={{ padding: "12px" }}>{phone.companyName || "N/A"}</td>
+                              <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "12px" }}>{phone.imeiNumbers?.[0]?.imei1 || "N/A"}</td>
+                              <td style={{ padding: "12px" }}>
+                                <span style={{ display: "inline-block", width: "12px", height: "12px", borderRadius: "50%", backgroundColor: phone.imeiNumbers?.[0]?.color?.toLowerCase() || "#ccc", marginRight: "6px" }}></span>
+                                {phone.imeiNumbers?.[0]?.color || "N/A"}
+                              </td>
+                              <td style={{ padding: "12px" }}>{phone.imeiNumbers?.[0]?.batteryHealth ? `${phone.imeiNumbers[0].batteryHealth}%` : "N/A"}</td>
+                              <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#ff9800" }}>PKR {parseInt(purchase.prices?.buyingPrice || 0).toLocaleString()}</td>
+                              <td style={{ padding: "12px", textAlign: "center" }}>
+                                <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: "500", backgroundColor: purchase.status === "Available" ? "#d4edda" : "#f8d7da", color: purchase.status === "Available" ? "#155724" : "#721c24" }}>{purchase.status || "N/A"}</span>
+                              </td>
+                              <td style={{ padding: "12px", textAlign: "center", fontSize: "12px", color: "#6c757d" }}>{purchase.date ? new Date(purchase.date).toLocaleDateString() : "N/A"}</td>
+                            </tr>
+                          ))
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Single Purchases Table */}
+              {partyDetails.purchaseDetails?.singlePurchases?.length > 0 && (
+                <div style={{ backgroundColor: "#fff", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", marginBottom: "24px", overflow: "hidden" }}>
+                  <div style={{ backgroundColor: "#17a2b8", color: "#fff", padding: "16px 20px", fontSize: "18px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
+                    📱 Single Purchases ({partyDetails.purchaseDetails.singlePurchases.length} items)
+                  </div>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#f8f9fa" }}>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Model</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Company</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>RAM</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>IMEI 1</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>IMEI 2</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Color</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Condition</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Warranty</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Purchase Price</th>
+                          <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {partyDetails.purchaseDetails.singlePurchases.map((purchase, index) => (
+                          <tr key={purchase._id} style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f8f9fa", borderBottom: "1px solid #dee2e6" }}>
+                            <td style={{ padding: "12px", fontWeight: "500" }}>{purchase.modelName}</td>
+                            <td style={{ padding: "12px" }}>{purchase.companyName}</td>
+                            <td style={{ padding: "12px" }}>{purchase.ramMemory}GB</td>
+                            <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "12px" }}>{purchase.imei1}</td>
+                            <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "12px" }}>{purchase.imei2 || "N/A"}</td>
+                            <td style={{ padding: "12px" }}>
+                              <span style={{ display: "inline-block", width: "12px", height: "12px", borderRadius: "50%", backgroundColor: purchase.color?.toLowerCase() || "#ccc", marginRight: "6px" }}></span>
+                              {purchase.color}
+                            </td>
+                            <td style={{ padding: "12px" }}>
+                              <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: "500", backgroundColor: purchase.phoneCondition === "New" ? "#d4edda" : "#fff3cd", color: purchase.phoneCondition === "New" ? "#155724" : "#856404" }}>{purchase.phoneCondition}</span>
+                            </td>
+                            <td style={{ padding: "12px" }}>{purchase.warranty}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#17a2b8" }}>PKR {purchase.price?.purchasePrice?.toLocaleString() || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "center", fontSize: "12px", color: "#6c757d" }}>{new Date(purchase.date).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Sales Tables */}
+            <div style={{ marginBottom: "32px" }}>
+              {/* Bulk Sales Table */}
+              {partyDetails.saleDetails?.bulkSales?.length > 0 && (
+                <div style={{ backgroundColor: "#fff", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", marginBottom: "24px", overflow: "hidden" }}>
+                  <div style={{ backgroundColor: "#28a745", color: "#fff", padding: "16px 20px", fontSize: "18px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
+                    💰 Bulk Sales ({partyDetails.saleDetails.bulkSales.length} items)
+                  </div>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#f8f9fa" }}>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Customer</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Model</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>IMEI</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Warranty</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Purchase Price</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Sale Price</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Profit</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Total Invoice</th>
+                          <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Payment Type</th>
+                          <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {partyDetails.saleDetails.bulkSales.map((sale, index) => (
+                          <tr key={sale._id} style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f8f9fa", borderBottom: "1px solid #dee2e6" }}>
+                            <td style={{ padding: "12px", fontWeight: "500" }}>{sale.customerName || "N/A"}</td>
+                            <td style={{ padding: "12px" }}>{sale.modelName || sale.bulkPhonePurchaseId?.ramSimDetails?.[0]?.modelName || sale.bulkPhonePurchaseId?.modelName || "N/A"}</td>
+                            <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "12px" }}>{Array.isArray(sale.imei1) ? sale.imei1[0] : sale.imei1 || "N/A"}</td>
+                            <td style={{ padding: "12px" }}>{sale.warranty || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#dc3545" }}>PKR {sale.purchasePrice?.toLocaleString() || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#28a745" }}>PKR {sale.salePrice?.toLocaleString() || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#17a2b8" }}>PKR {sale.purchasePrice && sale.salePrice ? (sale.salePrice - sale.purchasePrice).toLocaleString() : "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#6f42c1" }}>PKR {sale.totalInvoice?.toLocaleString() || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "center" }}>
+                              <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: "500", backgroundColor: sale.sellingPaymentType === "Full Payment" ? "#d4edda" : "#f8d7da", color: sale.sellingPaymentType === "Full Payment" ? "#155724" : "#721c24" }}>{sale.sellingPaymentType || "N/A"}</span>
+                            </td>
+                            <td style={{ padding: "12px", textAlign: "center", fontSize: "12px", color: "#6c757d" }}>{sale.dateSold || sale.createdAt ? new Date(sale.dateSold || sale.createdAt).toLocaleDateString() : "N/A"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Single Sales Table */}
+              {partyDetails.saleDetails?.singleSales?.length > 0 && (
+                <div style={{ backgroundColor: "#fff", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", marginBottom: "24px", overflow: "hidden" }}>
+                  <div style={{ backgroundColor: "#6f42c1", color: "#fff", padding: "16px 20px", fontSize: "18px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
+                    💎 Single Sales ({partyDetails.saleDetails.singleSales.length} items)
+                  </div>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#f8f9fa" }}>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Customer</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Model</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Company</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>RAM</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>IMEI 1</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>IMEI 2</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Color</th>
+                          <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Condition</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Purchase Price</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Sale Price</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Profit</th>
+                          <th style={{ padding: "12px", textAlign: "right", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Total Invoice</th>
+                          <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Payment Type</th>
+                          <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid #dee2e6", fontWeight: "600" }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {partyDetails.saleDetails.singleSales.map((sale, index) => (
+                          <tr key={sale._id} style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f8f9fa", borderBottom: "1px solid #dee2e6" }}>
+                            <td style={{ padding: "12px", fontWeight: "500" }}>{sale.customerName}</td>
+                            <td style={{ padding: "12px" }}>{sale.modelName}</td>
+                            <td style={{ padding: "12px" }}>{sale.companyName}</td>
+                            <td style={{ padding: "12px" }}>{sale.ramMemory}GB</td>
+                            <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "12px" }}>{sale.imei1}</td>
+                            <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "12px" }}>{sale.imei2 || "N/A"}</td>
+                            <td style={{ padding: "12px" }}>
+                              <span style={{ display: "inline-block", width: "12px", height: "12px", borderRadius: "50%", backgroundColor: sale.color?.toLowerCase() || "#ccc", marginRight: "6px" }}></span>
+                              {sale.color}
+                            </td>
+                            <td style={{ padding: "12px" }}>
+                              <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: "500", backgroundColor: sale.phoneCondition === "New" ? "#d4edda" : "#fff3cd", color: sale.phoneCondition === "New" ? "#155724" : "#856404" }}>{sale.phoneCondition}</span>
+                            </td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#dc3545" }}>PKR {sale.purchasePrice?.toLocaleString() || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#28a745" }}>PKR {sale.salePrice?.toLocaleString() || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#17a2b8" }}>PKR {sale.purchasePrice && sale.salePrice ? (sale.salePrice - sale.purchasePrice).toLocaleString() : "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "right", fontWeight: "600", color: "#6f42c1" }}>PKR {sale.totalInvoice?.toLocaleString() || "N/A"}</td>
+                            <td style={{ padding: "12px", textAlign: "center" }}>
+                              <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: "500", backgroundColor: sale.sellingPaymentType === "Full Payment" ? "#d4edda" : "#f8d7da", color: sale.sellingPaymentType === "Full Payment" ? "#155724" : "#721c24" }}>{sale.sellingPaymentType}</span>
+                            </td>
+                            <td style={{ padding: "12px", textAlign: "center", fontSize: "12px", color: "#6c757d" }}>{new Date(sale.saleDate || sale.createdAt).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+
+            //show tables here
           </div>
-        ) : (
-          <div style={{
-            padding: "40px 20px",
-            textAlign: "center",
-            color: "#6c757d",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "10px",
-            border: "1px dashed #dee2e6",
-            marginTop: "20px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
-          }}>
-            <div style={{
-              fontSize: "48px",
-              marginBottom: "16px",
-              color: "#adb5bd"
-            }}>
-              <i className="fas fa-user-friends"></i>
             </div>
-            <h3 style={{
-              margin: "0 0 8px 0",
-              color: "#495057",
-              fontWeight: "500"
-            }}>
-              No Party Selected
-            </h3>
-            <p style={{
-              margin: "0",
-              fontSize: "14px"
-            }}>
-              Please select a party from the dropdown and click "Get Party Record"
-            </p>
           </div>
         )}
+
       </div>
     </div>
   )

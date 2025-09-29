@@ -823,6 +823,8 @@ const SoldInvoice = () => {
       text: 'www.conceptmobiles.net',
     },
     qr: 'qr-code.png',
+    dataReceived: dataReceived,
+    phoneDetail: phoneDetail,
   };
   // {
   //   shopInfo: shop?.address || 'Shop info not available',
@@ -1734,12 +1736,12 @@ const SoldInvoice = () => {
                       )}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
-                      phoneDetail[0]?.batteryHealth && (
+                      phoneDetail.some(item => item?.batteryHealth && String(item.batteryHealth).trim() !== '') && (
                         <th style={styles.th}>Battery Health</th>
                       )}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
-                      phoneDetail[0]?.color && <th style={styles.th}>Color</th>}
+                      phoneDetail.some(item => item?.color && String(item.color).trim() !== '') && <th style={styles.th}>Color</th>}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
                       phoneDetail[0]?.simOption && (
@@ -1828,7 +1830,7 @@ const SoldInvoice = () => {
                         }}
                       >
                         {Array.isArray(phoneDetail) &&
-                          phoneDetail[0]?.ramMemory ? (
+                          phoneDetail.some(item => item?.ramMemory && String(item.ramMemory).trim() !== '') ? (
                           <div>
                             {phoneDetail.map((item, i) => (
                               <div key={i}>{item.ramMemory || 'N/A'}</div>
@@ -1861,6 +1863,10 @@ const SoldInvoice = () => {
                             </div>
                           ) : dataReceived?.batteryHealth ? (
                             <span>{dataReceived.batteryHealth}</span>
+                          ) : (Array.isArray(phoneDetail) && phoneDetail.some(item => item?.batteryHealth && String(item.batteryHealth).trim() !== '')) ? (
+                            <span>{phoneDetail.map((item, i) => (
+                              <div key={i}>{item.batteryHealth || 'N/A'}</div>
+                            ))}</span>
                           ) : (
                             'Not Available'
                           )}
@@ -1883,6 +1889,10 @@ const SoldInvoice = () => {
                               <div key={i}>{item.color || 'N/A'}</div>
                             ))}
                           </div>
+                        ) : (Array.isArray(phoneDetail) && phoneDetail.some(item => item?.color && String(item.color).trim() !== '')) ? (
+                          <span>{phoneDetail.map((item, i) => (
+                            <div key={i}>{item.color || 'N/A'}</div>
+                          ))}</span>
                         ) : (
                           'Not Available'
                         )}
@@ -1948,6 +1958,11 @@ const SoldInvoice = () => {
                     )}
 
                     {/* Price */}
+                      {/* { dataReceived?.invoice?.totalAmount
+                        ? `${dataReceived.invoice.totalAmount.toLocaleString()}`
+                        : dataReceived?.finalPrice
+                          ? `${dataReceived.finalPrice.toLocaleString()}`
+                          : 'Not Available'} */}
                     <td
                       style={{
                         padding: '8px',
@@ -1956,14 +1971,37 @@ const SoldInvoice = () => {
                         textAlign: 'right',
                       }}
                     >
-                      {dataReceived?.invoice?.totalAmount
-                        ? `${dataReceived.invoice.totalAmount.toLocaleString()}`
-                        : dataReceived?.finalPrice
-                          ? `${dataReceived.finalPrice.toLocaleString()}`
-                          : 'Not Available'}
+                      {Array.isArray(dataReceived?.imeiPrices) && dataReceived.imeiPrices.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+                          {dataReceived.imeiPrices.map((item, idx) => (
+                            <div
+                              key={`${item.imei}-${idx}`}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '4px 8px',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '4px',
+                                maxWidth: '100%'
+                              }}
+                            >
+                            
+                              <span style={{ fontSize: '12px', fontWeight: 600, }}> {Number(item.price || 0).toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : dataReceived?.invoice?.totalAmount ? (
+                        `${Number(dataReceived.invoice.totalAmount).toLocaleString()}`
+                      ) : dataReceived?.finalPrice ? (
+                        `${Number(dataReceived.finalPrice).toLocaleString()}`
+                      ) : (
+                        'Not Available'
+                      )}
                     </td>
 
                     {/* Warranty */}
+                  
                     {dataReceived.writtenImeis?.length <= 1 && (
                       <td
                         style={{
@@ -2302,20 +2340,15 @@ const SoldInvoice = () => {
           <SmallInvoiceComponent invoiceData={smallInvoiceData} />
         )}
         <InvoiceComponent
+        dataReceived={dataReceived}
           invoiceNumber={
             invoiceData.invoiceNumber ?? dataReceived?.invoiceNumber
           }
+          imeiPrices={dataReceived?.imeiPrices}
           companyName={
             dataReceived?.companyName ??
             phoneDetail?.companyName ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.companyName}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.companyName) ??
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].companyName ??
             dataReceived?.type ??
             ''
@@ -2323,14 +2356,7 @@ const SoldInvoice = () => {
           modelName={
             dataReceived?.modelName ??
             phoneDetail?.modelName ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.modelName}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.modelName) ??
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].modelName ??
             dataReceived?.type ??
             ''
@@ -2338,53 +2364,25 @@ const SoldInvoice = () => {
           batteryHealth={
             dataReceived?.batteryHealth ??
             phoneDetail?.batteryHealth ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.batteryHealth}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.batteryHealth) ??
             ''
           }
           ramMemory={
             dataReceived?.ramMemory ??
             phoneDetail?.ramMemory ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.ramMemory}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.ramMemory) ??
             ''
           }
           color={
             dataReceived?.color ??
             phoneDetail?.color ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.color}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.color) ??
             ''
           }
           simOption={
             dataReceived?.simOption ??
             phoneDetail?.simOption ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.simOption}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.simOption) ??
             ''
           }
           type={

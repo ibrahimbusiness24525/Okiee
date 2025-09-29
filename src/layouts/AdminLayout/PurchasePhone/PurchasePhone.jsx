@@ -91,6 +91,8 @@ const PurchasePhone = ({
     },
     isApprovedFromEgadgets: true, // Matches `isApprovedFromEgadgets`
     eGadgetStatusPicture: '', // Matches `eGadgetStatusPicture`
+    cnicFrontPic: null, // NEW: For CNIC front photo
+    cnicBackPic: null,
   });
 
   const handleAddIMEI = (imei) => {
@@ -260,22 +262,38 @@ const PurchasePhone = ({
     formData.append('imei1', singlePurchase.imei1); // Use correct field name
     formData.append('imei2', singlePurchase.imei2);
     formData.append('color', singlePurchase.color);
-    formData.append('name', singlePurchase.name);
+    formData.append('name',singlePurchase.entityData.name);
+    // formData.append('name', singlePurchase.name);
     formData.append('fatherName', singlePurchase.fatherName);
     formData.append('date', singlePurchase.date);
     formData.append('cnic', singlePurchase.cnic);
     formData.append('warranty', singlePurchase.warranty);
-    formData.append('paymentType', singlePurchase.paymentType);
-    formData.append('payableAmountNow', singlePurchase.payableAmountNow);
-    formData.append('payableAmountLater', singlePurchase.payableAmountLater);
-    formData.append('paymentDate', singlePurchase.paymentDate);
-
+    // Mirror bulk purchase semantics
+    formData.append('purchasePaymentType', singlePurchase.paymentType);
+    if (singlePurchase.paymentType === 'credit') {
+      formData.append(
+        'creditPaymentData',
+        JSON.stringify({
+          payableAmountNow: Number(singlePurchase.payableAmountNow || 0),
+          payableAmountLater: Number(singlePurchase.payableAmountLater || 0),
+          dateOfPayment: singlePurchase.paymentDate || '',
+        })
+      );
+    }
+// Append CNIC photos
+if (singlePurchase.cnicFrontPic) {
+  formData.append('cnicFrontPic', singlePurchase.cnicFrontPic);
+}
+if (singlePurchase.cnicBackPic) {
+  formData.append('cnicBackPic', singlePurchase.cnicBackPic);
+}
     // Convert accessories to JSON string to maintain its array format
     formData.append('accessories', JSON.stringify(singlePurchase.accessories));
 
     formData.append('phoneCondition', singlePurchase.phoneCondition);
     formData.append('ramMemory', singlePurchase.ramMemory);
-    formData.append('mobileNumber', singlePurchase.mobileNumber);
+    // formData.append('mobileNumber', singlePurchase.mobileNumber);
+    formData.append('mobileNumber', singlePurchase.entityData.number);
 
     // Append approval status
     formData.append(
@@ -285,6 +303,11 @@ const PurchasePhone = ({
 
     // Include shop ID from the logged-in user
     formData.append('shopid', user._id);
+
+    // Include entityData if provided
+    if (singlePurchase?.entityData) {
+      formData.append('entityData', JSON.stringify(singlePurchase.entityData));
+    }
 
     // Append image fields (ensure they are valid File objects)
     if (singlePurchase.phonePicture) {

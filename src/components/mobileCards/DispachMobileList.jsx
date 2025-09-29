@@ -485,11 +485,11 @@ const DispachMobilesList = () => {
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          // onClick={() => handleReturn(phone)}
-                          onClick={() => {
-                            setSelectedDispatchId(phone._id);
-                            setShowSinglePhoneDispatchModal(true);
-                          }}
+                          onClick={() => handleReturn(phone)}
+                          // onClick={() => {
+                          //   setSelectedDispatchId(phone._id);
+                          //   setShowSinglePhoneDispatchModal(true);
+                          // }}
                           style={{
                             marginRight: '0.5rem',
                             padding: '5px 10px',
@@ -754,11 +754,11 @@ const DispachMobilesList = () => {
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          // onClick={() => handleReturn(phone)}
-                          onClick={() => {
-                            setSelectedDispatchId(phone._id);
-                            setShowSinglePhoneDispatchModal(true);
-                          }}
+                          onClick={() => handleReturn(phone)}
+                          // onClick={() => {
+                          //   setSelectedDispatchId(phone._id);
+                          //   setShowSinglePhoneDispatchModal(true);
+                          // }}
                           style={{
                             marginRight: '0.5rem',
                             padding: '5px 10px',
@@ -1333,7 +1333,7 @@ const DispachMobilesList = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal
+      {/* <Modal
         show={showSinglePhoneDispatchModal}
         onHide={() => setShowSinglePhoneDispatchModal(false)}
       >
@@ -1405,7 +1405,7 @@ const DispachMobilesList = () => {
             Dispatch
           </Button>
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
     </>
   );
 };

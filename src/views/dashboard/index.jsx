@@ -1,7 +1,7 @@
-import React from 'react';
+import { api } from '../../../api/api';
+import React, { useEffect, useState } from 'react';
 import { Row, Col, Card, Table, Tabs, Tab } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-
 import avatar1 from '../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../assets/images/user/avatar-3.jpg';
@@ -125,6 +125,38 @@ const DashDefault = () => {
       </div>
     </React.Fragment>
   );
+  const [persons, setPersons] = useState([]);
+  const [isLoadingPersons, setIsLoadingPersons] = useState(true);
+  const [showReceivablesTotal, setShowReceivablesTotal] = useState(false);
+  const [showPayablesTotal, setShowPayablesTotal] = useState(false);
+  const avatarsArr = [avatar1, avatar2, avatar3];
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setIsLoadingPersons(true);
+        const res = await api.get('/api/person/all');
+        if (mounted) {
+          setPersons(res?.data || []);
+        }
+      } catch (e) {
+        // silent
+      } finally {
+        if (mounted) setIsLoadingPersons(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const payables = persons.filter((p) => (p.takingCredit || 0) > (p.givingCredit || 0));
+  const receivables = persons.filter((p) => (p.givingCredit || 0) > (p.takingCredit || 0));
+
+  const totalReceivables = receivables.reduce((sum, p) => sum + Math.max((p.givingCredit || 0) - (p.takingCredit || 0), 0), 0);
+  const totalPayables = payables.reduce((sum, p) => sum + Math.max((p.takingCredit || 0) - (p.givingCredit || 0), 0), 0);
+
   return (
     <React.Fragment>
       <Row>
@@ -154,8 +186,9 @@ const DashDefault = () => {
             </Card>
           </Link>
         </Col>
+
         <Col xl={6} xxl={4} style={{ marginBottom: 25 }}>
-          <Link to={'/app/dashboard/partyLedger'}>
+          <Link to={'/app/dashboard/getCustomerRecord'}>
             <Card
               style={{
                 borderRadius: 10,
@@ -167,7 +200,7 @@ const DashDefault = () => {
                   className="mb-1 mr-20"
                   style={{ fontSize: 30, color: '#04a9f5' }}
                 >
-                  Parties
+                    Customer Records
                 </h6>
                 <div className="row d-flex align-items-center">
                   <div className="col-9"></div>
@@ -198,7 +231,8 @@ const DashDefault = () => {
             </Card>
           </Link>
         </Col>
-        <Col md={6} xl={8}>
+
+        <Col >
           <Card
             className="Recent-Users widget-focus-lg"
             style={{
@@ -207,137 +241,146 @@ const DashDefault = () => {
             }}
           >
             <Card.Header>
-              <Card.Title as="h5">Recent Users</Card.Title>
+              <Card.Title as="h5" style={{ fontWeight: 800, letterSpacing: '0.2px' }}>Payables & Receivables</Card.Title>
             </Card.Header>
-            <Card.Body className="px-0 py-0 ">
-              <Table responsive hover className="recent-users">
-                <tbody>
-                  <tr className="unread">
-                    <td>
-                      <img
-                        className="rounded-circle"
-                        style={{ width: '40px' }}
-                        src={avatar1}
-                        alt="activity-user"
-                      />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Isabella Christensen</h6>
-                      <p className="m-0">
-                        Lorem Ipsum is simply dummy text of…
-                      </p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-green f-10 m-r-15" />
-                        11 MAY 12:56
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="unread">
-                    <td>
-                      <img
-                        className="rounded-circle"
-                        style={{ width: '40px' }}
-                        src={avatar2}
-                        alt="activity-user"
-                      />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Mathilde Andersen</h6>
-                      <p className="m-0">
-                        Lorem Ipsum is simply dummy text of…
-                      </p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-red f-10 m-r-15" />
-                        11 MAY 10:35
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="unread">
-                    <td>
-                      <img
-                        className="rounded-circle"
-                        style={{ width: '40px' }}
-                        src={avatar3}
-                        alt="activity-user"
-                      />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Karla Sorensen</h6>
-                      <p className="m-0">
-                        Lorem Ipsum is simply dummy text of…
-                      </p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-green f-10 m-r-15" />9
-                        MAY 17:38
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="unread">
-                    <td>
-                      <img
-                        className="rounded-circle"
-                        style={{ width: '40px' }}
-                        src={avatar1}
-                        alt="activity-user"
-                      />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Ida Jorgensen</h6>
-                      <p className="m-0">
-                        Lorem Ipsum is simply dummy text of…
-                      </p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted f-w-300">
-                        <i className="fa fa-circle text-c-red f-10 m-r-15" />
-                        19 MAY 12:56
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-            </Card.Body>
+            <div style={{ padding: 0,width: '100%',}}>
+              <div
+                style={{
+                  display: 'flex',
+                  padding:"26px",
+                  gap:"10px",
+                  alignItems:"center",
+                  justifyContent:"center",
+                  
+                }}
+              >
+                {/* Receivables Section */}
+                <div style={{ flex: '0 0 50%', width: '50%', minWidth: 0, boxSizing: 'border-box' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', backgroundColor: '#ecfdf5', border: '1px solid #86efac', padding: '8px 10px', borderRadius: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <h6 style={{ margin: 0, fontWeight: 800, color: '#166534' }}>Receivables</h6>
+                      <span style={{ fontSize: '12px', color: '#065f46', backgroundColor: '#d1fae5', padding: '2px 8px', borderRadius: 999 }}>{receivables.length}</span>
+                    </div>
+                    <span
+                      onClick={() => setShowReceivablesTotal((s) => !s)}
+                      title={showReceivablesTotal ? 'Hide total' : 'Show total'}
+                      style={{ cursor: 'pointer', color: '#065f46', fontSize: 16 }}
+                      className="fa fa-eye"
+                    />
+                  </div>
+                  {showReceivablesTotal && (
+                    <div style={{ marginBottom: '8px', backgroundColor: '#f0fdf4', border: '1px dashed #86efac', padding: '8px 10px', borderRadius: 8, color: '#166534', fontWeight: 700 }}>
+                      Total Receivables: Rs. {totalReceivables.toLocaleString()}
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      maxHeight: '360px',
+                      overflowY: 'auto',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    {isLoadingPersons ? (
+                      <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center', width: '100%' }}>Loading…</div>) : (
+                      receivables.length === 0 ? (
+                        <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center', width: '100%' }}>No receivables</div>
+                      ) : (
+                        receivables.map((p, idx) => {
+                          const amount = (p.givingCredit || 0) - (p.takingCredit || 0);
+                          return (
+                            <div key={p._id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '10px 12px',
+                                borderBottom: '1px solid #f3f4f6',
+                                gap: '10px',
+                              }}
+                            >
+                              <img src={avatarsArr[idx % avatarsArr.length]} alt="avatar"
+                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <h6 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#14532d' }}>{p.name}</h6>
+                                  <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 700 }}>Rs. {Math.abs(amount).toLocaleString()}</span>
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#6b7280' }}>{p.number}</div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {/* Payables Section */}
+                <div style={{ flex: '0 0 50%', width: '50%', minWidth: 0, boxSizing: 'border-box' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '8px 10px', borderRadius: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <h6 style={{ margin: 0, fontWeight: 800, color: '#7f1d1d' }}>Payables</h6>
+                      <span style={{ fontSize: '12px', color: '#7f1d1d', backgroundColor: '#fee2e2', padding: '2px 8px', borderRadius: 999 }}>{payables.length}</span>
+                    </div>
+                    <span
+                      onClick={() => setShowPayablesTotal((s) => !s)}
+                      title={showPayablesTotal ? 'Hide total' : 'Show total'}
+                      style={{ cursor: 'pointer', color: '#7f1d1d', fontSize: 16 }}
+                      className="fa fa-eye"
+                    />
+                  </div>
+                  {showPayablesTotal && (
+                    <div style={{ marginBottom: '8px', backgroundColor: '#fef2f2', border: '1px dashed #fecaca', padding: '8px 10px', borderRadius: 8, color: '#7f1d1d', fontWeight: 700 }}>
+                      Total Payables: Rs. {totalPayables.toLocaleString()}
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      maxHeight: '360px',
+                      overflowY: 'auto',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    {isLoadingPersons ? (
+                      <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center' }}>Loading…</div>) : (
+                      payables.length === 0 ? (
+                        <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center' }}>No payables</div>
+                      ) : (
+                        payables.map((p, idx) => {
+                          const amount = (p.takingCredit || 0) - (p.givingCredit || 0);
+                          return (
+                            <div key={p._id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '10px 12px',
+                                borderBottom: '1px solid #f3f4f6',
+                                gap: '10px',
+                              }}
+                            >
+                              <img src={avatarsArr[idx % avatarsArr.length]} alt="avatar"
+                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <h6 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#7f1d1d' }}>{p.name}</h6>
+                                  <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: 700 }}>Rs. {Math.abs(amount).toLocaleString()}</span>
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#6b7280' }}>{p.number}</div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </Card>
         </Col>
-        <Col md={6} xl={4}>
+
+        {/* <Col md={6} xl={4}>
           <Card
             className="card-event"
             style={{
@@ -362,7 +405,6 @@ const DashDefault = () => {
                   <i className="feather icon-zap f-30 text-c-green" />
                 </div>
                 <div className="col">
-                  {/* <h3 className="f-w-300">235</h3> */}
                   <span className="d-block text-uppercase">total ideas</span>
                 </div>
               </div>
@@ -373,7 +415,6 @@ const DashDefault = () => {
                   <i className="feather icon-zap f-30 text-c-green" />
                 </div>
                 <div className="col">
-                  {/* <h3 className="f-w-300">235</h3> */}
                   <span className="d-block text-uppercase">total ideas</span>
                 </div>
               </div>
@@ -384,13 +425,12 @@ const DashDefault = () => {
                   <i className="feather icon-zap f-30 text-c-green" />
                 </div>
                 <div className="col">
-                  {/* <h3 className="f-w-300">235</h3> */}
                   <span className="d-block text-uppercase">total ideas</span>
                 </div>
               </div>
             </Card.Body>
           </Card>
-        </Col>
+        </Col> */}
 
         <Col md={6} xl={12} className="user-activity">
           <Card

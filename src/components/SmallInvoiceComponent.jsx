@@ -15,6 +15,12 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
         no: 1,
         name: 'OG Meta Quest 3 12/512',
         code: '25558389123',
+        model: 'Quest 3',
+        brand: 'Meta',
+        color: 'Black',
+        simOption: 'Dual SIM',
+        batteryHealth: '95%',
+        warranty: '12 months',
         qty: 1,
         rate: '187,500',
         amount: '187,500',
@@ -57,6 +63,89 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
   };
 
   const data = invoiceData || staticInvoiceData;
+  console.log("data",data)
+
+  // Build items from phoneDetail/IMEI data when provided; fallback to data.items
+  const phoneDetailArray = Array.isArray(data?.phoneDetail)
+    ? data.phoneDetail
+    : (Array.isArray(data?.dataReceived?.phoneDetail) ? data.dataReceived.phoneDetail : []);
+  const imeiPricesArray = Array.isArray(data?.imeiPrices)
+    ? data.imeiPrices
+    : (Array.isArray(data?.dataReceived?.imeiPrices) ? data.dataReceived.imeiPrices : []);
+  const imeisArray = Array.isArray(data?.writtenImeis)
+    ? data.writtenImeis
+    : (Array.isArray(data?.dataReceived?.writtenImeis)
+      ? data.dataReceived.writtenImeis
+      : (Array.isArray(data?.addedImeis)
+        ? data.addedImeis
+        : (Array.isArray(data?.dataReceived?.addedImeis) ? data.dataReceived.addedImeis : [])));
+
+  const parseMoney = (value) => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return isNaN(value) ? 0 : value;
+    const cleaned = String(value).replace(/[,\s]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const toCurrency = (n) => {
+    const num = parseMoney(n);
+    return num.toLocaleString();
+  };
+
+  // Build map of prices by IMEI for reliable lookup irrespective of order
+  const priceByImei = (imeiPricesArray || []).reduce((acc, row) => {
+    const key = row && row.imei != null ? String(row.imei) : '';
+    if (key) acc[key] = parseMoney(row.price);
+    return acc;
+  }, {});
+
+  const computedItems = (() => {
+    // If we have explicit phone details or per-IMEI prices, synthesize items
+    if (phoneDetailArray.length > 0 || imeiPricesArray.length > 0 || imeisArray.length > 0) {
+      // Prefer to drive rows by phoneDetail when present, else by IMEIs, else by imeiPrices
+      const baseLen = phoneDetailArray.length || imeisArray.length || imeiPricesArray.length;
+      const warranty = data?.warranty || data?.dataReceived?.warranty || '';
+
+      return Array.from({ length: baseLen }, (_, index) => {
+        const detail = phoneDetailArray[index] || {};
+        const fallbackImei = (imeiPricesArray[index] && imeiPricesArray[index].imei) || '';
+        const imei = (detail && (detail.imei1 || detail.imei)) || imeisArray[index] || fallbackImei || '';
+
+        const model = detail?.modelName || (Array.isArray(data?.modelName) ? data.modelName[index] : (Array.isArray(data?.dataReceived?.modelName) ? data.dataReceived.modelName[index] : (data?.modelName || data?.dataReceived?.modelName))) || 'N/A';
+        const brand = detail?.companyName || (Array.isArray(data?.companyName) ? data.companyName[index] : (Array.isArray(data?.dataReceived?.companyName) ? data.dataReceived.companyName[index] : (data?.companyName || data?.dataReceived?.companyName))) || 'N/A';
+        const color = detail?.color ?? (Array.isArray(data?.color) ? data.color[index] : (Array.isArray(data?.dataReceived?.color) ? data.dataReceived.color[index] : (data?.color || data?.dataReceived?.color))) ?? 'N/A';
+        const simOption = detail?.simOption ?? (Array.isArray(data?.simOption) ? data.simOption[index] : (Array.isArray(data?.dataReceived?.simOption) ? data.dataReceived.simOption[index] : (data?.simOption || data?.dataReceived?.simOption))) ?? 'N/A';
+        const batteryHealth = detail?.batteryHealth ?? (Array.isArray(data?.batteryHealth) ? data.batteryHealth[index] : (Array.isArray(data?.dataReceived?.batteryHealth) ? data.dataReceived.batteryHealth[index] : (data?.batteryHealth || data?.dataReceived?.batteryHealth))) ?? 'N/A';
+
+        const qty = 1;
+        // Prefer price by exact IMEI match; fallback to indexed imeiPrices
+        const lookupPrice = imei && priceByImei.hasOwnProperty(String(imei))
+          ? priceByImei[String(imei)]
+          : parseMoney(imeiPricesArray[index]?.price);
+        const rateNum = lookupPrice;
+        const amountNum = rateNum * qty;
+
+        return {
+          no: index + 1,
+          name: model,
+          code: imei || '-',
+          model,
+          brand,
+          color,
+          simOption,
+          batteryHealth,
+          warranty: warranty || 'N/A',
+          qty,
+          rate: toCurrency(rateNum),
+          amount: toCurrency(amountNum),
+        };
+      });
+    }
+
+    // Fallback to provided items as-is
+    return Array.isArray(data?.items) ? data.items : [];
+  })();
 
   const handlePrintInvoice = () => {
     const printWindow = window.open('', '_blank', 'width=400,height=600');
@@ -69,7 +158,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
   const termsHtml = (Array.isArray(data?.termsAndConditions) ? data.termsAndConditions : [])
     .map((item, index) => `
     <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-      <strong style="font-weight: 600; color: #333; margin-right: 4px;">
+      <strong style="font-weight: 600; color: #000; margin-right: 4px;">
         ${index + 1}.
       </strong>
       <span>${item}</span>
@@ -78,12 +167,18 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
     .join('');
   const generateInvoiceHTML = () => {
     // Helper to render items rows
-    const itemsRows = data.items
+    const itemsRows = computedItems
       .map(
         (item) => `
           <tr>
               <td>${item.no}</td>
               <td>${item.name}<br>${item.code}</td>
+              <td>${item.model || 'N/A'}</td>
+              <td>${item.brand || 'N/A'}</td>
+              <!-- <td>${item.color || 'N/A'}</td> -->
+              <td>${item.simOption || 'N/A'}</td>
+              <!-- <td>${item.batteryHealth || 'N/A'}</td> -->
+              <td>${item.warranty || 'N/A'}</td>
               <td>${item.qty}</td>
               <td>${item.rate}</td>
               <td>${item.amount}</td>
@@ -171,7 +266,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               margin: 2mm 0;
           }
           .customer b {
-              color: #c00;
+              color: #000;
           }
           table {
               width: 100%;
@@ -181,20 +276,44 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
           table th,
           table td {
               border: 1px solid #000;
-              padding: 1mm;
+              padding: 0.5mm;
               text-align: center;
               vertical-align: top;
-              font-size: 12px;
+              font-size: 8px;
           }
           table th:first-child,
           table td:first-child {
               text-align: left;
-              width: 8%;
+              width: 5%;
           }
           table th:nth-child(2),
           table td:nth-child(2) {
               text-align: left;
-              width: 52%;
+              width: 25%;
+          }
+          table th:nth-child(3),
+          table td:nth-child(3),
+          table th:nth-child(4),
+          table td:nth-child(4),
+          table th:nth-child(5),
+          table td:nth-child(5),
+          table th:nth-child(6),
+          table td:nth-child(6),
+          table th:nth-child(7),
+          table td:nth-child(7),
+          table th:nth-child(8),
+          table td:nth-child(8) {
+              text-align: center;
+              width: 8%;
+          }
+          table th:nth-child(9),
+          table td:nth-child(9),
+          table th:nth-child(10),
+          table td:nth-child(10),
+          table th:nth-child(11),
+          table td:nth-child(11) {
+              text-align: center;
+              width: 6%;
           }
           .summary {
               display: flex;
@@ -219,11 +338,11 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               width: 10mm;
           }
           .summary .right .net .value {
-              color: #c00;
+              color: #000;
               font-weight: bold;
           }
           .summary .right .deposit .label {
-              color: #0a0;
+              color: #000;
           }
           .operator {
               font-size: 10px;
@@ -293,7 +412,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
           </div>
           <div class="meta">
               <div><strong>Date:</strong> ${data.date}</div>
-              <div><strong>Inv#:</strong> ${data.invoiceNumber}</div>
+              // <div><strong>Inv#:</strong> ${data.invoiceNumber}</div>
           </div>
           <div class="customer">
               <strong>Name:</strong> <b>${data.customer.name}</b><br>
@@ -304,6 +423,12 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               <tr>
                   <th>No</th>
                   <th>Sold Items</th>
+                  <th>Model</th>
+                  <th>Brand</th>
+                  <!-- <th>Color</th> -->
+                  <th>SIM</th>
+                  <!-- <th>Battery</th> -->
+                  <th>Warranty</th>
                   <th>Qty</th>
                   <th>Rate</th>
                   <th>Amount</th>
@@ -328,7 +453,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               padding: '8px',
               borderTop: '1px solid #ccc',
               fontSize: '6px',
-              color: '#333',
+              color: '#000',
               fontFamily: 'Arial, sans-serif',
             }}
           >
@@ -338,14 +463,14 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                 fontSize: '12px',
                 marginBottom: '4px',
                 textTransform: 'uppercase',
-                color: '#111',
+                color: '#000',
               }}
             >
               Terms & Conditions
             </div>
 
-            <div style="margin-top: 10px; padding: 8px; border-top: 1px solid #ccc; font-size: 6px; color: #333; font-family: Arial, sans-serif">
-        <div  style="font-weight: bold; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; color: #111">
+            <div style="margin-top: 10px; padding: 8px; border-top: 1px solid #ccc; font-size: 6px; color: #000; font-family: Arial, sans-serif">
+        <div  style="font-weight: bold; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; color: #000">
           Terms & Conditions
         </div>
         <div style="font-size: 8px; display: flex; flex-direction: column; gap: 2px">
@@ -395,7 +520,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
           style={{
             textAlign: 'center',
             marginBottom: '20px',
-            color: '#333',
+            color: '#000',
             fontSize: '18px',
           }}
         >
@@ -462,13 +587,13 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               <strong>Date:</strong> {data.date}
             </div>
             <div>
-              <strong>Inv#:</strong> {data.invoiceNumber}
+              {/* <strong>Inv#:</strong> {data.invoiceNumber} */}
             </div>
           </div>
 
           <div style={{ fontSize: '12px', margin: '5px 0' }}>
             <strong>Name:</strong>{' '}
-            <span style={{ color: '#c00' }}>{data.customer.name}</span>
+            <span style={{ color: '#000' }}>{data.customer.name}</span>
             <br />
             <strong>Cel No:</strong> {data.customer.phone}
           </div>
@@ -478,7 +603,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               width: '100%',
               borderCollapse: 'collapse',
               margin: '10px 0',
-              fontSize: '12px',
+              fontSize: '8px',
             }}
           >
             <thead>
@@ -486,7 +611,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                 <th
                   style={{
                     border: '1px solid #000',
-                    padding: '3px',
+                    padding: '2px',
                     textAlign: 'left',
                   }}
                 >
@@ -495,30 +620,48 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                 <th
                   style={{
                     border: '1px solid #000',
-                    padding: '3px',
+                    padding: '2px',
                     textAlign: 'left',
                   }}
                 >
                   Sold Items
                 </th>
-                <th style={{ border: '1px solid #000', padding: '3px' }}>
+                <th style={{ border: '1px solid #000', padding: '2px' }}>
+                  Model
+                </th>
+                <th style={{ border: '1px solid #000', padding: '2px' }}>
+                  Brand
+                </th>
+                {/* <th style={{ border: '1px solid #000', padding: '2px' }}>
+                  Color
+                </th> */}
+                <th style={{ border: '1px solid #000', padding: '2px' }}>
+                  SIM
+                </th>
+                {/* <th style={{ border: '1px solid #000', padding: '2px' }}>
+                  Battery
+                </th> */}
+                <th style={{ border: '1px solid #000', padding: '2px' }}>
+                  Warranty
+                </th>
+                <th style={{ border: '1px solid #000', padding: '2px' }}>
                   Qty
                 </th>
-                <th style={{ border: '1px solid #000', padding: '3px' }}>
+                <th style={{ border: '1px solid #000', padding: '2px' }}>
                   Rate
                 </th>
-                <th style={{ border: '1px solid #000', padding: '3px' }}>
+                <th style={{ border: '1px solid #000', padding: '2px' }}>
                   Amount
                 </th>
               </tr>
             </thead>
             <tbody>
-              {data.items.map((item) => (
+              {computedItems.map((item) => (
                 <tr key={item.no}>
-                  <td style={{ border: '1px solid #000', padding: '3px' }}>
+                  <td style={{ border: '1px solid #000', padding: '2px' }}>
                     {item.no}
                   </td>
-                  <td style={{ border: '1px solid #000', padding: '3px' }}>
+                  <td style={{ border: '1px solid #000', padding: '2px' }}>
                     {item.name}
                     <br />
                     {item.code}
@@ -526,7 +669,61 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   <td
                     style={{
                       border: '1px solid #000',
-                      padding: '3px',
+                      padding: '2px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.model || 'N/A'}
+                  </td>
+                  <td
+                    style={{
+                      border: '1px solid #000',
+                      padding: '2px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.brand || 'N/A'}
+                  </td>
+                  {/* <td
+                    style={{
+                      border: '1px solid #000',
+                      padding: '2px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.color || 'N/A'}
+                  </td> */}
+                  <td
+                    style={{
+                      border: '1px solid #000',
+                      padding: '2px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.simOption || 'N/A'}
+                  </td>
+                  {/* <td
+                    style={{
+                      border: '1px solid #000',
+                      padding: '2px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.batteryHealth || 'N/A'}
+                  </td> */}
+                  <td
+                    style={{
+                      border: '1px solid #000',
+                      padding: '2px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.warranty || 'N/A'}
+                  </td>
+                  <td
+                    style={{
+                      border: '1px solid #000',
+                      padding: '2px',
                       textAlign: 'center',
                     }}
                   >
@@ -535,7 +732,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   <td
                     style={{
                       border: '1px solid #000',
-                      padding: '3px',
+                      padding: '2px',
                       textAlign: 'center',
                     }}
                   >
@@ -544,7 +741,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   <td
                     style={{
                       border: '1px solid #000',
-                      padding: '3px',
+                      padding: '2px',
                       textAlign: 'center',
                     }}
                   >
@@ -656,7 +853,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                 }}
               >
                 <span>Net Total:</span>
-                <span style={{ color: '#c00', fontWeight: 'bold' }}>
+                <span style={{ color: '#000', fontWeight: 'bold' }}>
                   {data.summary.netTotal}
                 </span>
               </div>
@@ -678,7 +875,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   marginBottom: '3px',
                 }}
               >
-                <span style={{ color: '#0a0' }}>Bank Deposit:</span>
+                <span style={{ color: '#000' }}>Bank Deposit:</span>
                 <span>{data.summary.bankDeposit}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -802,7 +999,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               padding: '8px',
               borderTop: '1px solid #ccc',
               fontSize: '6px',
-              color: '#333',
+              color: '#000',
               fontFamily: 'Arial, sans-serif',
             }}
           >
@@ -812,7 +1009,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                 fontSize: '12px',
                 marginBottom: '4px',
                 textTransform: 'uppercase',
-                color: '#111',
+                color: '#000',
               }}
             >
               Terms & Conditions
@@ -840,7 +1037,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   <strong
                     style={{
                       fontWeight: '600',
-                      color: '#333',
+                      color: '#000',
                       marginRight: '4px',
                     }}
                   >

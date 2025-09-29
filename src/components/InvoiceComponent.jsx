@@ -21,7 +21,6 @@
 //   termsAndConditions = [],
 // }) => {
 //   const invoiceRef = useRef();
-//   console.log('saleData', saleData);
 //   if (!display) {
 //     return null;
 //   }
@@ -898,6 +897,7 @@ import { jsPDF } from 'jspdf';
 export const InvoiceComponent = ({
   accessoriesData = {},
   saleData,
+  imeiPrices = [],
   companyName = '',
   modelName = '',
   warranty = '',
@@ -912,8 +912,13 @@ export const InvoiceComponent = ({
   ramMemory = '',
   invoiceNumber = '',
   termsAndConditions = [],
+  dataReceived = {},
 }) => {
   const invoiceRef = useRef();
+
+
+// Check individual array elements
+
 
   // Check if we're dealing with accessories
   const isAccessoryInvoice = accessoriesData?.sales?.length > 0;
@@ -1013,9 +1018,12 @@ export const InvoiceComponent = ({
     const date = new Date(dateString);
     return `${date.getFullYear().toString().substr(-2)}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
   };
-
+  
   // Get total amount based on data structure
   const getTotalAmount = () => {
+    if (imeiPrices?.length > 0) {
+      return imeiPrices.reduce((sum, item) => sum + Number(item.price || 0), 0);
+    }
     if (isAccessoryInvoice) {
       return accessoriesData.sales.reduce(
         (sum, item) => sum + item.perPiecePrice * item.quantity,
@@ -1038,6 +1046,124 @@ export const InvoiceComponent = ({
   };
 
   const totalAmount = getTotalAmount();
+
+  // Build per-IMEI details if provided (prefer dataReceived.imeiPrices, then imeiPrices prop)
+  const sourceImeiPrices = Array.isArray(dataReceived?.imeiPrices) && dataReceived.imeiPrices.length > 0
+    ? dataReceived.imeiPrices
+    : (Array.isArray(imeiPrices) ? imeiPrices : []);
+
+  // Prefer dataReceived.ramSimDetails; fallback to saleData.ramSimDetails
+  const ramSource = (dataReceived?.ramSimDetails || saleData?.ramSimDetails || []);
+  const ramImeiIndex = (ramSource)
+    .flatMap(r => r?.imeiNumbers || [])
+    .reduce((idx, n) => {
+      if (n?.imei1) idx[String(n.imei1)] = n;
+      return idx;
+    }, {});
+
+  // If no IMEI prices but we have array data, create perImeiDetails from arrays
+  let perImeiDetails = [];
+  
+  if (sourceImeiPrices.length > 0) {
+    // Use IMEI prices data
+    perImeiDetails = sourceImeiPrices.map((item, index) => {
+    const imei1 = String(item?.imei ?? '');
+    const node = ramImeiIndex?.[imei1];
+    
+    // Get values from arrays, using index to match IMEI with corresponding attributes
+    const getArrayValue = (arr, fallback = 'N/A') => {
+      if (Array.isArray(arr) && arr[index] !== undefined && arr[index] !== '') {
+        return arr[index];
+      }
+      return fallback;
+    };
+
+    const result = {
+      imei: imei1,
+      price: Number(item?.price || 0),
+      color: (node?.color !== undefined ? node.color : getArrayValue(dataReceived?.color, getArrayValue(color, 'N/A'))),
+      simOption: (node?.simOption !== undefined ? node.simOption : getArrayValue(dataReceived?.simOption, getArrayValue(simOption, 'N/A'))),
+      batteryHealth: (node?.batteryHealth !== undefined ? node.batteryHealth : getArrayValue(dataReceived?.batteryHealth, getArrayValue(batteryHealth, 'N/A'))),
+      warranty: saleData?.warranty ? saleData.warranty : (warranty ? warranty : 'N/A'),
+      qv: 1,
+      model: (node?.modelName !== undefined ? node.modelName : 
+              (dataReceived?.modelName && Array.isArray(dataReceived.modelName) && dataReceived.modelName[index] ? dataReceived.modelName[index] : 
+               (Array.isArray(modelName) && modelName[index] ? modelName[index] : 
+                (dataReceived?.modelName && !Array.isArray(dataReceived.modelName) ? dataReceived.modelName :
+                 (modelName && !Array.isArray(modelName) ? modelName : 'PHONE')))) || 'PHONE'),
+      brand: (node?.companyName !== undefined ? node.companyName : 
+              (dataReceived?.companyName && Array.isArray(dataReceived.companyName) && dataReceived.companyName[index] ? dataReceived.companyName[index] : 
+               (Array.isArray(companyName) && companyName[index] ? companyName[index] : 
+                (dataReceived?.companyName && !Array.isArray(dataReceived.companyName) ? dataReceived.companyName :
+                 (companyName && !Array.isArray(companyName) ? companyName : 'BRAND')))) || 'BRAND'),
+    };
+
+ 
+    return result;
+  });
+  } else {
+    // Fallback: create perImeiDetails from array data if available
+    
+    const maxLength = Math.max(
+      Array.isArray(modelName) ? modelName.length : 0,
+      Array.isArray(companyName) ? companyName.length : 0,
+      Array.isArray(color) ? color.length : 0,
+      Array.isArray(batteryHealth) ? batteryHealth.length : 0,
+      Array.isArray(simOption) ? simOption.length : 0,
+      Array.isArray(ramMemory) ? ramMemory.length : 0
+    );
+
+
+
+    if (maxLength > 0) {
+      perImeiDetails = Array.from({ length: maxLength }, (_, index) => {
+        const getArrayValue = (arr, fallback = 'N/A') => {
+          if (Array.isArray(arr) && arr[index] !== undefined && arr[index] !== '') {
+            return arr[index];
+          }
+          return fallback;
+        };
+
+
+
+        const result = {
+          imei: `IMEI-${index + 1}`,
+          price: totalAmount / maxLength, // Distribute total amount equally
+          color: getArrayValue(dataReceived?.color, getArrayValue(color, 'N/A')),
+          simOption: getArrayValue(dataReceived?.simOption, getArrayValue(simOption, 'N/A')),
+          batteryHealth: getArrayValue(dataReceived?.batteryHealth, getArrayValue(batteryHealth, 'N/A')),
+          warranty: saleData?.warranty ? saleData.warranty : (warranty ? warranty : 'N/A'),
+          qv: 1,
+          model: (dataReceived?.modelName && Array.isArray(dataReceived.modelName) && dataReceived.modelName[index] ? dataReceived.modelName[index] : 
+                  (Array.isArray(modelName) && modelName[index] ? modelName[index] : 
+                   (dataReceived?.modelName && !Array.isArray(dataReceived.modelName) ? dataReceived.modelName :
+                    (modelName && !Array.isArray(modelName) ? modelName : 'PHONE')))),
+          brand: (dataReceived?.companyName && Array.isArray(dataReceived.companyName) && dataReceived.companyName[index] ? dataReceived.companyName[index] : 
+                  (Array.isArray(companyName) && companyName[index] ? companyName[index] : 
+                   (dataReceived?.companyName && !Array.isArray(dataReceived.companyName) ? dataReceived.companyName :
+                    (companyName && !Array.isArray(companyName) ? companyName : 'BRAND')))),
+        };
+
+        console.log(`Fallback IMEI ${index + 1} details:`, result);
+        return result;
+      });
+    } else {
+      console.log('No array data found for fallback - maxLength is 0');
+    }
+  }
+
+  const perImeiTotal = perImeiDetails.reduce((sum, x) => sum + Number(x.price || 0), 0);
+
+  // Debug logging for perImeiDetails
+  console.log('perImeiDetails:', perImeiDetails);
+  console.log('perImeiDetails.length:', perImeiDetails.length);
+  console.log('sourceImeiPrices:', sourceImeiPrices);
+
+  // Decide which attribute columns to show based on availability across IMEIs
+  const showColorCol = perImeiDetails.some(x => x.color && x.color !== 'N/A');
+  const showSimCol = perImeiDetails.some(x => x.simOption && x.simOption !== 'N/A');
+  const showBatteryCol = perImeiDetails.some(x => x.batteryHealth && x.batteryHealth !== 'N/A');
+  const showWarrantyCol = perImeiDetails.some(x => x.warranty && x.warranty !== 'N/A');
 
   // Function to handle PDF download
   const handleDownloadPDF = async () => {
@@ -1407,7 +1533,7 @@ export const InvoiceComponent = ({
           style={{
             display: 'flex',
             borderBottom: '2px solid #000',
-            marginBottom: '15px',
+            marginBottom: '8px',
             justifyContent: 'space-between',
             alignItems: 'center',
           }}
@@ -1471,28 +1597,27 @@ export const InvoiceComponent = ({
             color: '#000',
             display: 'flex',
             justifyContent: 'space-between',
-            marginBottom: '15px',
             fontSize: '14px',
           }}
         >
           <div>
-            <strong>Date :</strong>{' '}
+            <strong style={{fontWeight: 'bold', color: '#000'}}>Date :</strong>{' '}
             {formatDate(
               isAccessoryInvoice
                 ? new Date()
                 : saleData?.date || saleData?.saleDate || saleData.createdAt
             )}
           </div>
-          <div>
+          {/* <div>
             <strong>Invoice #</strong>{' '}
             {invoiceNumber ||
               (isAccessoryInvoice
                 ? `ACC-${Math.floor(Math.random() * 10000)}`
                 : '0000')}
-          </div>
+          </div> */}
         </div>
 
-        <div style={{ marginBottom: '15px', fontSize: '14px', color: '#000' }}>
+        <div style={{ marginBottom: '8px', fontSize: '14px', color: '#000' }}>
           <div>
             <strong style={{ fontWeight: 'bold', color: '#000' }}>
               Customer Name:
@@ -1529,194 +1654,154 @@ export const InvoiceComponent = ({
               border: '1px solid #000',
             }}
           >
-            <thead>
-              <tr style={{ borderBottom: '1px solid #000' }}>
-                <th
-                  style={{
-                    textAlign: 'left',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  Model No
-                </th>
-                <th
-                  style={{
-                    textAlign: 'left',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  Brand
-                </th>
-                {color && (
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '5px',
-                      border: '1px solid #000',
-                    }}
-                  >
-                    Color
-                  </th>
-                )}
-                {simOption && (
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '5px',
-                      border: '1px solid #000',
-                    }}
-                  >
-                    simOption
-                  </th>
-                )}
-                {ramMemory && (
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '5px',
-                      border: '1px solid #000',
-                    }}
-                  >
-                    Ram Memory
-                  </th>
-                )}
-                {batteryHealth && (
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '5px',
-                      border: '1px solid #000',
-                    }}
-                  >
-                    Battery Health
-                  </th>
-                )}
-                {type && (
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '5px',
-                      border: '1px solid #000',
-                    }}
-                  >
-                    Type
-                  </th>
-                )}
-                {warranty && (
-                  <th
-                    style={{
-                      textAlign: 'right',
-                      padding: '5px',
-                      border: '1px solid #000',
-                    }}
-                  >
-                    Wrnty
-                  </th>
-                )}
-                <th
-                  style={{
-                    textAlign: 'right',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  Inv. Price
-                </th>
-                <th
-                  style={{
-                    textAlign: 'center',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  QV
-                </th>
-                <th
-                  style={{
-                    textAlign: 'right',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  Total Amount
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ padding: '5px', border: '1px solid #000' }}>
-                  {modelName || 'PHONE'}
-                </td>
-                <td style={{ padding: '5px', border: '1px solid #000' }}>
-                  {companyName || 'BRAND'}
-                </td>
-                {color && (
-                  <td style={{ padding: '5px', border: '1px solid #000' }}>
-                    {color}
-                  </td>
-                )}
-                {simOption && (
-                  <td style={{ padding: '5px', border: '1px solid #000' }}>
-                    {simOption}
-                  </td>
-                )}
-                {ramMemory && (
-                  <td style={{ padding: '5px', border: '1px solid #000' }}>
-                    {ramMemory}
-                  </td>
-                )}
-                {batteryHealth && (
-                  <td style={{ padding: '5px', border: '1px solid #000' }}>
-                    {batteryHealth}
-                  </td>
-                )}
-                {type && (
-                  <td style={{ padding: '5px', border: '1px solid #000' }}>
-                    {type}
-                  </td>
-                )}
-                {warranty && (
-                  <td
-                    style={{
-                      textAlign: 'right',
-                      padding: '5px',
-                      border: '1px solid #000',
-                    }}
-                  >
-                    {warranty}
-                  </td>
-                )}
-                <td
-                  style={{
-                    textAlign: 'right',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  {formatNumber(totalAmount)}
-                </td>
-                <td
-                  style={{
-                    textAlign: 'center',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  1
-                </td>
-                <td
-                  style={{
-                    textAlign: 'right',
-                    padding: '5px',
-                    border: '1px solid #000',
-                  }}
-                >
-                  {formatNumber(totalAmount)}
-                </td>
-              </tr>
-            </tbody>
+            {perImeiDetails.length > 0 ? (
+              <>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #000' }}>
+                    <th style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>No.</th>
+                    <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Model No</th>
+                    <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Brand</th>
+                    {showColorCol && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Color</th>
+                    )}
+                    {showSimCol && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>SIM</th>
+                    )}
+                    {showBatteryCol && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Battery</th>
+                    )}
+                    {showWarrantyCol && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Warranty</th>
+                    )}
+                    <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>Inv. Price</th>
+                    <th style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>QV</th>
+                    <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {perImeiDetails.map((row, idx) => (
+                    <tr key={`${row.imei}-${idx}`}>
+                      <td style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>{idx + 1}</td>
+                      <td style={{ padding: '5px', border: '1px solid #000' }}>{row.model}</td>
+                      <td style={{ padding: '5px', border: '1px solid #000' }}>{row.brand}</td>
+                      {showColorCol && (
+                        <td style={{ padding: '5px', border: '1px solid #000' }}>{row.color || 'N/A'}</td>
+                      )}
+                      {showSimCol && (
+                        <td style={{ padding: '5px', border: '1px solid #000' }}>{row.simOption || 'N/A'}</td>
+                      )}
+                      {showBatteryCol && (
+                        <td style={{ padding: '5px', border: '1px solid #000' }}>{row.batteryHealth || 'N/A'}</td>
+                      )}
+                      {showWarrantyCol && (
+                        <td style={{ padding: '5px', border: '1px solid #000' }}>{row.warranty || 'N/A'}</td>
+                      )}
+                      <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>{formatNumber(row.price)}</td>
+                      <td style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>{row.qv}</td>
+                      <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>{formatNumber(row.price * row.qv)}</td>
+                    </tr>
+                  ))}
+                  {(() => {
+                    const colSpan = 1 /* No. column */
+                      + 1 /* model */
+                      + 1 /* brand */
+                      + (showColorCol ? 1 : 0)
+                      + (showSimCol ? 1 : 0)
+                      + (showBatteryCol ? 1 : 0)
+                      + (showWarrantyCol ? 1 : 0)
+                      + 1 /* Inv. Price */
+                      + 1 /* QV */;
+                    return (
+                      <tr>
+                        <td colSpan={colSpan} style={{ textAlign: 'right', padding: '5px', border: '1px solid #000', fontWeight: 'bold' }}>Total</td>
+                        <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000', fontWeight: 'bold' }}>{formatNumber(perImeiTotal)}</td>
+                      </tr>
+                    );
+                  })()}
+                </tbody>
+              </>
+            ) : (
+              <>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #000' }}>
+                    <th style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>No.</th>
+                    <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Model No</th>
+                    <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Brand</th>
+                    {color && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Color</th>
+                    )}
+                    {simOption && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>simOption</th>
+                    )}
+                    {ramMemory && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Ram Memory</th>
+                    )}
+                    {batteryHealth && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Battery Health</th>
+                    )}
+                    {type && (
+                      <th style={{ textAlign: 'left', padding: '5px', border: '1px solid #000' }}>Type</th>
+                    )}
+                    {warranty && (
+                      <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>Wrnty</th>
+                    )}
+                    <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>Inv. Price</th>
+                    <th style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>QV</th>
+                    <th style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>1</td>
+                    <td style={{ padding: '5px', border: '1px solid #000' }}>
+                      {modelName || 'PHONE'}
+                    </td>
+                    <td style={{ padding: '5px', border: '1px solid #000' }}>
+                      {companyName || 'BRAND'}
+                    </td>
+                    {color && (
+                      <td style={{ padding: '5px', border: '1px solid #000' }}>
+                        {color}
+                      </td>
+                    )}
+                    {simOption && (
+                      <td style={{ padding: '5px', border: '1px solid #000' }}>
+                        {simOption}
+                      </td>
+                    )}
+                    {ramMemory && (
+                      <td style={{ padding: '5px', border: '1px solid #000' }}>
+                        {ramMemory}
+                      </td>
+                    )}
+                    {batteryHealth && (
+                      <td style={{ padding: '5px', border: '1px solid #000' }}>
+                        {batteryHealth}
+                      </td>
+                    )}
+                    {type && (
+                      <td style={{ padding: '5px', border: '1px solid #000' }}>
+                        {type}
+                      </td>
+                    )}
+                    {warranty && (
+                      <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                        {warranty}
+                      </td>
+                    )}
+                    <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                      {formatNumber(totalAmount)}
+                    </td>
+                    <td style={{ textAlign: 'center', padding: '5px', border: '1px solid #000' }}>
+                      1
+                    </td>
+                    <td style={{ textAlign: 'right', padding: '5px', border: '1px solid #000' }}>
+                      {formatNumber(totalAmount)}
+                    </td>
+                  </tr>
+                </tbody>
+              </>
+            )}
           </table>
         )}
 
@@ -1728,6 +1813,7 @@ export const InvoiceComponent = ({
             border: '1px solid #000',
             textTransform: 'uppercase',
             padding: '5px',
+            marginBottom: '6px',
           }}
         >
           {numberToWords(totalAmount)}
@@ -1794,7 +1880,7 @@ export const InvoiceComponent = ({
         <div
           style={{
             color: '#000',
-            marginTop: '15px',
+            marginTop: '8px',
             fontSize: '14px',
             display: 'flex',
             gap: '10px',
@@ -1807,6 +1893,7 @@ export const InvoiceComponent = ({
               style={{
                 fontSize: '5px',
                 display: 'flex',
+                lineHeight: '1.2',
                 flexDirection: 'column',
               }}
             >
@@ -1814,7 +1901,6 @@ export const InvoiceComponent = ({
                 <p key={index}>
                   <strong
                     style={{
-                      margin: 0,
                       fontWeight: '600',
                       color: '#333',
                       width: '100%',
@@ -1873,9 +1959,9 @@ export const InvoiceComponent = ({
             color: '#000',
             display: 'flex',
             justifyContent: 'space-between',
-            marginTop: '30px',
-            fontSize: '14px',
-            paddingTop: '15px',
+            marginTop: '10px',
+            fontSize: '12px',
+            paddingTop: '6px',
           }}
         >
           <div>Checked By:______</div>

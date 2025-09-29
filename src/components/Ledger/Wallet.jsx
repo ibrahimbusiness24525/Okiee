@@ -48,8 +48,10 @@ const Wallet = () => {
         amount: Number(formData.accountCash),
         ...(type === 'add'
           ? { sourceOfAmountAddition: formData.sourceOfAmountAddition }
-          : { sourceOfAmountDeduction: formData.sourceOfAmountDeduction }),
+          : { reasonOfAmountDeduction: formData.sourceOfAmountDeduction }),
       });
+      setAddPocketCashModal(false);
+      setRemovePocketCashModal(false);
       toast.success('transaction is successful!');
       fetchTotalCash();
     } catch (error) {
@@ -108,6 +110,7 @@ const Wallet = () => {
       );
       toast.success('Cash added successfully!');
       getAllBanks();
+      setShowModal(false);
     } catch (error) {
       console.error('Error adding cash:', error);
       toast.error('Error adding cash!');
@@ -127,6 +130,8 @@ const Wallet = () => {
       );
       toast.success('Cash removed successfully!');
       getAllBanks();
+      setShowRemovalModal(false);
+
     } catch (error) {
       console.error('Error removed cash:', error);
       toast.error('Error removed cash!');

@@ -12,6 +12,7 @@ import { Button } from 'react-bootstrap';
 import { get } from 'jquery';
 import { toast } from 'react-toastify';
 import Modal from 'components/Modal/Modal';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 
 const SaleInvoices = () => {
   const [search, setSearch] = useState('');
@@ -57,6 +58,17 @@ const SaleInvoices = () => {
   };
   console.log('allInvoices', allbulkSales);
   const [accessoriesRecords, setAccessoriesRecords] = useState([]);
+  const [showBulkReturnModal, setShowBulkReturnModal] = useState(false);
+  const [selectedBulkSale, setSelectedBulkSale] = useState(null);
+  const [bulkReturnForm, setBulkReturnForm] = useState({
+    imeiSelections: [], // { imei1: string, selected: boolean, returnPrice: number }
+  });
+  const [walletTransaction, setWalletTransaction] = useState({
+    bankAccountUsed: '',
+    amountFromBank: '',
+    amountFromPocket: '',
+  });
+  const [showWalletTransactionModal, setShowWalletTransactionModal] = useState(false);
   const getAccessoriesRecords = async () => {
     try {
       const response = await api.get(`api/accessory/accessoryRecord`);
@@ -133,6 +145,66 @@ const SaleInvoices = () => {
   };
   console.log('allInvoices', allInvoices);
   console.log('allBulkSales', allbulkSales);
+  const openBulkReturnModal = (bulkSale) => {
+    const imeiArray = Array.isArray(bulkSale?.imei1) ? bulkSale.imei1 : [];
+    const imeiSelections = imeiArray.map((im) => ({
+      imei1: im,
+      selected: false,
+      returnPrice: Number(bulkSale?.salePrice) || 0,
+    }));
+    setSelectedBulkSale(bulkSale);
+    setBulkReturnForm({ imeiSelections });
+    setWalletTransaction({ bankAccountUsed: '', amountFromBank: '', amountFromPocket: '' });
+    setShowBulkReturnModal(true);
+  };
+
+  const toggleImeiSelection = (index) => {
+    setBulkReturnForm((prev) => {
+      const copy = [...prev.imeiSelections];
+      copy[index] = { ...copy[index], selected: !copy[index].selected };
+      return { ...prev, imeiSelections: copy };
+    });
+  };
+
+  const updateImeiReturnPrice = (index, value) => {
+    const numeric = Number(value);
+    setBulkReturnForm((prev) => {
+      const copy = [...prev.imeiSelections];
+      copy[index] = { ...copy[index], returnPrice: isNaN(numeric) ? 0 : numeric };
+      return { ...prev, imeiSelections: copy };
+    });
+  };
+
+  const handleSubmitBulkReturn = async () => {
+    try {
+      if (!selectedBulkSale?._id) {
+        toast.error('Invalid bulk sale record');
+        return;
+      }
+      const imeiNumbersWithPrices = bulkReturnForm.imeiSelections
+        .filter((x) => x.selected)
+        .map((x) => ({ imei1: x.imei1, returnPrice: Number(x.returnPrice) || 0 }));
+
+      const payload = {
+        bulkSoldId: selectedBulkSale._id,
+        imeiNumbersWithPrices,
+        bankAccountUsed: walletTransaction.bankAccountUsed || undefined,
+        pocketCash: walletTransaction.amountFromPocket ? Number(walletTransaction.amountFromPocket) : undefined,
+        accountCash: walletTransaction.amountFromBank ? Number(walletTransaction.amountFromBank) : undefined,
+      };
+
+      await api.post('api/Purchase/return-bulk-sold-to-purchase', payload);
+      toast.success('Bulk phones returned successfully');
+      setShowBulkReturnModal(false);
+      setSelectedBulkSale(null);
+      setBulkReturnForm({ imeiSelections: [] });
+      setWalletTransaction({ bankAccountUsed: '', amountFromBank: '', amountFromPocket: '' });
+      getAllBulkSales();
+    } catch (error) {
+      console.error('Error returning bulk sold phones:', error);
+      toast.error(error?.response?.data?.message || 'Error returning bulk phones');
+    }
+  };
   const handleReturnSinglePhone = async (invoice) => {
     setShowUpdateReturnModal(true);
     setReturningPhoneDetail({
@@ -484,6 +556,20 @@ const SaleInvoices = () => {
                   <FaPrint style={{ marginRight: '8px' }} />
                   Get Invoice
                 </Button>
+                <Button
+                  onClick={() => openBulkReturnModal(obj)}
+                  style={{
+                    backgroundColor: '#d32f2f',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaBackward style={{ marginRight: '8px' }} />
+                  Return
+                </Button>
               </div>
             );
           },
@@ -500,7 +586,7 @@ const SaleInvoices = () => {
         Accessory Record
       </h3>
       <Table
-        array={accessoriesRecords}
+        array={accessoriesRecords.reverse()}
         search="accessoryName"
         keysToDisplay={[
           'type',
@@ -909,6 +995,87 @@ const SaleInvoices = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Bulk Return Modal */}
+      {showBulkReturnModal && (
+        <Modal
+          toggleModal={() => setShowBulkReturnModal(false)}
+          show={showBulkReturnModal}
+          size="md"
+        >
+          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#333' }}>Return Bulk Phones</h3>
+
+            <div style={{ fontSize: '14px', color: '#555' }}>
+              <div><strong>Customer:</strong> {selectedBulkSale?.customerName || '-'}</div>
+              <div><strong>Invoice Date:</strong> {selectedBulkSale?.dateSold ? dateFormatter(selectedBulkSale.dateSold) : '-'}</div>
+            </div>
+
+            <div style={{ maxHeight: '50vh', overflowY: 'auto', border: '1px solid #eee', borderRadius: '6px', padding: '10px' }}>
+              {bulkReturnForm.imeiSelections.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#888' }}>No IMEIs found</div>
+              ) : (
+                bulkReturnForm.imeiSelections.map((row, idx) => (
+                  <div key={row.imei1 + idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+                    <input type="checkbox" checked={!!row.selected} onChange={() => toggleImeiSelection(idx)} />
+                    <div style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px' }}>{row.imei1}</div>
+                    <input
+                      type="number"
+                      value={row.returnPrice}
+                      onChange={(e) => updateImeiReturnPrice(idx, e.target.value)}
+                      placeholder="Return price"
+                      style={{ width: '140px', padding: '6px 8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                    />
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '14px', color: '#333' }}>
+                <strong>Selected:</strong> {bulkReturnForm.imeiSelections.filter((x) => x.selected).length}
+                {' '} | {' '}
+                <strong>Total Return:</strong> {
+                  bulkReturnForm.imeiSelections
+                    .filter((x) => x.selected)
+                    .reduce((sum, x) => sum + (Number(x.returnPrice) || 0), 0)
+                    .toLocaleString()
+                }
+              </div>
+
+              <button
+                onClick={() => setShowWalletTransactionModal(true)}
+                style={{ padding: '8px 12px', backgroundColor: '#6c5ce7', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Proceed To Pay
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                onClick={() => setShowBulkReturnModal(false)}
+                style={{ padding: '8px 12px', backgroundColor: '#f0f0f0', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitBulkReturn}
+                style={{ padding: '8px 12px', backgroundColor: '#1890ff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Confirm Return
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      <WalletTransactionModal
+        show={showWalletTransactionModal}
+        toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+        singleTransaction={walletTransaction}
+        setSingleTransaction={setWalletTransaction}
+        type="purchase"
+      />
     </div>
   );
 };

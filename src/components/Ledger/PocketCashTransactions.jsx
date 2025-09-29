@@ -206,12 +206,10 @@ const PocketCashTransactions = () => {
               return (
                 <tr
                   key={txn._id}
-                  style={{
-                    borderBottom: '1px solid #f0f0f0',
-                    ':hover': {
-                      backgroundColor: '#f8f9fa',
-                    },
-                  }}
+                                     style={{
+                     borderBottom: '1px solid #f0f0f0',
+                     backgroundColor: txn.reasonOfAmountDeduction && typeof txn.reasonOfAmountDeduction === 'string' && txn.reasonOfAmountDeduction.toLowerCase().includes('purchase') || txn.reasonOfAmountDeduction && typeof txn.reasonOfAmountDeduction === 'string' && txn.reasonOfAmountDeduction.toLowerCase().includes('take')  || txn.reasonOfAmountDeduction && typeof txn.reasonOfAmountDeduction === 'string' && !txn.reasonOfAmountDeduction.toLowerCase().includes('take credit') || txn.reasonOfAmountDeduction && typeof txn.reasonOfAmountDeduction === 'string' && txn.reasonOfAmountDeduction.toLowerCase().includes('return') ? '#ffebee' : '#e8f5e8',
+                   }}
                 >
                   <td
                     style={{
