@@ -190,15 +190,38 @@ const Table = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState([]);
 
+  // Helper function to search in nested IMEI structure
+  const searchInNestedImei = (obj, searchTerm) => {
+    if (!obj.ramSimDetails || !Array.isArray(obj.ramSimDetails)) {
+      return false;
+    }
+    
+    return obj.ramSimDetails.some(ramSim => 
+      ramSim.imeiNumbers && Array.isArray(ramSim.imeiNumbers) &&
+      ramSim.imeiNumbers.some(imei => 
+        imei.imei1 && String(imei.imei1).toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  };
+
   useEffect(() => {
     setRecordsPerPage(
       array &&
-        array.filter((obj) =>
-          searchedData === "" ||
-          String(obj[search])?.toLowerCase().includes(searchedData.toLowerCase())
-        )
+        array.filter((obj) => {
+          if (searchedData === "") return true;
+          
+          const searchTerm = searchedData.toLowerCase();
+          
+          // Handle nested IMEI search for bulk purchases
+          if (search === 'imeiNumbers') {
+            return searchInNestedImei(obj, searchTerm);
+          }
+          
+          // Handle regular property search
+          return String(obj[search])?.toLowerCase().includes(searchTerm);
+        })
     );
-  }, [searchedData]);
+  }, [searchedData, search, array]);
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * noOfRecordsPerPage;

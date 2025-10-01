@@ -63,9 +63,23 @@ const CustomerRecord = () => {
   const getSoldRecord = async () => {
     try {
       const response = await api.get(`/api/Purchase/customer-sold-record/${customerNumber}`);
-      setSoldRecord(response?.data || []);
+      const responseData = response?.data?.data;
+      
+      if (responseData) {
+        // Combine all record types into a single array for backward compatibility
+        const allRecords = [
+          ...(responseData.singlePurchases || []).map(record => ({ ...record, type: "purchase" })),
+          ...(responseData.singleSales || []).map(record => ({ ...record, type: "sold" })),
+          ...(responseData.bulkPurchases || []).map(record => ({ ...record, type: "purchase" })),
+          ...(responseData.bulkSales || []).map(record => ({ ...record, type: "sold" }))
+        ];
+        setSoldRecord(allRecords);
+      } else {
+        setSoldRecord([]);
+      }
     } catch (error) {
       console.error("Error fetching sold record:", error);
+      setSoldRecord([]);
     }
   };
 
@@ -216,7 +230,8 @@ const CustomerRecord = () => {
           <RecordSection>
             <StyledHeading>Sold Phone Records</StyledHeading>
             {soldRecord.filter(r => r.type === "sold").map((record, index) => {
-              const doc = record._doc || {};
+              // Handle both old structure (_doc) and new structure (direct record)
+              const doc = record._doc || record;
               return (
                 <Card key={doc._id || index} type="sold">
                   <CardHeader>Sold Phone</CardHeader>
@@ -284,28 +299,91 @@ const CustomerRecord = () => {
           <RecordSection>
             <StyledHeading>Purchased Phone Records</StyledHeading>
             {soldRecord.filter(r => r.type === "purchase").map((record, index) => {
-              const doc = record._doc || {};
+              // Handle both old structure (_doc) and new structure (direct record)
+              const doc = record._doc || record;
+              
+              // Check if this is a bulk purchase record
+              const isBulkPurchase = doc.ramSimDetails && Array.isArray(doc.ramSimDetails);
+              
               return (
                 <Card key={doc._id || index} type="purchase">
-                  <CardHeader>Purchased Phone</CardHeader>
+                  <CardHeader>{isBulkPurchase ? "Bulk Purchase" : "Purchased Phone"}</CardHeader>
                   <InfoGrid>
+                    {/* Party/Person information */}
+                    {doc.personId?.name && <InfoItem><strong>Party Name:</strong> {doc.personId.name}</InfoItem>}
                     {doc.name && <InfoItem><strong>Customer Name:</strong> {doc.name}</InfoItem>}
-                    {doc.modelName && <InfoItem><strong>Model:</strong> {doc.modelName}</InfoItem>}
-                    {doc.imei1 && <InfoItem><strong>IMEI 1:</strong> {doc.imei1}</InfoItem>}
-                    {doc.imei2 && <InfoItem><strong>IMEI 2:</strong> {doc.imei2}</InfoItem>}
-                    {doc.price?.purchasePrice && <InfoItem><strong>Purchase Price:</strong> Rs {doc.price.purchasePrice}</InfoItem>}
-                    {doc.price?.finalPrice && <InfoItem><strong>Final Price:</strong> Rs {doc.price.finalPrice}</InfoItem>}
-                    {doc.price?.demandPrice && <InfoItem><strong>Demand Price:</strong> Rs {doc.price.demandPrice}</InfoItem>}
-                    {doc.color && <InfoItem><strong>Color:</strong> {doc.color}</InfoItem>}
-                    {doc.ramMemory && <InfoItem><strong>RAM:</strong> {doc.ramMemory}</InfoItem>}
-                    {doc.warranty && <InfoItem><strong>Warranty:</strong> {doc.warranty}</InfoItem>}
-                    {doc.specifications && <InfoItem><strong>Specifications:</strong> {doc.specifications}</InfoItem>}
-                    {doc.phoneCondition && <InfoItem><strong>Condition:</strong> {doc.phoneCondition}</InfoItem>}
-                    {doc.batteryHealth && <InfoItem><strong>Battery Health:</strong> {doc.batteryHealth}</InfoItem>}
+                    
+                    {/* Bulk purchase specific fields */}
+                    {isBulkPurchase ? (
+                      <>
+                        {doc.totalQuantity && <InfoItem><strong>Total Quantity:</strong> {doc.totalQuantity}</InfoItem>}
+                        {doc.status && <InfoItem><strong>Status:</strong> {doc.status}</InfoItem>}
+                        {doc.purchasePaymentStatus && <InfoItem><strong>Payment Status:</strong> {doc.purchasePaymentStatus}</InfoItem>}
+                        {doc.purchasePaymentType && <InfoItem><strong>Payment Type:</strong> {doc.purchasePaymentType}</InfoItem>}
+                        {doc.prices?.buyingPrice && <InfoItem><strong>Buying Price:</strong> Rs {doc.prices.buyingPrice}</InfoItem>}
+                        {doc.prices?.dealerPrice && <InfoItem><strong>Dealer Price:</strong> Rs {doc.prices.dealerPrice}</InfoItem>}
+                        
+                        {/* Credit payment details for bulk purchases */}
+                        {doc.creditPaymentData && (
+                          <>
+                            {doc.creditPaymentData.payableAmountNow && (
+                              <InfoItem>
+                                <Dot color="green" />
+                                <strong> Pay Now:</strong> Rs {doc.creditPaymentData.payableAmountNow}
+                              </InfoItem>
+                            )}
+                            {doc.creditPaymentData.payableAmountLater && (
+                              <InfoItem>
+                                <Dot color="red" />
+                                <strong> Pay Later:</strong> Rs {doc.creditPaymentData.payableAmountLater}
+                              </InfoItem>
+                            )}
+                          </>
+                        )}
+                        
+                        {/* RAM/Sim Details */}
+                        {doc.ramSimDetails?.map((ramSim, ramIndex) => (
+                          <div key={ramIndex} style={{ marginTop: "8px", padding: "8px", backgroundColor: "#f8f9fa", borderRadius: "4px" }}>
+                            <InfoItem><strong>Model {ramIndex + 1}:</strong> {ramSim.modelName || "Unknown"}</InfoItem>
+                            <InfoItem><strong>Company:</strong> {ramSim.companyName || "Unknown"}</InfoItem>
+                            <InfoItem><strong>RAM:</strong> {ramSim.ramMemory || "N/A"}</InfoItem>
+                            <InfoItem><strong>SIM:</strong> {ramSim.simOption || "N/A"}</InfoItem>
+                            <InfoItem><strong>Price per unit:</strong> Rs {ramSim.priceOfOne || "N/A"}</InfoItem>
+                            
+                            {/* IMEI Numbers */}
+                            {ramSim.imeiNumbers?.map((imei, imeiIndex) => (
+                              <InfoItem key={imeiIndex}>
+                                <strong>IMEI {imeiIndex + 1}:</strong> {imei.imei1}
+                                {imei.color && <span> (Color: {imei.color})</span>}
+                              </InfoItem>
+                            ))}
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        {/* Single purchase fields */}
+                        {doc.modelName && <InfoItem><strong>Model:</strong> {doc.modelName}</InfoItem>}
+                        {doc.imei1 && <InfoItem><strong>IMEI 1:</strong> {doc.imei1}</InfoItem>}
+                        {doc.imei2 && <InfoItem><strong>IMEI 2:</strong> {doc.imei2}</InfoItem>}
+                        {doc.price?.purchasePrice && <InfoItem><strong>Purchase Price:</strong> Rs {doc.price.purchasePrice}</InfoItem>}
+                        {doc.price?.finalPrice && <InfoItem><strong>Final Price:</strong> Rs {doc.price.finalPrice}</InfoItem>}
+                        {doc.price?.demandPrice && <InfoItem><strong>Demand Price:</strong> Rs {doc.price.demandPrice}</InfoItem>}
+                        {doc.color && <InfoItem><strong>Color:</strong> {doc.color}</InfoItem>}
+                        {doc.ramMemory && <InfoItem><strong>RAM:</strong> {doc.ramMemory}</InfoItem>}
+                        {doc.warranty && <InfoItem><strong>Warranty:</strong> {doc.warranty}</InfoItem>}
+                        {doc.specifications && <InfoItem><strong>Specifications:</strong> {doc.specifications}</InfoItem>}
+                        {doc.phoneCondition && <InfoItem><strong>Condition:</strong> {doc.phoneCondition}</InfoItem>}
+                        {doc.batteryHealth && <InfoItem><strong>Battery Health:</strong> {doc.batteryHealth}</InfoItem>}
+                      </>
+                    )}
+                    
                     {doc.createdAt && <InfoItem><strong>
                       Purchased at: </strong> {dateFormatter(doc.createdAt)}</InfoItem>}
                   </InfoGrid>
-                  {doc.accessories && typeof doc.accessories === "object" && (
+                  
+                  {/* Accessories for single purchases */}
+                  {!isBulkPurchase && doc.accessories && typeof doc.accessories === "object" && (
                     <div style={{ marginTop: "12px" }}>
                       <strong>Accessories:</strong>
                       <AccessoriesList>
