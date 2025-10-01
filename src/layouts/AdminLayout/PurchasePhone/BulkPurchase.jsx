@@ -659,6 +659,7 @@ import CustomSelect from 'components/CustomSelect';
 const BulkPurchaseModal = ({
   handleBulkPhoneModalclose,
   handleSubmit,
+  loading,
   showBulkModal,
   modal,
   type = 'purchase',
@@ -1250,6 +1251,7 @@ const BulkPurchaseModal = ({
                                   ),
                                 }));
                               }}
+                              disabled={loading}
                             >
                               Remove
                             </Button>
@@ -1277,6 +1279,7 @@ const BulkPurchaseModal = ({
                         ),
                       }));
                     }}
+                    disabled={loading}
                   >
                     Add Row
                   </Button>
@@ -1310,6 +1313,7 @@ const BulkPurchaseModal = ({
                   <Button
                     variant="danger"
                     onClick={() => handleRemoveTextBox(idx)}
+                    disabled={loading}
                   >
                     Remove This Entry
                   </Button>
@@ -1322,6 +1326,7 @@ const BulkPurchaseModal = ({
             variant="secondary"
             className="mt-3"
             onClick={handleShowTextBox}
+            disabled={loading}
           >
             Add Another Quantity
           </Button>
@@ -1493,10 +1498,10 @@ const BulkPurchaseModal = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleBulkPhoneModalclose}>
+        <Button variant="secondary" onClick={handleBulkPhoneModalclose} disabled={loading}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleFinalSubmit}>
+        <Button variant="primary" onClick={handleFinalSubmit} disabled={loading}>
           {/* <Button variant="primary" onClick={handleSubmit}> */}
           Save
         </Button>

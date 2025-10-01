@@ -183,6 +183,7 @@ import { FaFileAlt, FaPhone, FaPlus, FaUser } from 'react-icons/fa';
 const NavLeft = () => {
   const navigate = useNavigate();
   const windowSize = useWindowSize();
+  const [loading, setLoading] = useState(false);
   const [showAddPhoneModal, setShowAddPhoneModal] = useState(false);
   const [showPurchasePhoneModal, setShowPurchasePhoneModal] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
@@ -786,11 +787,12 @@ const NavLeft = () => {
                 borderRadius: '4px',
                 fontSize: '14px',
               }}
+              disabled={loading}
             />
             <button
               type="submit"
               disabled={isSubmitting}
-              style={{
+                  style={{
                 padding: '12px',
                 width: '100%',
                 backgroundColor: '#4CAF50',
@@ -1270,6 +1272,7 @@ const NavLeft = () => {
                   name="sellingType"
                   value={formData.sellingType}
                   onChange={handleChange}
+                  disabled={loading}
                 >
                   <option value="">Select Selling Type</option>
                   <option value="Exchange">Exchange</option>
@@ -1288,6 +1291,7 @@ const NavLeft = () => {
                       value={formData.payableAmountNow}
                       onChange={handleChange}
                       placeholder="Enter amount payable now"
+                      disabled={loading}
                     />
                   </Form.Group>
 
@@ -1299,6 +1303,7 @@ const NavLeft = () => {
                       value={formData.payableAmountLater}
                       onChange={handleChange}
                       placeholder="Enter amount payable later"
+                      disabled={loading}
                     />
                   </Form.Group>
 
@@ -1341,6 +1346,7 @@ const NavLeft = () => {
                     backgroundColor: "#f8f9fa",
                     cursor: "not-allowed"
                   }}
+                  disabled={loading}
                 />
                 <small className="text-muted">
                   This field is automatically calculated based on the IMEI prices above
@@ -1359,6 +1365,7 @@ const NavLeft = () => {
                       value={formData.imeiInput}
                       onChange={handleChange}
                       placeholder="Enter IMEI number"
+                      disabled={loading}
                     />
                     <Button
                       variant="success"
@@ -1375,6 +1382,7 @@ const NavLeft = () => {
                         }
                       }}
                       className="ms-2"
+                      disabled={loading}
                     >
                       Add
                     </Button>
@@ -1416,6 +1424,7 @@ const NavLeft = () => {
               onClick={() =>
                 setShowWalletTransactionModal(!showWalletTransactionModal)
               }
+              disabled={loading}
             >
               Proceed To Pay
             </Button>
@@ -1427,12 +1436,14 @@ const NavLeft = () => {
             onClick={() =>
               setFormData((prev) => ({ ...prev, showSoldModal: false }))
             }
+            disabled={loading}
           >
             Cancel
           </Button>
           <Button
             variant="primary"
             onClick={async () => {
+              setLoading(true);
               if (
                 !formData.finalPrice ||
                 !formData.warranty ||
@@ -1442,6 +1453,7 @@ const NavLeft = () => {
                 formData.sellingType === ''
               ) {
                 alert('Please fill all fields');
+                setLoading(false);
                 return;
               }
 
@@ -1485,7 +1497,9 @@ const NavLeft = () => {
                 imei: '',
                 imeiPrice: '',
               }));
+              setLoading(false);
             }}
+            disabled={loading}
           >
             Submit
           </Button>

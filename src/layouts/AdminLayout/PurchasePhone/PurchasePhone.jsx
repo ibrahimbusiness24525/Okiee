@@ -19,6 +19,7 @@ const PurchasePhone = ({
 }) => {
   const today = new Date().toISOString().split('T')[0];
   const [banks, setBanks] = useState([]);
+  const[loading, setLoading] = useState(false);
   // const [entitiyData, setEntitiyData] = useState();
   const [bulkData, setBulkData] = useState({
     // partyName: '',
@@ -54,7 +55,7 @@ const PurchasePhone = ({
   const [showSingleModal, setShowSingleModal] = useState(false); // For Single Phone Purchase Modal
   const [showBulkModal, setShowBulkModal] = useState(false); // For Bulk Purchase Modal
   const [showWarranty, setShowWarranty] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [singlePurchase, setSinglePurchase] = useState({
     name: '', // Matches `name` from the backend
     bankAccountUsed: '',
@@ -325,7 +326,7 @@ if (singlePurchase.cnicBackPic) {
     if (editMobile && !bulkEdit) {
       try {
         console.log('Editing mobile record:', editMobile);
-
+        setLoading(true);
         const response = await api.put(
           `/api/Purchase/single-purchase-phone/${editMobile._id}`,
           formData
@@ -335,10 +336,11 @@ if (singlePurchase.cnicBackPic) {
           handleSinglePhoneModalclose();
           handleModalClose();
           resetForm();
+          setLoading(false);
         }
       } catch (error) {
         console.error(error);
-
+        setLoading(false);
         toast('Something went wrong');
       } finally {
         setLoading(false);
@@ -353,6 +355,7 @@ if (singlePurchase.cnicBackPic) {
         //     headers: { "Content-Type": "multipart/form-data" },
         //   }
         // );
+        setLoading(true);
         const response = await api.post(
           `/api/Purchase/purchase-phone`,
           formData
@@ -362,9 +365,11 @@ if (singlePurchase.cnicBackPic) {
           toast('Purchase Phone Record Added Successfully');
           handleSinglePhoneModalclose();
           handleModalClose();
+          setLoading(false);
           // resetForm();
         }
       } catch (error) {
+        setLoading(false);
         toast('Something went wrong');
       } finally {
         setLoading(false);
@@ -458,6 +463,7 @@ if (singlePurchase.cnicBackPic) {
   }, [bulkData.ramSimDetails]);
 
   const handleBulkRecordSubmit = async (finalData) => {
+    setLoading(true);
     if (bulkEdit) {
       try {
         const payload = {
@@ -504,10 +510,11 @@ if (singlePurchase.cnicBackPic) {
           toast('Purchase bulk Record is updated Successfully');
           handleBulkPhoneModalclose();
           handleModalClose();
+          setLoading(false);
         }
       } catch (error) {
         console.error(error);
-
+        setLoading(false);  
         toast(
           error?.response?.data?.message ||
             error?.message ||
@@ -554,7 +561,7 @@ if (singlePurchase.cnicBackPic) {
           entityData: finalData.entityData,
         };
         console.log('Payload for bulk purchase:', payload);
-
+        setLoading(true);
         const response = await api.post(
           `/api/Purchase/bulk-phone-purchase`,
           payload
@@ -564,9 +571,11 @@ if (singlePurchase.cnicBackPic) {
           toast('Purchase bulk Record Added Successfully');
           handleBulkPhoneModalclose();
           handleModalClose();
+          setLoading(false);
         }
       } catch (error) {
         console.error(error);
+        setLoading(false);
 
         toast(
           error?.response?.data?.message ||
@@ -639,6 +648,7 @@ if (singlePurchase.cnicBackPic) {
 
       <BulkPurchaseModal
         type
+        loading={loading}
         handleBulkPhoneModalclose={handleBulkPhoneModalclose}
         handleSubmit={handleBulkRecordSubmit}
         showBulkModal={showBulkModal}
@@ -648,6 +658,7 @@ if (singlePurchase.cnicBackPic) {
         editMobile={editMobile}
       />
       <SingalPurchaseModal
+        loading={loading}
         type={type}
         handleAccessoriesCheck={handleAccessoriesCheck}
         handleSinglePhoneModalclose={handleSinglePhoneModalclose}

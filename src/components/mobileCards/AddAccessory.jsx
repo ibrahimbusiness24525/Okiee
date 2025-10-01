@@ -47,6 +47,8 @@ const AddAccessory = () => {
     _id: '',
   });
   const [showAccessoryModal, setShowAccessoryModal] = useState(false);
+  const [showPrintDemandModal, setShowPrintDemandModal] = useState(false);
+  const [demandList, setDemandList] = useState([]);
   const { data } = useGetAccessories();
   const [filteredData, setFilteredData] = useState(data?.data || []);
 
@@ -352,6 +354,217 @@ const AddAccessory = () => {
     setAccessories(updated);
   };
 
+  // Print Demand functionality
+  const handlePrintDemand = () => {
+    const lowStockAccessories =
+      data?.data?.filter((accessory) => accessory.stock < 10).map((item) => ({
+        ...item,
+        demandQuantity: 0,
+      })) || [];
+    setDemandList(lowStockAccessories);
+    setShowPrintDemandModal(true);
+  };
+
+  const handleRemoveFromDemand = (index) => {
+    const updated = [...demandList];
+    updated.splice(index, 1);
+    setDemandList(updated);
+  };
+
+  const handleAddToDemand = () => {
+    const newAccessory = {
+      accessoryName: '',
+      demandQuantity: 1,
+      _id: `temp_${Date.now()}`,
+      isCustom: true,
+    };
+    setDemandList([...demandList, newAccessory]);
+  };
+
+  const handleDemandItemChange = (index, field, value) => {
+    const updated = [...demandList];
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+    setDemandList(updated);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPDF = () => {
+    const ensureHtml2Pdf = () =>
+      new Promise((resolve, reject) => {
+        if (window.html2pdf) return resolve();
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load html2pdf.js'));
+        document.body.appendChild(script);
+      });
+
+    ensureHtml2Pdf()
+      .then(() => {
+        const container = document.createElement('div');
+        container.style.fontFamily = 'Arial, sans-serif';
+        container.style.margin = '20px';
+        container.innerHTML = `
+          <div style="text-align:center; margin-bottom:16px;">
+            <h2 style="margin:0;">Accessory Demand List</h2>
+          </div>
+          <div style="text-align:right; margin-bottom:8px; font-size:12px;">
+            Date: ${new Date().toLocaleDateString()}
+          </div>
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left; background:#f2f2f2;">Accessory Name</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left; background:#f2f2f2;">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${demandList
+                .map(
+                  (item) => `
+                <tr>
+                  <td style="border:1px solid #ddd; padding:8px;">${item.accessoryName}</td>
+                  <td style="border:1px solid #ddd; padding:8px;">${Number(item.demandQuantity) || 0}</td>
+                </tr>`
+                )
+                .join('')}
+            </tbody>
+          </table>`;
+
+        document.body.appendChild(container);
+        const opt = {
+          margin: 10,
+          filename: `Accessory_Demand_${new Date().toISOString().slice(0,10)}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        };
+        // Give the browser a tick to render the container before converting
+        setTimeout(() => {
+          try {
+            window
+              .html2pdf()
+              .set(opt)
+              .from(container)
+              .save()
+              .then(() => {
+                document.body.removeChild(container);
+              })
+              .catch(async () => {
+                document.body.removeChild(container);
+                // Fallback to jsPDF minimal text PDF
+                await (async () => {
+                  const loadJsPDF = () =>
+                    new Promise((resolve, reject) => {
+                      if (window.jspdf && window.jspdf.jsPDF) return resolve();
+                      const s = document.createElement('script');
+                      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                      s.onload = () => resolve();
+                      s.onerror = () => reject(new Error('Failed to load jsPDF'));
+                      document.body.appendChild(s);
+                    });
+                  try {
+                    await loadJsPDF();
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    let y = 15;
+                    doc.setFontSize(14);
+                    doc.text('Accessory Demand List', 105, y, { align: 'center' });
+                    y += 8;
+                    doc.setFontSize(10);
+                    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, y, { align: 'right' });
+                    y += 8;
+                    doc.setFontSize(11);
+                    doc.text('Accessory Name', 10, y);
+                    doc.text('Quantity', 170, y);
+                    y += 6;
+                    doc.setLineWidth(0.2);
+                    doc.line(10, y, 200, y);
+                    y += 6;
+                    const lineHeight = 6;
+                    demandList.forEach((item) => {
+                      const name = String(item.accessoryName || '');
+                      const qty = String(Number(item.demandQuantity) || 0);
+                      const maxWidth = 150;
+                      const nameLines = doc.splitTextToSize(name, maxWidth);
+                      nameLines.forEach((line, idx) => {
+                        if (y > 280) {
+                          doc.addPage();
+                          y = 15;
+                        }
+                        doc.text(line, 10, y + idx * lineHeight);
+                      });
+                      doc.text(qty, 170, y);
+                      y += Math.max(lineHeight, nameLines.length * lineHeight);
+                    });
+                    doc.save(`Accessory_Demand_${new Date().toISOString().slice(0, 10)}.pdf`);
+                  } catch (e) {
+                    // As last resort, open printable view
+                    const w = window.open('', '_blank');
+                    if (w) {
+                      w.document.write(`
+                        <html><head><title>Accessory Demand List</title>
+                        <style>
+                          body { font-family: Arial, sans-serif; margin: 20px; }
+                          table { width: 100%; border-collapse: collapse; }
+                          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                          th { background-color: #f2f2f2; }
+                        </style></head><body>
+                        <h2>Accessory Demand List</h2>
+                        <table><thead><tr><th>Accessory Name</th><th>Quantity</th></tr></thead><tbody>
+                        ${demandList
+                          .map(
+                            (item) => `<tr><td>${item.accessoryName}</td><td>${Number(item.demandQuantity) || 0}</td></tr>`
+                          )
+                          .join('')}
+                        </tbody></table></body></html>`);
+                      w.document.close();
+                      w.focus();
+                      w.print();
+                    }
+                  }
+                })();
+              });
+          } catch (err) {
+            if (document.body.contains(container)) {
+              document.body.removeChild(container);
+            }
+          }
+        }, 0);
+      })
+      .catch(() => {
+        // Fallback: open printable view
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.write(`
+          <html><head><title>Accessory Demand List</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style></head><body>
+          <h2>Accessory Demand List</h2>
+          <table><thead><tr><th>Accessory Name</th><th>Quantity</th></tr></thead><tbody>
+          ${demandList
+            .map(
+              (item) => `
+            <tr><td>${item.accessoryName}</td><td>${Number(item.demandQuantity) || 0}</td></tr>`
+            )
+            .join('')}
+          </tbody></table></body></html>`);
+        w.document.close();
+        w.focus();
+        w.print();
+      });
+  };
+
   return (
     <div
       style={{
@@ -573,81 +786,106 @@ const AddAccessory = () => {
       <div
         style={{
           display: 'flex',
-          // justifyContent: 'space-between',
+          justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '20px',
           gap: '20px',
         }}
       >
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            padding: '14px 28px',
-            background: 'linear-gradient(to right, #4f46e5, #4f46e5)',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: '600',
-            border: '2px solid #4f46e5',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-            marginBottom: '30px',
-            transition: 'all 0.3s ease',
-            marginRight: '10px',
-            ':hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(16, 185, 129, 0.4)',
-            },
-          }}
-        >
-          + Purchase Accessory
-        </button>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #4f46e5, #4f46e5)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #4f46e5',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              marginRight: '10px',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(16, 185, 129, 0.4)',
+              },
+            }}
+          >
+            + Purchase Accessory
+          </button>
+
+          <button
+            onClick={() => handleSaleAccessory(data)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #ef4444, #f87171)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #dc2626',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              marginRight: '10px',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
+              },
+            }}
+          >
+            - Sale Accessory
+          </button>
+
+          <button
+            onClick={() => setShowAddStockModal(true)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #f59e0b, #fbbf24)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #d97706',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(245, 158, 11, 0.4)',
+              },
+            }}
+          >
+            + Add Stock
+          </button>
+        </div>
 
         <button
-          onClick={() => handleSaleAccessory(data)}
+          onClick={handlePrintDemand}
           style={{
             padding: '14px 28px',
-            background: 'linear-gradient(to right, #ef4444, #f87171)',
+            background: 'linear-gradient(to right, #8b5cf6, #a78bfa)',
             color: 'white',
             fontSize: '16px',
             fontWeight: '600',
-            border: '2px solid #dc2626',
+            border: '2px solid #7c3aed',
             borderRadius: '10px',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-            marginBottom: '30px',
-            transition: 'all 0.3s ease',
-            marginRight: '10px',
-            ':hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
-            },
-          }}
-        >
-          - Sale Accessory
-        </button>
-
-        <button
-          onClick={() => setShowAddStockModal(true)}
-          style={{
-            padding: '14px 28px',
-            background: 'linear-gradient(to right, #f59e0b, #fbbf24)',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: '600',
-            border: '2px solid #d97706',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
             marginBottom: '30px',
             transition: 'all 0.3s ease',
             ':hover': {
               transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(245, 158, 11, 0.4)',
+              boxShadow: '0 6px 16px rgba(139, 92, 246, 0.4)',
             },
           }}
         >
-          + Add Stock
+          📄 Print Demand
         </button>
       </div>
 
@@ -2573,6 +2811,312 @@ const AddAccessory = () => {
         singleTransaction={getPayment}
         setSingleTransaction={setGetPayment}
       />
+
+      {/* Print Demand Modal */}
+      <Modal
+        size="lg"
+        show={showPrintDemandModal}
+        toggleModal={() => setShowPrintDemandModal(!showPrintDemandModal)}
+      >
+        <div id="print-content" style={{ padding: '20px' }}>
+          <style>
+            {`@media print { .no-print { display: none !important; } }`}
+          </style>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+              borderBottom: '2px solid #e2e8f0',
+              paddingBottom: '15px',
+            }}
+          >
+            <h2
+              style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#111827',
+                margin: 0,
+              }}
+            >
+              📄 Accessory Demand List
+            </h2>
+            <div />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+              Items with stock below 10 units
+            </p>
+          </div>
+
+          {demandList.length > 0 ? (
+            <div style={{ marginBottom: '20px' }}>
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                }}
+              >
+                <thead>
+                  <tr style={{ backgroundColor: '#f8fafc' }}>
+                    <th
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Accessory Name
+                    </th>
+                    <th className="no-print"
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Current Quantity
+                    </th>
+                    <th className="no-print"
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Per Piece Price
+                    </th>
+                    <th
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Quantity to Demand
+                    </th>
+                    <th
+                      style={{
+                        padding: '12px',
+                        textAlign: 'center',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {demandList.map((item, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '12px' }}>
+                        {item.isCustom ? (
+                          <input
+                            type="text"
+                            value={item.accessoryName}
+                            onChange={(e) =>
+                              handleDemandItemChange(index, 'accessoryName', e.target.value)
+                            }
+                            placeholder="Enter accessory name"
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '4px',
+                              fontSize: '14px',
+                            }}
+                          />
+                        ) : (
+                          <span style={{ fontWeight: '500' }}>{item.accessoryName}</span>
+                        )}
+                      </td>
+                      <td className="no-print" style={{ padding: '12px' }}>
+                        <span
+                          style={{
+                            color: !item.isCustom && Number(item.stock) < 10 ? '#f59e0b' : '#374151',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {item.isCustom ? '-' : (Number(item.stock) || 0)}
+                        </span>
+                      </td>
+                      <td className="no-print" style={{ padding: '12px' }}>
+                        {item.isCustom ? (
+                          <input
+                            type="number"
+                            value={Number(item.perPiecePrice) || 0}
+                            onChange={(e) =>
+                              handleDemandItemChange(
+                                index,
+                                'perPiecePrice',
+                                Number(e.target.value)
+                              )
+                            }
+                            placeholder="Price"
+                            min="0"
+                            step="0.01"
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '4px',
+                              fontSize: '14px',
+                            }}
+                          />
+                        ) : (
+                          <span>{Number(item.perPiecePrice || 0).toFixed(2)} PKR</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <input
+                          type="number"
+                          value={Number(item.demandQuantity) || 0}
+                          onChange={(e) =>
+                            handleDemandItemChange(
+                              index,
+                              'demandQuantity',
+                              Number(e.target.value)
+                            )
+                          }
+                          placeholder="Quantity"
+                          min="0"
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <button
+                          onClick={() => handleRemoveFromDemand(index)}
+                          style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '40px',
+                color: '#64748b',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>📦</div>
+              <p style={{ fontSize: '16px', margin: 0 }}>
+                No accessories with low stock found.
+              </p>
+            </div>
+          )}
+
+          {/* Add Custom and Print/Download buttons */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginTop: '20px',
+              paddingTop: '20px',
+              borderTop: '1px solid #e2e8f0',
+            }}
+          >
+            <button
+              onClick={handleAddToDemand}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '8px',
+                background: '#10b981',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              + Add Custom Item
+            </button>
+            <button
+              onClick={() => setShowPrintDemandModal(false)}
+              style={{
+                padding: '10px 20px',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                background: 'white',
+                color: '#374151',
+                fontWeight: '500',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handlePrint}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '8px',
+                background: '#3b82f6',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              🖨️ Print
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '8px',
+                background: '#10b981',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              📄 Download PDF
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

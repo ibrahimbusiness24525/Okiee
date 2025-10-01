@@ -10,6 +10,7 @@ import WalletTransactionModal from 'components/WalletTransaction/WalletTransacti
 import CustomSelect from 'components/CustomSelect';
 
 const SingalPurchaseModal = ({
+  loading= false,
   handleSinglePhoneModalclose,
   type = 'purchase',
   setSinglePurchase,
@@ -30,7 +31,7 @@ const SingalPurchaseModal = ({
   const [showBankModal, setShowBankModal] = useState(false);
   const [showPocketCashModal, setShowPocketCashModal] = useState(false);
   const [showWarranty, setShowWarranty] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [showNewEntityForm, setShowNewEntityForm] = useState(false);
   const [getAllEntities, setGetAllEntities] = useState([]);
   const [localEntityData, setLocalEntityData] = useState({ name: '', number: '', _id: '' });
@@ -864,7 +865,7 @@ const SingalPurchaseModal = ({
             />
 
             <Modal.Footer>
-              <Button variant="secondary" onClick={handleSinglePhoneModalclose}>
+              <Button variant="secondary" onClick={handleSinglePhoneModalclose} disabled={loading}>
                 Cancel
               </Button>
               <Button variant="primary" type="submit" disabled={loading}>
@@ -957,6 +958,7 @@ const SingalPurchaseModal = ({
               variant="primary"
               size="sm"
               onClick={() => setShowBankModal(false)}
+              disabled={loading}
               style={{
                 minWidth: '100px',
                 padding: '8px 0',
@@ -983,6 +985,7 @@ const SingalPurchaseModal = ({
                 fontSize: '14px',
                 borderRadius: '6px',
               }}
+              disabled={loading}
             >
               Cancel
             </Button>
@@ -1037,7 +1040,8 @@ const SingalPurchaseModal = ({
             <Button
               variant="primary"
               size="sm"
-              onClick={() => setShowPocketCashModal(false)}
+                  onClick={() => setShowPocketCashModal(false)}
+              disabled={loading}
               style={{
                 minWidth: '100px',
                 padding: '8px 0',
@@ -1063,6 +1067,7 @@ const SingalPurchaseModal = ({
                 fontSize: '14px',
                 borderRadius: '6px',
               }}
+              disabled={loading}
             >
               Cancel
             </Button>
