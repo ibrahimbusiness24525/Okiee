@@ -53,6 +53,7 @@ const Dot = styled.span`
 
 const CustomerRecord = () => {
   const [customerNumber, setCustomerNumber] = useState("");
+  const [idType, setIdType] = useState("phone"); // 'phone' or 'imei'
   const [soldRecord, setSoldRecord] = useState([]);
   const [allParties, setAllParties] = useState([]);
   const [partyDetails, setPartyDetails] = useState(null);
@@ -62,7 +63,11 @@ const CustomerRecord = () => {
   const [endDate, setEndDate] = useState("");
   const getSoldRecord = async () => {
     try {
-      const response = await api.get(`/api/Purchase/customer-sold-record/${customerNumber}`);
+      const payload = {
+        identifier: customerNumber,
+        imei: idType === 'imei',
+      };
+      const response = await api.post(`/api/Purchase/customer-sold-record/${customerNumber}`, {imei: payload.imei});
       const responseData = response?.data?.data;
       
       if (responseData) {
@@ -183,9 +188,34 @@ const CustomerRecord = () => {
             flexWrap: "wrap",
           }}
         >
+          {/* Identifier type selector */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", color: "#333" }}>
+              <input
+                type="radio"
+                name="idType"
+                value="phone"
+                checked={idType === 'phone'}
+                onChange={(e) => setIdType(e.target.value)}
+                style={{ margin: 0 }}
+              />
+              Phone
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", color: "#333" }}>
+              <input
+                type="radio"
+                name="idType"
+                value="imei"
+                checked={idType === 'imei'}
+                onChange={(e) => setIdType(e.target.value)}
+                style={{ margin: 0 }}
+              />
+              IMEI
+            </label>
+          </div>
           <input
             type="text"
-            placeholder="Customer Phone Number"
+            placeholder={idType === 'imei' ? 'Enter IMEI Number' : 'Customer Phone Number'}
             value={customerNumber}
             onChange={(e) => setCustomerNumber(e.target.value)}
             style={{
@@ -197,7 +227,7 @@ const CustomerRecord = () => {
               color: "#333",
             }}
           />
-
+          <div></div>
           <button
             onClick={getSoldRecord}
             style={{

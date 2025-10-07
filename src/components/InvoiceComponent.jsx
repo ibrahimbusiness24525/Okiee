@@ -890,7 +890,9 @@
 //     </div>
 //   );
 // };
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+import { api } from '../../api/api';
+import { BASE_URL } from 'config/constant';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
@@ -915,6 +917,22 @@ export const InvoiceComponent = ({
   dataReceived = {},
 }) => {
   const invoiceRef = useRef();
+  const [logoUrl, setLogoUrl] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await api.get('/api/shop/logo');
+        if (isMounted && res?.data?.success && res?.data?.logo) {
+          const path = String(res.data.logo);
+          const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+          setLogoUrl(full);
+        }
+      } catch (_) {}
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
 
 // Check individual array elements
@@ -1538,7 +1556,15 @@ export const InvoiceComponent = ({
             alignItems: 'center',
           }}
         >
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {logoUrl && (
+              <img
+                src={logoUrl}
+                alt="logo"
+                style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+              />
+            )}
             <h1
               style={{
                 textAlign: 'center',

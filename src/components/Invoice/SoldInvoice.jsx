@@ -7,9 +7,11 @@ import { InvoiceComponent } from 'components/InvoiceComponent';
 import { toast } from 'react-toastify';
 import Modal from 'components/Modal/Modal';
 import { SmallInvoiceComponent } from 'components/SmallInvoiceComponent';
+import { BASE_URL } from 'config/constant';
 import { StockListComponent } from 'components/StockInvoice';
 const SoldInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
+  const [logoUrl, setLogoUrl] = useState(null);
   const [displayHalfP4, setDisplayHalfP4] = useState(false);
   const [showSmallInvoice, setShowSmallInvoice] = useState(false);
   const [originalInvoice, setOriginalInvoice] = useState(true);
@@ -148,6 +150,22 @@ const SoldInvoice = () => {
       marginBottom: '10px',
     },
   };
+
+  // Fetch logo from API once
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await api.get('/api/shop/logo');
+        if (isMounted && res?.data?.success && res?.data?.logo) {
+          const path = String(res.data.logo);
+          const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+          setLogoUrl(full);
+        }
+      } catch (_) {}
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
   const location = useLocation();
   const dataReceived = location?.state ?? {};
@@ -1146,7 +1164,17 @@ const SoldInvoice = () => {
                       'Contact number not available'}
                   </p>
                 </div>
-                <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {logoUrl && (
+                    <img
+                      src={logoUrl}
+                      alt="logo"
+                      style={{ fontSize: '4rem',width: '4rem', height: '4rem', borderRadius: '50%', objectFit: 'cover',marginBottom: '10px' }}
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  )}
+                </div>
+                <h2 style={{ color: `${selectedColor}`, margin: 0 }}>Okiiee</h2>
               </header>
 
               <section
