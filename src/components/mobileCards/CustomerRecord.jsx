@@ -67,6 +67,7 @@ const CustomerRecord = () => {
         identifier: customerNumber,
         imei: idType === 'imei',
       };
+      console.log("payload", payload);
       const response = await api.post(`/api/Purchase/customer-sold-record/${customerNumber}`, {imei: payload.imei});
       const responseData = response?.data?.data;
       
