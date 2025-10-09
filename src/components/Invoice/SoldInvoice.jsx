@@ -154,16 +154,32 @@ const SoldInvoice = () => {
   // Fetch logo from API once
   useEffect(() => {
     let isMounted = true;
-    (async () => {
+    const fetchLogo = async () => {
       try {
+        console.log('🔍 Fetching logo from API...');
         const res = await api.get('/api/shop/logo');
+        console.log('📡 Logo API response:', res?.data);
+        
         if (isMounted && res?.data?.success && res?.data?.logo) {
           const path = String(res.data.logo);
-          const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
-          setLogoUrl(full);
+          console.log('🛤️ Logo path from API:', path);
+          
+          if (path && path !== '{}' && path !== 'null' && path !== 'undefined') {
+            const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+            console.log('🔗 Full logo URL:', full);
+            setLogoUrl(full);
+          } else {
+            console.log('❌ Invalid logo path:', path);
+          }
+        } else {
+          console.log('❌ No logo data in response or API failed');
         }
-      } catch (_) {}
-    })();
+      } catch (error) {
+        console.error('❌ Error fetching logo:', error);
+      }
+    };
+    
+    fetchLogo();
     return () => { isMounted = false; };
   }, []);
 
@@ -1157,24 +1173,34 @@ const SoldInvoice = () => {
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
               <header style={styles.header}>
-                <div>
-                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                  <p>
-                    {shop?.contactNumber?.join(' | ') ??
-                      'Contact number not available'}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   {logoUrl && (
                     <img
                       src={logoUrl}
                       alt="logo"
-                      style={{ fontSize: '4rem',width: '4rem', height: '4rem', borderRadius: '50%', objectFit: 'cover',marginBottom: '10px' }}
+                      style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        borderRadius: '50%', 
+                        objectFit: 'cover',
+                        border: '3px solid #fff',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
+                        marginBottom: '10px'
+                      }}
                       onError={(e) => (e.currentTarget.style.display = 'none')}
                     />
                   )}
+                  <div>
+                    <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                    <p>
+                      {shop?.contactNumber?.join(' | ') ??
+                        'Contact number not available'}
+                    </p>
+                  </div>
                 </div>
-                <h2 style={{ color: `${selectedColor}`, margin: 0 }}>Okiiee</h2>
+                <div>
+                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>Okiiee</h2>
+                </div>
               </header>
 
               <section
@@ -1695,14 +1721,33 @@ const SoldInvoice = () => {
           <>
             <div id="invoice" style={styles.container}>
               <header style={styles.header}>
-                <div>
-                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                  <p>
-                    {shop?.contactNumber?.join(' | ') ??
-                      'Contact number not available'}
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {logoUrl && (
+                    <img
+                      src={logoUrl}
+                      alt="logo"
+                      style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        borderRadius: '50%', 
+                        objectFit: 'cover',
+                        border: '3px solid #fff',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)'
+                      }}
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  )}
+                  <div>
+                    <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                    <p>
+                      {shop?.contactNumber?.join(' | ') ??
+                        'Contact number not available'}
+                    </p>
+                  </div>
                 </div>
-                <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
+                <div>
+                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>Okiiee</h2>
+                </div>
               </header>
 
               <section
@@ -2160,14 +2205,33 @@ const SoldInvoice = () => {
           <div id="invoice" style={styles.container}>
             {/* Header */}
             <header style={styles.header}>
-              <div>
-                <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                <p>
-                  {shop?.contactNumber?.join(' | ') ??
-                    'Contact number not available'}
-                </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    alt="logo"
+                    style={{ 
+                      width: '60px', 
+                      height: '60px', 
+                      borderRadius: '50%', 
+                      objectFit: 'cover',
+                      border: '3px solid #fff',
+                      boxShadow: '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)'
+                    }}
+                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                  />
+                )}
+                <div>
+                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                  <p>
+                    {shop?.contactNumber?.join(' | ') ??
+                      'Contact number not available'}
+                  </p>
+                </div>
               </div>
-              <h2 style={{ color: selectedColor || '#4a6baf' }}>Invoice</h2>
+              <div>
+                <h2 style={{ color: selectedColor || '#4a6baf', margin: 0 }}>Invoice</h2>
+              </div>
             </header>
 
             {/* Info Section */}
@@ -2365,7 +2429,11 @@ const SoldInvoice = () => {
         )}
         {/* <StockListComponent /> */}
         {showSmallInvoice && (
-          <SmallInvoiceComponent invoiceData={smallInvoiceData} />
+          <SmallInvoiceComponent 
+            invoiceData={smallInvoiceData} 
+            shopData={shop}
+            logoUrl={logoUrl}
+          />
         )}
         <InvoiceComponent
         dataReceived={dataReceived}

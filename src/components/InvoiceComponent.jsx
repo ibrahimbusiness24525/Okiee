@@ -921,16 +921,22 @@ export const InvoiceComponent = ({
 
   useEffect(() => {
     let isMounted = true;
-    (async () => {
+    const fetchLogo = async () => {
       try {
         const res = await api.get('/api/shop/logo');
         if (isMounted && res?.data?.success && res?.data?.logo) {
           const path = String(res.data.logo);
-          const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
-          setLogoUrl(full);
+          if (path && path !== '{}' && path !== 'null' && path !== 'undefined') {
+            const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+            setLogoUrl(full);
+          }
         }
-      } catch (_) {}
-    })();
+      } catch (error) {
+        console.error('Error fetching logo:', error);
+      }
+    };
+    
+    fetchLogo();
     return () => { isMounted = false; };
   }, []);
 
@@ -1561,7 +1567,14 @@ export const InvoiceComponent = ({
               <img
                 src={logoUrl}
                 alt="logo"
-                style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
+                style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '50%', 
+                  objectFit: 'cover',
+                  border: '2px solid #fff',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)'
+                }}
                 onError={(e) => (e.currentTarget.style.display = 'none')}
               />
             )}

@@ -129,6 +129,8 @@ const DashDefault = () => {
   const [isLoadingPersons, setIsLoadingPersons] = useState(true);
   const [showReceivablesTotal, setShowReceivablesTotal] = useState(false);
   const [showPayablesTotal, setShowPayablesTotal] = useState(false);
+  const [showReceivablesNumbers, setShowReceivablesNumbers] = useState(false);
+  const [showPayablesNumbers, setShowPayablesNumbers] = useState(false);
   const avatarsArr = [avatar1, avatar2, avatar3];
 
   useEffect(() => {
@@ -261,12 +263,20 @@ const DashDefault = () => {
                       <h6 style={{ margin: 0, fontWeight: 800, color: '#166534' }}>Receivables</h6>
                       <span style={{ fontSize: '12px', color: '#065f46', backgroundColor: '#d1fae5', padding: '2px 8px', borderRadius: 999 }}>{receivables.length}</span>
                     </div>
-                    <span
-                      onClick={() => setShowReceivablesTotal((s) => !s)}
-                      title={showReceivablesTotal ? 'Hide total' : 'Show total'}
-                      style={{ cursor: 'pointer', color: '#065f46', fontSize: 16 }}
-                      className="fa fa-eye"
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span
+                        onClick={() => setShowReceivablesNumbers((s) => !s)}
+                        title={showReceivablesNumbers ? 'Hide numbers' : 'Show numbers'}
+                        style={{ cursor: 'pointer', color: '#065f46', fontSize: 16 }}
+                        className={`fa ${showReceivablesNumbers ? 'fa-eye' : 'fa-eye-slash'}`}
+                      />
+                      <span
+                        onClick={() => setShowReceivablesTotal((s) => !s)}
+                        title={showReceivablesTotal ? 'Hide total' : 'Show total'}
+                        style={{ cursor: 'pointer', color: '#065f46', fontSize: 16 }}
+                        className="fa fa-calculator"
+                      />
+                    </div>
                   </div>
                   {showReceivablesTotal && (
                     <div style={{ marginBottom: '8px', backgroundColor: '#f0fdf4', border: '1px dashed #86efac', padding: '8px 10px', borderRadius: 8, color: '#166534', fontWeight: 700 }}>
@@ -305,7 +315,9 @@ const DashDefault = () => {
                                   <h6 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#14532d' }}>{p.name}</h6>
                                   <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 700 }}>Rs. {Math.abs(amount).toLocaleString()}</span>
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#6b7280' }}>{p.number}</div>
+                                <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                  {showReceivablesNumbers ? p.number : '••••••••••'}
+                                </div>
                               </div>
                             </div>
                           );
@@ -322,12 +334,20 @@ const DashDefault = () => {
                       <h6 style={{ margin: 0, fontWeight: 800, color: '#7f1d1d' }}>Payables</h6>
                       <span style={{ fontSize: '12px', color: '#7f1d1d', backgroundColor: '#fee2e2', padding: '2px 8px', borderRadius: 999 }}>{payables.length}</span>
                     </div>
-                    <span
-                      onClick={() => setShowPayablesTotal((s) => !s)}
-                      title={showPayablesTotal ? 'Hide total' : 'Show total'}
-                      style={{ cursor: 'pointer', color: '#7f1d1d', fontSize: 16 }}
-                      className="fa fa-eye"
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span
+                        onClick={() => setShowPayablesNumbers((s) => !s)}
+                        title={showPayablesNumbers ? 'Hide numbers' : 'Show numbers'}
+                        style={{ cursor: 'pointer', color: '#7f1d1d', fontSize: 16 }}
+                        className={`fa ${showPayablesNumbers ? 'fa-eye' : 'fa-eye-slash'}`}
+                      />
+                      <span
+                        onClick={() => setShowPayablesTotal((s) => !s)}
+                        title={showPayablesTotal ? 'Hide total' : 'Show total'}
+                        style={{ cursor: 'pointer', color: '#7f1d1d', fontSize: 16 }}
+                        className="fa fa-calculator"
+                      />
+                    </div>
                   </div>
                   {showPayablesTotal && (
                     <div style={{ marginBottom: '8px', backgroundColor: '#fef2f2', border: '1px dashed #fecaca', padding: '8px 10px', borderRadius: 8, color: '#7f1d1d', fontWeight: 700 }}>
@@ -366,7 +386,9 @@ const DashDefault = () => {
                                   <h6 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#7f1d1d' }}>{p.name}</h6>
                                   <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: 700 }}>Rs. {Math.abs(amount).toLocaleString()}</span>
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#6b7280' }}>{p.number}</div>
+                                <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                  {showPayablesNumbers ? p.number : '••••••••••'}
+                                </div>
                               </div>
                             </div>
                           );

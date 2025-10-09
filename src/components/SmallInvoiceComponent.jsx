@@ -1,4 +1,8 @@
-export const SmallInvoiceComponent = ({ invoiceData }) => {
+import React from 'react';
+
+export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
+  // Remove local state and API calls since we're getting data from props
+
   // Static invoice data
   const staticInvoiceData = {
     shopInfo: 'Shop#46 Mall Road Opp. Meezan Bank Cantt.',
@@ -64,6 +68,16 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
 
   const data = invoiceData || staticInvoiceData;
   console.log("data",data)
+
+  // Use shop data from props if available, otherwise fallback to static data
+  const shopName = shopData?.name || shopData?.shopName || data.shopInfo || 'Mobile Shop';
+  const shopAddress = shopData?.address || data.shopInfo || 'Shop Address';
+  const shopPhone = shopData?.phone || shopData?.contactNumber?.[0] || 'Phone Number';
+  
+  console.log('Shop data received:', shopData);
+  console.log('Shop address:', shopAddress);
+  console.log('Shop address type:', typeof shopAddress);
+  console.log('Shop address length:', shopAddress?.length);
 
   // Build items from phoneDetail/IMEI data when provided; fallback to data.items
   const phoneDetailArray = Array.isArray(data?.phoneDetail)
@@ -171,17 +185,10 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
       .map(
         (item) => `
           <tr>
-              <td>${item.no}</td>
-              <td>${item.name}<br>${item.code}</td>
-              <td>${item.model || 'N/A'}</td>
-              <td>${item.brand || 'N/A'}</td>
-              <!-- <td>${item.color || 'N/A'}</td> -->
-              <td>${item.simOption || 'N/A'}</td>
-              <!-- <td>${item.batteryHealth || 'N/A'}</td> -->
-              <td>${item.warranty || 'N/A'}</td>
-              <td>${item.qty}</td>
-              <td>${item.rate}</td>
-              <td>${item.amount}</td>
+              <td style="color: #000;">${item.no}</td>
+              <td style="color: #000;">${item.name}<br><small style="color: #000;">${item.code}</small></td>
+              <td style="color: #000;">${item.qty}</td>
+              <td style="color: #000;">${item.amount}</td>
           </tr>
           `
       )
@@ -280,6 +287,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               text-align: center;
               vertical-align: top;
               font-size: 8px;
+              color: #000;
           }
           table th:first-child,
           table td:first-child {
@@ -390,20 +398,20 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
           <div class="invoice-container">
           <div class="header">
             <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between',width: '100%' }}>
-              <div>
-                <div
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    marginBottom: '5px',
-                  }}
-                >
-                  ${data.shopInfo}
+            <div style={{ display: 'flex', justifyContent: 'space-between',width: '100%', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ${logoUrl ? `<img src="${logoUrl}" alt="logo" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.2),0 2px 6px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.2)"/>` : ''}
+                <div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '2px', fontSize: '12px', color: '#000' }}>
+                    ${shopName}
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#000', fontWeight: '500' }}>
+                    ${shopAddress}
+                  </div>
                 </div>
               </div>
               <div>
-                <h4>Okiiee</h4>
+                <h4 style={{ margin: 0, fontSize: '14px', color: '#000' }}>Okiiee</h4>
               </div>
             </div>
           </div>
@@ -421,17 +429,10 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
           <table>
               <thead>
               <tr>
-                  <th>No</th>
-                  <th>Sold Items</th>
-                  <th>Model</th>
-                  <th>Brand</th>
-                  <!-- <th>Color</th> -->
-                  <th>SIM</th>
-                  <!-- <th>Battery</th> -->
-                  <th>Warranty</th>
-                  <th>Qty</th>
-                  <th>Rate</th>
-                  <th>Amount</th>
+                  <th style="color: #000;">No</th>
+                  <th style="color: #000;">Item</th>
+                  <th style="color: #000;">Qty</th>
+                  <th style="color: #000;">Amount</th>
               </tr>
               </thead>
               <tbody>
@@ -538,20 +539,41 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
           }}
         >
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <div
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    marginBottom: '5px',
-                  }}
-                >
-                  {data.shopInfo}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    alt="logo"
+                    style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      borderRadius: '50%', 
+                      objectFit: 'cover',
+                      border: '2px solid #fff',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)'
+                    }}
+                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                  />
+                )}
+                <div>
+                  <div
+                    style={{
+                      fontWeight: 'bold',
+                      marginBottom: '2px',
+                      fontSize: '12px',
+                      color: '#000',
+                    }}
+                  >
+                    {shopName}
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#000', fontWeight: '500' }}>
+                    {shopAddress}
+                  </div>
                 </div>
               </div>
               <div>
-                <h4>Okiiee</h4>
+                <h4 style={{ margin: 0, fontSize: '14px', color: '#000' }}>Okiiee</h4>
               </div>
             </div>
           </div>
@@ -561,6 +583,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               fontSize: '18px',
               fontWeight: 'bold',
               margin: '5px 0',
+              color: '#000',
             }}
           >
             {data.title}
@@ -571,6 +594,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               fontSize: '12px',
               fontStyle: 'italic',
               marginBottom: '10px',
+              color: '#000',
             }}
           >
             {data.subtitle}
@@ -581,6 +605,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               justifyContent: 'space-between',
               fontSize: '12px',
               margin: '5px 0',
+              color: '#000',
             }}
           >
             <div>
@@ -591,7 +616,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
             </div>
           </div>
 
-          <div style={{ fontSize: '12px', margin: '5px 0' }}>
+          <div style={{ fontSize: '12px', margin: '5px 0', color: '#000' }}>
             <strong>Name:</strong>{' '}
             <span style={{ color: '#000' }}>{data.customer.name}</span>
             <br />
@@ -613,6 +638,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                     border: '1px solid #000',
                     padding: '2px',
                     textAlign: 'left',
+                    color: '#000',
                   }}
                 >
                   No
@@ -622,35 +648,15 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                     border: '1px solid #000',
                     padding: '2px',
                     textAlign: 'left',
+                    color: '#000',
                   }}
                 >
-                  Sold Items
+                  Item
                 </th>
-                <th style={{ border: '1px solid #000', padding: '2px' }}>
-                  Model
-                </th>
-                <th style={{ border: '1px solid #000', padding: '2px' }}>
-                  Brand
-                </th>
-                {/* <th style={{ border: '1px solid #000', padding: '2px' }}>
-                  Color
-                </th> */}
-                <th style={{ border: '1px solid #000', padding: '2px' }}>
-                  SIM
-                </th>
-                {/* <th style={{ border: '1px solid #000', padding: '2px' }}>
-                  Battery
-                </th> */}
-                <th style={{ border: '1px solid #000', padding: '2px' }}>
-                  Warranty
-                </th>
-                <th style={{ border: '1px solid #000', padding: '2px' }}>
+                <th style={{ border: '1px solid #000', padding: '2px', color: '#000' }}>
                   Qty
                 </th>
-                <th style={{ border: '1px solid #000', padding: '2px' }}>
-                  Rate
-                </th>
-                <th style={{ border: '1px solid #000', padding: '2px' }}>
+                <th style={{ border: '1px solid #000', padding: '2px', color: '#000' }}>
                   Amount
                 </th>
               </tr>
@@ -658,73 +664,20 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
             <tbody>
               {computedItems.map((item) => (
                 <tr key={item.no}>
-                  <td style={{ border: '1px solid #000', padding: '2px' }}>
+                  <td style={{ border: '1px solid #000', padding: '2px', color: '#000' }}>
                     {item.no}
                   </td>
-                  <td style={{ border: '1px solid #000', padding: '2px' }}>
+                  <td style={{ border: '1px solid #000', padding: '2px', color: '#000' }}>
                     {item.name}
                     <br />
-                    {item.code}
+                    <small style={{ fontSize: '6px', color: '#000' }}>{item.code}</small>
                   </td>
                   <td
                     style={{
                       border: '1px solid #000',
                       padding: '2px',
                       textAlign: 'center',
-                    }}
-                  >
-                    {item.model || 'N/A'}
-                  </td>
-                  <td
-                    style={{
-                      border: '1px solid #000',
-                      padding: '2px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {item.brand || 'N/A'}
-                  </td>
-                  {/* <td
-                    style={{
-                      border: '1px solid #000',
-                      padding: '2px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {item.color || 'N/A'}
-                  </td> */}
-                  <td
-                    style={{
-                      border: '1px solid #000',
-                      padding: '2px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {item.simOption || 'N/A'}
-                  </td>
-                  {/* <td
-                    style={{
-                      border: '1px solid #000',
-                      padding: '2px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {item.batteryHealth || 'N/A'}
-                  </td> */}
-                  <td
-                    style={{
-                      border: '1px solid #000',
-                      padding: '2px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {item.warranty || 'N/A'}
-                  </td>
-                  <td
-                    style={{
-                      border: '1px solid #000',
-                      padding: '2px',
-                      textAlign: 'center',
+                      color: '#000',
                     }}
                   >
                     {item.qty}
@@ -734,15 +687,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                       border: '1px solid #000',
                       padding: '2px',
                       textAlign: 'center',
-                    }}
-                  >
-                    {item.rate}
-                  </td>
-                  <td
-                    style={{
-                      border: '1px solid #000',
-                      padding: '2px',
-                      textAlign: 'center',
+                      color: '#000',
                     }}
                   >
                     {item.amount}
@@ -758,6 +703,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
               justifyContent: 'space-between',
               fontSize: '12px',
               margin: '10px 0',
+              color: '#000',
             }}
           >
             {/* <div style={{ width: '48%' }}>
@@ -839,6 +785,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   marginBottom: '3px',
+                  color: '#000',
                 }}
               >
                 <span>SubTotal:</span>
@@ -850,6 +797,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   marginBottom: '3px',
+                  color: '#000',
                 }}
               >
                 <span>Net Total:</span>
@@ -863,6 +811,7 @@ export const SmallInvoiceComponent = ({ invoiceData }) => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   marginBottom: '3px',
+                  color: '#000',
                 }}
               >
                 <span>Total:</span>
