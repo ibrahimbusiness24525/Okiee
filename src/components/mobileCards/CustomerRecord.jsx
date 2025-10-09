@@ -67,6 +67,7 @@ const CustomerRecord = () => {
         identifier: customerNumber,
         imei: idType === 'imei',
       };
+      console.log("payload", payload);
       const response = await api.post(`/api/Purchase/customer-sold-record/${customerNumber}`, {imei: payload.imei});
       const responseData = response?.data?.data;
       
@@ -148,110 +149,143 @@ const CustomerRecord = () => {
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <div
         style={{
-          maxWidth: "500px",
+          maxWidth: "720px",
           margin: "0 auto",
-          padding: "24px",
-          backgroundColor: "#f9f9f9",
-          border: "1px solid #e0e0e0",
-          borderRadius: "10px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.03)",
-          fontFamily: "Segoe UI, sans-serif",
+          padding: "2px",
+          borderRadius: "16px",
+          background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #14b8a6 100%)",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
         }}
       >
-        <h3
-          style={{
-            fontSize: "20px",
-            fontWeight: "normal",
-            marginBottom: "8px",
-            color: "#2c3e50",
-          }}
-        >
-          Get Customer Record
-        </h3>
-
-        <p
-          style={{
-            fontSize: "14px",
-            color: "#555",
-            marginBottom: "20px",
-            lineHeight: "1.5",
-          }}
-        >
-          Enter the customer's phone number below to view the record sales and purchase of customer. This helps in tracking their order history efficiently.
-        </p>
-
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            flexWrap: "wrap",
+            background: "rgba(255,255,255,0.92)",
+            backdropFilter: "blur(6px)",
+            borderRadius: "14px",
+            padding: "22px",
           }}
         >
-          {/* Identifier type selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", color: "#333" }}>
-              <input
-                type="radio"
-                name="idType"
-                value="phone"
-                checked={idType === 'phone'}
-                onChange={(e) => setIdType(e.target.value)}
-                style={{ margin: 0 }}
-              />
-              Phone
-            </label>
-            <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", color: "#333" }}>
-              <input
-                type="radio"
-                name="idType"
-                value="imei"
-                checked={idType === 'imei'}
-                onChange={(e) => setIdType(e.target.value)}
-                style={{ margin: 0 }}
-              />
-              IMEI
-            </label>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "14px" }}>
+            <div>
+              <h3
+                style={{
+                  fontSize: "22px",
+                  margin: 0,
+                  color: "#0f172a",
+                  letterSpacing: "0.2px",
+                }}
+              >
+                🔎 Get Customer Record
+              </h3>
+              <p
+                style={{
+                  margin: "6px 0 0 0",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                Search by phone number or IMEI to view a customer's purchase and sales history.
+              </p>
+            </div>
+            <div style={{
+              whiteSpace: "nowrap",
+              fontSize: "12px",
+              color: "#475569",
+              background: "#eef2ff",
+              padding: "8px 12px",
+              borderRadius: "999px",
+              border: "1px solid #e2e8f0"
+            }}>
+              Secure • Real-time
+            </div>
           </div>
-          <input
-            type="text"
-            placeholder={idType === 'imei' ? 'Enter IMEI Number' : 'Customer Phone Number'}
-            value={customerNumber}
-            onChange={(e) => setCustomerNumber(e.target.value)}
-            style={{
-              flex: "1 1 220px",
-              padding: "10px 14px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              fontSize: "14px",
-              color: "#333",
-            }}
-          />
-          <div></div>
-          <button
-            onClick={getSoldRecord}
-            style={{
-              padding: "10px 18px",
-              backgroundColor: "#007BFF",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "14px",
-              cursor: "pointer",
-              transition: "background-color 0.2s ease",
-            }}
-            
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = "#0069d9")
-            }
 
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = "#007BFF")
-            }
+          {/* Identifier type selector (pill toggle) */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "14px" }}>
+            <button
+              onClick={() => setIdType('phone')}
+              style={{
+                flex: 1,
+                padding: "10px 14px",
+                borderRadius: "10px",
+                border: idType === 'phone' ? "2px solid #6366f1" : "1px solid #e5e7eb",
+                background: idType === 'phone' ? "#eef2ff" : "#ffffff",
+                color: idType === 'phone' ? "#3730a3" : "#334155",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all .15s ease",
+              }}
+            >
+              ☎ Phone
+            </button>
+            <button
+              onClick={() => setIdType('imei')}
+              style={{
+                flex: 1,
+                padding: "10px 14px",
+                borderRadius: "10px",
+                border: idType === 'imei' ? "2px solid #6366f1" : "1px solid #e5e7eb",
+                background: idType === 'imei' ? "#eef2ff" : "#ffffff",
+                color: idType === 'imei' ? "#3730a3" : "#334155",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all .15s ease",
+              }}
+            >
+              🧾 IMEI
+            </button>
+          </div>
 
-          >
-            Get Record
-          </button>
+          {/* Input & CTA */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "10px", alignItems: "center" }}>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: "#64748b" }}>
+                {idType === 'imei' ? '🔧' : '📱'}
+              </span>
+              <input
+                type="text"
+                placeholder={idType === 'imei' ? 'Enter IMEI Number' : 'Customer Phone Number'}
+                value={customerNumber}
+                onChange={(e) => setCustomerNumber(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px 12px 36px",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
+                  fontSize: "14px",
+                  color: "#0f172a",
+                  outline: "none",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+                }}
+                onFocus={(e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)'; }}
+              />
+            </div>
+            <button
+              onClick={getSoldRecord}
+              style={{
+                padding: "12px 18px",
+                background: "linear-gradient(135deg,#6366f1 0%, #8b5cf6 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "transform .12s ease, box-shadow .15s ease",
+                boxShadow: '0 10px 18px rgba(99,102,241,0.25)'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 14px 22px rgba(99,102,241,0.3)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 18px rgba(99,102,241,0.25)'; }}
+            >
+              Get Record
+            </button>
+          </div>
+
+          <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", color: "#64748b", fontSize: "12px" }}>
+            <span>💡</span>
+            <span>Tip: For IMEI search, enter the exact 15-digit number.</span>
+          </div>
         </div>
       </div>
       <>
