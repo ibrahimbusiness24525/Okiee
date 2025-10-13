@@ -2430,7 +2430,7 @@ const SoldInvoice = () => {
         {/* <StockListComponent /> */}
         {showSmallInvoice && (
           <SmallInvoiceComponent 
-            invoiceData={smallInvoiceData} 
+            invoiceData={dataReceived} 
             shopData={shop}
             logoUrl={logoUrl}
           />

@@ -41,6 +41,7 @@ const TodayBook = () => {
       setTodayBookData(response?.data?.data || []);
     } catch (error) { }
   };
+  console.log("todayBookData",todayBookData)
   const fetchTotalCash = async () => {
     try {
       const res = await api.get('/api/pocketCash/total');

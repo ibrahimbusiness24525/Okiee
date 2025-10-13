@@ -566,10 +566,41 @@ const NewMobilesList = () => {
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
-  const totalBulkStockAmount = bulkMobile.reduce(
-    (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
-    0
-  );
+  // Previous logic (commented): summed buyingPrice only, which ignores IMEI counts per RAM/SIM
+  // const totalBulkStockAmount = bulkMobile.reduce(
+  //   (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
+  //   0
+  // );
+
+  // New logic: sum quantity by IMEI count per ramSimDetails multiplied by priceOfOne
+  // Mirrors:
+  // let totalBulkPhones = 0;
+  // let totalBulkAmount = 0;
+  // allBulkPhones.forEach((bulk) => {
+  //   if (!bulk.ramSimDetails) return;
+  //   bulk.ramSimDetails.forEach((ramSim) => {
+  //     const imeiCount = ramSim.imeiNumbers?.length || 0;
+  //     const priceOfOne = parseFloat(ramSim.priceOfOne) || 0;
+  //     totalBulkPhones += imeiCount;
+  //     totalBulkAmount += imeiCount * priceOfOne;
+  //   });
+  // });
+  // const totalBulkStockAmount = bulkMobile.reduce(
+  //   (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
+  //   0
+  // );
+  const totalBulkStockAmount = (bulkMobile || []).reduce((outerTotal, bulk) => {
+    if (!Array.isArray(bulk?.ramSimDetails)) return outerTotal;
+    const bulkAmount = bulk.ramSimDetails.reduce((innerTotal, ramSim) => {
+      const imeiCount = Array.isArray(ramSim?.imeiNumbers)
+        ? ramSim.imeiNumbers.length
+        : 0;
+      const priceOfOne = parseFloat(ramSim?.priceOfOne) || 0;
+      return innerTotal + imeiCount * priceOfOne;
+    }, 0);
+    return outerTotal + bulkAmount;
+  }, 0);
+console.log("bulkMobile", bulkMobile);
 
   const handleChange = (event) => {
     const selectedImeis = event.target.value;

@@ -2,7 +2,7 @@ import React from 'react';
 
 export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
   // Remove local state and API calls since we're getting data from props
-
+console.log("shopData",shopData)
   // Static invoice data
   const staticInvoiceData = {
     shopInfo: 'Shop#46 Mall Road Opp. Meezan Bank Cantt.',
@@ -69,8 +69,24 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
   const data = invoiceData || staticInvoiceData;
   console.log("data",data)
 
+  // Extract customer data from raw data structure
+  const customerData = {
+    name: data?.customer?.name || data?.customerName || 'Customer Name Not Provided',
+    phone: data?.customer?.phone || data?.customerNumber || '____________________',
+  };
+
+  // Extract terms and conditions data from shop data or raw data structure
+  const termsAndConditionsData = shopData?.termsCondition || data?.termsAndConditions || [
+    'All sales are final.',
+    'No returns or exchanges after purchase.',
+    'Please keep your receipt for warranty purposes.',
+    'Warranty claims must be made within 30 days of purchase.',
+    'For any issues, contact our customer service.',
+  ];
+
+
   // Use shop data from props if available, otherwise fallback to static data
-  const shopName = shopData?.name || shopData?.shopName || data.shopInfo || 'Mobile Shop';
+  const shopName =shopData?.shopName ||  shopData?.name  || data.shopInfo || 'Mobile Shop';
   const shopAddress = shopData?.address || data.shopInfo || 'Shop Address';
   const shopPhone = shopData?.phone || shopData?.contactNumber?.[0] || 'Phone Number';
   
@@ -83,6 +99,12 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
   const phoneDetailArray = Array.isArray(data?.phoneDetail)
     ? data.phoneDetail
     : (Array.isArray(data?.dataReceived?.phoneDetail) ? data.dataReceived.phoneDetail : []);
+  const phoneDetailsArray = Array.isArray(data?.phoneDetails)
+    ? data.phoneDetails
+    : (Array.isArray(data?.dataReceived?.phoneDetails) ? data.dataReceived.phoneDetails : []);
+  const accessoriesArray = Array.isArray(data?.accessories)
+    ? data.accessories
+    : (Array.isArray(data?.dataReceived?.accessories) ? data.dataReceived.accessories : []);
   const imeiPricesArray = Array.isArray(data?.imeiPrices)
     ? data.imeiPrices
     : (Array.isArray(data?.dataReceived?.imeiPrices) ? data.dataReceived.imeiPrices : []);
@@ -93,6 +115,9 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
       : (Array.isArray(data?.addedImeis)
         ? data.addedImeis
         : (Array.isArray(data?.dataReceived?.addedImeis) ? data.dataReceived.addedImeis : [])));
+
+  // Check if we have single phone data in the root object
+  const hasSinglePhoneData = data?.companyName || data?.modelName || data?.imei1;
 
   const parseMoney = (value) => {
     if (value === null || value === undefined) return 0;
@@ -114,9 +139,144 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
     return acc;
   }, {});
 
+  // Debug logging
+  console.log("imeisArray", imeisArray);
+  console.log("imeiPricesArray", imeiPricesArray);
+  console.log("priceByImei", priceByImei);
+
   const computedItems = (() => {
-    // If we have explicit phone details or per-IMEI prices, synthesize items
-    if (phoneDetailArray.length > 0 || imeiPricesArray.length > 0 || imeisArray.length > 0) {
+    const allItems = [];
+    let itemCounter = 1;
+
+    // Process single phone data first (highest priority)
+    if (hasSinglePhoneData && phoneDetailsArray.length === 0) {
+      allItems.push({
+        no: itemCounter++,
+        name: `${data.companyName || 'Brand'} ${data.modelName || 'Model'} ${data.ramMemory || ''}`.trim(),
+        code: data.imei1 || '-',
+        model: data.modelName || 'Model',
+        brand: data.companyName || 'Brand',
+        color: data.color || 'N/A',
+        simOption: data.simOption || 'N/A',
+        batteryHealth: data.batteryHealth || 'N/A',
+        warranty: data.warranty || 'N/A',
+        qty: 1,
+        rate: toCurrency(parseMoney(data.finalPrice || data.price?.finalPrice || 0)),
+        amount: toCurrency(parseMoney(data.finalPrice || data.price?.finalPrice || 0)),
+      });
+    }
+
+    // Process bulk phones from addedImeis/writtenImeis/imeiPrices (for dashboard sales)
+    if (phoneDetailsArray.length === 0 && (imeisArray.length > 0 || imeiPricesArray.length > 0)) {
+      const imeisToProcess = imeisArray.length > 0 ? imeisArray : (imeiPricesArray.map(item => item.imei).filter(Boolean));
+      
+      // Extract phone info from entityData.reference or use fallbacks
+      let phoneBrand = 'Brand';
+      let phoneModel = 'Model';
+      let phoneRam = '';
+      
+      if (data.entityData?.reference) {
+        const reference = data.entityData.reference;
+        // Try to extract brand and model from reference like "Bulk Purchase: apple iphone 12 (2 IMEIs)"
+        const match = reference.match(/Bulk Purchase:\s*([^(]+)/i);
+        if (match) {
+          const phoneInfo = match[1].trim();
+          const parts = phoneInfo.split(/\s+/);
+          if (parts.length >= 2) {
+            phoneBrand = parts[0];
+            phoneModel = parts.slice(1).join(' ');
+          } else {
+            phoneModel = phoneInfo;
+          }
+        }
+      }
+      
+      imeisToProcess.forEach((imei, index) => {
+        const imeiPrice = priceByImei[String(imei)] || parseMoney(imeiPricesArray[index]?.price) || 0;
+        const totalPrice = parseMoney(data.finalPrice || 0);
+        const pricePerImei = imeiPrice || (totalPrice / imeisToProcess.length);
+        
+        allItems.push({
+          no: itemCounter++,
+          name: `${phoneBrand} ${phoneModel} ${phoneRam}`.trim(),
+          code: imei || '-',
+          model: phoneModel,
+          brand: phoneBrand,
+          color: data.color || 'N/A',
+          simOption: data.simOption || 'N/A',
+          batteryHealth: data.batteryHealth || 'N/A',
+          warranty: data.warranty || 'N/A',
+          qty: 1,
+          rate: toCurrency(pricePerImei),
+          amount: toCurrency(pricePerImei),
+        });
+      });
+    }
+
+    // Process phoneDetails (bulk phones from other sources)
+    if (phoneDetailsArray.length > 0) {
+      phoneDetailsArray.forEach((phoneDetail) => {
+        // Process each IMEI in the phone detail
+        if (phoneDetail.imeiDetails && phoneDetail.imeiDetails.length > 0) {
+          phoneDetail.imeiDetails.forEach((imeiDetail) => {
+            allItems.push({
+              no: itemCounter++,
+              name: `${phoneDetail.companyName || 'Brand'} ${phoneDetail.modelName || 'Model'} ${phoneDetail.ramMemory || ''}`.trim(),
+              code: imeiDetail.imei1 || '-',
+              model: phoneDetail.modelName || 'Model',
+              brand: phoneDetail.companyName || 'Brand',
+              color: imeiDetail.color || 'N/A',
+              simOption: phoneDetail.simOption || 'N/A',
+              batteryHealth: phoneDetail.batteryHealth || 'N/A',
+              warranty: data?.warranty || phoneDetail.warranty || 'N/A',
+              qty: 1,
+              rate: toCurrency(parseMoney(phoneDetail.priceOfOne || 0)),
+              amount: toCurrency(parseMoney(phoneDetail.priceOfOne || 0)),
+            });
+          });
+        } else {
+          // If no IMEI details, create one item for the phone
+          allItems.push({
+            no: itemCounter++,
+            name: `${phoneDetail.companyName || 'Brand'} ${phoneDetail.modelName || 'Model'} ${phoneDetail.ramMemory || ''}`.trim(),
+            code: '-',
+            model: phoneDetail.modelName || 'Model',
+            brand: phoneDetail.companyName || 'Brand',
+            color: 'N/A',
+            simOption: phoneDetail.simOption || 'N/A',
+            batteryHealth: phoneDetail.batteryHealth || 'N/A',
+            warranty: data?.warranty || phoneDetail.warranty || 'N/A',
+            qty: phoneDetail.imeiCount || 1,
+            rate: toCurrency(parseMoney(phoneDetail.priceOfOne || 0)),
+            amount: toCurrency(parseMoney(phoneDetail.priceOfOne || 0) * (phoneDetail.imeiCount || 1)),
+          });
+        }
+      });
+    }
+
+
+    // Process accessories
+    if (accessoriesArray.length > 0) {
+      accessoriesArray.forEach((accessory) => {
+        allItems.push({
+          no: itemCounter++,
+          name: accessory.name || 'Accessory',
+          code: accessory.id || '-',
+          model: accessory.name || 'Accessory',
+          brand: 'Generic',
+          color: 'N/A',
+          simOption: 'N/A',
+          batteryHealth: 'N/A',
+          warranty: 'N/A',
+          qty: accessory.quantity || 1,
+          rate: toCurrency(parseMoney(accessory.price || 0)),
+          amount: toCurrency(parseMoney(accessory.price || 0) * (accessory.quantity || 1)),
+        });
+      });
+    }
+
+    // If we have explicit phone details or per-IMEI prices, synthesize items (legacy support)
+    if (allItems.length === 0 && (phoneDetailArray.length > 0 || imeiPricesArray.length > 0 || imeisArray.length > 0)) {
       // Prefer to drive rows by phoneDetail when present, else by IMEIs, else by imeiPrices
       const baseLen = phoneDetailArray.length || imeisArray.length || imeiPricesArray.length;
       const warranty = data?.warranty || data?.dataReceived?.warranty || '';
@@ -157,9 +317,42 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
       });
     }
 
-    // Fallback to provided items as-is
-    return Array.isArray(data?.items) ? data.items : [];
+    // Return combined items or fallback to provided items
+    return allItems.length > 0 ? allItems : (Array.isArray(data?.items) ? data.items : []);
   })();
+
+  // Extract summary data from raw data structure
+  const summaryData = {
+    items: data?.summary?.items || computedItems.length || 0,
+    cashReturn: data?.summary?.cashReturn || '–',
+    bankReturn: data?.summary?.bankReturn || '–',
+    freight: data?.summary?.freight || '–',
+    subTotal: data?.summary?.subTotal || (() => {
+      const total = computedItems.reduce((sum, item) => {
+        const amount = parseMoney(item.amount);
+        return sum + amount;
+      }, 0);
+      return toCurrency(total);
+    })(),
+    discount: data?.summary?.discount || '–',
+    netTotal: data?.summary?.netTotal || (() => {
+      const total = computedItems.reduce((sum, item) => {
+        const amount = parseMoney(item.amount);
+        return sum + amount;
+      }, 0);
+      return toCurrency(total);
+    })(),
+    previousBal: data?.summary?.previousBal || '–',
+    total: data?.summary?.total || (() => {
+      const total = computedItems.reduce((sum, item) => {
+        const amount = parseMoney(item.amount);
+        return sum + amount;
+      }, 0);
+      return toCurrency(total);
+    })(),
+    bankDeposit: data?.summary?.bankDeposit || '–',
+    currentTotal: data?.summary?.currentTotal || '–',
+  };
 
   const handlePrintInvoice = () => {
     const printWindow = window.open('', '_blank', 'width=400,height=600');
@@ -169,7 +362,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
     printWindow.focus();
     printWindow.print();
   };
-  const termsHtml = (Array.isArray(data?.termsAndConditions) ? data.termsAndConditions : [])
+  const termsHtml = (Array.isArray(termsAndConditionsData) ? termsAndConditionsData : [])
     .map((item, index) => `
     <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
       <strong style="font-weight: 600; color: #000; margin-right: 4px;">
@@ -398,33 +591,34 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
           <div class="invoice-container">
           <div class="header">
             <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between',width: '100%', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+              <div style="display:flex;align-items:center;gap:8px">
                 ${logoUrl ? `<img src="${logoUrl}" alt="logo" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.2),0 2px 6px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.2)"/>` : ''}
                 <div>
-                  <div style={{ fontWeight: 'bold', marginBottom: '2px', fontSize: '12px', color: '#000' }}>
+                  <div style="font-weight:800;margin-bottom:2px;font-size:14px;color:#000">
                     ${shopName}
                   </div>
-                  <div style={{ fontSize: '9px', color: '#000', fontWeight: '500' }}>
+                  <div style="font-size:9px;color:#000;font-weight:500">
                     ${shopAddress}
                   </div>
                 </div>
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '14px', color: '#000' }}>Okiiee</h4>
+                <h4 style="margin:0;font-size:16px;color:#000;font-weight:800">Okiiee</h4>
               </div>
             </div>
           </div>
               <div class="title">${data.title}</div>
               <div class="subtitle">${data.subtitle}</div>
           </div>
-          <div class="meta">
+          <div class="meta" style="flex-direction:column; align-items:flex-start; gap:2px;">
+              <div><strong>Address:</strong> ${shopAddress}</div>
               <div><strong>Date:</strong> ${data.date}</div>
-              // <div><strong>Inv#:</strong> ${data.invoiceNumber}</div>
+              <!-- <div><strong>Inv#:</strong> ${data.invoiceNumber}</div> -->
           </div>
           <div class="customer">
-              <strong>Name:</strong> <b>${data.customer.name}</b><br>
-              <strong>Cel No:</strong> ${data.customer.phone}
+              <strong>Name:</strong> <b>${customerData.name}</b><br>
+              <strong>Cel No:</strong> ${customerData.phone}
           </div>
           <table>
               <thead>
@@ -442,9 +636,9 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
           <div class="summary">
           
               <div class="right">
-              <div><span class="label">SubTotal:</span><span class="value">${data.summary.subTotal}</span></div>
-              <div class="net"><span class="label">Net Total:</span><span class="value">${data.summary.netTotal}</span></div>
-              <div><span class="label">Total:</span><span class="value">${data.summary.total}</span></div>
+              <div><span class="label">SubTotal:</span><span class="value">${summaryData.subTotal}</span></div>
+              <div class="net"><span class="label">Net Total:</span><span class="value">${summaryData.netTotal}</span></div>
+              <div><span class="label">Total:</span><span class="value">${summaryData.total}</span></div>
             
               </div>
           </div>
@@ -559,9 +753,9 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                 <div>
                   <div
                     style={{
-                      fontWeight: 'bold',
+                      fontWeight: 800,
                       marginBottom: '2px',
-                      fontSize: '12px',
+                      fontSize: '14px',
                       color: '#000',
                     }}
                   >
@@ -573,7 +767,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                 </div>
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '14px', color: '#000' }}>Okiiee</h4>
+                <h4 style={{ margin: 0, fontSize: '16px', color: '#000', fontWeight: 800 }}>Okiiee</h4>
               </div>
             </div>
           </div>
@@ -602,25 +796,27 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
           <div
             style={{
               display: 'flex',
-              justifyContent: 'space-between',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
               fontSize: '12px',
               margin: '5px 0',
               color: '#000',
+              gap: '2px',
             }}
           >
             <div>
-              <strong>Date:</strong> {data.date}
+              <strong>Address:</strong> {shopAddress}
             </div>
             <div>
-              {/* <strong>Inv#:</strong> {data.invoiceNumber} */}
+              <strong>Date:</strong> {data.date}
             </div>
           </div>
 
           <div style={{ fontSize: '12px', margin: '5px 0', color: '#000' }}>
             <strong>Name:</strong>{' '}
-            <span style={{ color: '#000' }}>{data.customer.name}</span>
+            <span style={{ color: '#000' }}>{customerData.name}</span>
             <br />
-            <strong>Cel No:</strong> {data.customer.phone}
+            <strong>Cel No:</strong> {customerData.phone}
           </div>
 
           <table
@@ -723,7 +919,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                     textAlign: 'center',
                   }}
                 >
-                  {data.summary.items}
+                  {summaryData.items}
                 </span>
               </div>
               <div
@@ -742,7 +938,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                     textAlign: 'center',
                   }}
                 >
-                  {data.summary.cashReturn}
+                  {summaryData.cashReturn}
                 </span>
               </div>
               <div
@@ -761,7 +957,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                     textAlign: 'center',
                   }}
                 >
-                  {data.summary.bankReturn}
+                  {summaryData.bankReturn}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -774,7 +970,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                     textAlign: 'center',
                   }}
                 >
-                  {data.summary.freight}
+                  {summaryData.freight}
                 </span>
               </div>
             </div> */}
@@ -789,7 +985,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                 }}
               >
                 <span>SubTotal:</span>
-                <span>{data.summary.subTotal}</span>
+                <span>{summaryData.subTotal}</span>
               </div>
 
               <div
@@ -802,7 +998,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
               >
                 <span>Net Total:</span>
                 <span style={{ color: '#000', fontWeight: 'bold' }}>
-                  {data.summary.netTotal}
+                  {summaryData.netTotal}
                 </span>
               </div>
 
@@ -815,7 +1011,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                 }}
               >
                 <span>Total:</span>
-                <span>{data.summary.total}</span>
+                <span>{summaryData.total}</span>
               </div>
               {/* <div
                 style={{
@@ -825,11 +1021,11 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                 }}
               >
                 <span style={{ color: '#000' }}>Bank Deposit:</span>
-                <span>{data.summary.bankDeposit}</span>
+                <span>{summaryData.bankDeposit}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Current Total:</span>
-                <span>{data.summary.currentTotal}</span>
+                <span>{summaryData.currentTotal}</span>
               </div> */}
             </div>
           </div>
@@ -972,7 +1168,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
                 gap: '2px',
               }}
             >
-              {data?.termsAndConditions?.map((item, index) => (
+              {termsAndConditionsData?.map((item, index) => (
                 <p
                   key={index}
                   style={{

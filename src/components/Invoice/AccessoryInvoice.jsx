@@ -6,6 +6,8 @@ import { SmallInvoiceComponent } from 'components/SmallInvoiceComponent';
 import Modal from 'components/Modal/Modal';
 import { toast } from 'react-toastify';
 import { InvoiceComponent } from 'components/InvoiceComponent';
+import { api } from '../../../api/api';
+import { BASE_URL } from 'config/constant';
 
 const AccessoryInvoice = () => {
   const { state } = useLocation();
@@ -16,6 +18,8 @@ const AccessoryInvoice = () => {
 
   // State for color selection and invoice type
   const [selectedColor, setSelectedColor] = useState('#004B87');
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [displayHalfP4, setDisplayHalfP4] = useState(false);
   const [showSmallInvoice, setShowSmallInvoice] = useState(false);
   const [originalInvoice, setOriginalInvoice] = useState(true);
 
@@ -76,17 +80,59 @@ const AccessoryInvoice = () => {
     `,
   });
 
-  // Toggle between invoice views
+  // Toggle between three invoice views
   const handleChangePreview = () => {
     if (originalInvoice) {
+      // Switch from original → half preview (InvoiceComponent)
       setOriginalInvoice(false);
+      setDisplayHalfP4(true);
+      setShowSmallInvoice(false);
+    } else if (displayHalfP4) {
+      // Switch from half preview → small invoice
+      setOriginalInvoice(false);
+      setDisplayHalfP4(false);
       setShowSmallInvoice(true);
-    } else {
+    } else if (showSmallInvoice) {
+      // Switch from small invoice → original
       setOriginalInvoice(true);
+      setDisplayHalfP4(false);
       setShowSmallInvoice(false);
     }
   };
   const [shop, setShop] = useState({});
+  
+  // Fetch logo from API once
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLogo = async () => {
+      try {
+        console.log('🔍 Fetching logo from API...');
+        const res = await api.get('/api/shop/logo');
+        console.log('📡 Logo API response:', res?.data);
+        
+        if (isMounted && res?.data?.success && res?.data?.logo) {
+          const path = String(res.data.logo);
+          console.log('🛤️ Logo path from API:', path);
+          
+          if (path && path !== '{}' && path !== 'null' && path !== 'undefined') {
+            const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+            console.log('🔗 Full logo URL:', full);
+            setLogoUrl(full);
+          } else {
+            console.log('❌ Invalid logo path:', path);
+          }
+        } else {
+          console.log('❌ No logo data in response or API failed');
+        }
+      } catch (error) {
+        console.error('❌ Error fetching logo:', error);
+      }
+    };
+    
+    fetchLogo();
+    return () => { isMounted = false; };
+  }, []);
+
   useEffect(() => {
     const shopData = localStorage.getItem('shop');
     if (shopData) {
@@ -96,12 +142,12 @@ const AccessoryInvoice = () => {
   }, []);
   console.log('Shop data:', shop);
 
-  // Prepare data for small invoice
+  // Prepare data for small invoice with conditional accessory data
   const smallInvoiceData = {
     termsAndConditions:
       shop?.termsCondition || 'No terms and conditions provided',
-    shopInfo: 'Shop Address Not Mentioned',
-    title: 'Okiiee',
+    shopInfo: shop?.address || 'Shop Address Not Mentioned',
+    title: 'INVOICE',
     subtitle:
       invoiceData.purchasePaymentType === 'credit'
         ? 'Credit Sale'
@@ -118,11 +164,18 @@ const AccessoryInvoice = () => {
         invoiceData?.newEntity?.number ||
         '____________________',
     },
+    // Conditional data for accessories
     items:
       invoiceData.sales?.map((item, index) => ({
         no: index + 1,
-        name: `Accessory ${index + 1}`,
-        code: item.accessoryId.slice(-6),
+        name: item.name || `Accessory ${index + 1}`,
+        code: item.accessoryId?.slice(-6) || `ACC${index + 1}`,
+        model: item.name || 'Accessory',
+        brand: item.brand || 'Generic',
+        color: item.color || 'N/A',
+        simOption: 'N/A', // Not applicable for accessories
+        batteryHealth: 'N/A', // Not applicable for accessories
+        warranty: item.warranty || 'N/A',
         qty: item.quantity,
         rate: String(item.perPiecePrice),
         amount: String(item.perPiecePrice * item.quantity),
@@ -303,7 +356,7 @@ const AccessoryInvoice = () => {
   return (
     <div>
       {/* Color Selection */}
-      {!showSmallInvoice && (
+      {!displayHalfP4 && !showSmallInvoice && (
         <div style={{ padding: '20px' }}>
           <label style={{ fontWeight: 'bold', marginRight: '10px' }}>
             Select Color:
@@ -340,7 +393,7 @@ const AccessoryInvoice = () => {
         >
           Change Preview
         </button>
-        {!showSmallInvoice && (
+        {!displayHalfP4 && !showSmallInvoice && (
           <>
             <button
               style={{ ...styles.button, ...styles.printBtn }}
@@ -371,11 +424,29 @@ const AccessoryInvoice = () => {
         <div id="invoice" style={styles.container}>
           {/* Header */}
           <header style={styles.header}>
-            <div>
-              <h2 style={styles.logo}>{shop?.name || 'Accessory Shop'}</h2>
-              <p>
-                Contact: {shop?.contactNumber?.join(', ') || 'Not Provided'}
-              </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt="logo"
+                  style={{ 
+                    width: '60px', 
+                    height: '60px', 
+                    borderRadius: '50%', 
+                    objectFit: 'cover',
+                    border: '3px solid #fff',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
+                    marginBottom: '10px'
+                  }}
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+              )}
+              <div>
+                <h2 style={styles.logo}>{shop?.name || 'Accessory Shop'}</h2>
+                <p>
+                  Contact: {shop?.contactNumber?.join(', ') || 'Not Provided'}
+                </p>
+              </div>
             </div>
             <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
           </header>
@@ -511,13 +582,20 @@ const AccessoryInvoice = () => {
         </div>
       )}
 
-      {/* Small Invoice Preview */}
-      {showSmallInvoice && (
-        // <SmallInvoiceComponent invoiceData={smallInvoiceData} />
+      {/* InvoiceComponent Preview */}
+      {displayHalfP4 && (
         <InvoiceComponent
           accessoriesData={invoiceData}
           termsAndConditions={shop?.termsCondition}
-          a
+        />
+      )}
+
+      {/* Small Invoice Preview */}
+      {showSmallInvoice && (
+        <SmallInvoiceComponent 
+          invoiceData={smallInvoiceData} 
+          shopData={shop}
+          logoUrl={logoUrl}
         />
       )}
     </div>
