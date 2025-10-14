@@ -87,6 +87,7 @@ const UsedMobilesList = () => {
       );
     }
   };
+console.log('mobiles', mobiles);
 
   const deletePhone = async () => {
     try {

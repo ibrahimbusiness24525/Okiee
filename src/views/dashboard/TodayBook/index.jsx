@@ -28,14 +28,25 @@ const TodayBook = () => {
   const [todayBookData, setTodayBookData] = useState([]);
   const [bankData, setBankData] = useState([]);
   const [date, setDate] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [totalCash, setTotalCash] = useState(0);
   const [showProfitModal, setShowProfitModal] = useState(false);
   const [accessoryTransactions, setAccessoryTransactions] = useState([]); // Load your accessory data here
 
   const getTodayBook = async () => {
     try {
-      const response = await api.get(`/api/dayBook/todayBook`, {
-        params: { date },
+      // Build query params per range rules
+      const params = {};
+      if (startDate && endDate) {
+        params.startDate = startDate; // YYYY-MM-DD
+        params.endDate = endDate;     // YYYY-MM-DD
+      } else if (date) {
+        params.date = date; // single day
+      }
+
+      const response = await api.get('/api/dayBook/todayBook', {
+        params,
       });
 
       setTodayBookData(response?.data?.data || []);
@@ -311,7 +322,7 @@ const TodayBook = () => {
   const totalAmount = totalInvoices + openingBalance - totalExpenses;
 
   const formatCurrency = (amount, pkr = true) => {
-    return `${amount}${pkr ? ' PKR' : ''}`;
+    return `${amount}${pkr ? ' PKR' : ''}`  ;
   };
 
   const formatDate = (dateString) => {
@@ -398,7 +409,7 @@ const TodayBook = () => {
 
     {
       title: 'Sale Track',
-      icon: ShoppingBag, // 🛍️ For tracking sales
+      icon: ShoppingBag, // 🛍 For tracking sales
       color: '#059669', // emerald-600
       bgColor: '#ecfdf5', // emerald-50
       route: '/reports/total',
@@ -1018,6 +1029,46 @@ const TodayBook = () => {
         </h1>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {/* Range mode: provide start and end dates. If both filled, range overrides single date */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <label style={{ color: '#555', fontSize: '12px' }}>Start</label>
+            <input
+              onChange={(e) => setStartDate(e.target.value)}
+              type="date"
+              value={startDate}
+              name="startDate"
+              style={{
+                padding: '8px 12px',
+                fontSize: '14px',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                outline: 'none',
+                backgroundColor: '#fff',
+                color: '#333',
+                cursor: 'pointer',
+                minWidth: '140px',
+              }}
+            />
+            <label style={{ color: '#555', fontSize: '12px' }}>End</label>
+            <input
+              onChange={(e) => setEndDate(e.target.value)}
+              type="date"
+              value={endDate}
+              name="endDate"
+              style={{
+                padding: '8px 12px',
+                fontSize: '14px',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                outline: 'none',
+                backgroundColor: '#fff',
+                color: '#333',
+                cursor: 'pointer',
+                minWidth: '140px',
+              }}
+            />
+          </div>
+          <span style={{ color: '#888', fontSize: '12px' }}>or</span>
           <input
             onChange={(e) => setDate(e.target.value)}
             type="date"
@@ -1352,7 +1403,7 @@ const TodayBook = () => {
 
             return (
               <p>
-                {profitOrLoss < 0 ? `Loss of ${-profitOrLoss}` : profitOrLoss}
+                {profitOrLoss < 0 ? `Loss of ${-profitOrLoss}` : `Profit of ${profitOrLoss}`}
               </p>
             );
           },
@@ -1403,4 +1454,4 @@ const TodayBook = () => {
   );
 };
 
-export default TodayBook;
+export default TodayBook;
