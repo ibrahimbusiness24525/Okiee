@@ -66,6 +66,7 @@ const UsedMobilesList = () => {
   const [id, setId] = useState('');
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [includeSold, setIncludeSold] = useState(false);
 
   const navigate = useNavigate();
 
@@ -214,8 +215,8 @@ console.log('mobiles', mobiles);
   //   (searchTerm === "" || mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
   // );
   const filteredMobiles = mobiles?.filter((mobile) => {
-    // Exclude sold phones
-    if (mobile.isSold) return false;
+    // Respect legacy and new status flags, but allow including sold when toggled
+    if (!includeSold && (mobile?.status === 'Sold' || mobile?.isSold)) return false;
     if (mobile.phoneCondition === 'New') return false;
     if (mobile.imei1.includes(searchTerm) || mobile.imei2.includes(searchTerm))
       return true;
@@ -234,8 +235,8 @@ console.log('mobiles', mobiles);
     );
   });
   const updatedFilteredMobiles = useMemo(() => {
-    return filteredMobiles.filter((record) => record.dispatch === false);
-  }, [filteredMobiles]);
+    return filteredMobiles.filter((record) => (includeSold ? true : record.dispatch === false));
+  }, [filteredMobiles, includeSold]);
   useEffect(() => {
     if (!updatedFilteredMobiles || updatedFilteredMobiles.length === 0) return;
 
@@ -272,7 +273,7 @@ console.log('mobiles', mobiles);
     setAccessories(updatedAccessories);
   };
   const visibleMobiles = filteredMobiles
-    .filter((record) => record.dispatch === false)
+    .filter((record) => (includeSold ? true : record.dispatch === false))
     .filter((record) => {
       if (!selectedCompany) return true;
       const normalize = (str) => str?.toLowerCase().replace(/\s+/g, '');
@@ -327,6 +328,10 @@ console.log('mobiles', mobiles);
           value={searchTerm}
           onChange={handleSearch}
         />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '12px' }}>
+          <input id="includeSoldUsed" type="checkbox" checked={includeSold} onChange={(e) => setIncludeSold(e.target.checked)} />
+          <label htmlFor="includeSoldUsed" style={{ userSelect: 'none' }}>Include Sold</label>
+        </div>
       </InputGroup>
       <div
         style={{

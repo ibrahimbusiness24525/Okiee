@@ -87,6 +87,7 @@ console.log("shopData",shopData)
 
   // Use shop data from props if available, otherwise fallback to static data
   const shopName =shopData?.shopName ||  shopData?.name  || data.shopInfo || 'Mobile Shop';
+  const shopNumber =  shopData?.contactNumber?.[0] || 'Phone Number';
   const shopAddress = shopData?.address || data.shopInfo || 'Shop Address';
   const shopPhone = shopData?.phone || shopData?.contactNumber?.[0] || 'Phone Number';
   
@@ -740,8 +741,8 @@ console.log("shopData",shopData)
                     src={logoUrl}
                     alt="logo"
                     style={{ 
-                      width: '40px', 
-                      height: '40px', 
+                      width: '50px', 
+                      height: '50px', 
                       borderRadius: '50%', 
                       objectFit: 'cover',
                       border: '2px solid #fff',
@@ -760,6 +761,16 @@ console.log("shopData",shopData)
                     }}
                   >
                     {shopName}
+                  </div>
+                  <div
+                    style={{
+                      fontWeight: 800,
+                      marginBottom: '2px',
+                      fontSize: '14px',
+                      color: '#000',
+                    }}
+                  >
+                    {shopNumber}
                   </div>
                   <div style={{ fontSize: '9px', color: '#000', fontWeight: '500' }}>
                     {shopAddress}

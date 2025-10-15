@@ -108,6 +108,7 @@ const NewMobilesList = () => {
   const [imeiInput, setImeiInput] = useState(''); // Input field for new IMEI
   const [bulkData, setBulkData] = useState([]);
   const [list, setList] = useState(true);
+  const [includeSold, setIncludeSold] = useState(false);
   const [entityData, setEntityData] = useState({
     name: '',
     number: '',
@@ -664,6 +665,10 @@ console.log("bulkMobile", bulkMobile);
           value={searchTerm}
           onChange={handleSearch}
         />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '12px' }}>
+          <input id="includeSoldBulk" type="checkbox" checked={includeSold} onChange={(e) => setIncludeSold(e.target.checked)} />
+          <label htmlFor="includeSoldBulk" style={{ userSelect: 'none' }}>Include Sold</label>
+        </div>
       </InputGroup>
       {/* Search bar */}
 
@@ -926,7 +931,7 @@ console.log("bulkMobile", bulkMobile);
                 <Table
                   routes={['/app/dashboard/bulkPhoneDetail']}
                   array={partyData.filter(
-                    (record) => record.dispatch === false
+                    (record) => includeSold ? true : record.dispatch === false
                   )}
                   keysToDisplay={[
                     'partyName',
@@ -1095,7 +1100,7 @@ console.log("bulkMobile", bulkMobile);
           <Row xs={1} md={2} lg={3} className="g-4">
             {bulkMobile.length > 0 ? (
               bulkMobile
-                .filter((record) => record.dispatch === false)
+                .filter((record) => includeSold ? true : record.dispatch === false)
                 .map((mobile) => (
                   <Col key={mobile._id}>
                     <Card
@@ -1485,7 +1490,7 @@ console.log("bulkMobile", bulkMobile);
                 <Table
                   routes={['/app/dashboard/bulkPhoneDetail']}
                   array={personData.filter(
-                    (record) => record.dispatch === false
+                    (record) => includeSold ? true : record.dispatch === false
                   )}
                   keysToDisplay={[
                     'personId',
@@ -1664,7 +1669,7 @@ console.log("bulkMobile", bulkMobile);
           <Row xs={1} md={2} lg={3} className="g-4">
             {bulkMobile.length > 0 ? (
               bulkMobile
-                .filter((record) => record.dispatch === false)
+                .filter((record) => includeSold ? true : record.dispatch === false)
                 .map((mobile) => (
                   <Col key={mobile._id}>
                     <Card
