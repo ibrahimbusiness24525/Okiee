@@ -2,7 +2,7 @@ import React from 'react';
 
 export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
   // Remove local state and API calls since we're getting data from props
-console.log("shopData",shopData)
+  console.log("shopData", shopData)
   // Static invoice data
   const staticInvoiceData = {
     shopInfo: 'Shop#46 Mall Road Opp. Meezan Bank Cantt.',
@@ -67,7 +67,7 @@ console.log("shopData",shopData)
   };
 
   const data = invoiceData || staticInvoiceData;
-  console.log("data",data)
+  console.log("data", data)
 
   // Extract customer data from raw data structure
   const customerData = {
@@ -86,11 +86,11 @@ console.log("shopData",shopData)
 
 
   // Use shop data from props if available, otherwise fallback to static data
-  const shopName =shopData?.shopName ||  shopData?.name  || data.shopInfo || 'Mobile Shop';
-  const shopNumber =  shopData?.contactNumber?.[0] || 'Phone Number';
+  const shopName = shopData?.shopName || shopData?.name || data.shopInfo || 'Mobile Shop';
+  const shopNumber = shopData?.contactNumber?.[0] || 'Phone Number';
   const shopAddress = shopData?.address || data.shopInfo || 'Shop Address';
   const shopPhone = shopData?.phone || shopData?.contactNumber?.[0] || 'Phone Number';
-  
+
   console.log('Shop data received:', shopData);
   console.log('Shop address:', shopAddress);
   console.log('Shop address type:', typeof shopAddress);
@@ -170,12 +170,12 @@ console.log("shopData",shopData)
     // Process bulk phones from addedImeis/writtenImeis/imeiPrices (for dashboard sales)
     if (phoneDetailsArray.length === 0 && (imeisArray.length > 0 || imeiPricesArray.length > 0)) {
       const imeisToProcess = imeisArray.length > 0 ? imeisArray : (imeiPricesArray.map(item => item.imei).filter(Boolean));
-      
+
       // Extract phone info from entityData.reference or use fallbacks
       let phoneBrand = 'Brand';
       let phoneModel = 'Model';
       let phoneRam = '';
-      
+
       if (data.entityData?.reference) {
         const reference = data.entityData.reference;
         // Try to extract brand and model from reference like "Bulk Purchase: apple iphone 12 (2 IMEIs)"
@@ -191,12 +191,12 @@ console.log("shopData",shopData)
           }
         }
       }
-      
+
       imeisToProcess.forEach((imei, index) => {
         const imeiPrice = priceByImei[String(imei)] || parseMoney(imeiPricesArray[index]?.price) || 0;
         const totalPrice = parseMoney(data.finalPrice || 0);
         const pricePerImei = imeiPrice || (totalPrice / imeisToProcess.length);
-        
+
         allItems.push({
           no: itemCounter++,
           name: `${phoneBrand} ${phoneModel} ${phoneRam}`.trim(),
@@ -414,19 +414,21 @@ console.log("shopData",shopData)
           @media screen {
               body { margin: 20px; padding: 20px; background: #f5f5f5; }
           }
-          body {
-              font-family: 'Calibri', sans-serif;
-              font-size: 12px;
-              margin: 0;
-              padding: 0;
-          }
-          .invoice-container {
-              width: 80mm;
-              background: #fff;
-              margin: 0 auto;
-              padding: 5mm;
-              box-sizing: border-box;
-          }
+      body {
+        font-family: 'Calibri', sans-serif;
+        font-size: 14px; /* slightly larger */
+        margin: 0;
+        padding: 0;
+        color: #000;
+      }
+      .invoice-container {
+        width: 80mm; /* keep width unchanged */
+        background: #fff;
+        margin: 0 auto;
+        padding: 5mm;
+        box-sizing: border-box;
+        font-weight: 600; /* make overall text bolder */
+      }
           .header,
           .section,
           .footer {
@@ -446,23 +448,25 @@ console.log("shopData",shopData)
               font-weight: bold;
               margin-bottom: 2mm;
           }
-          .header .title {
-              text-align: center;
-              font-size: 16px;
-              font-weight: bold;
-              margin: 1mm 0;
-          }
-          .header .subtitle {
-              text-align: center;
-              font-size: 10px;
-              font-style: italic;
-          }
-          .meta {
-              display: flex;
-              justify-content: space-between;
-              font-size: 12px;
-              margin: 2mm 0;
-          }
+      .header .title {
+        text-align: center;
+        font-size: 18px; /* slightly larger */
+        font-weight: 800; /* bolder */
+        margin: 1mm 0;
+      }
+      .header .subtitle {
+        text-align: center;
+        font-size: 11px;
+        font-style: italic;
+        font-weight: 600;
+      }
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin: 2mm 0;
+        font-weight: 600;
+      }
           .customer {
               margin: 2mm 0;
           }
@@ -474,15 +478,15 @@ console.log("shopData",shopData)
               border-collapse: collapse;
               margin-bottom: 2mm;
           }
-          table th,
-          table td {
-              border: 1px solid #000;
-              padding: 0.5mm;
-              text-align: center;
-              vertical-align: top;
-              font-size: 8px;
-              color: #000;
-          }
+      table th,
+      table td {
+        border: 1px solid #000;
+        padding: 1.2mm; /* increase padding for readability */
+        text-align: center;
+        vertical-align: top;
+        font-size: 11px; /* larger text */
+        color: #000;
+      }
           table th:first-child,
           table td:first-child {
               text-align: left;
@@ -517,22 +521,24 @@ console.log("shopData",shopData)
               text-align: center;
               width: 6%;
           }
-          .summary {
-              display: flex;
-              justify-content: space-between;
-              font-size: 12px;
-              margin-bottom: 2mm;
-          }
+      .summary {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 2mm;
+        font-weight: 700;
+      }
           .summary .left,
           .summary .right {
               width: 48%;
           }
-          .summary .left div,
-          .summary .right div {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 1mm;
-          }
+      .summary .left div,
+      .summary .right div {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1mm;
+        font-weight: 700;
+      }
           .summary .left div.box {
               border: 1px solid #000;
               padding: 1mm;
@@ -546,12 +552,13 @@ console.log("shopData",shopData)
           .summary .right .deposit .label {
               color: #000;
           }
-          .operator {
-              font-size: 10px;
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 2mm;
-          }
+      .operator {
+        font-size: 11px;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2mm;
+        font-weight: 600;
+      }
           .pending-title {
               text-align: center;
               font-weight: bold;
@@ -563,13 +570,14 @@ console.log("shopData",shopData)
               border-collapse: collapse;
               margin-bottom: 2mm;
           }
-          .small-table th,
-          .small-table td {
-              border: 1px solid #000;
-              padding: 1mm;
-              font-size: 12px;
-              text-align: center;
-          }
+      .small-table th,
+      .small-table td {
+        border: 1px solid #000;
+        padding: 1mm;
+        font-size: 12px;
+        text-align: center;
+        font-weight: 700;
+      }
           .small-footer {
               display: flex;
               justify-content: space-between;
@@ -581,11 +589,11 @@ console.log("shopData",shopData)
               color: #000;
               text-decoration: none;
           }
-          .qr {
-              width: 15mm;
-              height: 15mm;
-              object-fit: contain;
-          }
+      .qr {
+        width: 15mm;
+        height: 15mm;
+        object-fit: contain;
+      }
           </style>
       </head>
       <body>
@@ -717,7 +725,8 @@ console.log("shopData",shopData)
             textAlign: 'center',
             marginBottom: '20px',
             color: '#000',
-            fontSize: '18px',
+            fontSize: '20px',
+            fontWeight: 800,
           }}
         >
           Small Invoice Preview
@@ -731,6 +740,8 @@ console.log("shopData",shopData)
             border: '1px dashed #ccc',
             padding: '10px',
             background: '#fff',
+            fontWeight: 700,
+            fontSize: '13px',
           }}
         >
           <div>
@@ -740,10 +751,10 @@ console.log("shopData",shopData)
                   <img
                     src={logoUrl}
                     alt="logo"
-                    style={{ 
-                      width: '50px', 
-                      height: '50px', 
-                      borderRadius: '50%', 
+                    style={{
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
                       objectFit: 'cover',
                       border: '2px solid #fff',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)'
@@ -772,9 +783,9 @@ console.log("shopData",shopData)
                   >
                     {shopNumber}
                   </div>
-                  <div style={{ fontSize: '9px', color: '#000', fontWeight: '500' }}>
+                  {/* <div style={{ fontSize: '9px', color: '#000', fontWeight: '500' }}>
                     {shopAddress}
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div>
@@ -786,7 +797,7 @@ console.log("shopData",shopData)
             style={{
               textAlign: 'center',
               fontSize: '18px',
-              fontWeight: 'bold',
+              fontWeight: 900,
               margin: '5px 0',
               color: '#000',
             }}
@@ -823,7 +834,7 @@ console.log("shopData",shopData)
             </div>
           </div>
 
-          <div style={{ fontSize: '12px', margin: '5px 0', color: '#000' }}>
+          <div style={{ fontSize: '13px', margin: '5px 0', color: '#000', fontWeight: 700 }}>
             <strong>Name:</strong>{' '}
             <span style={{ color: '#000' }}>{customerData.name}</span>
             <br />
@@ -835,7 +846,7 @@ console.log("shopData",shopData)
               width: '100%',
               borderCollapse: 'collapse',
               margin: '10px 0',
-              fontSize: '8px',
+              fontSize: '11px',
             }}
           >
             <thead>
@@ -871,20 +882,21 @@ console.log("shopData",shopData)
             <tbody>
               {computedItems.map((item) => (
                 <tr key={item.no}>
-                  <td style={{ border: '1px solid #000', padding: '2px', color: '#000' }}>
+                  <td style={{ border: '1px solid #000', padding: '6px', color: '#000', fontWeight: 700 }}>
                     {item.no}
                   </td>
-                  <td style={{ border: '1px solid #000', padding: '2px', color: '#000' }}>
+                  <td style={{ border: '1px solid #000', padding: '6px', color: '#000', fontWeight: 700 }}>
                     {item.name}
                     <br />
-                    <small style={{ fontSize: '6px', color: '#000' }}>{item.code}</small>
+                    <small style={{ fontSize: '8px', color: '#000', fontWeight: 600 }}>{item.code}</small>
                   </td>
                   <td
                     style={{
                       border: '1px solid #000',
-                      padding: '2px',
+                      padding: '6px',
                       textAlign: 'center',
                       color: '#000',
+                      fontWeight: 700,
                     }}
                   >
                     {item.qty}
@@ -892,9 +904,10 @@ console.log("shopData",shopData)
                   <td
                     style={{
                       border: '1px solid #000',
-                      padding: '2px',
+                      padding: '6px',
                       textAlign: 'center',
                       color: '#000',
+                      fontWeight: 700,
                     }}
                   >
                     {item.amount}
