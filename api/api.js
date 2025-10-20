@@ -48,4 +48,4 @@ const storeBaseURL = (url) => {
   });
 };
 
-storeBaseURL(api.baseURL)
+storeBaseURL(api.baseURL);
