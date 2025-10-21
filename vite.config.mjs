@@ -8,11 +8,27 @@ export default defineConfig(({ mode }) => {
   const PORT = `${'3000'}`;
 
   return {
+    root: '.',
+    build: {
+      outDir: 'dist',
+      rollupOptions: {
+        input: {
+          main: './index.html'
+        }
+      }
+    },
     server: {
       // this ensures that the browser opens upon server start
       open: true,
       // this sets a default port to 3000
-      port: PORT
+      port: PORT,
+      // Enable SPA fallback for client-side routing
+      historyApiFallback: true
+    },
+    preview: {
+      // Enable SPA fallback for preview server (production build)
+      port: 4173,
+      open: true
     },
     define: {
       global: 'window'
@@ -59,7 +75,7 @@ export default defineConfig(({ mode }) => {
         ]
       }
     },
-    base: API_URL,
+    base: '/',
     plugins: [react(), jsconfigPaths()]
   };
 });

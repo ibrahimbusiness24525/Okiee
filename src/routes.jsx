@@ -127,6 +127,12 @@ const routes = [
       {
         exact: 'true',
         path: '/app/dashboard/availablePhones',
+        element: lazy(
+          () => import('./components/mobileCards/DispachMobileList')
+        ), // Available Phones
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/DispachmobileList',
         element: lazy(
           () => import('./components/mobileCards/DispachMobileList')

@@ -792,7 +792,6 @@ const DashDefault = () => {
             </div>
           </div>
         </Col>
-        <Col md={6} xl={12} className="about-us-section"></Col>
       </Row>
     </React.Fragment>
   );
