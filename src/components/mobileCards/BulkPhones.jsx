@@ -1511,9 +1511,14 @@ const NewMobilesList = () => {
 
                 <Table
                   routes={['/app/dashboard/bulkPhoneDetail']}
-                  array={personData.filter((record) =>
-                    includeSold ? true : record.dispatch === false
-                  )}
+                  array={personData.filter((record) => {
+                    // Filter out sold records unless includeSold is true
+                    if (record.status === 'Sold') {
+                      return includeSold;
+                    }
+                    // For non-sold records, apply the dispatch filter
+                    return includeSold ? true : record.dispatch === false;
+                  })}
                   keysToDisplay={[
                     'personId',
                     'date',
@@ -2346,43 +2351,43 @@ const NewMobilesList = () => {
                       );
 
                       return Object.values(groupedPhones).map((group, idx) => (
-                      <div
-                        key={idx}
-                        style={{
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                            padding: '12px',
-                          marginBottom: '10px',
-                          background: '#fafafa',
-                        }}
-                      >
                         <div
+                          key={idx}
                           style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-                            gap: '8px',
-                              marginBottom: '8px',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            marginBottom: '10px',
+                            background: '#fafafa',
                           }}
                         >
-                          <div>
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                              gap: '8px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            <div>
                               <strong>Company:</strong> {group.companyName}
-                          </div>
-                          <div>
+                            </div>
+                            <div>
                               <strong>Model:</strong> {group.modelName}
-                          </div>
-                          <div>
+                            </div>
+                            <div>
                               <strong>RAM:</strong> {group.ramMemory}
-                          </div>
-                          <div>
+                            </div>
+                            <div>
                               <strong>SIM:</strong> {group.simOption}
+                            </div>
                           </div>
-                        </div>
-                            <div
-                              style={{
-                                display: 'flex',
+                          <div
+                            style={{
+                              display: 'flex',
                               justifyContent: 'space-between',
                               alignItems: 'center',
-                                flexWrap: 'wrap',
+                              flexWrap: 'wrap',
                               gap: '8px',
                             }}
                           >
@@ -2396,8 +2401,8 @@ const NewMobilesList = () => {
                                 alignItems: 'center',
                               }}
                             >
-                                <span
-                                  style={{
+                              <span
+                                style={{
                                   background: '#dbeafe',
                                   color: '#1e40af',
                                   padding: '4px 12px',
@@ -2409,7 +2414,7 @@ const NewMobilesList = () => {
                                 {group.totalImeis} phones
                                 {/* {group.count}{' '}
                                 {group.count === 1 ? 'Phone' : 'Phones'} */}
-                                </span>
+                              </span>
                               {group.totalImeis > 0 && (
                                 <span
                                   style={{
@@ -2423,9 +2428,9 @@ const NewMobilesList = () => {
                                 >
                                   {/* {group.totalImeis} IMEIs */}
                                 </span>
-                          )}
-                        </div>
-                      </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       ));
                     })()}
