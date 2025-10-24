@@ -1007,369 +1007,255 @@ const CustomerRecord = () => {
           partyDetails.person &&
           partyDetails.saleDetails &&
           partyDetails.purchaseDetails && (
-            <div>
-              {/* Person Ledger Analytics */}
-              <div
-                style={{
-                  border: '1px solid #e9ecef',
-                  borderRadius: '12px',
-                  padding: '0',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  backgroundColor: '#fff',
-                  overflow: 'hidden',
-                  marginBottom: '24px',
-                }}
-              >
-                {/* Header Section */}
+            <>
+              <div>
+                {/* Person Ledger Analytics */}
                 <div
                   style={{
-                    padding: '18px 24px',
-                    backgroundColor: '#f8f9fa',
-                    borderBottom: '1px solid #e9ecef',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    border: '1px solid #e9ecef',
+                    borderRadius: '12px',
+                    padding: '0',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    backgroundColor: '#fff',
+                    overflow: 'hidden',
+                    marginBottom: '24px',
                   }}
                 >
-                  <h2
-                    style={{
-                      margin: '0',
-                      fontSize: '20px',
-                      fontWeight: '600',
-                      color: '#212529',
-                    }}
-                  >
-                    📊 {partyDetails?.person?.name}'s Ledger Analytics
-                  </h2>
+                  {/* Header Section */}
                   <div
                     style={{
-                      fontSize: '13px',
-                      color: '#6c757d',
-                      backgroundColor: '#e9ecef',
-                      padding: '4px 10px',
-                      borderRadius: '50px',
-                      fontWeight: '500',
+                      padding: '18px 24px',
+                      backgroundColor: '#f8f9fa',
+                      borderBottom: '1px solid #e9ecef',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
                     }}
                   >
-                    Status: {partyDetails.person.status}
-                  </div>
-                </div>
-
-                {/* Analytics Content */}
-                <div style={{ padding: '20px 24px' }}>
-                  {/* Key Metrics Row */}
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns:
-                        'repeat(auto-fit, minmax(150px, 1fr))',
-                      gap: '12px',
-                      marginBottom: '24px',
-                    }}
-                  >
-                    {/* Total Sales Count */}
-                    <div
+                    <h2
                       style={{
-                        backgroundColor: '#e8f5e8',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #28a745',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#28a745',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {partyDetails.summary.totalBulkSales +
-                          partyDetails.summary.totalSingleSales}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#6c757d',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Total Sales
-                      </div>
-                    </div>
-
-                    {/* Total Sales Amount */}
-                    <div
-                      style={{
-                        backgroundColor: '#e3f2fd',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #2196f3',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '18px',
-                          fontWeight: '700',
-                          color: '#2196f3',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {(() => {
-                          const bulkSalesTotal = (
-                            partyDetails.saleDetails?.bulkSales || []
-                          ).reduce(
-                            (sum, sale) => sum + (sale.salePrice || 0),
-                            0
-                          );
-                          const singleSalesTotal = (
-                            partyDetails.saleDetails?.singleSales || []
-                          ).reduce(
-                            (sum, sale) => sum + (sale.salePrice || 0),
-                            0
-                          );
-                          return (
-                            bulkSalesTotal + singleSalesTotal
-                          ).toLocaleString();
-                        })()}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#6c757d',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Sales Amount
-                      </div>
-                    </div>
-
-                    {/* Total Purchases Count */}
-                    <div
-                      style={{
-                        backgroundColor: '#fff3e0',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #ff9800',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '24px',
-                          fontWeight: '700',
-                          color: '#ff9800',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {partyDetails.summary.totalBulkPurchases +
-                          partyDetails.summary.totalSinglePurchases}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#6c757d',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Total Purchases
-                      </div>
-                    </div>
-
-                    {/* Total Purchase Amount */}
-                    <div
-                      style={{
-                        backgroundColor: '#f3e5f5',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #9c27b0',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '18px',
-                          fontWeight: '700',
-                          color: '#9c27b0',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {(() => {
-                          const bulkPurchasesTotal = (
-                            partyDetails.purchaseDetails?.bulkPurchases || []
-                          ).reduce(
-                            (sum, purchase) =>
-                              sum + parseInt(purchase.prices?.buyingPrice || 0),
-                            0
-                          );
-                          const singlePurchasesTotal = (
-                            partyDetails.purchaseDetails?.singlePurchases || []
-                          ).reduce(
-                            (sum, purchase) =>
-                              sum + (purchase.price?.purchasePrice || 0),
-                            0
-                          );
-                          return (
-                            bulkPurchasesTotal + singlePurchasesTotal
-                          ).toLocaleString();
-                        })()}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#6c757d',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Purchase Amount
-                      </div>
-                    </div>
-
-                    {/* Net Credit Status */}
-                    <div
-                      style={{
-                        backgroundColor:
-                          partyDetails.person.givingCredit >
-                          partyDetails.person.takingCredit
-                            ? '#f8d7da'
-                            : '#d4edda',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#dc3545' : '#28a745'}`,
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '18px',
-                          fontWeight: '700',
-                          color:
-                            partyDetails.person.givingCredit >
-                            partyDetails.person.takingCredit
-                              ? '#dc3545'
-                              : '#28a745',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {Math.abs(
-                          partyDetails.person.givingCredit -
-                            partyDetails.person.takingCredit
-                        ).toLocaleString()}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#6c757d',
-                          fontWeight: '500',
-                        }}
-                      >
-                        {partyDetails.person.givingCredit >
-                        partyDetails.person.takingCredit
-                          ? 'Net Receivable'
-                          : 'Net Payable'}
-                      </div>
-                    </div>
-                  </div>
-                  {/* Receivables/Payables Summary */}
-                  <div
-                    style={{
-                      backgroundColor:
-                        partyDetails.person.givingCredit >
-                        partyDetails.person.takingCredit
-                          ? '#d4edda'
-                          : '#f8d7da',
-                      padding: '18px',
-                      borderRadius: '8px',
-                      borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#28a745' : '#dc3545'}`,
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                      marginBottom: '24px',
-                    }}
-                  >
-                    <h3
-                      style={{
-                        color: '#495057',
-                        marginTop: '0',
-                        marginBottom: '16px',
-                        fontSize: '16px',
+                        margin: '0',
+                        fontSize: '20px',
                         fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
+                        color: '#212529',
                       }}
                     >
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          width: '24px',
-                          height: '24px',
-                          backgroundColor:
-                            partyDetails.person.givingCredit >
-                            partyDetails.person.takingCredit
-                              ? '#dc3545'
-                              : '#28a745',
-                          color: '#fff',
-                          borderRadius: '50%',
-                          textAlign: 'center',
-                          lineHeight: '24px',
-                          fontSize: '12px',
-                        }}
-                      >
-                        {partyDetails.person.givingCredit >
-                        partyDetails.person.takingCredit
-                          ? '📈'
-                          : '📉'}
-                      </span>
-                      {partyDetails.person.givingCredit >
-                      partyDetails.person.takingCredit
-                        ? 'Total Receivables'
-                        : 'Total Payables'}
-                    </h3>
+                      📊 {partyDetails?.person?.name}'s Ledger Analytics
+                    </h2>
+                    <div
+                      style={{
+                        fontSize: '13px',
+                        color: '#6c757d',
+                        backgroundColor: '#e9ecef',
+                        padding: '4px 10px',
+                        borderRadius: '50px',
+                        fontWeight: '500',
+                      }}
+                    >
+                      Status: {partyDetails.person.status}
+                    </div>
+                  </div>
 
+                  {/* Analytics Content */}
+                  <div style={{ padding: '20px 24px' }}>
+                    {/* Key Metrics Row */}
                     <div
                       style={{
                         display: 'grid',
                         gridTemplateColumns:
-                          'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '16px',
+                          'repeat(auto-fit, minmax(150px, 1fr))',
+                        gap: '12px',
+                        marginBottom: '24px',
                       }}
                     >
-                      {/* Main Amount */}
+                      {/* Total Sales Count */}
                       <div
                         style={{
-                          backgroundColor: '#fff',
+                          backgroundColor: '#e8f5e8',
                           padding: '16px',
                           borderRadius: '8px',
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                          borderLeft: '4px solid #28a745',
                           textAlign: 'center',
                         }}
                       >
                         <div
                           style={{
+                            fontSize: '24px',
+                            fontWeight: '700',
+                            color: '#28a745',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          {partyDetails.summary.totalBulkSales +
+                            partyDetails.summary.totalSingleSales}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Total Sales
+                        </div>
+                      </div>
+
+                      {/* Total Sales Amount */}
+                      <div
+                        style={{
+                          backgroundColor: '#e3f2fd',
+                          padding: '16px',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #2196f3',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#2196f3',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          {(() => {
+                            const bulkSalesTotal = (
+                              partyDetails.saleDetails?.bulkSales || []
+                            ).reduce(
+                              (sum, sale) => sum + (sale.salePrice || 0),
+                              0
+                            );
+                            const singleSalesTotal = (
+                              partyDetails.saleDetails?.singleSales || []
+                            ).reduce(
+                              (sum, sale) => sum + (sale.salePrice || 0),
+                              0
+                            );
+                            return (
+                              bulkSalesTotal + singleSalesTotal
+                            ).toLocaleString();
+                          })()}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Sales Amount
+                        </div>
+                      </div>
+
+                      {/* Total Purchases Count */}
+                      <div
+                        style={{
+                          backgroundColor: '#fff3e0',
+                          padding: '16px',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #ff9800',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '24px',
+                            fontWeight: '700',
+                            color: '#ff9800',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          {partyDetails.summary.totalBulkPurchases +
+                            partyDetails.summary.totalSinglePurchases}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Total Purchases
+                        </div>
+                      </div>
+
+                      {/* Total Purchase Amount */}
+                      <div
+                        style={{
+                          backgroundColor: '#f3e5f5',
+                          padding: '16px',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #9c27b0',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#9c27b0',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          {(() => {
+                            const bulkPurchasesTotal = (
+                              partyDetails.purchaseDetails?.bulkPurchases || []
+                            ).reduce(
+                              (sum, purchase) =>
+                                sum +
+                                parseInt(purchase.prices?.buyingPrice || 0),
+                              0
+                            );
+                            const singlePurchasesTotal = (
+                              partyDetails.purchaseDetails?.singlePurchases ||
+                              []
+                            ).reduce(
+                              (sum, purchase) =>
+                                sum + (purchase.price?.purchasePrice || 0),
+                              0
+                            );
+                            return (
+                              bulkPurchasesTotal + singlePurchasesTotal
+                            ).toLocaleString();
+                          })()}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Purchase Amount
+                        </div>
+                      </div>
+
+                      {/* Net Credit Status */}
+                      <div
+                        style={{
+                          backgroundColor:
+                            partyDetails.person.givingCredit >
+                            partyDetails.person.takingCredit
+                              ? '#f8d7da'
+                              : '#d4edda',
+                          padding: '16px',
+                          borderRadius: '8px',
+                          borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#dc3545' : '#28a745'}`,
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
                             color:
                               partyDetails.person.givingCredit >
                               partyDetails.person.takingCredit
                                 ? '#dc3545'
                                 : '#28a745',
-                            fontWeight: '600',
-                            marginBottom: '8px',
-                            fontSize: '14px',
+                            marginBottom: '4px',
                           }}
                         >
-                          {partyDetails.person.givingCredit >
-                          partyDetails.person.takingCredit
-                            ? 'Amount to Receive'
-                            : 'Amount to Pay'}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: '24px',
-                            fontWeight: '700',
-                            color: '#212529',
-                          }}
-                        >
-                          PKR{' '}
                           {Math.abs(
                             partyDetails.person.givingCredit -
                               partyDetails.person.takingCredit
@@ -1379,385 +1265,536 @@ const CustomerRecord = () => {
                           style={{
                             fontSize: '12px',
                             color: '#6c757d',
-                            marginTop: '4px',
+                            fontWeight: '500',
                           }}
                         >
                           {partyDetails.person.givingCredit >
                           partyDetails.person.takingCredit
-                            ? 'From customer'
-                            : 'To customer'}
+                            ? 'Net Receivable'
+                            : 'Net Payable'}
                         </div>
                       </div>
-
-                   
-                      <div
+                    </div>
+                    {/* Receivables/Payables Summary */}
+                    <div
+                      style={{
+                        backgroundColor:
+                          partyDetails.person.givingCredit >
+                          partyDetails.person.takingCredit
+                            ? '#d4edda'
+                            : '#f8d7da',
+                        padding: '18px',
+                        borderRadius: '8px',
+                        borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#28a745' : '#dc3545'}`,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                        marginBottom: '24px',
+                      }}
+                    >
+                      <h3
                         style={{
-                          backgroundColor: '#fff',
-                          padding: '12px',
-                          borderRadius: '6px',
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                          color: '#495057',
+                          marginTop: '0',
+                          marginBottom: '16px',
+                          fontSize: '16px',
+                          fontWeight: '600',
                           display: 'flex',
-                          flexDirection: 'column',
                           alignItems: 'center',
-                          justifyContent: 'center',
+                          gap: '8px',
                         }}
                       >
-                        <div
+                        <span
                           style={{
-                            color: '#495057',
-                            fontWeight: '600',
-                            marginBottom: '8px',
-                            fontSize: '14px',
-                          }}
-                        >
-                          Current Status
-                        </div>
-                        <div
-                          style={{
-                            padding: '8px 16px',
-                            borderRadius: '20px',
+                            display: 'inline-block',
+                            width: '24px',
+                            height: '24px',
                             backgroundColor:
                               partyDetails.person.givingCredit >
                               partyDetails.person.takingCredit
                                 ? '#dc3545'
                                 : '#28a745',
                             color: '#fff',
-                            fontSize: '14px',
-                            fontWeight: '600',
+                            borderRadius: '50%',
+                            textAlign: 'center',
+                            lineHeight: '24px',
+                            fontSize: '12px',
                           }}
                         >
                           {partyDetails.person.givingCredit >
                           partyDetails.person.takingCredit
-                            ? 'RECEIVABLE'
-                            : 'PAYABLE'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns:
-                        'repeat(auto-fit, minmax(300px, 1fr))',
-                      gap: '16px',
-                      marginBottom: '24px',
-                    }}
-                  >
-                    {/* Sales Analytics */}
-                    <div
-                      style={{
-                        backgroundColor: '#f8fafc',
-                        padding: '18px',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #28a745',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                      }}
-                    >
-                      <h3
-                        style={{
-                          color: '#495057',
-                          marginTop: '0',
-                          marginBottom: '16px',
-                          fontSize: '16px',
-                          fontWeight: '600',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            width: '24px',
-                            height: '24px',
-                            backgroundColor: '#28a745',
-                            color: '#fff',
-                            borderRadius: '50%',
-                            textAlign: 'center',
-                            lineHeight: '24px',
-                            fontSize: '12px',
-                          }}
-                        >
-                          📈
+                            ? '📈'
+                            : '📉'}
                         </span>
-                        Sales Analytics
+                        {partyDetails.person.givingCredit >
+                        partyDetails.person.takingCredit
+                          ? 'Total Receivables'
+                          : 'Total Payables'}
                       </h3>
-                      <div style={{ display: 'grid', gap: '12px' }}>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Bulk Sales:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#212529' }}>
-                            {partyDetails.summary.totalBulkSales} items
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Bulk Sales Amount:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#28a745' }}>
-                            PKR
-                            {(partyDetails.saleDetails?.bulkSales || [])
-                              .reduce(
-                                (sum, sale) => sum + (sale.salePrice || 0),
-                                0
-                              )
-                              .toLocaleString()}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Single Sales:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#212529' }}>
-                            {partyDetails.summary.totalSingleSales} items
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Single Sales Amount:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#28a745' }}>
-                            PKR
-                            {(partyDetails.saleDetails?.singleSales || [])
-                              .reduce(
-                                (sum, sale) => sum + (sale.salePrice || 0),
-                                0
-                              )
-                              .toLocaleString()}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            borderTop: '1px solid #e9ecef',
-                            paddingTop: '8px',
-                          }}
-                        >
-                          <span
-                            style={{
-                              color: '#495057',
-                              fontSize: '14px',
-                              fontWeight: '600',
-                            }}
-                          >
-                            Total Sales:
-                          </span>
-                          <span
-                            style={{
-                              fontWeight: '700',
-                              color: '#28a745',
-                              fontSize: '16px',
-                            }}
-                          >
-                            PKR
-                            {(() => {
-                              const bulkSalesTotal = (
-                                partyDetails.saleDetails?.bulkSales || []
-                              ).reduce(
-                                (sum, sale) => sum + (sale.salePrice || 0),
-                                0
-                              );
-                              const singleSalesTotal = (
-                                partyDetails.saleDetails?.singleSales || []
-                              ).reduce(
-                                (sum, sale) => sum + (sale.salePrice || 0),
-                                0
-                              );
-                              return (
-                                bulkSalesTotal + singleSalesTotal
-                              ).toLocaleString();
-                            })()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
 
-                    <div
-                      style={{
-                        backgroundColor: '#f8fafc',
-                        padding: '18px',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #ff9800',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                      }}
-                    >
-                      <h3
+                      <div
                         style={{
-                          color: '#495057',
-                          marginTop: '0',
-                          marginBottom: '16px',
-                          fontSize: '16px',
-                          fontWeight: '600',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
+                          display: 'grid',
+                          gridTemplateColumns:
+                            'repeat(auto-fit, minmax(200px, 1fr))',
+                          gap: '16px',
                         }}
                       >
-                        <span
+                        {/* Main Amount */}
+                        <div
                           style={{
-                            display: 'inline-block',
-                            width: '24px',
-                            height: '24px',
-                            backgroundColor: '#ff9800',
-                            color: '#fff',
-                            borderRadius: '50%',
+                            backgroundColor: '#fff',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                             textAlign: 'center',
-                            lineHeight: '24px',
-                            fontSize: '12px',
                           }}
                         >
-                          📦
-                        </span>
-                        Purchase Analytics
-                      </h3>
-                      <div style={{ display: 'grid', gap: '12px' }}>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Bulk Purchases:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#212529' }}>
-                            {partyDetails.summary.totalBulkPurchases} items
-                          </span>
+                          <div
+                            style={{
+                              color:
+                                partyDetails.person.givingCredit >
+                                partyDetails.person.takingCredit
+                                  ? '#dc3545'
+                                  : '#28a745',
+                              fontWeight: '600',
+                              marginBottom: '8px',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {partyDetails.person.givingCredit >
+                            partyDetails.person.takingCredit
+                              ? 'Amount to Receive'
+                              : 'Amount to Pay'}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '24px',
+                              fontWeight: '700',
+                              color: '#212529',
+                            }}
+                          >
+                            PKR{' '}
+                            {Math.abs(
+                              partyDetails.person.givingCredit -
+                                partyDetails.person.takingCredit
+                            ).toLocaleString()}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              color: '#6c757d',
+                              marginTop: '4px',
+                            }}
+                          >
+                            {partyDetails.person.givingCredit >
+                            partyDetails.person.takingCredit
+                              ? 'From customer'
+                              : 'To customer'}
+                          </div>
                         </div>
+
                         <div
                           style={{
+                            backgroundColor: '#fff',
+                            padding: '12px',
+                            borderRadius: '6px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                             display: 'flex',
-                            justifyContent: 'space-between',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                           }}
                         >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Bulk Purchase Amount:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#ff9800' }}>
-                            PKR
-                            {(partyDetails.purchaseDetails?.bulkPurchases || [])
-                              .reduce(
-                                (sum, purchase) =>
-                                  sum +
-                                  parseInt(purchase.prices?.buyingPrice || 0),
-                                0
-                              )
-                              .toLocaleString()}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Single Purchases:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#212529' }}>
-                            {partyDetails.summary.totalSinglePurchases} items
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <span style={{ color: '#495057', fontSize: '14px' }}>
-                            Single Purchase Amount:
-                          </span>
-                          <span style={{ fontWeight: '600', color: '#ff9800' }}>
-                            PKR
-                            {(
-                              partyDetails.purchaseDetails?.singlePurchases ||
-                              []
-                            )
-                              .reduce(
-                                (sum, purchase) =>
-                                  sum + (purchase.price?.purchasePrice || 0),
-                                0
-                              )
-                              .toLocaleString()}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            borderTop: '1px solid #e9ecef',
-                            paddingTop: '8px',
-                          }}
-                        >
-                          <span
+                          <div
                             style={{
                               color: '#495057',
+                              fontWeight: '600',
+                              marginBottom: '8px',
+                              fontSize: '14px',
+                            }}
+                          >
+                            Current Status
+                          </div>
+                          <div
+                            style={{
+                              padding: '8px 16px',
+                              borderRadius: '20px',
+                              backgroundColor:
+                                partyDetails.person.givingCredit >
+                                partyDetails.person.takingCredit
+                                  ? '#dc3545'
+                                  : '#28a745',
+                              color: '#fff',
                               fontSize: '14px',
                               fontWeight: '600',
                             }}
                           >
-                            Total Purchases:
-                          </span>
+                            {partyDetails.person.givingCredit >
+                            partyDetails.person.takingCredit
+                              ? 'RECEIVABLE'
+                              : 'PAYABLE'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(300px, 1fr))',
+                        gap: '16px',
+                        marginBottom: '24px',
+                      }}
+                    >
+                      {/* Sales Analytics */}
+                      <div
+                        style={{
+                          backgroundColor: '#f8fafc',
+                          padding: '18px',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #28a745',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        <h3
+                          style={{
+                            color: '#495057',
+                            marginTop: '0',
+                            marginBottom: '16px',
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}
+                        >
                           <span
                             style={{
-                              fontWeight: '700',
-                              color: '#ff9800',
-                              fontSize: '16px',
+                              display: 'inline-block',
+                              width: '24px',
+                              height: '24px',
+                              backgroundColor: '#28a745',
+                              color: '#fff',
+                              borderRadius: '50%',
+                              textAlign: 'center',
+                              lineHeight: '24px',
+                              fontSize: '12px',
                             }}
                           >
-                            PKR
-                            {(() => {
-                              const bulkPurchasesTotal = (
+                            📈
+                          </span>
+                          Sales Analytics
+                        </h3>
+                        <div style={{ display: 'grid', gap: '12px' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Bulk Sales:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#212529' }}
+                            >
+                              {partyDetails.summary.totalBulkSales} items
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Bulk Sales Amount:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#28a745' }}
+                            >
+                              PKR
+                              {(partyDetails.saleDetails?.bulkSales || [])
+                                .reduce(
+                                  (sum, sale) => sum + (sale.salePrice || 0),
+                                  0
+                                )
+                                .toLocaleString()}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Single Sales:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#212529' }}
+                            >
+                              {partyDetails.summary.totalSingleSales} items
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Single Sales Amount:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#28a745' }}
+                            >
+                              PKR
+                              {(partyDetails.saleDetails?.singleSales || [])
+                                .reduce(
+                                  (sum, sale) => sum + (sale.salePrice || 0),
+                                  0
+                                )
+                                .toLocaleString()}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              borderTop: '1px solid #e9ecef',
+                              paddingTop: '8px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: '#495057',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Total Sales:
+                            </span>
+                            <span
+                              style={{
+                                fontWeight: '700',
+                                color: '#28a745',
+                                fontSize: '16px',
+                              }}
+                            >
+                              PKR
+                              {(() => {
+                                const bulkSalesTotal = (
+                                  partyDetails.saleDetails?.bulkSales || []
+                                ).reduce(
+                                  (sum, sale) => sum + (sale.salePrice || 0),
+                                  0
+                                );
+                                const singleSalesTotal = (
+                                  partyDetails.saleDetails?.singleSales || []
+                                ).reduce(
+                                  (sum, sale) => sum + (sale.salePrice || 0),
+                                  0
+                                );
+                                return (
+                                  bulkSalesTotal + singleSalesTotal
+                                ).toLocaleString();
+                              })()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: '#f8fafc',
+                          padding: '18px',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #ff9800',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        <h3
+                          style={{
+                            color: '#495057',
+                            marginTop: '0',
+                            marginBottom: '16px',
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              width: '24px',
+                              height: '24px',
+                              backgroundColor: '#ff9800',
+                              color: '#fff',
+                              borderRadius: '50%',
+                              textAlign: 'center',
+                              lineHeight: '24px',
+                              fontSize: '12px',
+                            }}
+                          >
+                            📦
+                          </span>
+                          Purchase Analytics
+                        </h3>
+                        <div style={{ display: 'grid', gap: '12px' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Bulk Purchases:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#212529' }}
+                            >
+                              {partyDetails.summary.totalBulkPurchases} items
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Bulk Purchase Amount:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#ff9800' }}
+                            >
+                              PKR
+                              {(
                                 partyDetails.purchaseDetails?.bulkPurchases ||
                                 []
-                              ).reduce(
-                                (sum, purchase) =>
-                                  sum +
-                                  parseInt(purchase.prices?.buyingPrice || 0),
-                                0
-                              );
-                              const singlePurchasesTotal = (
+                              )
+                                .reduce(
+                                  (sum, purchase) =>
+                                    sum +
+                                    parseInt(purchase.prices?.buyingPrice || 0),
+                                  0
+                                )
+                                .toLocaleString()}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Single Purchases:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#212529' }}
+                            >
+                              {partyDetails.summary.totalSinglePurchases} items
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <span
+                              style={{ color: '#495057', fontSize: '14px' }}
+                            >
+                              Single Purchase Amount:
+                            </span>
+                            <span
+                              style={{ fontWeight: '600', color: '#ff9800' }}
+                            >
+                              PKR
+                              {(
                                 partyDetails.purchaseDetails?.singlePurchases ||
                                 []
-                              ).reduce(
-                                (sum, purchase) =>
-                                  sum + (purchase.price?.purchasePrice || 0),
-                                0
-                              );
-                              return (
-                                bulkPurchasesTotal + singlePurchasesTotal
-                              ).toLocaleString();
-                            })()}
-                          </span>
+                              )
+                                .reduce(
+                                  (sum, purchase) =>
+                                    sum + (purchase.price?.purchasePrice || 0),
+                                  0
+                                )
+                                .toLocaleString()}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              borderTop: '1px solid #e9ecef',
+                              paddingTop: '8px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: '#495057',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Total Purchases:
+                            </span>
+                            <span
+                              style={{
+                                fontWeight: '700',
+                                color: '#ff9800',
+                                fontSize: '16px',
+                              }}
+                            >
+                              PKR
+                              {(() => {
+                                const bulkPurchasesTotal = (
+                                  partyDetails.purchaseDetails?.bulkPurchases ||
+                                  []
+                                ).reduce(
+                                  (sum, purchase) =>
+                                    sum +
+                                    parseInt(purchase.prices?.buyingPrice || 0),
+                                  0
+                                );
+                                const singlePurchasesTotal = (
+                                  partyDetails.purchaseDetails
+                                    ?.singlePurchases || []
+                                ).reduce(
+                                  (sum, purchase) =>
+                                    sum + (purchase.price?.purchasePrice || 0),
+                                  0
+                                );
+                                return (
+                                  bulkPurchasesTotal + singlePurchasesTotal
+                                ).toLocaleString();
+                              })()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Payment & Cash Analytics - Commented out */}
-                  {/* <h3
+                    {/* Payment & Cash Analytics - Commented out */}
+                    {/* <h3
                       style={{
                         color: '#495057',
                         marginTop: '0',
@@ -2028,8 +2065,8 @@ const CustomerRecord = () => {
                         </div>
                       </div>
                     </div>
-                  </div> 
-                  
+                  </div>
+
                   <div style={{ marginBottom: '32px' }}>
                     {partyDetails.purchaseDetails?.bulkPurchases?.length >
                       0 && (
@@ -3161,7 +3198,7 @@ const CustomerRecord = () => {
                   {/* show tables here */}
                 </div>
               </div>
-            </div>
+            </>
           )}
       </div>
     </div>
