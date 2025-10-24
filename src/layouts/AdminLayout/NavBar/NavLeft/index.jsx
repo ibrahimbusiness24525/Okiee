@@ -166,12 +166,19 @@
 // export default NavLeft;
 
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormControl, ListGroup, Modal, Col } from 'react-bootstrap';
+import {
+  Button,
+  Form,
+  FormControl,
+  ListGroup,
+  Modal,
+  Col,
+} from 'react-bootstrap';
 import ModalComponent from '../../../../components/Modal/Modal';
 import useWindowSize from '../../../../hooks/useWindowSize';
 import AddPhone from 'layouts/AdminLayout/add-phone/add-phone';
 import PurchasePhone from 'layouts/AdminLayout/PurchasePhone/PurchasePhone';
-import { api } from '../../../../../api/api';
+import { api, getAllImeis } from '../../../../../api/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
@@ -224,7 +231,7 @@ const NavLeft = () => {
     searchTerm: '',
     editMobile: null,
     soldMobile: null,
-    saleDate: '',
+    saleDate: new Date().toISOString().split('T')[0], // Set today's date as default
     customerName: '',
     finalPrice: '',
     warranty: '12 months',
@@ -250,7 +257,7 @@ const NavLeft = () => {
 
   // Add missing state variables
   const [sellingType, setSellingType] = useState('');
-  const [showNewEntityForm, setShowNewEntityForm] = useState(false);
+  const [showNewEntityForm, setShowNewEntityForm] = useState(true);
   const [newEntity, setNewEntity] = useState({
     name: '',
     number: '',
@@ -260,6 +267,12 @@ const NavLeft = () => {
     number: '',
     _id: '',
   });
+
+  // Add state variables for IMEI functionality
+  const [allImeis, setAllImeis] = useState([]);
+  const [filteredImeis, setFilteredImeis] = useState([]);
+  const [loadingImeis, setLoadingImeis] = useState(false);
+  const [showImeiDropdown, setShowImeiDropdown] = useState(false);
   const [getAllEntities, setGetAllEntities] = useState([]);
   const [customerNumber, setCustomerNumber] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -294,7 +307,12 @@ const NavLeft = () => {
       alert('Person created successfully!');
     } catch (error) {
       console.error('Error creating person:', error);
-      toast.error(error?.response?.data?.message ||error?.message || error?.data?.message || "Error creating person");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          error?.data?.message ||
+          'Error creating person'
+      );
     } finally {
       setIsCreatingEntity(false);
     }
@@ -366,7 +384,7 @@ const NavLeft = () => {
         console.log('Entities response:', response);
         console.log('Response data:', response?.data);
         console.log('Response data.persons:', response?.data?.persons);
-        
+
         // Try different response structures
         let entities = [];
         if (response?.data?.persons) {
@@ -376,7 +394,7 @@ const NavLeft = () => {
         } else if (Array.isArray(response)) {
           entities = response;
         }
-        
+
         console.log('Final entities data:', entities);
         setGetAllEntities(entities);
       } catch (error) {
@@ -387,7 +405,7 @@ const NavLeft = () => {
           const fallbackResponse = await api.get('/api/person/nameAndId');
           console.log('Fallback response:', fallbackResponse);
           console.log('Fallback data:', fallbackResponse?.data);
-          
+
           let entities = [];
           if (fallbackResponse?.data?.persons) {
             entities = fallbackResponse.data.persons;
@@ -396,7 +414,7 @@ const NavLeft = () => {
           } else if (Array.isArray(fallbackResponse)) {
             entities = fallbackResponse;
           }
-          
+
           console.log('Fallback entities data:', entities);
           setGetAllEntities(entities);
         } catch (fallbackError) {
@@ -418,7 +436,7 @@ const NavLeft = () => {
           console.log('Modal entities response:', response);
           console.log('Modal response data:', response?.data);
           console.log('Modal response data.persons:', response?.data?.persons);
-          
+
           // Try different response structures
           let entities = [];
           if (response?.data?.persons) {
@@ -428,18 +446,20 @@ const NavLeft = () => {
           } else if (Array.isArray(response)) {
             entities = response;
           }
-          
+
           console.log('Modal final entities data:', entities);
           setGetAllEntities(entities);
         } catch (error) {
           console.error('Failed to fetch entities when modal opens:', error);
           // Try fallback endpoint
           try {
-            console.log('Modal: Trying fallback endpoint /api/person/nameAndId...');
+            console.log(
+              'Modal: Trying fallback endpoint /api/person/nameAndId...'
+            );
             const fallbackResponse = await api.get('/api/person/nameAndId');
             console.log('Modal fallback response:', fallbackResponse);
             console.log('Modal fallback data:', fallbackResponse?.data);
-            
+
             let entities = [];
             if (fallbackResponse?.data?.persons) {
               entities = fallbackResponse.data.persons;
@@ -448,11 +468,14 @@ const NavLeft = () => {
             } else if (Array.isArray(fallbackResponse)) {
               entities = fallbackResponse;
             }
-            
+
             console.log('Modal fallback entities data:', entities);
             setGetAllEntities(entities);
           } catch (fallbackError) {
-            console.error('Modal fallback endpoint also failed:', fallbackError);
+            console.error(
+              'Modal fallback endpoint also failed:',
+              fallbackError
+            );
           }
         }
       };
@@ -465,9 +488,51 @@ const NavLeft = () => {
   useEffect(() => {
     console.log('getAllEntities state changed:', getAllEntities);
   }, [getAllEntities]);
+
+  // Add useEffect to fetch all IMEIs
+  useEffect(() => {
+    const fetchImeis = async () => {
+      try {
+        setLoadingImeis(true);
+        const response = await getAllImeis();
+        console.log('IMEIs response:', response);
+        const imeis = response?.data?.data?.imeis || [];
+        console.log('Loaded IMEIs:', imeis);
+        setAllImeis(imeis);
+        // Don't show dropdown initially - keep it closed
+        setFilteredImeis([]);
+      } catch (error) {
+        console.error('Error fetching IMEIs:', error);
+        toast.error('Error fetching IMEIs');
+      } finally {
+        setLoadingImeis(false);
+      }
+    };
+
+    fetchImeis();
+  }, []);
+
+  // Add useEffect to handle clicking outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside the dropdown
+      if (
+        showImeiDropdown &&
+        !event.target.closest('.imei-dropdown-container')
+      ) {
+        setShowImeiDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showImeiDropdown]);
+  console.log('allImeis', allImeis);
   console.log('====================================');
-  console.log("getAllEntities",getAllEntities);
-  console.log('====================================');  
+  console.log('getAllEntities', getAllEntities);
+  console.log('====================================');
 
   const handleAddPhoneShow = () => setShowAddPhoneModal(true);
   const handleAddPhoneClose = () => setShowAddPhoneModal(false);
@@ -792,7 +857,7 @@ const NavLeft = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-                  style={{
+              style={{
                 padding: '12px',
                 width: '100%',
                 backgroundColor: '#4CAF50',
@@ -824,190 +889,218 @@ const NavLeft = () => {
         <Modal.Header closeButton>
           {/* <Modal.Title>Sell Mobile</Modal.Title> */}
         </Modal.Header>
+
         <Modal.Body>
-            <div>
+          <div>
             <Col>
-                                     {console.log('Rendering entity section, sellingType:', formData.sellingType)}
-                   {formData.sellingType !== 'none' && (
-                    <div>
-                      <div
+              {console.log(
+                'Rendering entity section, sellingType:',
+                formData.sellingType
+              )}
+              {formData.sellingType !== 'none' && (
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <label style={{ fontWeight: '600' }}>Entity *</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewEntityForm(false)}
                         style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '12px',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          background: !showNewEntityForm
+                            ? '#e5e7eb'
+                            : 'transparent',
+                          border: '1px solid #d1d5db',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          cursor: 'pointer',
                         }}
                       >
-                        <label style={{ fontWeight: '600' }}>Entity *</label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            type="button"
-                            onClick={() => setShowNewEntityForm(false)}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              background: !showNewEntityForm
-                                ? '#e5e7eb'
-                                : 'transparent',
-                              border: '1px solid #d1d5db',
-                              fontWeight: '500',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Select Existing
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setShowNewEntityForm(true)}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              background: showNewEntityForm
-                                ? '#e5e7eb'
-                                : 'transparent',
-                              border: '1px solid #d1d5db',
-                              fontWeight: '500',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            New Customer
-                          </button>
-                        </div>
-                      </div>
+                        Select Existing
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewEntityForm(true)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          background: showNewEntityForm
+                            ? '#e5e7eb'
+                            : 'transparent',
+                          border: '1px solid #d1d5db',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        New Customer
+                      </button>
+                    </div>
+                  </div>
 
-                      {showNewEntityForm ? (
-                        <div
+                  {showNewEntityForm ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '12px',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <label
                           style={{
-                            display: 'flex',
-                            gap: '12px',
-                            marginBottom: '16px',
+                            display: 'block',
+                            marginBottom: '8px',
+                            fontSize: '14px',
+                            color: '#4b5563',
                           }}
                         >
-                          <div style={{ flex: 1 }}>
-                            <label
-                              style={{
-                                display: 'block',
-                                marginBottom: '8px',
-                                fontSize: '14px',
-                                color: '#4b5563',
-                              }}
-                            >
-                              Entity Name *
-                            </label>
-                            <input
-                              type="text"
-                              name="name"
-                              value={newEntity.name}
-                              onChange={(e) =>
-                                setNewEntity({
-                                  ...newEntity,
-                                  name: e.target.value,
-                                })
+                          Entity Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={newEntity.name}
+                          onChange={(e) =>
+                            setNewEntity({
+                              ...newEntity,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder="Enter entity name"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            border: '2px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '8px',
+                            fontSize: '14px',
+                            color: '#4b5563',
+                          }}
+                        >
+                          Entity Number *
+                        </label>
+                        <input
+                          name="number"
+                          type="text"
+                          value={newEntity.number}
+                          onChange={(e) =>
+                            setNewEntity({
+                              ...newEntity,
+                              number: e.target.value,
+                            })
+                          }
+                          placeholder="Enter entity number"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            border: '2px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {console.log(
+                        'Rendering CustomSelect with options:',
+                        getAllEntities.map((entity) => ({
+                          value: entity._id,
+                          label: `${entity.name} || ${entity.number}`,
+                        }))
+                      )}
+                      <div style={{}}>
+                        <CustomSelect
+                          key={`custom-select-${getAllEntities.length}`} // Force re-render when entities change
+                          value={entityData._id}
+                          onChange={(selectedOption) => {
+                            console.log('Selected option:', selectedOption);
+                            const selectedEntity = getAllEntities.find(
+                              (entity) => entity._id === selectedOption?.value
+                            );
+                            console.log('Selected entity:', selectedEntity);
+                            setEntityData(
+                              selectedEntity || {
+                                name: '',
+                                number: '',
+                                _id: '',
                               }
-                              placeholder="Enter entity name"
-                              required
-                              style={{
-                                width: '100%',
-                                padding: '12px',
-                                border: '2px solid #d1d5db',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                outline: 'none',
-                              }}
-                            />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <label
-                              style={{
-                                display: 'block',
-                                marginBottom: '8px',
-                                fontSize: '14px',
-                                color: '#4b5563',
-                              }}
-                            >
-                              Entity Number *
-                            </label>
-                            <input
-                              name="number"
-                              type="text"
-                              value={newEntity.number}
-                              onChange={(e) =>
-                                setNewEntity({
-                                  ...newEntity,
-                                  number: e.target.value,
-                                })
-                              }
-                              placeholder="Enter entity number"
-                              required
-                              style={{
-                                width: '100%',
-                                padding: '12px',
-                                border: '2px solid #d1d5db',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                outline: 'none',
-                              }}
-                            />
-                          </div>
-                        </div>
-                                                                      ) : (
-                          <>
-                            {console.log('Rendering CustomSelect with options:', getAllEntities.map((entity) => ({
+                            );
+                          }}
+                          options={[
+                            ...getAllEntities.map((entity) => ({
                               value: entity._id,
                               label: `${entity.name} || ${entity.number}`,
-                            })))}
-                            <div style={{ }}>
-                              <CustomSelect
-                                key={`custom-select-${getAllEntities.length}`} // Force re-render when entities change
-                                value={entityData._id}
-                                onChange={(selectedOption) => {
-                                  console.log('Selected option:', selectedOption);
-                                  const selectedEntity = getAllEntities.find(
-                                    (entity) => entity._id === selectedOption?.value
-                                  );
-                                  console.log('Selected entity:', selectedEntity);
-                                  setEntityData(
-                                    selectedEntity || {
-                                      name: '',
-                                      number: '',
-                                      _id: '',
-                                    }
-                                  );
-                                }}
-                                options={[
-                                  ...getAllEntities.map((entity) => ({
-                                    value: entity._id,
-                                    label: `${entity.name} || ${entity.number}`,
-                                  })),
-                                  // Add a test option to see if component works
-                                  { value: 'test', label: 'Test Option - Component Working' }
-                                ]}
-                              />
-                            </div>
-                            {/* Debug info */}
-                           
-                          </>
-                        )}
-                    </div>
+                            })),
+                            // Add a test option to see if component works
+                            {
+                              value: 'test',
+                              label: 'Test Option - Component Working',
+                            },
+                          ]}
+                        />
+                      </div>
+                      {/* Debug info */}
+                    </>
                   )}
-                </Col>
-                
+                </div>
+              )}
+            </Col>
 
-              <Form.Group controlId="saleDate" className="mb-3">
-                <Form.Label>Sale Date</Form.Label>
-                <Form.Control
-                  type="date"
-                  name="saleDate"
-                  value={formData.saleDate}
-                  onChange={handleChange}
-                  placeholder="Enter Sale Date"
-                  required
-                />
-              </Form.Group>
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <Form.Group controlId="saleDate">
+                  <Form.Label>Sale Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="saleDate"
+                    value={formData.saleDate}
+                    onChange={handleChange}
+                    placeholder="Enter Sale Date"
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group>
+                  <Form.Label>Selling Type</Form.Label>
+                  <Form.Select
+                    name="sellingType"
+                    value={formData.sellingType}
+                    onChange={handleChange}
+                    disabled={loading}
+                  >
+                    <option value="">Select Selling Type</option>
+                    <option value="Exchange">Exchange</option>
+                    <option value="Full Payment">Full Payment</option>
+                    <option value="Credit">Credit</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
 
-              {/* <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
                 <Form.Label>Customer Name</Form.Label>
                 <Form.Control
                   type="text"
@@ -1031,393 +1124,503 @@ const NavLeft = () => {
                 />
               </Form.Group> */}
 
-              <div>
-                {formData.accessories.map((accessory, index) => (
-                  <div key={index} className="mb-3 p-3 border rounded">
-                    <Form.Group>
-                      <Form.Label>Accessory Name</Form.Label>
-                      <Form.Select
-                        value={accessory.name}
-                        onChange={(e) =>
-                          handleAccessoryChange(index, 'name', e.target.value)
-                        }
-                      >
-                        <option value="">Select accessory</option>
-                        {data?.data?.map((item, index) => (
-                          <option key={item._id} value={item._id}>
-                            {item.accessoryName}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-
-                    <Form.Group>
-                      <Form.Label>Quantity</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={accessory.quantity}
-                        onChange={(e) =>
-                          handleAccessoryChange(
-                            index,
-                            'quantity',
-                            e.target.value
-                          )
-                        }
-                        min="1"
-                      />
-                    </Form.Group>
-
-                    <Form.Group>
-                      <Form.Label>Accessory Price</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={accessory.price}
-                        onChange={(e) =>
-                          handleAccessoryChange(index, 'price', e.target.value)
-                        }
-                        placeholder="Enter price"
-                      />
-                    </Form.Group>
-
-                    <Button
-                      variant="secondary"
-                      className="mt-2"
-                      onClick={() => {
-                        const updatedAccessories = formData.accessories.filter(
-                          (_, i) => i !== index
-                        );
-                        setFormData((prev) => ({
-                          ...prev,
-                          accessories: updatedAccessories,
-                        }));
-                      }}
+            <div>
+              {formData.accessories.map((accessory, index) => (
+                <div key={index} className="mb-3 p-3 border rounded">
+                  <Form.Group>
+                    <Form.Label>Accessory Name</Form.Label>
+                    <Form.Select
+                      value={accessory.name}
+                      onChange={(e) =>
+                        handleAccessoryChange(index, 'name', e.target.value)
+                      }
                     >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
+                      <option value="">Select accessory</option>
+                      {data?.data?.map((item, index) => (
+                        <option key={item._id} value={item._id}>
+                          {item.accessoryName}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
 
-                <Button
-                  variant="primary"
-                  onClick={() => {
+                  <Form.Group>
+                    <Form.Label>Quantity</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={accessory.quantity}
+                      onChange={(e) =>
+                        handleAccessoryChange(index, 'quantity', e.target.value)
+                      }
+                      min="1"
+                    />
+                  </Form.Group>
+
+                  <Form.Group>
+                    <Form.Label>Accessory Price</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={accessory.price}
+                      onChange={(e) =>
+                        handleAccessoryChange(index, 'price', e.target.value)
+                      }
+                      placeholder="Enter price"
+                    />
+                  </Form.Group>
+
+                  <Button
+                    variant="secondary"
+                    className="mt-2"
+                    onClick={() => {
+                      const updatedAccessories = formData.accessories.filter(
+                        (_, i) => i !== index
+                      );
+                      setFormData((prev) => ({
+                        ...prev,
+                        accessories: updatedAccessories,
+                      }));
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    accessories: [
+                      ...prev.accessories,
+                      { name: '', quantity: 1, price: '' },
+                    ],
+                  }));
+                }}
+                style={{ marginBottom: '20px' }}
+              >
+                Add Another Accessory
+              </Button>
+              <Form.Group className="mb-3 imei-dropdown-container">
+                <Form.Label>Select Phone</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.imei}
+                  name="imei"
+                  onChange={(e) => {
                     setFormData((prev) => ({
                       ...prev,
-                      accessories: [
-                        ...prev.accessories,
-                        { name: '', quantity: 1, price: '' },
-                      ],
+                      imei: e.target.value,
                     }));
+                    // Filter IMEIs based on input
+                    let filteredImeis;
+                    if (e.target.value.trim() === '') {
+                      // Show first 10 IMEIs when input is empty
+                      filteredImeis = allImeis.slice(0, 10);
+                    } else {
+                      filteredImeis = allImeis.filter((phone) =>
+                        phone.imei1
+                          .toLowerCase()
+                          .includes(e.target.value.toLowerCase())
+                      );
+                    }
+                    console.log('Filtered IMEIs:', filteredImeis);
+                    setFilteredImeis(filteredImeis);
+                    setShowImeiDropdown(true);
                   }}
-                  style={{ marginBottom: '20px' }}
-                >
-                  Add Another Accessory
-                </Button>
-                <Form.Group className="mb-3">
-                  <Form.Label>Enter IMEI</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={formData.imei}
-                    name="imei"
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        imei: e.target.value,
-                      }))
+                  onFocus={() => {
+                    // Show first 10 IMEIs when input is focused
+                    if (allImeis.length > 0) {
+                      setFilteredImeis(allImeis.slice(0, 10));
+                      setShowImeiDropdown(true);
                     }
-                    placeholder="Enter IMEI number"
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>IMEI Price</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={formData.imeiPrice}
-                    name="imeiPrice"
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        imeiPrice: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter price for this IMEI"
-                  />
-                </Form.Group>
-
-                <Button
+                  }}
                   onClick={() => {
-                    if (!formData.imei || !formData.imeiPrice) {
-                      alert('Please enter both IMEI and price');
-                      return;
+                    // Show first 10 IMEIs when input is clicked
+                    if (allImeis.length > 0) {
+                      setFilteredImeis(allImeis.slice(0, 10));
+                      setShowImeiDropdown(true);
                     }
-                    console.log('Adding IMEI:', formData.imei, 'with price:', formData.imeiPrice);
-                    
-                    const newImeiPrice = {
-                      imei: formData.imei,
-                      price: parseFloat(formData.imeiPrice)
-                    };
-                    
-                    setFormData((prev) => {
-                      const updatedImeiPrices = [...(prev.imeiPrices || []), newImeiPrice];
-                      const totalPrice = updatedImeiPrices.reduce((sum, item) => sum + (item.price || 0), 0);
-                      
-                      return {
-                        ...prev,
-                        addedImeis: [...(prev.addedImeis || []), prev.imei],
-                        imeiPrices: updatedImeiPrices,
-                        finalPrice: totalPrice.toString(), // Update total sold price
-                        imei: '', // clear IMEI input
-                        imeiPrice: '', // clear price input
-                      };
-                    });
                   }}
-                >
-                  Add This IMEI
-                </Button>
-
-                <div style={{ marginTop: "10px" }}>
-                  <h6 style={{ marginBottom: "8px", fontSize: "14px", fontWeight: "600" }}>Added IMEIs with Prices:</h6>
-                  {formData.imeiPrices && formData.imeiPrices.length > 0 ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      {formData.imeiPrices.map((item, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "12px",
-                            padding: "8px 12px",
-                            backgroundColor: "#f8f9fa",
-                            borderRadius: "6px",
-                            border: "1px solid #dee2e6",
-                          }}
-                        >
-                          <span style={{ fontWeight: "500", minWidth: "80px" }}>IMEI: {item.imei}</span>
-                          <span style={{ fontWeight: "500", minWidth: "80px" }}>Price: {item.price}</span>
-                          <input
-                            type="number"
-                            value={item.price}
-                            onChange={(e) => {
-                              const newPrice = parseFloat(e.target.value) || 0;
-                              setFormData((prev) => {
-                                const updatedImeiPrices = prev.imeiPrices.map((priceItem, index) =>
-                                  index === idx ? { ...priceItem, price: newPrice } : priceItem
-                                );
-                                const totalPrice = updatedImeiPrices.reduce((sum, priceItem) => sum + (priceItem.price || 0), 0);
-                                
-                                return {
-                                  ...prev,
-                                  imeiPrices: updatedImeiPrices,
-                                  finalPrice: totalPrice.toString(),
-                                };
-                              });
-                            }}
-                            style={{
-                              width: "80px",
-                              padding: "4px 8px",
-                              border: "1px solid #ced4da",
-                              borderRadius: "4px",
-                              fontSize: "12px",
-                            }}
-                            placeholder="Price"
-                          />
-                          <button
-                            onClick={() => {
-                              setFormData((prev) => {
-                                const updatedImeiPrices = prev.imeiPrices.filter((_, index) => index !== idx);
-                                const updatedAddedImeis = prev.addedImeis.filter((_, index) => index !== idx);
-                                const totalPrice = updatedImeiPrices.reduce((sum, priceItem) => sum + (priceItem.price || 0), 0);
-                                
-                                return {
-                                  ...prev,
-                                  imeiPrices: updatedImeiPrices,
-                                  addedImeis: updatedAddedImeis,
-                                  finalPrice: totalPrice.toString(),
-                                };
-                              });
-                            }}
-                            style={{
-                              padding: "4px 8px",
-                              backgroundColor: "#dc3545",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
-                      <div style={{ 
-                        marginTop: "8px", 
-                        padding: "8px 12px", 
-                        backgroundColor: "#e7f3ff", 
-                        borderRadius: "6px",
-                        border: "1px solid #b3d9ff"
-                      }}>
-                        <strong>Total Price: {formData.finalPrice || '0'}</strong>
-                      </div>
-                    </div>
-                  ) : (
-                    <span style={{ color: "#888", fontStyle: "italic" }}>No IMEIs added yet</span>
-                  )}
-                </div>
-              </div>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Selling Type</Form.Label>
-                <Form.Select
-                  name="sellingType"
-                  value={formData.sellingType}
-                  onChange={handleChange}
-                  disabled={loading}
-                >
-                  <option value="">Select Selling Type</option>
-                  <option value="Exchange">Exchange</option>
-                  <option value="Full Payment">Full Payment</option>
-                  <option value="Credit">Credit</option>
-                </Form.Select>
-              </Form.Group>
-
-              {formData.sellingType === 'Credit' && (
-                <>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Payable Amount Now</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="payableAmountNow"
-                      value={formData.payableAmountNow}
-                      onChange={handleChange}
-                      placeholder="Enter amount payable now"
-                      disabled={loading}
-                    />
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label>Payable Amount Later</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="payableAmountLater"
-                      value={formData.payableAmountLater}
-                      onChange={handleChange}
-                      placeholder="Enter amount payable later"
-                      disabled={loading}
-                    />
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    {/* <Form.Label>When will it be paid?<x/Form.Label> */}
-                    <Form.Control
-                      type="date"
-                      name="payableAmountLaterDate"
-                      value={formData.payableAmountLaterDate}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </>
-              )}
-
-              {formData.sellingType === 'Exchange' && (
-                <Form.Group className="mb-3">
-                  <Form.Label>Exchange Phone Details</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={4}
-                    name="exchangePhoneDetail"
-                    value={formData.exchangePhoneDetail}
-                    onChange={handleChange}
-                    placeholder="Enter exchange phone details"
-                  />
-                </Form.Group>
-              )}
-
-              <Form.Group className="mb-3">
-                <Form.Label>Total Sold Price (Auto-calculated)</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="finalPrice"
-                  value={formData.finalPrice}
-                  onChange={handleChange}
-                  placeholder="Total price will be calculated automatically"
-                  readOnly
-                  style={{
-                    backgroundColor: "#f8f9fa",
-                    cursor: "not-allowed"
-                  }}
-                  disabled={loading}
+                  placeholder="Type IMEI to search"
                 />
-                <small className="text-muted">
-                  This field is automatically calculated based on the IMEI prices above
-                </small>
-              </Form.Group>
-            </div>
-
-            {formData.type === 'bulk' && (
-              <>
-                <Form.Group className="mb-3">
-                  <Form.Label>IMEI Number</Form.Label>
-                  <div className="d-flex">
-                    <Form.Control
-                      type="text"
-                      name="imeiInput"
-                      value={formData.imeiInput}
-                      onChange={handleChange}
-                      placeholder="Enter IMEI number"
-                      disabled={loading}
-                    />
-                    <Button
-                      variant="success"
-                      onClick={() => {
-                        if (
-                          formData.imeiInput.trim() !== '' &&
-                          !formData.imeis.includes(formData.imeiInput)
-                        ) {
+                {console.log(
+                  'Should show dropdown:',
+                  showImeiDropdown && filteredImeis.length > 0,
+                  'filteredImeis:',
+                  filteredImeis.length
+                )}
+                {showImeiDropdown && filteredImeis.length > 0 && (
+                  <div
+                    className="imei-dropdown-container"
+                    style={{
+                      position: 'absolute',
+                      zIndex: 1000,
+                      backgroundColor: 'white',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      width: '100%',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    {filteredImeis.map((phone, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #eee',
+                        }}
+                        onClick={() => {
                           setFormData((prev) => ({
                             ...prev,
-                            imeis: [...prev.imeis, prev.imeiInput],
-                            imeiInput: '',
+                            imei: phone.imei1,
+                            selectedPhone: phone,
                           }));
-                        }
-                      }}
-                      className="ms-2"
-                      disabled={loading}
-                    >
-                      Add
-                    </Button>
-                  </div>
-                </Form.Group>
-
-                {formData.imeis.length > 0 && (
-                  <div className="mt-3">
-                    <h6>Added IMEIs:</h6>
-                    <ul className="list-group">
-                      {formData.imeis.map((imei, index) => (
-                        <li
-                          key={index}
-                          className="list-group-item d-flex justify-content-between align-items-center"
-                        >
-                          {imei}
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                imeis: prev.imeis.filter((i) => i !== imei),
-                              }));
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
+                          setFilteredImeis([]);
+                          setShowImeiDropdown(false);
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#f5f5f5';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'white';
+                        }}
+                      >
+                        <div style={{ fontWeight: 'bold' }}>{phone.imei1}</div>
+                      </div>
+                    ))}
                   </div>
                 )}
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Phone Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData.imeiPrice}
+                  name="imeiPrice"
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      imeiPrice: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter price for this phone"
+                />
+              </Form.Group>
+
+              <Button
+                onClick={() => {
+                  if (!formData.imei || !formData.imeiPrice) {
+                    alert('Please enter both IMEI and price');
+                    return;
+                  }
+                  console.log(
+                    'Adding IMEI:',
+                    formData.imei,
+                    'with price:',
+                    formData.imeiPrice
+                  );
+
+                  const newImeiPrice = {
+                    imei: formData.imei,
+                    price: parseFloat(formData.imeiPrice),
+                  };
+
+                  setFormData((prev) => {
+                    const updatedImeiPrices = [
+                      ...(prev.imeiPrices || []),
+                      newImeiPrice,
+                    ];
+                    const totalPrice = updatedImeiPrices.reduce(
+                      (sum, item) => sum + (item.price || 0),
+                      0
+                    );
+
+                    return {
+                      ...prev,
+                      addedImeis: [...(prev.addedImeis || []), prev.imei],
+                      imeiPrices: updatedImeiPrices,
+                      finalPrice: totalPrice.toString(), // Update total sold price
+                      imei: '', // clear IMEI input
+                      imeiPrice: '', // clear price input
+                    };
+                  });
+                }}
+              >
+                Add This Phone
+              </Button>
+
+              <div style={{ marginTop: '10px' }}>
+                <h6
+                  style={{
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                  }}
+                >
+                  Added Phones with Prices:
+                </h6>
+                {formData.imeiPrices && formData.imeiPrices.length > 0 ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                    }}
+                  >
+                    {formData.imeiPrices.map((item, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '8px 12px',
+                          backgroundColor: '#f8f9fa',
+                          borderRadius: '6px',
+                          border: '1px solid #dee2e6',
+                        }}
+                      >
+                        <span style={{ fontWeight: '500', minWidth: '80px' }}>
+                          Phone: {item.imei}
+                        </span>
+                        <span style={{ fontWeight: '500', minWidth: '80px' }}>
+                          Price: {item.price}
+                        </span>
+                        <input
+                          type="number"
+                          value={item.price}
+                          onChange={(e) => {
+                            const newPrice = parseFloat(e.target.value) || 0;
+                            setFormData((prev) => {
+                              const updatedImeiPrices = prev.imeiPrices.map(
+                                (priceItem, index) =>
+                                  index === idx
+                                    ? { ...priceItem, price: newPrice }
+                                    : priceItem
+                              );
+                              const totalPrice = updatedImeiPrices.reduce(
+                                (sum, priceItem) =>
+                                  sum + (priceItem.price || 0),
+                                0
+                              );
+
+                              return {
+                                ...prev,
+                                imeiPrices: updatedImeiPrices,
+                                finalPrice: totalPrice.toString(),
+                              };
+                            });
+                          }}
+                          style={{
+                            width: '80px',
+                            padding: '4px 8px',
+                            border: '1px solid #ced4da',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                          }}
+                          placeholder="Price"
+                        />
+                        <button
+                          onClick={() => {
+                            setFormData((prev) => {
+                              const updatedImeiPrices = prev.imeiPrices.filter(
+                                (_, index) => index !== idx
+                              );
+                              const updatedAddedImeis = prev.addedImeis.filter(
+                                (_, index) => index !== idx
+                              );
+                              const totalPrice = updatedImeiPrices.reduce(
+                                (sum, priceItem) =>
+                                  sum + (priceItem.price || 0),
+                                0
+                              );
+
+                              return {
+                                ...prev,
+                                imeiPrices: updatedImeiPrices,
+                                addedImeis: updatedAddedImeis,
+                                finalPrice: totalPrice.toString(),
+                              };
+                            });
+                          }}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <div
+                      style={{
+                        marginTop: '8px',
+                        padding: '8px 12px',
+                        backgroundColor: '#e7f3ff',
+                        borderRadius: '6px',
+                        border: '1px solid #b3d9ff',
+                      }}
+                    >
+                      <strong>Total Price: {formData.finalPrice || '0'}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <span style={{ color: '#888', fontStyle: 'italic' }}>
+                    No phones added yet
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {formData.sellingType === 'Credit' && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Payable Amount Now</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="payableAmountNow"
+                    value={formData.payableAmountNow}
+                    onChange={handleChange}
+                    placeholder="Enter amount payable now"
+                    disabled={loading}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Payable Amount Later</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="payableAmountLater"
+                    value={formData.payableAmountLater}
+                    onChange={handleChange}
+                    placeholder="Enter amount payable later"
+                    disabled={loading}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  {/* <Form.Label>When will it be paid?<x/Form.Label> */}
+                  <Form.Control
+                    type="date"
+                    name="payableAmountLaterDate"
+                    value={formData.payableAmountLaterDate}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
               </>
             )}
+
+            {formData.sellingType === 'Exchange' && (
+              <Form.Group className="mb-3">
+                <Form.Label>Exchange Phone Details</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  name="exchangePhoneDetail"
+                  value={formData.exchangePhoneDetail}
+                  onChange={handleChange}
+                  placeholder="Enter exchange phone details"
+                />
+              </Form.Group>
+            )}
+
+            <Form.Group className="mb-3">
+              {/* <Form.Label>Total Sold Price (Auto-calculated)</Form.Label> */}
+              <Form.Control
+                type="number"
+                hidden
+                name="finalPrice"
+                value={formData.finalPrice}
+                onChange={handleChange}
+                placeholder="Total price will be calculated automatically"
+                readOnly
+                style={{
+                  backgroundColor: '#f8f9fa',
+                  cursor: 'not-allowed',
+                }}
+                disabled={loading}
+              />
+              {/* <small className="text-muted">
+                This field is automatically calculated based on the IMEI prices
+                above
+              </small> */}
+            </Form.Group>
+          </div>
+
+          {formData.type === 'bulk' && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Label>IMEI Number</Form.Label>
+                <div className="d-flex">
+                  <Form.Control
+                    type="text"
+                    name="imeiInput"
+                    value={formData.imeiInput}
+                    onChange={handleChange}
+                    placeholder="Enter IMEI number"
+                    disabled={loading}
+                  />
+                  <Button
+                    variant="success"
+                    onClick={() => {
+                      if (
+                        formData.imeiInput.trim() !== '' &&
+                        !formData.imeis.includes(formData.imeiInput)
+                      ) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          imeis: [...prev.imeis, prev.imeiInput],
+                          imeiInput: '',
+                        }));
+                      }
+                    }}
+                    className="ms-2"
+                    disabled={loading}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </Form.Group>
+
+              {formData.imeis.length > 0 && (
+                <div className="mt-3">
+                  <h6>Added IMEIs:</h6>
+                  <ul className="list-group">
+                    {formData.imeis.map((imei, index) => (
+                      <li
+                        key={index}
+                        className="list-group-item d-flex justify-content-between align-items-center"
+                      >
+                        {imei}
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              imeis: prev.imeis.filter((i) => i !== imei),
+                            }));
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
           <div style={{ textAlign: 'right', marginTop: '20px' }}>
             <Button
               variant="secondary"
@@ -1426,7 +1629,7 @@ const NavLeft = () => {
               }
               disabled={loading}
             >
-              Proceed To Pay
+              Submit Sold Phone
             </Button>
           </div>
         </Modal.Body>
@@ -1467,7 +1670,8 @@ const NavLeft = () => {
                 saleDate: formData.saleDate,
                 cnicBackPic: formData.cnicBackPic,
                 cnicFrontPic: formData.cnicFrontPic,
-                customerName: entityData.name || newEntity.name || customerName || '',
+                customerName:
+                  entityData.name || newEntity.name || customerName || '',
                 addedImeis: formData.addedImeis || [],
                 imeiPrices: formData.imeiPrices || [], // Array of {imei: '', price: ''} objects
                 bankAccountUsed: walletTransaction.bankAccountUsed,
@@ -1479,7 +1683,8 @@ const NavLeft = () => {
                 payableAmountLater: formData.payableAmountLater,
                 payableAmountLaterDate: formData.payableAmountLaterDate,
                 exchangePhoneDetail: formData.exchangePhoneDetail,
-                customerNumber: entityData.number || newEntity.number || customerNumber || '',
+                customerNumber:
+                  entityData.number || newEntity.number || customerNumber || '',
                 manual: true,
                 entityData: showNewEntityForm ? newEntity : entityData,
               };

@@ -159,12 +159,17 @@ const SoldInvoice = () => {
         console.log('🔍 Fetching logo from API...');
         const res = await api.get('/api/shop/logo');
         console.log('📡 Logo API response:', res?.data);
-        
+
         if (isMounted && res?.data?.success && res?.data?.logo) {
           const path = String(res.data.logo);
           console.log('🛤️ Logo path from API:', path);
-          
-          if (path && path !== '{}' && path !== 'null' && path !== 'undefined') {
+
+          if (
+            path &&
+            path !== '{}' &&
+            path !== 'null' &&
+            path !== 'undefined'
+          ) {
             const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
             console.log('🔗 Full logo URL:', full);
             setLogoUrl(full);
@@ -178,9 +183,11 @@ const SoldInvoice = () => {
         console.error('❌ Error fetching logo:', error);
       }
     };
-    
+
     fetchLogo();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const location = useLocation();
@@ -195,9 +202,9 @@ const SoldInvoice = () => {
   const [shop, setShop] = useState(null);
   const [price, setPrice] = useState(
     dataReceived.invoice?.totalAmount ??
-    dataReceived?.finalPrice ??
-    dataReceived?.demandPrice ??
-    0
+      dataReceived?.finalPrice ??
+      dataReceived?.demandPrice ??
+      0
   );
   const [invoiceData, setInvoiceData] = useState({
     shopId: shop?.shopId ?? '',
@@ -487,7 +494,7 @@ const SoldInvoice = () => {
         entityData: dataReceived?.entityData,
         customerName: dataReceived?.customerName,
         customerNumber: dataReceived?.customerNumber,
-         imeiPrices: dataReceived?.imeiPrices || [], // Array of {imei: '', price: ''} objects
+        imeiPrices: dataReceived?.imeiPrices || [], // Array of {imei: '', price: ''} objects
         warranty: dataReceived.warranty,
         saleDate: dataReceived.saleDate,
         finalPrice: dataReceived.finalPrice,
@@ -724,24 +731,38 @@ const SoldInvoice = () => {
   //   qr: 'qr-code.png',
   // };
   const smallInvoiceData = {
-    termsAndConditions: shop?.termsCondition || 'No terms and conditions provided',
+    termsAndConditions:
+      shop?.termsCondition || 'No terms and conditions provided',
     shopInfo: shop?.address || 'Shop Address Not Mentioned',
     title: 'INVOICE',
-    subtitle: dataReceived?.sellingType || phoneDetail?.sellingType || 'Counter Sale',
-    date: dataReceived?.saleDate || phoneDetail?.saleDate
-      ? new Date(dataReceived?.saleDate || phoneDetail?.saleDate).toLocaleDateString('en-GB')
-      : 'N/A',
-    invoiceNumber: (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() || '000000',
+    subtitle:
+      dataReceived?.sellingType || phoneDetail?.sellingType || 'Counter Sale',
+    date:
+      dataReceived?.saleDate || phoneDetail?.saleDate
+        ? new Date(
+            dataReceived?.saleDate || phoneDetail?.saleDate
+          ).toLocaleDateString('en-GB')
+        : 'N/A',
+    invoiceNumber:
+      (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() ||
+      '000000',
     customer: {
-      name: dataReceived?.customerName || phoneDetail?.customerName || 'Customer Name Not Provided',
-      phone: dataReceived?.customerNumber || phoneDetail?.customerNumber || '____________________',
+      name:
+        dataReceived?.customerName ||
+        phoneDetail?.customerName ||
+        'Customer Name Not Provided',
+      phone:
+        dataReceived?.customerNumber ||
+        phoneDetail?.customerNumber ||
+        '____________________',
     },
     items: [
       // Handle ramSimDetails with addedImeis filter
       ...(dataReceived?.ramSimDetails?.flatMap((ramSim, index) => {
-        const filteredImeis = ramSim?.imeiNumbers?.filter(imeiItem =>
-          dataReceived.addedImeis?.includes(imeiItem.imei1)
-        ) || [];
+        const filteredImeis =
+          ramSim?.imeiNumbers?.filter((imeiItem) =>
+            dataReceived.addedImeis?.includes(imeiItem.imei1)
+          ) || [];
 
         return filteredImeis.map((imeiItem, subIndex) => ({
           no: index * 2 + subIndex + 1,
@@ -750,89 +771,122 @@ const SoldInvoice = () => {
           qty: 1,
           rate: String(
             dataReceived.imeisWithPrices?.[imeiItem.imei1] ||
-            ramSim.priceOfOne ||
-            dataReceived?.finalPrice ||
-            phoneDetail?.finalPrice ||
-            0
+              ramSim.priceOfOne ||
+              dataReceived?.finalPrice ||
+              phoneDetail?.finalPrice ||
+              0
           ),
           amount: String(
             dataReceived.imeisWithPrices?.[imeiItem.imei1] ||
-            ramSim.priceOfOne ||
-            dataReceived?.finalPrice ||
-            phoneDetail?.finalPrice ||
-            0
+              ramSim.priceOfOne ||
+              dataReceived?.finalPrice ||
+              phoneDetail?.finalPrice ||
+              0
           ),
         }));
       }) || []),
 
       // Fallback to single phone if no ramSimDetails
       ...(!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
-        ? [{
-          no: 1,
-          name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
-          code: dataReceived?.addedImeis?.[0] || dataReceived?.imei1 || phoneDetail?.imei1 || '-',
-          qty: 1,
-          rate: String(
-            dataReceived?.imeisWithPrices?.[dataReceived?.addedImeis?.[0]] ||
-            dataReceived?.finalPrice ||
-            phoneDetail?.finalPrice ||
-            0
-          ),
-          amount: String(
-            dataReceived?.imeisWithPrices?.[dataReceived?.addedImeis?.[0]] ||
-            dataReceived?.totalInvoice ||
-            phoneDetail?.totalInvoice ||
-            dataReceived?.finalPrice ||
-            phoneDetail?.finalPrice ||
-            0
-          ),
-        }]
+        ? [
+            {
+              no: 1,
+              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+              code:
+                dataReceived?.addedImeis?.[0] ||
+                dataReceived?.imei1 ||
+                phoneDetail?.imei1 ||
+                '-',
+              qty: 1,
+              rate: String(
+                dataReceived?.imeisWithPrices?.[
+                  dataReceived?.addedImeis?.[0]
+                ] ||
+                  dataReceived?.finalPrice ||
+                  phoneDetail?.finalPrice ||
+                  0
+              ),
+              amount: String(
+                dataReceived?.imeisWithPrices?.[
+                  dataReceived?.addedImeis?.[0]
+                ] ||
+                  dataReceived?.totalInvoice ||
+                  phoneDetail?.totalInvoice ||
+                  dataReceived?.finalPrice ||
+                  phoneDetail?.finalPrice ||
+                  0
+              ),
+            },
+          ]
         : []),
 
       // Handle accessories from either source
-      ...((dataReceived?.accessories || phoneDetail?.accessories)?.map((item, index) => ({
-        no: (dataReceived?.ramSimDetails?.reduce((sum, ramSim) =>
-          sum + (ramSim.imeiNumbers?.filter(imeiItem =>
-            dataReceived.addedImeis?.includes(imeiItem.imei1)
-          )?.length || 0), 0) || 0) +
-          (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
-          index + 1,
-        name: `Accessory: ${item.name || 'Unknown'}`,
-        code: item.name || '-',
-        qty: Number(item.quantity) || 1,
-        rate: String(item.price || 0),
-        amount: String(Number(item.price || 0) * Number(item.quantity || 1)),
-      })) || []),
+      ...((dataReceived?.accessories || phoneDetail?.accessories)?.map(
+        (item, index) => ({
+          no:
+            (dataReceived?.ramSimDetails?.reduce(
+              (sum, ramSim) =>
+                sum +
+                (ramSim.imeiNumbers?.filter((imeiItem) =>
+                  dataReceived.addedImeis?.includes(imeiItem.imei1)
+                )?.length || 0),
+              0
+            ) || 0) +
+            (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
+              ? 1
+              : 0) +
+            index +
+            1,
+          name: `Accessory: ${item.name || 'Unknown'}`,
+          code: item.name || '-',
+          qty: Number(item.quantity) || 1,
+          rate: String(item.price || 0),
+          amount: String(Number(item.price || 0) * Number(item.quantity || 1)),
+        })
+      ) || []),
     ],
     summary: {
-      items: (dataReceived?.ramSimDetails?.reduce((sum, ramSim) =>
-        sum + (ramSim.imeiNumbers?.filter(imeiItem =>
-          dataReceived.addedImeis?.includes(imeiItem.imei1)
-        )?.length || 0), 0) || 0) +
+      items:
+        (dataReceived?.ramSimDetails?.reduce(
+          (sum, ramSim) =>
+            sum +
+            (ramSim.imeiNumbers?.filter((imeiItem) =>
+              dataReceived.addedImeis?.includes(imeiItem.imei1)
+            )?.length || 0),
+          0
+        ) || 0) +
         (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
-        (dataReceived?.accessories?.length || phoneDetail?.accessories?.length || 0),
+        (dataReceived?.accessories?.length ||
+          phoneDetail?.accessories?.length ||
+          0),
 
       cashReturn: '–',
       bankReturn: '–',
       freight: '–',
       subTotal: String(
-        Number(dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0) +
-        ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
-          (sum, acc) => sum + Number(acc.price || 0) * Number(acc.quantity || 0),
-          0
-        ) || 0)
+        Number(
+          dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0
+        ) +
+          ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
+            (sum, acc) =>
+              sum + Number(acc.price || 0) * Number(acc.quantity || 0),
+            0
+          ) || 0)
       ),
       discount: '–',
-      netTotal: String(dataReceived?.finalPrice || phoneDetail?.finalPrice || 0),
+      netTotal: String(
+        dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+      ),
       previousBal: '–',
       total: String(
         dataReceived?.totalInvoice ||
-        phoneDetail?.totalInvoice ||
-        dataReceived?.finalPrice ||
-        phoneDetail?.finalPrice ||
-        0
+          phoneDetail?.totalInvoice ||
+          dataReceived?.finalPrice ||
+          phoneDetail?.finalPrice ||
+          0
       ),
-      bankDeposit: dataReceived?.walletTransaction?.amountFromBank ||
+      bankDeposit:
+        dataReceived?.walletTransaction?.amountFromBank ||
         phoneDetail?.walletTransaction?.amountFromBank ||
         '–',
       currentTotal: '–',
@@ -844,12 +898,14 @@ const SoldInvoice = () => {
     }),
     pending: [
       ...(dataReceived?.sellingPaymentType === 'Credit' ||
-        phoneDetail?.sellingPaymentType === 'Credit'
-        ? [{
-          no: 1,
-          name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
-          qty: 1,
-        }]
+      phoneDetail?.sellingPaymentType === 'Credit'
+        ? [
+            {
+              no: 1,
+              name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+              qty: 1,
+            },
+          ]
         : []),
     ],
     social: {
@@ -1138,7 +1194,9 @@ const SoldInvoice = () => {
             style={{
               ...styles.button,
               ...styles.submitBtn,
-              backgroundColor: loading ? '#ccc' : styles.submitBtn.backgroundColor,
+              backgroundColor: loading
+                ? '#ccc'
+                : styles.submitBtn.backgroundColor,
               color: loading ? '#666' : styles.submitBtn.color,
             }}
             onMouseEnter={(e) =>
@@ -1168,24 +1226,27 @@ const SoldInvoice = () => {
       {originalInvoice &&
         !dataReceived?.showInvoice &&
         (dataReceived?.prices?.buyingPrice ||
-          dataReceived?.bulkPhonePurchaseId ? (
+        dataReceived?.bulkPhonePurchaseId ? (
           <>
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
               <header style={styles.header}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                >
                   {logoUrl && (
                     <img
                       src={logoUrl}
                       alt="logo"
-                      style={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        borderRadius: '50%', 
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
                         objectFit: 'cover',
                         border: '3px solid #fff',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
-                        marginBottom: '10px'
+                        boxShadow:
+                          '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
+                        marginBottom: '10px',
                       }}
                       onError={(e) => (e.currentTarget.style.display = 'none')}
                     />
@@ -1199,7 +1260,9 @@ const SoldInvoice = () => {
                   </div>
                 </div>
                 <div>
-                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>Okiiee</h2>
+                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>
+                    Okiiee
+                  </h2>
                 </div>
               </header>
 
@@ -1313,14 +1376,18 @@ const SoldInvoice = () => {
                         )
                         .map((detail, index) => {
                           // Get matched IMEIs for this detail
-                          const matchedImeis = detail.imeiNumbers.filter(imeiObj =>
-                            addedImei1s.includes(imeiObj.imei1)
+                          const matchedImeis = detail.imeiNumbers.filter(
+                            (imeiObj) => addedImei1s.includes(imeiObj.imei1)
                           );
 
                           // Format prices for display (only prices, no IMEIs)
-                          const imeiPricesDisplay = matchedImeis.map(imeiObj =>
-                            dataReceived.imeisWithPrices[imeiObj.imei1] || 'N/A'
-                          ).join(', ');
+                          const imeiPricesDisplay = matchedImeis
+                            .map(
+                              (imeiObj) =>
+                                dataReceived.imeisWithPrices[imeiObj.imei1] ||
+                                'N/A'
+                            )
+                            .join(', ');
 
                           return (
                             <tr key={index} style={styles.stripedRow}>
@@ -1339,9 +1406,7 @@ const SoldInvoice = () => {
                               </td>
 
                               {/* Count of matched IMEIs */}
-                              <td style={styles.td}>
-                                {matchedImeis.length}
-                              </td>
+                              <td style={styles.td}>{matchedImeis.length}</td>
 
                               {/* Column for prices only */}
                               <td style={styles.td}>
@@ -1352,7 +1417,8 @@ const SoldInvoice = () => {
                                 <td style={styles.td}>
                                   {dataReceived?.invoice
                                     ? dataReceived.invoice.totalAmount
-                                    : dataReceived?.finalPrice ?? 'Not Available'}
+                                    : dataReceived?.finalPrice ??
+                                      'Not Available'}
                                 </td>
                               )}
                             </tr>
@@ -1721,18 +1787,21 @@ const SoldInvoice = () => {
           <>
             <div id="invoice" style={styles.container}>
               <header style={styles.header}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                >
                   {logoUrl && (
                     <img
                       src={logoUrl}
                       alt="logo"
-                      style={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        borderRadius: '50%', 
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
                         objectFit: 'cover',
                         border: '3px solid #fff',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)'
+                        boxShadow:
+                          '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
                       }}
                       onError={(e) => (e.currentTarget.style.display = 'none')}
                     />
@@ -1746,7 +1815,9 @@ const SoldInvoice = () => {
                   </div>
                 </div>
                 <div>
-                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>Okiiee</h2>
+                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>
+                    Okiiee
+                  </h2>
                 </div>
               </header>
 
@@ -1809,12 +1880,17 @@ const SoldInvoice = () => {
                       )}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
-                      phoneDetail.some(item => item?.batteryHealth && String(item.batteryHealth).trim() !== '') && (
-                        <th style={styles.th}>Battery Health</th>
-                      )}
+                      phoneDetail.some(
+                        (item) =>
+                          item?.batteryHealth &&
+                          String(item.batteryHealth).trim() !== ''
+                      ) && <th style={styles.th}>Battery Health</th>}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
-                      phoneDetail.some(item => item?.color && String(item.color).trim() !== '') && <th style={styles.th}>Color</th>}
+                      phoneDetail.some(
+                        (item) =>
+                          item?.color && String(item.color).trim() !== ''
+                      ) && <th style={styles.th}>Color</th>}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
                       phoneDetail[0]?.simOption && (
@@ -1857,12 +1933,12 @@ const SoldInvoice = () => {
                           dataReceived?.companyName ||
                           (Array.isArray(phoneDetail)
                             ? phoneDetail.map((item, i) => (
-                              <div key={i}>
-                                {item.companyName || 'Not Available'}
-                              </div>
-                            ))
+                                <div key={i}>
+                                  {item.companyName || 'Not Available'}
+                                </div>
+                              ))
                             : phoneDetail?.bulkPhonePurchase?.ramSimDetails?.[0]
-                              ?.companyName || 'Not Available')}
+                                ?.companyName || 'Not Available')}
                       </div>
                     </td>
 
@@ -1892,32 +1968,7 @@ const SoldInvoice = () => {
                     </td>
 
                     {/* RAM */}
-                    {Array.isArray(phoneDetail) && <>
-
-                      <td
-                        style={{
-                          padding: '8px',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {Array.isArray(phoneDetail) &&
-                          phoneDetail.some(item => item?.ramMemory && String(item.ramMemory).trim() !== '') ? (
-                          <div>
-                            {phoneDetail.map((item, i) => (
-                              <div key={i}>{item.ramMemory || 'N/A'}</div>
-                            ))}
-                          </div>
-                        ) : dataReceived?.ramMemory ? (
-                          <span>{dataReceived.ramMemory}</span>
-                        ) : (
-                          'Not Available'
-                        )}
-                      </td></>}
-
-                    {/* Battery Health */}
-                    {Array.isArray(phoneDetail) &&
+                    {Array.isArray(phoneDetail) && (
                       <>
                         <td
                           style={{
@@ -1928,49 +1979,102 @@ const SoldInvoice = () => {
                           }}
                         >
                           {Array.isArray(phoneDetail) &&
-                            phoneDetail[0]?.batteryHealth ? (
+                          phoneDetail.some(
+                            (item) =>
+                              item?.ramMemory &&
+                              String(item.ramMemory).trim() !== ''
+                          ) ? (
                             <div>
                               {phoneDetail.map((item, i) => (
-                                <div key={i}>{item.batteryHealth || 'N/A'}</div>
+                                <div key={i}>{item.ramMemory || 'N/A'}</div>
                               ))}
                             </div>
-                          ) : dataReceived?.batteryHealth ? (
-                            <span>{dataReceived.batteryHealth}</span>
-                          ) : (Array.isArray(phoneDetail) && phoneDetail.some(item => item?.batteryHealth && String(item.batteryHealth).trim() !== '')) ? (
-                            <span>{phoneDetail.map((item, i) => (
-                              <div key={i}>{item.batteryHealth || 'N/A'}</div>
-                            ))}</span>
+                          ) : dataReceived?.ramMemory ? (
+                            <span>{dataReceived.ramMemory}</span>
                           ) : (
                             'Not Available'
                           )}
                         </td>
-                      </>}
+                      </>
+                    )}
+
+                    {/* Battery Health */}
+                    {Array.isArray(phoneDetail) &&
+                      phoneDetail[0]?.batteryHealth && (
+                        <>
+                          <td
+                            style={{
+                              padding: '8px',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              textAlign: 'center',
+                            }}
+                          >
+                            {Array.isArray(phoneDetail) &&
+                            phoneDetail[0]?.batteryHealth ? (
+                              <div>
+                                {phoneDetail.map((item, i) => (
+                                  <div key={i}>
+                                    {item.batteryHealth || 'N/A'}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : dataReceived?.batteryHealth ? (
+                              <span>{dataReceived.batteryHealth}</span>
+                            ) : Array.isArray(phoneDetail) &&
+                              phoneDetail.some(
+                                (item) =>
+                                  item?.batteryHealth &&
+                                  String(item.batteryHealth).trim() !== ''
+                              ) ? (
+                              <span>
+                                {phoneDetail.map((item, i) => (
+                                  <div key={i}>
+                                    {item.batteryHealth || 'N/A'}
+                                  </div>
+                                ))}
+                              </span>
+                            ) : (
+                              'Not Available'
+                            )}
+                          </td>
+                        </>
+                      )}
 
                     {/* Color */}
-                    {Array.isArray(phoneDetail) && <>
-                      <td
-                        style={{
-                          padding: '8px',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {Array.isArray(phoneDetail) && phoneDetail[0]?.color ? (
-                          <div>
-                            {phoneDetail.map((item, i) => (
-                              <div key={i}>{item.color || 'N/A'}</div>
-                            ))}
-                          </div>
-                        ) : (Array.isArray(phoneDetail) && phoneDetail.some(item => item?.color && String(item.color).trim() !== '')) ? (
-                          <span>{phoneDetail.map((item, i) => (
-                            <div key={i}>{item.color || 'N/A'}</div>
-                          ))}</span>
-                        ) : (
-                          'Not Available'
-                        )}
-                      </td>
-                    </>}
+                    {Array.isArray(phoneDetail) && (
+                      <>
+                        <td
+                          style={{
+                            padding: '8px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            textAlign: 'center',
+                          }}
+                        >
+                          {Array.isArray(phoneDetail) &&
+                          phoneDetail[0]?.color ? (
+                            <div>
+                              {phoneDetail.map((item, i) => (
+                                <div key={i}>{item.color || 'N/A'}</div>
+                              ))}
+                            </div>
+                          ) : Array.isArray(phoneDetail) &&
+                            phoneDetail.some(
+                              (item) =>
+                                item?.color && String(item.color).trim() !== ''
+                            ) ? (
+                            <span>
+                              {phoneDetail.map((item, i) => (
+                                <div key={i}>{item.color || 'N/A'}</div>
+                              ))}
+                            </span>
+                          ) : (
+                            'Not Available'
+                          )}
+                        </td>
+                      </>
+                    )}
 
                     {/* SIM Option */}
                     {Array.isArray(phoneDetail) &&
@@ -2031,7 +2135,7 @@ const SoldInvoice = () => {
                     )}
 
                     {/* Price */}
-                      {/* { dataReceived?.invoice?.totalAmount
+                    {/* { dataReceived?.invoice?.totalAmount
                         ? `${dataReceived.invoice.totalAmount.toLocaleString()}`
                         : dataReceived?.finalPrice
                           ? `${dataReceived.finalPrice.toLocaleString()}`
@@ -2044,8 +2148,16 @@ const SoldInvoice = () => {
                         textAlign: 'right',
                       }}
                     >
-                      {Array.isArray(dataReceived?.imeiPrices) && dataReceived.imeiPrices.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+                      {Array.isArray(dataReceived?.imeiPrices) &&
+                      dataReceived.imeiPrices.length > 0 ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
+                            alignItems: 'flex-end',
+                          }}
+                        >
                           {dataReceived.imeiPrices.map((item, idx) => (
                             <div
                               key={`${item.imei}-${idx}`}
@@ -2056,11 +2168,15 @@ const SoldInvoice = () => {
                                 padding: '4px 8px',
                                 backgroundColor: '#f8f9fa',
                                 borderRadius: '4px',
-                                maxWidth: '100%'
+                                maxWidth: '100%',
                               }}
                             >
-                            
-                              <span style={{ fontSize: '12px', fontWeight: 600, }}> {Number(item.price || 0).toLocaleString()}</span>
+                              <span
+                                style={{ fontSize: '12px', fontWeight: 600 }}
+                              >
+                                {' '}
+                                {Number(item.price || 0).toLocaleString()}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -2074,7 +2190,7 @@ const SoldInvoice = () => {
                     </td>
 
                     {/* Warranty */}
-                  
+
                     {dataReceived.writtenImeis?.length <= 1 && (
                       <td
                         style={{
@@ -2205,18 +2321,21 @@ const SoldInvoice = () => {
           <div id="invoice" style={styles.container}>
             {/* Header */}
             <header style={styles.header}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+              >
                 {logoUrl && (
                   <img
                     src={logoUrl}
                     alt="logo"
-                    style={{ 
-                      width: '60px', 
-                      height: '60px', 
-                      borderRadius: '50%', 
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
                       objectFit: 'cover',
                       border: '3px solid #fff',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)'
+                      boxShadow:
+                        '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
                     }}
                     onError={(e) => (e.currentTarget.style.display = 'none')}
                   />
@@ -2230,7 +2349,9 @@ const SoldInvoice = () => {
                 </div>
               </div>
               <div>
-                <h2 style={{ color: selectedColor || '#4a6baf', margin: 0 }}>Invoice</h2>
+                <h2 style={{ color: selectedColor || '#4a6baf', margin: 0 }}>
+                  Invoice
+                </h2>
               </div>
             </header>
 
@@ -2429,14 +2550,14 @@ const SoldInvoice = () => {
         )}
         {/* <StockListComponent /> */}
         {showSmallInvoice && (
-          <SmallInvoiceComponent 
-            invoiceData={dataReceived} 
+          <SmallInvoiceComponent
+            invoiceData={dataReceived}
             shopData={shop}
             logoUrl={logoUrl}
           />
         )}
         <InvoiceComponent
-        dataReceived={dataReceived}
+          dataReceived={dataReceived}
           invoiceNumber={
             invoiceData.invoiceNumber ?? dataReceived?.invoiceNumber
           }

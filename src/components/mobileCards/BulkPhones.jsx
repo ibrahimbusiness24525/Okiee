@@ -1511,14 +1511,9 @@ const NewMobilesList = () => {
 
                 <Table
                   routes={['/app/dashboard/bulkPhoneDetail']}
-                  array={personData.filter((record) => {
-                    // Filter out sold records unless includeSold is true
-                    if (record.status === 'Sold') {
-                      return includeSold;
-                    }
-                    // For non-sold records, apply the dispatch filter
-                    return includeSold ? true : record.dispatch === false;
-                  })}
+                  array={personData.filter((record) =>
+                    includeSold ? true : record.dispatch === false
+                  )}
                   keysToDisplay={[
                     'personId',
                     'date',

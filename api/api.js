@@ -49,3 +49,6 @@ const storeBaseURL = (url) => {
 };
 
 storeBaseURL(api.baseURL);
+
+// Add the new endpoint for getting all IMEIs
+export const getAllImeis = () => api.get('/api/Purchase/all-imeis');

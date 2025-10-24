@@ -1007,118 +1007,571 @@ const CustomerRecord = () => {
           partyDetails.person &&
           partyDetails.saleDetails &&
           partyDetails.purchaseDetails && (
-            <>
-              <div>
-                <div>
-                  {/* Person Ledger Analytics */}
+            <div>
+              {/* Person Ledger Analytics */}
+              <div
+                style={{
+                  border: '1px solid #e9ecef',
+                  borderRadius: '12px',
+                  padding: '0',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  backgroundColor: '#fff',
+                  overflow: 'hidden',
+                  marginBottom: '24px',
+                }}
+              >
+                {/* Header Section */}
+                <div
+                  style={{
+                    padding: '18px 24px',
+                    backgroundColor: '#f8f9fa',
+                    borderBottom: '1px solid #e9ecef',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: '0',
+                      fontSize: '20px',
+                      fontWeight: '600',
+                      color: '#212529',
+                    }}
+                  >
+                    📊 {partyDetails?.person?.name}'s Ledger Analytics
+                  </h2>
                   <div
                     style={{
-                      border: '1px solid #e9ecef',
-                      borderRadius: '12px',
-                      padding: '0',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                      backgroundColor: '#fff',
-                      overflow: 'hidden',
+                      fontSize: '13px',
+                      color: '#6c757d',
+                      backgroundColor: '#e9ecef',
+                      padding: '4px 10px',
+                      borderRadius: '50px',
+                      fontWeight: '500',
+                    }}
+                  >
+                    Status: {partyDetails.person.status}
+                  </div>
+                </div>
+
+                {/* Analytics Content */}
+                <div style={{ padding: '20px 24px' }}>
+                  {/* Key Metrics Row */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns:
+                        'repeat(auto-fit, minmax(150px, 1fr))',
+                      gap: '12px',
                       marginBottom: '24px',
                     }}
                   >
-                    {/* Header Section */}
+                    {/* Total Sales Count */}
                     <div
                       style={{
-                        padding: '18px 24px',
-                        backgroundColor: '#f8f9fa',
-                        borderBottom: '1px solid #e9ecef',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
+                        backgroundColor: '#e8f5e8',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #28a745',
+                        textAlign: 'center',
                       }}
                     >
-                      <h2
-                        style={{
-                          margin: '0',
-                          fontSize: '20px',
-                          fontWeight: '600',
-                          color: '#212529',
-                        }}
-                      >
-                        📊 {partyDetails?.person?.name}'s Ledger Analytics
-                      </h2>
                       <div
                         style={{
-                          fontSize: '13px',
+                          fontSize: '24px',
+                          fontWeight: '700',
+                          color: '#28a745',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        {partyDetails.summary.totalBulkSales +
+                          partyDetails.summary.totalSingleSales}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '12px',
                           color: '#6c757d',
-                          backgroundColor: '#e9ecef',
-                          padding: '4px 10px',
-                          borderRadius: '50px',
                           fontWeight: '500',
                         }}
                       >
-                        Status: {partyDetails.person.status}
+                        Total Sales
                       </div>
                     </div>
 
-                    {/* Analytics Content */}
-                    <div style={{ padding: '20px 24px' }}>
-                      {/* Key Metrics Row */}
+                    {/* Total Sales Amount */}
+                    <div
+                      style={{
+                        backgroundColor: '#e3f2fd',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #2196f3',
+                        textAlign: 'center',
+                      }}
+                    >
                       <div
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns:
-                            'repeat(auto-fit, minmax(150px, 1fr))',
-                          gap: '12px',
-                          marginBottom: '24px',
+                          fontSize: '18px',
+                          fontWeight: '700',
+                          color: '#2196f3',
+                          marginBottom: '4px',
                         }}
                       >
-                        {/* Total Sales Count */}
+                        {(() => {
+                          const bulkSalesTotal = (
+                            partyDetails.saleDetails?.bulkSales || []
+                          ).reduce(
+                            (sum, sale) => sum + (sale.salePrice || 0),
+                            0
+                          );
+                          const singleSalesTotal = (
+                            partyDetails.saleDetails?.singleSales || []
+                          ).reduce(
+                            (sum, sale) => sum + (sale.salePrice || 0),
+                            0
+                          );
+                          return (
+                            bulkSalesTotal + singleSalesTotal
+                          ).toLocaleString();
+                        })()}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#6c757d',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Sales Amount
+                      </div>
+                    </div>
+
+                    {/* Total Purchases Count */}
+                    <div
+                      style={{
+                        backgroundColor: '#fff3e0',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #ff9800',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '24px',
+                          fontWeight: '700',
+                          color: '#ff9800',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        {partyDetails.summary.totalBulkPurchases +
+                          partyDetails.summary.totalSinglePurchases}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#6c757d',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Total Purchases
+                      </div>
+                    </div>
+
+                    {/* Total Purchase Amount */}
+                    <div
+                      style={{
+                        backgroundColor: '#f3e5f5',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #9c27b0',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '18px',
+                          fontWeight: '700',
+                          color: '#9c27b0',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        {(() => {
+                          const bulkPurchasesTotal = (
+                            partyDetails.purchaseDetails?.bulkPurchases || []
+                          ).reduce(
+                            (sum, purchase) =>
+                              sum + parseInt(purchase.prices?.buyingPrice || 0),
+                            0
+                          );
+                          const singlePurchasesTotal = (
+                            partyDetails.purchaseDetails?.singlePurchases || []
+                          ).reduce(
+                            (sum, purchase) =>
+                              sum + (purchase.price?.purchasePrice || 0),
+                            0
+                          );
+                          return (
+                            bulkPurchasesTotal + singlePurchasesTotal
+                          ).toLocaleString();
+                        })()}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#6c757d',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Purchase Amount
+                      </div>
+                    </div>
+
+                    {/* Net Credit Status */}
+                    <div
+                      style={{
+                        backgroundColor:
+                          partyDetails.person.givingCredit >
+                          partyDetails.person.takingCredit
+                            ? '#f8d7da'
+                            : '#d4edda',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#dc3545' : '#28a745'}`,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '18px',
+                          fontWeight: '700',
+                          color:
+                            partyDetails.person.givingCredit >
+                            partyDetails.person.takingCredit
+                              ? '#dc3545'
+                              : '#28a745',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        {Math.abs(
+                          partyDetails.person.givingCredit -
+                            partyDetails.person.takingCredit
+                        ).toLocaleString()}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#6c757d',
+                          fontWeight: '500',
+                        }}
+                      >
+                        {partyDetails.person.givingCredit >
+                        partyDetails.person.takingCredit
+                          ? 'Net Receivable'
+                          : 'Net Payable'}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Receivables/Payables Summary */}
+                  <div
+                    style={{
+                      backgroundColor:
+                        partyDetails.person.givingCredit >
+                        partyDetails.person.takingCredit
+                          ? '#d4edda'
+                          : '#f8d7da',
+                      padding: '18px',
+                      borderRadius: '8px',
+                      borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#28a745' : '#dc3545'}`,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      marginBottom: '24px',
+                    }}
+                  >
+                    <h3
+                      style={{
+                        color: '#495057',
+                        marginTop: '0',
+                        marginBottom: '16px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          width: '24px',
+                          height: '24px',
+                          backgroundColor:
+                            partyDetails.person.givingCredit >
+                            partyDetails.person.takingCredit
+                              ? '#dc3545'
+                              : '#28a745',
+                          color: '#fff',
+                          borderRadius: '50%',
+                          textAlign: 'center',
+                          lineHeight: '24px',
+                          fontSize: '12px',
+                        }}
+                      >
+                        {partyDetails.person.givingCredit >
+                        partyDetails.person.takingCredit
+                          ? '📈'
+                          : '📉'}
+                      </span>
+                      {partyDetails.person.givingCredit >
+                      partyDetails.person.takingCredit
+                        ? 'Total Receivables'
+                        : 'Total Payables'}
+                    </h3>
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '16px',
+                      }}
+                    >
+                      {/* Main Amount */}
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          padding: '16px',
+                          borderRadius: '8px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                          textAlign: 'center',
+                        }}
+                      >
                         <div
                           style={{
-                            backgroundColor: '#e8f5e8',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            borderLeft: '4px solid #28a745',
-                            textAlign: 'center',
+                            color:
+                              partyDetails.person.givingCredit >
+                              partyDetails.person.takingCredit
+                                ? '#dc3545'
+                                : '#28a745',
+                            fontWeight: '600',
+                            marginBottom: '8px',
+                            fontSize: '14px',
                           }}
                         >
-                          <div
+                          {partyDetails.person.givingCredit >
+                          partyDetails.person.takingCredit
+                            ? 'Amount to Receive'
+                            : 'Amount to Pay'}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '24px',
+                            fontWeight: '700',
+                            color: '#212529',
+                          }}
+                        >
+                          PKR{' '}
+                          {Math.abs(
+                            partyDetails.person.givingCredit -
+                              partyDetails.person.takingCredit
+                          ).toLocaleString()}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            marginTop: '4px',
+                          }}
+                        >
+                          {partyDetails.person.givingCredit >
+                          partyDetails.person.takingCredit
+                            ? 'From customer'
+                            : 'To customer'}
+                        </div>
+                      </div>
+
+                   
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          padding: '12px',
+                          borderRadius: '6px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: '#495057',
+                            fontWeight: '600',
+                            marginBottom: '8px',
+                            fontSize: '14px',
+                          }}
+                        >
+                          Current Status
+                        </div>
+                        <div
+                          style={{
+                            padding: '8px 16px',
+                            borderRadius: '20px',
+                            backgroundColor:
+                              partyDetails.person.givingCredit >
+                              partyDetails.person.takingCredit
+                                ? '#dc3545'
+                                : '#28a745',
+                            color: '#fff',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {partyDetails.person.givingCredit >
+                          partyDetails.person.takingCredit
+                            ? 'RECEIVABLE'
+                            : 'PAYABLE'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns:
+                        'repeat(auto-fit, minmax(300px, 1fr))',
+                      gap: '16px',
+                      marginBottom: '24px',
+                    }}
+                  >
+                    {/* Sales Analytics */}
+                    <div
+                      style={{
+                        backgroundColor: '#f8fafc',
+                        padding: '18px',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #28a745',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      }}
+                    >
+                      <h3
+                        style={{
+                          color: '#495057',
+                          marginTop: '0',
+                          marginBottom: '16px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: '24px',
+                            height: '24px',
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            borderRadius: '50%',
+                            textAlign: 'center',
+                            lineHeight: '24px',
+                            fontSize: '12px',
+                          }}
+                        >
+                          📈
+                        </span>
+                        Sales Analytics
+                      </h3>
+                      <div style={{ display: 'grid', gap: '12px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Bulk Sales:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#212529' }}>
+                            {partyDetails.summary.totalBulkSales} items
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Bulk Sales Amount:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#28a745' }}>
+                            PKR
+                            {(partyDetails.saleDetails?.bulkSales || [])
+                              .reduce(
+                                (sum, sale) => sum + (sale.salePrice || 0),
+                                0
+                              )
+                              .toLocaleString()}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Single Sales:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#212529' }}>
+                            {partyDetails.summary.totalSingleSales} items
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Single Sales Amount:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#28a745' }}>
+                            PKR
+                            {(partyDetails.saleDetails?.singleSales || [])
+                              .reduce(
+                                (sum, sale) => sum + (sale.salePrice || 0),
+                                0
+                              )
+                              .toLocaleString()}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            borderTop: '1px solid #e9ecef',
+                            paddingTop: '8px',
+                          }}
+                        >
+                          <span
                             style={{
-                              fontSize: '24px',
+                              color: '#495057',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                            }}
+                          >
+                            Total Sales:
+                          </span>
+                          <span
+                            style={{
                               fontWeight: '700',
                               color: '#28a745',
-                              marginBottom: '4px',
+                              fontSize: '16px',
                             }}
                           >
-                            {partyDetails.summary.totalBulkSales +
-                              partyDetails.summary.totalSingleSales}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              fontWeight: '500',
-                            }}
-                          >
-                            Total Sales
-                          </div>
-                        </div>
-
-                        {/* Total Sales Amount */}
-                        <div
-                          style={{
-                            backgroundColor: '#e3f2fd',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            borderLeft: '4px solid #2196f3',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: '18px',
-                              fontWeight: '700',
-                              color: '#2196f3',
-                              marginBottom: '4px',
-                            }}
-                          >
+                            PKR
                             {(() => {
                               const bulkSalesTotal = (
                                 partyDetails.saleDetails?.bulkSales || []
@@ -1136,68 +1589,145 @@ const CustomerRecord = () => {
                                 bulkSalesTotal + singleSalesTotal
                               ).toLocaleString();
                             })()}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              fontWeight: '500',
-                            }}
-                          >
-                            Sales Amount
-                          </div>
+                          </span>
                         </div>
+                      </div>
+                    </div>
 
-                        {/* Total Purchases Count */}
-                        <div
+                    <div
+                      style={{
+                        backgroundColor: '#f8fafc',
+                        padding: '18px',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #ff9800',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      }}
+                    >
+                      <h3
+                        style={{
+                          color: '#495057',
+                          marginTop: '0',
+                          marginBottom: '16px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        <span
                           style={{
-                            backgroundColor: '#fff3e0',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            borderLeft: '4px solid #ff9800',
+                            display: 'inline-block',
+                            width: '24px',
+                            height: '24px',
+                            backgroundColor: '#ff9800',
+                            color: '#fff',
+                            borderRadius: '50%',
                             textAlign: 'center',
+                            lineHeight: '24px',
+                            fontSize: '12px',
                           }}
                         >
-                          <div
+                          📦
+                        </span>
+                        Purchase Analytics
+                      </h3>
+                      <div style={{ display: 'grid', gap: '12px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Bulk Purchases:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#212529' }}>
+                            {partyDetails.summary.totalBulkPurchases} items
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Bulk Purchase Amount:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#ff9800' }}>
+                            PKR
+                            {(partyDetails.purchaseDetails?.bulkPurchases || [])
+                              .reduce(
+                                (sum, purchase) =>
+                                  sum +
+                                  parseInt(purchase.prices?.buyingPrice || 0),
+                                0
+                              )
+                              .toLocaleString()}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Single Purchases:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#212529' }}>
+                            {partyDetails.summary.totalSinglePurchases} items
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span style={{ color: '#495057', fontSize: '14px' }}>
+                            Single Purchase Amount:
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#ff9800' }}>
+                            PKR
+                            {(
+                              partyDetails.purchaseDetails?.singlePurchases ||
+                              []
+                            )
+                              .reduce(
+                                (sum, purchase) =>
+                                  sum + (purchase.price?.purchasePrice || 0),
+                                0
+                              )
+                              .toLocaleString()}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            borderTop: '1px solid #e9ecef',
+                            paddingTop: '8px',
+                          }}
+                        >
+                          <span
                             style={{
-                              fontSize: '24px',
+                              color: '#495057',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                            }}
+                          >
+                            Total Purchases:
+                          </span>
+                          <span
+                            style={{
                               fontWeight: '700',
                               color: '#ff9800',
-                              marginBottom: '4px',
+                              fontSize: '16px',
                             }}
                           >
-                            {partyDetails.summary.totalBulkPurchases +
-                              partyDetails.summary.totalSinglePurchases}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              fontWeight: '500',
-                            }}
-                          >
-                            Total Purchases
-                          </div>
-                        </div>
-
-                        {/* Total Purchase Amount */}
-                        <div
-                          style={{
-                            backgroundColor: '#f3e5f5',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            borderLeft: '4px solid #9c27b0',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: '18px',
-                              fontWeight: '700',
-                              color: '#9c27b0',
-                              marginBottom: '4px',
-                            }}
-                          >
+                            PKR
                             {(() => {
                               const bulkPurchasesTotal = (
                                 partyDetails.purchaseDetails?.bulkPurchases ||
@@ -1220,590 +1750,14 @@ const CustomerRecord = () => {
                                 bulkPurchasesTotal + singlePurchasesTotal
                               ).toLocaleString();
                             })()}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              fontWeight: '500',
-                            }}
-                          >
-                            Purchase Amount
-                          </div>
-                        </div>
-
-                        {/* Net Credit Status */}
-                        <div
-                          style={{
-                            backgroundColor:
-                              partyDetails.person.givingCredit >
-                              partyDetails.person.takingCredit
-                                ? '#f8d7da'
-                                : '#d4edda',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#dc3545' : '#28a745'}`,
-                            textAlign: 'center',
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: '18px',
-                              fontWeight: '700',
-                              color:
-                                partyDetails.person.givingCredit >
-                                partyDetails.person.takingCredit
-                                  ? '#dc3545'
-                                  : '#28a745',
-                              marginBottom: '4px',
-                            }}
-                          >
-                            {Math.abs(
-                              partyDetails.person.givingCredit -
-                                partyDetails.person.takingCredit
-                            ).toLocaleString()}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              fontWeight: '500',
-                            }}
-                          >
-                            {partyDetails.person.givingCredit >
-                            partyDetails.person.takingCredit
-                              ? 'Net Receivable'
-                              : 'Net Payable'}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Receivables/Payables Summary */}
-                      <div
-                        style={{
-                          backgroundColor:
-                            partyDetails.person.givingCredit >
-                            partyDetails.person.takingCredit
-                              ? '#d4edda'
-                              : '#f8d7da',
-                          padding: '18px',
-                          borderRadius: '8px',
-                          borderLeft: `4px solid ${partyDetails.person.givingCredit > partyDetails.person.takingCredit ? '#28a745' : '#dc3545'}`,
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                          marginBottom: '24px',
-                        }}
-                      >
-                        <h3
-                          style={{
-                            color: '#495057',
-                            marginTop: '0',
-                            marginBottom: '16px',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              width: '24px',
-                              height: '24px',
-                              backgroundColor:
-                                partyDetails.person.givingCredit >
-                                partyDetails.person.takingCredit
-                                  ? '#dc3545'
-                                  : '#28a745',
-                              color: '#fff',
-                              borderRadius: '50%',
-                              textAlign: 'center',
-                              lineHeight: '24px',
-                              fontSize: '12px',
-                            }}
-                          >
-                            {partyDetails.person.givingCredit >
-                            partyDetails.person.takingCredit
-                              ? '📈'
-                              : '📉'}
                           </span>
-                          {partyDetails.person.givingCredit >
-                          partyDetails.person.takingCredit
-                            ? 'Total Receivables'
-                            : 'Total Payables'}
-                        </h3>
-
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns:
-                              'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '16px',
-                          }}
-                        >
-                          {/* Main Amount */}
-                          <div
-                            style={{
-                              backgroundColor: '#fff',
-                              padding: '16px',
-                              borderRadius: '8px',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                              textAlign: 'center',
-                            }}
-                          >
-                            <div
-                              style={{
-                                color:
-                                  partyDetails.person.givingCredit >
-                                  partyDetails.person.takingCredit
-                                    ? '#dc3545'
-                                    : '#28a745',
-                                fontWeight: '600',
-                                marginBottom: '8px',
-                                fontSize: '14px',
-                              }}
-                            >
-                              {partyDetails.person.givingCredit >
-                              partyDetails.person.takingCredit
-                                ? 'Amount to Receive'
-                                : 'Amount to Pay'}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '24px',
-                                fontWeight: '700',
-                                color: '#212529',
-                              }}
-                            >
-                              PKR{' '}
-                              {Math.abs(
-                                partyDetails.person.givingCredit -
-                                  partyDetails.person.takingCredit
-                              ).toLocaleString()}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                color: '#6c757d',
-                                marginTop: '4px',
-                              }}
-                            >
-                              {partyDetails.person.givingCredit >
-                              partyDetails.person.takingCredit
-                                ? 'From customer'
-                                : 'To customer'}
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              backgroundColor: '#fff',
-                              padding: '12px',
-                              borderRadius: '6px',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <div
-                              style={{
-                                color: '#495057',
-                                fontWeight: '600',
-                                marginBottom: '8px',
-                                fontSize: '14px',
-                              }}
-                            >
-                              Current Status
-                            </div>
-                            <div
-                              style={{
-                                padding: '8px 16px',
-                                borderRadius: '20px',
-                                backgroundColor:
-                                  partyDetails.person.givingCredit >
-                                  partyDetails.person.takingCredit
-                                    ? '#dc3545'
-                                    : '#28a745',
-                                color: '#fff',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                              }}
-                            >
-                              {partyDetails.person.givingCredit >
-                              partyDetails.person.takingCredit
-                                ? 'RECEIVABLE'
-                                : 'PAYABLE'}
-                            </div>
-                          </div>
                         </div>
                       </div>
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns:
-                            'repeat(auto-fit, minmax(300px, 1fr))',
-                          gap: '16px',
-                          marginBottom: '24px',
-                        }}
-                      >
-                        {/* Sales Analytics */}
-                        <div
-                          style={{
-                            backgroundColor: '#f8fafc',
-                            padding: '18px',
-                            borderRadius: '8px',
-                            borderLeft: '4px solid #28a745',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                          }}
-                        >
-                          <h3
-                            style={{
-                              color: '#495057',
-                              marginTop: '0',
-                              marginBottom: '16px',
-                              fontSize: '16px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                            }}
-                          >
-                            <span
-                              style={{
-                                display: 'inline-block',
-                                width: '24px',
-                                height: '24px',
-                                backgroundColor: '#28a745',
-                                color: '#fff',
-                                borderRadius: '50%',
-                                textAlign: 'center',
-                                lineHeight: '24px',
-                                fontSize: '12px',
-                              }}
-                            >
-                              📈
-                            </span>
-                            Sales Analytics
-                          </h3>
-                          <div style={{ display: 'grid', gap: '12px' }}>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Bulk Sales:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#212529' }}
-                              >
-                                {partyDetails.summary.totalBulkSales} items
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Bulk Sales Amount:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#28a745' }}
-                              >
-                                PKR
-                                {(partyDetails.saleDetails?.bulkSales || [])
-                                  .reduce(
-                                    (sum, sale) => sum + (sale.salePrice || 0),
-                                    0
-                                  )
-                                  .toLocaleString()}
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Single Sales:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#212529' }}
-                              >
-                                {partyDetails.summary.totalSingleSales} items
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Single Sales Amount:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#28a745' }}
-                              >
-                                PKR
-                                {(partyDetails.saleDetails?.singleSales || [])
-                                  .reduce(
-                                    (sum, sale) => sum + (sale.salePrice || 0),
-                                    0
-                                  )
-                                  .toLocaleString()}
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                borderTop: '1px solid #e9ecef',
-                                paddingTop: '8px',
-                              }}
-                            >
-                              <span
-                                style={{
-                                  color: '#495057',
-                                  fontSize: '14px',
-                                  fontWeight: '600',
-                                }}
-                              >
-                                Total Sales:
-                              </span>
-                              <span
-                                style={{
-                                  fontWeight: '700',
-                                  color: '#28a745',
-                                  fontSize: '16px',
-                                }}
-                              >
-                                PKR
-                                {(() => {
-                                  const bulkSalesTotal = (
-                                    partyDetails.saleDetails?.bulkSales || []
-                                  ).reduce(
-                                    (sum, sale) => sum + (sale.salePrice || 0),
-                                    0
-                                  );
-                                  const singleSalesTotal = (
-                                    partyDetails.saleDetails?.singleSales || []
-                                  ).reduce(
-                                    (sum, sale) => sum + (sale.salePrice || 0),
-                                    0
-                                  );
-                                  return (
-                                    bulkSalesTotal + singleSalesTotal
-                                  ).toLocaleString();
-                                })()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                    </div>
+                  </div>
 
-                        <div
-                          style={{
-                            backgroundColor: '#f8fafc',
-                            padding: '18px',
-                            borderRadius: '8px',
-                            borderLeft: '4px solid #ff9800',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                          }}
-                        >
-                          <h3
-                            style={{
-                              color: '#495057',
-                              marginTop: '0',
-                              marginBottom: '16px',
-                              fontSize: '16px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                            }}
-                          >
-                            <span
-                              style={{
-                                display: 'inline-block',
-                                width: '24px',
-                                height: '24px',
-                                backgroundColor: '#ff9800',
-                                color: '#fff',
-                                borderRadius: '50%',
-                                textAlign: 'center',
-                                lineHeight: '24px',
-                                fontSize: '12px',
-                              }}
-                            >
-                              📦
-                            </span>
-                            Purchase Analytics
-                          </h3>
-                          <div style={{ display: 'grid', gap: '12px' }}>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Bulk Purchases:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#212529' }}
-                              >
-                                {partyDetails.summary.totalBulkPurchases} items
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Bulk Purchase Amount:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#ff9800' }}
-                              >
-                                PKR
-                                {(
-                                  partyDetails.purchaseDetails?.bulkPurchases ||
-                                  []
-                                )
-                                  .reduce(
-                                    (sum, purchase) =>
-                                      sum +
-                                      parseInt(
-                                        purchase.prices?.buyingPrice || 0
-                                      ),
-                                    0
-                                  )
-                                  .toLocaleString()}
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Single Purchases:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#212529' }}
-                              >
-                                {partyDetails.summary.totalSinglePurchases}{' '}
-                                items
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <span
-                                style={{ color: '#495057', fontSize: '14px' }}
-                              >
-                                Single Purchase Amount:
-                              </span>
-                              <span
-                                style={{ fontWeight: '600', color: '#ff9800' }}
-                              >
-                                PKR
-                                {(
-                                  partyDetails.purchaseDetails
-                                    ?.singlePurchases || []
-                                )
-                                  .reduce(
-                                    (sum, purchase) =>
-                                      sum +
-                                      (purchase.price?.purchasePrice || 0),
-                                    0
-                                  )
-                                  .toLocaleString()}
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                borderTop: '1px solid #e9ecef',
-                                paddingTop: '8px',
-                              }}
-                            >
-                              <span
-                                style={{
-                                  color: '#495057',
-                                  fontSize: '14px',
-                                  fontWeight: '600',
-                                }}
-                              >
-                                Total Purchases:
-                              </span>
-                              <span
-                                style={{
-                                  fontWeight: '700',
-                                  color: '#ff9800',
-                                  fontSize: '16px',
-                                }}
-                              >
-                                PKR
-                                {(() => {
-                                  const bulkPurchasesTotal = (
-                                    partyDetails.purchaseDetails
-                                      ?.bulkPurchases || []
-                                  ).reduce(
-                                    (sum, purchase) =>
-                                      sum +
-                                      parseInt(
-                                        purchase.prices?.buyingPrice || 0
-                                      ),
-                                    0
-                                  );
-                                  const singlePurchasesTotal = (
-                                    partyDetails.purchaseDetails
-                                      ?.singlePurchases || []
-                                  ).reduce(
-                                    (sum, purchase) =>
-                                      sum +
-                                      (purchase.price?.purchasePrice || 0),
-                                    0
-                                  );
-                                  return (
-                                    bulkPurchasesTotal + singlePurchasesTotal
-                                  ).toLocaleString();
-                                })()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Payment & Cash Analytics - Commented out */}
-                      {/* <h3
+                  {/* Payment & Cash Analytics - Commented out */}
+                  {/* <h3
                       style={{
                         color: '#495057',
                         marginTop: '0',
@@ -1833,638 +1787,376 @@ const CustomerRecord = () => {
                       Payment & Cash Analytics
                     </h3> */}
 
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(150px, 1fr))',
+                        gap: '12px',
+                      }}
+                    >
                       <div
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns:
-                            'repeat(auto-fit, minmax(150px, 1fr))',
-                          gap: '12px',
+                          backgroundColor: '#fff',
+                          padding: '12px',
+                          borderRadius: '6px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                         }}
                       >
                         <div
                           style={{
-                            backgroundColor: '#fff',
-                            padding: '12px',
-                            borderRadius: '6px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                            color: '#dc3545',
+                            fontWeight: '600',
+                            marginBottom: '6px',
+                            fontSize: '14px',
                           }}
                         >
-                          <div
-                            style={{
-                              color: '#dc3545',
-                              fontWeight: '600',
-                              marginBottom: '6px',
-                              fontSize: '14px',
-                            }}
-                          >
-                            Credit Sales
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '18px',
-                              fontWeight: '700',
-                              color: '#212529',
-                            }}
-                          >
-                            {(partyDetails.saleDetails?.bulkSales || []).filter(
-                              (sale) => sale.sellingPaymentType === 'Credit'
-                            ).length +
-                              (
-                                partyDetails.saleDetails?.singleSales || []
-                              ).filter(
-                                (sale) => sale.sellingPaymentType === 'Credit'
-                              ).length}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              marginTop: '4px',
-                            }}
-                          >
-                            Pending payments
-                          </div>
+                          Credit Sales
                         </div>
-
                         <div
                           style={{
-                            backgroundColor: '#fff',
-                            padding: '12px',
-                            borderRadius: '6px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#212529',
                           }}
                         >
-                          <div
-                            style={{
-                              color: '#28a745',
-                              fontWeight: '600',
-                              marginBottom: '6px',
-                              fontSize: '14px',
-                            }}
-                          >
-                            Full Payment Sales
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '18px',
-                              fontWeight: '700',
-                              color: '#212529',
-                            }}
-                          >
-                            {(partyDetails.saleDetails?.bulkSales || []).filter(
+                          {(partyDetails.saleDetails?.bulkSales || []).filter(
+                            (sale) => sale.sellingPaymentType === 'Credit'
+                          ).length +
+                            (
+                              partyDetails.saleDetails?.singleSales || []
+                            ).filter(
+                              (sale) => sale.sellingPaymentType === 'Credit'
+                            ).length}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            marginTop: '4px',
+                          }}
+                        >
+                          Pending payments
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          padding: '12px',
+                          borderRadius: '6px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: '#28a745',
+                            fontWeight: '600',
+                            marginBottom: '6px',
+                            fontSize: '14px',
+                          }}
+                        >
+                          Full Payment Sales
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#212529',
+                          }}
+                        >
+                          {(partyDetails.saleDetails?.bulkSales || []).filter(
+                            (sale) => sale.sellingPaymentType === 'Full Payment'
+                          ).length +
+                            (
+                              partyDetails.saleDetails?.singleSales || []
+                            ).filter(
                               (sale) =>
                                 sale.sellingPaymentType === 'Full Payment'
-                            ).length +
+                            ).length}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            marginTop: '4px',
+                          }}
+                        >
+                          Completed payments
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          padding: '12px',
+                          borderRadius: '6px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: '#fd7e14',
+                            fontWeight: '600',
+                            marginBottom: '6px',
+                            fontSize: '14px',
+                          }}
+                        >
+                          Total Credit Amount
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '16px',
+                            fontWeight: '700',
+                            color: '#212529',
+                          }}
+                        >
+                          PKR
+                          {(() => {
+                            const bulkCreditTotal = (
+                              partyDetails.saleDetails?.bulkSales || []
+                            )
+                              .filter(
+                                (sale) => sale.sellingPaymentType === 'Credit'
+                              )
+                              .reduce(
+                                (sum, sale) =>
+                                  sum +
+                                  (sale.payableAmountNow || 0) +
+                                  (sale.payableAmountLater || 0),
+                                0
+                              );
+                            const singleCreditTotal = (
+                              partyDetails.saleDetails?.singleSales || []
+                            )
+                              .filter(
+                                (sale) => sale.sellingPaymentType === 'Credit'
+                              )
+                              .reduce(
+                                (sum, sale) =>
+                                  sum +
+                                  (sale.payableAmountNow || 0) +
+                                  (sale.payableAmountLater || 0),
+                                0
+                              );
+                            return (
+                              bulkCreditTotal + singleCreditTotal
+                            ).toLocaleString();
+                          })()}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            marginTop: '4px',
+                          }}
+                        >
+                          Outstanding amount
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          padding: '12px',
+                          borderRadius: '6px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: '#6f42c1',
+                            fontWeight: '600',
+                            marginBottom: '6px',
+                            fontSize: '14px',
+                          }}
+                        >
+                          Cash Flow Status
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '16px',
+                            fontWeight: '700',
+                            color: '#212529',
+                          }}
+                        >
+                          {(() => {
+                            const totalSales =
+                              (
+                                partyDetails.saleDetails?.bulkSales || []
+                              ).reduce(
+                                (sum, sale) => sum + (sale.salePrice || 0),
+                                0
+                              ) +
                               (
                                 partyDetails.saleDetails?.singleSales || []
-                              ).filter(
-                                (sale) =>
-                                  sale.sellingPaymentType === 'Full Payment'
-                              ).length}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              marginTop: '4px',
-                            }}
-                          >
-                            Completed payments
-                          </div>
+                              ).reduce(
+                                (sum, sale) => sum + (sale.salePrice || 0),
+                                0
+                              );
+                            const totalPurchases =
+                              (
+                                partyDetails.purchaseDetails?.bulkPurchases ||
+                                []
+                              ).reduce(
+                                (sum, purchase) =>
+                                  sum +
+                                  parseInt(purchase.prices?.buyingPrice || 0),
+                                0
+                              ) +
+                              (
+                                partyDetails.purchaseDetails?.singlePurchases ||
+                                []
+                              ).reduce(
+                                (sum, purchase) =>
+                                  sum + (purchase.price?.purchasePrice || 0),
+                                0
+                              );
+                            return totalSales > totalPurchases
+                              ? 'Positive'
+                              : 'Negative';
+                          })()}
                         </div>
-
                         <div
                           style={{
-                            backgroundColor: '#fff',
-                            padding: '12px',
-                            borderRadius: '6px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            marginTop: '4px',
                           }}
                         >
-                          <div
-                            style={{
-                              color: '#fd7e14',
-                              fontWeight: '600',
-                              marginBottom: '6px',
-                              fontSize: '14px',
-                            }}
-                          >
-                            Total Credit Amount
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '16px',
-                              fontWeight: '700',
-                              color: '#212529',
-                            }}
-                          >
-                            PKR
-                            {(() => {
-                              const bulkCreditTotal = (
-                                partyDetails.saleDetails?.bulkSales || []
-                              )
-                                .filter(
-                                  (sale) => sale.sellingPaymentType === 'Credit'
-                                )
-                                .reduce(
-                                  (sum, sale) =>
-                                    sum +
-                                    (sale.payableAmountNow || 0) +
-                                    (sale.payableAmountLater || 0),
-                                  0
-                                );
-                              const singleCreditTotal = (
-                                partyDetails.saleDetails?.singleSales || []
-                              )
-                                .filter(
-                                  (sale) => sale.sellingPaymentType === 'Credit'
-                                )
-                                .reduce(
-                                  (sum, sale) =>
-                                    sum +
-                                    (sale.payableAmountNow || 0) +
-                                    (sale.payableAmountLater || 0),
-                                  0
-                                );
-                              return (
-                                bulkCreditTotal + singleCreditTotal
-                              ).toLocaleString();
-                            })()}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              marginTop: '4px',
-                            }}
-                          >
-                            Outstanding amount
-                          </div>
-                        </div>
-
-                        <div
-                          style={{
-                            backgroundColor: '#fff',
-                            padding: '12px',
-                            borderRadius: '6px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                          }}
-                        >
-                          <div
-                            style={{
-                              color: '#6f42c1',
-                              fontWeight: '600',
-                              marginBottom: '6px',
-                              fontSize: '14px',
-                            }}
-                          >
-                            Cash Flow Status
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '16px',
-                              fontWeight: '700',
-                              color: '#212529',
-                            }}
-                          >
-                            {(() => {
-                              const totalSales =
-                                (
-                                  partyDetails.saleDetails?.bulkSales || []
-                                ).reduce(
-                                  (sum, sale) => sum + (sale.salePrice || 0),
-                                  0
-                                ) +
-                                (
-                                  partyDetails.saleDetails?.singleSales || []
-                                ).reduce(
-                                  (sum, sale) => sum + (sale.salePrice || 0),
-                                  0
-                                );
-                              const totalPurchases =
-                                (
-                                  partyDetails.purchaseDetails?.bulkPurchases ||
-                                  []
-                                ).reduce(
-                                  (sum, purchase) =>
-                                    sum +
-                                    parseInt(purchase.prices?.buyingPrice || 0),
-                                  0
-                                ) +
-                                (
-                                  partyDetails.purchaseDetails
-                                    ?.singlePurchases || []
-                                ).reduce(
-                                  (sum, purchase) =>
-                                    sum + (purchase.price?.purchasePrice || 0),
-                                  0
-                                );
-                              return totalSales > totalPurchases
-                                ? 'Positive'
-                                : 'Negative';
-                            })()}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              marginTop: '4px',
-                            }}
-                          >
-                            Net cash flow
-                          </div>
+                          Net cash flow
                         </div>
                       </div>
                     </div>
-
-                    <div style={{ marginBottom: '32px' }}>
-                      {partyDetails.purchaseDetails?.bulkPurchases?.length >
-                        0 && (
+                  </div> 
+                  
+                  <div style={{ marginBottom: '32px' }}>
+                    {partyDetails.purchaseDetails?.bulkPurchases?.length >
+                      0 && (
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                          marginBottom: '24px',
+                          overflow: 'hidden',
+                        }}
+                      >
                         <div
                           style={{
-                            backgroundColor: '#fff',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                            marginBottom: '24px',
-                            overflow: 'hidden',
+                            backgroundColor: '#ff9800',
+                            color: '#fff',
+                            padding: '16px 20px',
+                            fontSize: '18px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                           }}
                         >
-                          <div
-                            style={{
-                              backgroundColor: '#ff9800',
-                              color: '#fff',
-                              padding: '16px 20px',
-                              fontSize: '18px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                            }}
-                          >
-                            📦 Bulk Purchases (
-                            {partyDetails.purchaseDetails.bulkPurchases.length}{' '}
-                            items)
-                          </div>
-
-                          <div style={{ overflowX: 'auto' }}>
-                            <table
-                              style={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                fontSize: '14px',
-                              }}
-                            >
-                              <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa' }}>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Model
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Company
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    IMEI
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Color
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Battery
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Buying Price
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'center',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Status
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'center',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Date
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {partyDetails.purchaseDetails.bulkPurchases.map(
-                                  (purchase, index) =>
-                                    purchase.ramSimDetails?.map((phone, i) => (
-                                      <tr
-                                        key={`${purchase._id}-${i}`}
-                                        style={{
-                                          backgroundColor:
-                                            index % 2 === 0
-                                              ? '#fff'
-                                              : '#f8f9fa',
-                                          borderBottom: '1px solid #dee2e6',
-                                        }}
-                                      >
-                                        <td
-                                          style={{
-                                            padding: '12px',
-                                            fontWeight: '500',
-                                          }}
-                                        >
-                                          {phone.modelName ||
-                                            purchase.modelName ||
-                                            'N/A'}
-                                        </td>
-                                        <td style={{ padding: '12px' }}>
-                                          {phone.companyName || 'N/A'}
-                                        </td>
-                                        <td
-                                          style={{
-                                            padding: '12px',
-                                            fontFamily: 'monospace',
-                                            fontSize: '12px',
-                                          }}
-                                        >
-                                          {phone.imeiNumbers?.[0]?.imei1 ||
-                                            'N/A'}
-                                        </td>
-                                        <td style={{ padding: '12px' }}>
-                                          <span
-                                            style={{
-                                              display: 'inline-block',
-                                              width: '12px',
-                                              height: '12px',
-                                              borderRadius: '50%',
-                                              backgroundColor:
-                                                phone.imeiNumbers?.[0]?.color?.toLowerCase() ||
-                                                '#ccc',
-                                              marginRight: '6px',
-                                            }}
-                                          ></span>
-                                          {phone.imeiNumbers?.[0]?.color ||
-                                            'N/A'}
-                                        </td>
-                                        <td style={{ padding: '12px' }}>
-                                          {phone.imeiNumbers?.[0]?.batteryHealth
-                                            ? `${phone.imeiNumbers[0].batteryHealth}%`
-                                            : 'N/A'}
-                                        </td>
-                                        <td
-                                          style={{
-                                            padding: '12px',
-                                            textAlign: 'right',
-                                            fontWeight: '600',
-                                            color: '#ff9800',
-                                          }}
-                                        >
-                                          PKR{' '}
-                                          {parseInt(
-                                            purchase.prices?.buyingPrice || 0
-                                          ).toLocaleString()}
-                                        </td>
-                                        <td
-                                          style={{
-                                            padding: '12px',
-                                            textAlign: 'center',
-                                          }}
-                                        >
-                                          <span
-                                            style={{
-                                              padding: '4px 8px',
-                                              borderRadius: '12px',
-                                              fontSize: '12px',
-                                              fontWeight: '500',
-                                              backgroundColor:
-                                                purchase.status === 'Available'
-                                                  ? '#d4edda'
-                                                  : '#f8d7da',
-                                              color:
-                                                purchase.status === 'Available'
-                                                  ? '#155724'
-                                                  : '#721c24',
-                                            }}
-                                          >
-                                            {purchase.status || 'N/A'}
-                                          </span>
-                                        </td>
-                                        <td
-                                          style={{
-                                            padding: '12px',
-                                            textAlign: 'center',
-                                            fontSize: '12px',
-                                            color: '#6c757d',
-                                          }}
-                                        >
-                                          {purchase.date
-                                            ? new Date(
-                                                purchase.date
-                                              ).toLocaleDateString()
-                                            : 'N/A'}
-                                        </td>
-                                      </tr>
-                                    ))
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
+                          📦 Bulk Purchases (
+                          {partyDetails.purchaseDetails.bulkPurchases.length}{' '}
+                          items)
                         </div>
-                      )}
 
-                      {/* Single Purchases Table */}
-                      {partyDetails.purchaseDetails?.singlePurchases?.length >
-                        0 && (
-                        <div
-                          style={{
-                            backgroundColor: '#fff',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                            marginBottom: '24px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <div
+                        <div style={{ overflowX: 'auto' }}>
+                          <table
                             style={{
-                              backgroundColor: '#17a2b8',
-                              color: '#fff',
-                              padding: '16px 20px',
-                              fontSize: '18px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
+                              width: '100%',
+                              borderCollapse: 'collapse',
+                              fontSize: '14px',
                             }}
                           >
-                            📱 Single Purchases (
-                            {
-                              partyDetails.purchaseDetails.singlePurchases
-                                .length
-                            }{' '}
-                            items)
-                          </div>
-                          <div style={{ overflowX: 'auto' }}>
-                            <table
-                              style={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                fontSize: '14px',
-                              }}
-                            >
-                              <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa' }}>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Model
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Company
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    RAM
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    IMEI 1
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    IMEI 2
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Color
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Condition
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Warranty
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Purchase Price
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'center',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Date
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {partyDetails.purchaseDetails.singlePurchases.map(
-                                  (purchase, index) => (
+                            <thead>
+                              <tr style={{ backgroundColor: '#f8f9fa' }}>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Model
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Company
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  IMEI
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Color
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Battery
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Buying Price
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Status
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Date
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {partyDetails.purchaseDetails.bulkPurchases.map(
+                                (purchase, index) =>
+                                  purchase.ramSimDetails?.map((phone, i) => (
                                     <tr
-                                      key={purchase._id}
+                                      key={`${purchase._id}-${i}`}
                                       style={{
                                         backgroundColor:
                                           index % 2 === 0 ? '#fff' : '#f8f9fa',
@@ -2477,13 +2169,12 @@ const CustomerRecord = () => {
                                           fontWeight: '500',
                                         }}
                                       >
-                                        {purchase.modelName}
+                                        {phone.modelName ||
+                                          purchase.modelName ||
+                                          'N/A'}
                                       </td>
                                       <td style={{ padding: '12px' }}>
-                                        {purchase.companyName}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        {purchase.ramMemory}GB
+                                        {phone.companyName || 'N/A'}
                                       </td>
                                       <td
                                         style={{
@@ -2492,16 +2183,7 @@ const CustomerRecord = () => {
                                           fontSize: '12px',
                                         }}
                                       >
-                                        {purchase.imei1}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          fontFamily: 'monospace',
-                                          fontSize: '12px',
-                                        }}
-                                      >
-                                        {purchase.imei2 || 'N/A'}
+                                        {phone.imeiNumbers?.[0]?.imei1 || 'N/A'}
                                       </td>
                                       <td style={{ padding: '12px' }}>
                                         <span
@@ -2511,287 +2193,16 @@ const CustomerRecord = () => {
                                             height: '12px',
                                             borderRadius: '50%',
                                             backgroundColor:
-                                              purchase.color?.toLowerCase() ||
+                                              phone.imeiNumbers?.[0]?.color?.toLowerCase() ||
                                               '#ccc',
                                             marginRight: '6px',
                                           }}
                                         ></span>
-                                        {purchase.color}
+                                        {phone.imeiNumbers?.[0]?.color || 'N/A'}
                                       </td>
                                       <td style={{ padding: '12px' }}>
-                                        <span
-                                          style={{
-                                            padding: '4px 8px',
-                                            borderRadius: '12px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                            backgroundColor:
-                                              purchase.phoneCondition === 'New'
-                                                ? '#d4edda'
-                                                : '#fff3cd',
-                                            color:
-                                              purchase.phoneCondition === 'New'
-                                                ? '#155724'
-                                                : '#856404',
-                                          }}
-                                        >
-                                          {purchase.phoneCondition}
-                                        </span>
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        {purchase.warranty}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#17a2b8',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {purchase.price?.purchasePrice?.toLocaleString() ||
-                                          'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'center',
-                                          fontSize: '12px',
-                                          color: '#6c757d',
-                                        }}
-                                      >
-                                        {new Date(
-                                          purchase.date
-                                        ).toLocaleDateString()}
-                                      </td>
-                                    </tr>
-                                  )
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {/* Sales Tables */}
-                    <div style={{ marginBottom: '32px' }}>
-                      {/* Bulk Sales Table */}
-                      {partyDetails.saleDetails?.bulkSales?.length > 0 && (
-                        <div
-                          style={{
-                            backgroundColor: '#fff',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                            marginBottom: '24px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <div
-                            style={{
-                              backgroundColor: '#28a745',
-                              color: '#fff',
-                              padding: '16px 20px',
-                              fontSize: '18px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                            }}
-                          >
-                            💰 Bulk Sales (
-                            {partyDetails.saleDetails.bulkSales.length} items)
-                          </div>
-                          <div style={{ overflowX: 'auto' }}>
-                            <table
-                              style={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                fontSize: '14px',
-                              }}
-                            >
-                              <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa' }}>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Customer
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Model
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    IMEI
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Warranty
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Purchase Price
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Sale Price
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Profit
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Total Invoice
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'center',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Payment Type
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'center',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Date
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {partyDetails.saleDetails.bulkSales.map(
-                                  (sale, index) => (
-                                    <tr
-                                      key={sale._id}
-                                      style={{
-                                        backgroundColor:
-                                          index % 2 === 0 ? '#fff' : '#f8f9fa',
-                                        borderBottom: '1px solid #dee2e6',
-                                      }}
-                                    >
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          fontWeight: '500',
-                                        }}
-                                      >
-                                        {sale.customerName || 'N/A'}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        {sale.modelName ||
-                                          sale.bulkPhonePurchaseId
-                                            ?.ramSimDetails?.[0]?.modelName ||
-                                          sale.bulkPhonePurchaseId?.modelName ||
-                                          'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          fontFamily: 'monospace',
-                                          fontSize: '12px',
-                                        }}
-                                      >
-                                        {Array.isArray(sale.imei1)
-                                          ? sale.imei1[0]
-                                          : sale.imei1 || 'N/A'}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        {sale.warranty || 'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#dc3545',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {sale.purchasePrice?.toLocaleString() ||
-                                          'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#28a745',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {sale.salePrice?.toLocaleString() ||
-                                          'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#17a2b8',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {sale.purchasePrice && sale.salePrice
-                                          ? (
-                                              sale.salePrice -
-                                              sale.purchasePrice
-                                            ).toLocaleString()
+                                        {phone.imeiNumbers?.[0]?.batteryHealth
+                                          ? `${phone.imeiNumbers[0].batteryHealth}%`
                                           : 'N/A'}
                                       </td>
                                       <td
@@ -2799,12 +2210,13 @@ const CustomerRecord = () => {
                                           padding: '12px',
                                           textAlign: 'right',
                                           fontWeight: '600',
-                                          color: '#6f42c1',
+                                          color: '#ff9800',
                                         }}
                                       >
                                         PKR{' '}
-                                        {sale.totalInvoice?.toLocaleString() ||
-                                          'N/A'}
+                                        {parseInt(
+                                          purchase.prices?.buyingPrice || 0
+                                        ).toLocaleString()}
                                       </td>
                                       <td
                                         style={{
@@ -2819,18 +2231,16 @@ const CustomerRecord = () => {
                                             fontSize: '12px',
                                             fontWeight: '500',
                                             backgroundColor:
-                                              sale.sellingPaymentType ===
-                                              'Full Payment'
+                                              purchase.status === 'Available'
                                                 ? '#d4edda'
                                                 : '#f8d7da',
                                             color:
-                                              sale.sellingPaymentType ===
-                                              'Full Payment'
+                                              purchase.status === 'Available'
                                                 ? '#155724'
                                                 : '#721c24',
                                           }}
                                         >
-                                          {sale.sellingPaymentType || 'N/A'}
+                                          {purchase.status || 'N/A'}
                                         </span>
                                       </td>
                                       <td
@@ -2841,384 +2251,917 @@ const CustomerRecord = () => {
                                           color: '#6c757d',
                                         }}
                                       >
-                                        {sale.dateSold || sale.createdAt
+                                        {purchase.date
                                           ? new Date(
-                                              sale.dateSold || sale.createdAt
+                                              purchase.date
                                             ).toLocaleDateString()
                                           : 'N/A'}
                                       </td>
                                     </tr>
-                                  )
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
+                                  ))
+                              )}
+                            </tbody>
+                          </table>
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {/* Single Sales Table */}
-                      {partyDetails.saleDetails?.singleSales?.length > 0 && (
+                    {/* Single Purchases Table */}
+                    {partyDetails.purchaseDetails?.singlePurchases?.length >
+                      0 && (
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                          marginBottom: '24px',
+                          overflow: 'hidden',
+                        }}
+                      >
                         <div
                           style={{
-                            backgroundColor: '#fff',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                            marginBottom: '24px',
-                            overflow: 'hidden',
+                            backgroundColor: '#17a2b8',
+                            color: '#fff',
+                            padding: '16px 20px',
+                            fontSize: '18px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                           }}
                         >
-                          <div
+                          📱 Single Purchases (
+                          {partyDetails.purchaseDetails.singlePurchases.length}{' '}
+                          items)
+                        </div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table
                             style={{
-                              backgroundColor: '#6f42c1',
-                              color: '#fff',
-                              padding: '16px 20px',
-                              fontSize: '18px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
+                              width: '100%',
+                              borderCollapse: 'collapse',
+                              fontSize: '14px',
                             }}
                           >
-                            💎 Single Sales (
-                            {partyDetails.saleDetails.singleSales.length} items)
-                          </div>
-                          <div style={{ overflowX: 'auto' }}>
-                            <table
-                              style={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                fontSize: '14px',
-                              }}
-                            >
-                              <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa' }}>
-                                  <th
+                            <thead>
+                              <tr style={{ backgroundColor: '#f8f9fa' }}>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Model
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Company
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  RAM
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  IMEI 1
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  IMEI 2
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Color
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Condition
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Warranty
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Purchase Price
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Date
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {partyDetails.purchaseDetails.singlePurchases.map(
+                                (purchase, index) => (
+                                  <tr
+                                    key={purchase._id}
                                     style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
+                                      backgroundColor:
+                                        index % 2 === 0 ? '#fff' : '#f8f9fa',
+                                      borderBottom: '1px solid #dee2e6',
                                     }}
                                   >
-                                    Customer
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Model
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Company
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    RAM
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    IMEI 1
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    IMEI 2
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Color
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'left',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Condition
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Purchase Price
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Sale Price
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Profit
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'right',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Total Invoice
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'center',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Payment Type
-                                  </th>
-                                  <th
-                                    style={{
-                                      padding: '12px',
-                                      textAlign: 'center',
-                                      borderBottom: '2px solid #dee2e6',
-                                      fontWeight: '600',
-                                    }}
-                                  >
-                                    Date
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {partyDetails.saleDetails.singleSales.map(
-                                  (sale, index) => (
-                                    <tr
-                                      key={sale._id}
+                                    <td
                                       style={{
-                                        backgroundColor:
-                                          index % 2 === 0 ? '#fff' : '#f8f9fa',
-                                        borderBottom: '1px solid #dee2e6',
+                                        padding: '12px',
+                                        fontWeight: '500',
                                       }}
                                     >
-                                      <td
+                                      {purchase.modelName}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {purchase.companyName}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {purchase.ramMemory}GB
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        fontFamily: 'monospace',
+                                        fontSize: '12px',
+                                      }}
+                                    >
+                                      {purchase.imei1}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        fontFamily: 'monospace',
+                                        fontSize: '12px',
+                                      }}
+                                    >
+                                      {purchase.imei2 || 'N/A'}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      <span
                                         style={{
-                                          padding: '12px',
+                                          display: 'inline-block',
+                                          width: '12px',
+                                          height: '12px',
+                                          borderRadius: '50%',
+                                          backgroundColor:
+                                            purchase.color?.toLowerCase() ||
+                                            '#ccc',
+                                          marginRight: '6px',
+                                        }}
+                                      ></span>
+                                      {purchase.color}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      <span
+                                        style={{
+                                          padding: '4px 8px',
+                                          borderRadius: '12px',
+                                          fontSize: '12px',
                                           fontWeight: '500',
+                                          backgroundColor:
+                                            purchase.phoneCondition === 'New'
+                                              ? '#d4edda'
+                                              : '#fff3cd',
+                                          color:
+                                            purchase.phoneCondition === 'New'
+                                              ? '#155724'
+                                              : '#856404',
                                         }}
                                       >
-                                        {sale.customerName}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        {sale.modelName}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        {sale.companyName}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        {sale.ramMemory}GB
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          fontFamily: 'monospace',
-                                          fontSize: '12px',
-                                        }}
-                                      >
-                                        {sale.imei1}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          fontFamily: 'monospace',
-                                          fontSize: '12px',
-                                        }}
-                                      >
-                                        {sale.imei2 || 'N/A'}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        <span
-                                          style={{
-                                            display: 'inline-block',
-                                            width: '12px',
-                                            height: '12px',
-                                            borderRadius: '50%',
-                                            backgroundColor:
-                                              sale.color?.toLowerCase() ||
-                                              '#ccc',
-                                            marginRight: '6px',
-                                          }}
-                                        ></span>
-                                        {sale.color}
-                                      </td>
-                                      <td style={{ padding: '12px' }}>
-                                        <span
-                                          style={{
-                                            padding: '4px 8px',
-                                            borderRadius: '12px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                            backgroundColor:
-                                              sale.phoneCondition === 'New'
-                                                ? '#d4edda'
-                                                : '#fff3cd',
-                                            color:
-                                              sale.phoneCondition === 'New'
-                                                ? '#155724'
-                                                : '#856404',
-                                          }}
-                                        >
-                                          {sale.phoneCondition}
-                                        </span>
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#dc3545',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {sale.purchasePrice?.toLocaleString() ||
-                                          'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#28a745',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {sale.salePrice?.toLocaleString() ||
-                                          'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#17a2b8',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {sale.purchasePrice && sale.salePrice
-                                          ? (
-                                              sale.salePrice -
-                                              sale.purchasePrice
-                                            ).toLocaleString()
-                                          : 'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'right',
-                                          fontWeight: '600',
-                                          color: '#6f42c1',
-                                        }}
-                                      >
-                                        PKR{' '}
-                                        {sale.totalInvoice?.toLocaleString() ||
-                                          'N/A'}
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'center',
-                                        }}
-                                      >
-                                        <span
-                                          style={{
-                                            padding: '4px 8px',
-                                            borderRadius: '12px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                            backgroundColor:
-                                              sale.sellingPaymentType ===
-                                              'Full Payment'
-                                                ? '#d4edda'
-                                                : '#f8d7da',
-                                            color:
-                                              sale.sellingPaymentType ===
-                                              'Full Payment'
-                                                ? '#155724'
-                                                : '#721c24',
-                                          }}
-                                        >
-                                          {sale.sellingPaymentType}
-                                        </span>
-                                      </td>
-                                      <td
-                                        style={{
-                                          padding: '12px',
-                                          textAlign: 'center',
-                                          fontSize: '12px',
-                                          color: '#6c757d',
-                                        }}
-                                      >
-                                        {new Date(
-                                          sale.saleDate || sale.createdAt
-                                        ).toLocaleDateString()}
-                                      </td>
-                                    </tr>
-                                  )
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
+                                        {purchase.phoneCondition}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {purchase.warranty}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#17a2b8',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {purchase.price?.purchasePrice?.toLocaleString() ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                        fontSize: '12px',
+                                        color: '#6c757d',
+                                      }}
+                                    >
+                                      {new Date(
+                                        purchase.date
+                                      ).toLocaleDateString()}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
+                  {/* Sales Tables */}
+                  <div style={{ marginBottom: '32px' }}>
+                    {/* Bulk Sales Table */}
+                    {partyDetails.saleDetails?.bulkSales?.length > 0 && (
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                          marginBottom: '24px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            padding: '16px 20px',
+                            fontSize: '18px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}
+                        >
+                          💰 Bulk Sales (
+                          {partyDetails.saleDetails.bulkSales.length} items)
+                        </div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table
+                            style={{
+                              width: '100%',
+                              borderCollapse: 'collapse',
+                              fontSize: '14px',
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ backgroundColor: '#f8f9fa' }}>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Customer
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Model
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  IMEI
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Warranty
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Purchase Price
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Sale Price
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Profit
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Total Invoice
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Payment Type
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Date
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {partyDetails.saleDetails.bulkSales.map(
+                                (sale, index) => (
+                                  <tr
+                                    key={sale._id}
+                                    style={{
+                                      backgroundColor:
+                                        index % 2 === 0 ? '#fff' : '#f8f9fa',
+                                      borderBottom: '1px solid #dee2e6',
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        fontWeight: '500',
+                                      }}
+                                    >
+                                      {sale.customerName || 'N/A'}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {sale.modelName ||
+                                        sale.bulkPhonePurchaseId
+                                          ?.ramSimDetails?.[0]?.modelName ||
+                                        sale.bulkPhonePurchaseId?.modelName ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        fontFamily: 'monospace',
+                                        fontSize: '12px',
+                                      }}
+                                    >
+                                      {Array.isArray(sale.imei1)
+                                        ? sale.imei1[0]
+                                        : sale.imei1 || 'N/A'}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {sale.warranty || 'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#dc3545',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.purchasePrice?.toLocaleString() ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#28a745',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.salePrice?.toLocaleString() ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#17a2b8',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.purchasePrice && sale.salePrice
+                                        ? (
+                                            sale.salePrice - sale.purchasePrice
+                                          ).toLocaleString()
+                                        : 'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#6f42c1',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.totalInvoice?.toLocaleString() ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          padding: '4px 8px',
+                                          borderRadius: '12px',
+                                          fontSize: '12px',
+                                          fontWeight: '500',
+                                          backgroundColor:
+                                            sale.sellingPaymentType ===
+                                            'Full Payment'
+                                              ? '#d4edda'
+                                              : '#f8d7da',
+                                          color:
+                                            sale.sellingPaymentType ===
+                                            'Full Payment'
+                                              ? '#155724'
+                                              : '#721c24',
+                                        }}
+                                      >
+                                        {sale.sellingPaymentType || 'N/A'}
+                                      </span>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                        fontSize: '12px',
+                                        color: '#6c757d',
+                                      }}
+                                    >
+                                      {sale.dateSold || sale.createdAt
+                                        ? new Date(
+                                            sale.dateSold || sale.createdAt
+                                          ).toLocaleDateString()
+                                        : 'N/A'}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Single Sales Table */}
+                    {partyDetails.saleDetails?.singleSales?.length > 0 && (
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                          marginBottom: '24px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            backgroundColor: '#6f42c1',
+                            color: '#fff',
+                            padding: '16px 20px',
+                            fontSize: '18px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}
+                        >
+                          💎 Single Sales (
+                          {partyDetails.saleDetails.singleSales.length} items)
+                        </div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table
+                            style={{
+                              width: '100%',
+                              borderCollapse: 'collapse',
+                              fontSize: '14px',
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ backgroundColor: '#f8f9fa' }}>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Customer
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Model
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Company
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  RAM
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  IMEI 1
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  IMEI 2
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Color
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'left',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Condition
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Purchase Price
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Sale Price
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Profit
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'right',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Total Invoice
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Payment Type
+                                </th>
+                                <th
+                                  style={{
+                                    padding: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '2px solid #dee2e6',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Date
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {partyDetails.saleDetails.singleSales.map(
+                                (sale, index) => (
+                                  <tr
+                                    key={sale._id}
+                                    style={{
+                                      backgroundColor:
+                                        index % 2 === 0 ? '#fff' : '#f8f9fa',
+                                      borderBottom: '1px solid #dee2e6',
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        fontWeight: '500',
+                                      }}
+                                    >
+                                      {sale.customerName}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {sale.modelName}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {sale.companyName}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      {sale.ramMemory}GB
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        fontFamily: 'monospace',
+                                        fontSize: '12px',
+                                      }}
+                                    >
+                                      {sale.imei1}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        fontFamily: 'monospace',
+                                        fontSize: '12px',
+                                      }}
+                                    >
+                                      {sale.imei2 || 'N/A'}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      <span
+                                        style={{
+                                          display: 'inline-block',
+                                          width: '12px',
+                                          height: '12px',
+                                          borderRadius: '50%',
+                                          backgroundColor:
+                                            sale.color?.toLowerCase() || '#ccc',
+                                          marginRight: '6px',
+                                        }}
+                                      ></span>
+                                      {sale.color}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                      <span
+                                        style={{
+                                          padding: '4px 8px',
+                                          borderRadius: '12px',
+                                          fontSize: '12px',
+                                          fontWeight: '500',
+                                          backgroundColor:
+                                            sale.phoneCondition === 'New'
+                                              ? '#d4edda'
+                                              : '#fff3cd',
+                                          color:
+                                            sale.phoneCondition === 'New'
+                                              ? '#155724'
+                                              : '#856404',
+                                        }}
+                                      >
+                                        {sale.phoneCondition}
+                                      </span>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#dc3545',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.purchasePrice?.toLocaleString() ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#28a745',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.salePrice?.toLocaleString() ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#17a2b8',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.purchasePrice && sale.salePrice
+                                        ? (
+                                            sale.salePrice - sale.purchasePrice
+                                          ).toLocaleString()
+                                        : 'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'right',
+                                        fontWeight: '600',
+                                        color: '#6f42c1',
+                                      }}
+                                    >
+                                      PKR{' '}
+                                      {sale.totalInvoice?.toLocaleString() ||
+                                        'N/A'}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          padding: '4px 8px',
+                                          borderRadius: '12px',
+                                          fontSize: '12px',
+                                          fontWeight: '500',
+                                          backgroundColor:
+                                            sale.sellingPaymentType ===
+                                            'Full Payment'
+                                              ? '#d4edda'
+                                              : '#f8d7da',
+                                          color:
+                                            sale.sellingPaymentType ===
+                                            'Full Payment'
+                                              ? '#155724'
+                                              : '#721c24',
+                                        }}
+                                      >
+                                        {sale.sellingPaymentType}
+                                      </span>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                        fontSize: '12px',
+                                        color: '#6c757d',
+                                      }}
+                                    >
+                                      {new Date(
+                                        sale.saleDate || sale.createdAt
+                                      ).toLocaleDateString()}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* show tables here */}
                 </div>
               </div>
-            </>
+            </div>
           )}
       </div>
     </div>

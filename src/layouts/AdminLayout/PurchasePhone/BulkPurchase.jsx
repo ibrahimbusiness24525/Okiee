@@ -1498,10 +1498,18 @@ const BulkPurchaseModal = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleBulkPhoneModalclose} disabled={loading}>
+        <Button
+          variant="secondary"
+          onClick={handleBulkPhoneModalclose}
+          disabled={loading}
+        >
           Close
         </Button>
-        <Button variant="primary" onClick={handleFinalSubmit} disabled={loading}>
+        <Button
+          variant="primary"
+          onClick={handleFinalSubmit}
+          disabled={loading}
+        >
           {/* <Button variant="primary" onClick={handleSubmit}> */}
           Save
         </Button>

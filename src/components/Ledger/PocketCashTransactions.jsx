@@ -119,338 +119,228 @@ const PocketCashTransactions = () => {
   return (
     <div
       style={{
-        maxWidth: '95%',
-        margin: '20px auto',
-        padding: '0 16px',
+        maxWidth: '90%',
+        margin: '30px auto',
+        background: '#fff',
+        borderRadius: 10,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        padding: 24,
       }}
     >
-      {/* Header Section */}
-      <div
+      <h3
         style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '16px',
-          padding: '24px',
-          marginBottom: '24px',
-          color: 'white',
           textAlign: 'center',
-          boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+          marginBottom: 24,
+          color: '#2c3e50',
         }}
       >
-        <h2
+        Pocket Cash Transactions
+      </h3>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table
           style={{
-            margin: '0 0 8px 0',
-            fontSize: '28px',
-            fontWeight: '700',
-            background: 'linear-gradient(45deg, #fff, #f0f9ff)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: 14,
           }}
         >
-          💰 Pocket Cash Transactions
-        </h2>
-        <p
-          style={{
-            margin: '0',
-            fontSize: '16px',
-            opacity: '0.9',
-            fontWeight: '400',
-          }}
-        >
-          Track your financial transactions with ease
-        </p>
-      </div>
-
-      {/* Transactions List */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          marginBottom: '24px',
-        }}
-      >
-        {transactions.slice(0, displayCount).map((txn, index) => {
-          const { color } = txn;
-          const amount = txn.amountAdded || txn.amountDeducted;
-          const isDebit =
-            txn.reasonOfAmountDeduction &&
-            typeof txn.reasonOfAmountDeduction === 'string' &&
-            (txn.reasonOfAmountDeduction.toLowerCase().includes('purchase') ||
-              txn.reasonOfAmountDeduction.toLowerCase().includes('take') ||
-              txn.reasonOfAmountDeduction.toLowerCase().includes('return'));
-
-          const transactionType = txn.amountAdded ? 'Credit' : 'Debit';
-          const typeColor =
-            transactionType === 'Credit' ? '#10b981' : '#ef4444';
-          const typeBg = transactionType === 'Credit' ? '#d1fae5' : '#fee2e2';
-
-          return (
-            <div
-              key={txn._id}
+          <thead>
+            <tr
               style={{
-                background: 'white',
-                borderRadius: '12px',
-                padding: '20px',
-                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
-                border: '1px solid #f1f5f9',
-                transition: 'all 0.3s ease',
-                position: 'relative',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                width: '100%',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateX(4px)';
-                e.currentTarget.style.boxShadow =
-                  '0 4px 20px rgba(0, 0, 0, 0.1)';
-                e.currentTarget.style.borderColor = typeColor;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateX(0)';
-                e.currentTarget.style.boxShadow =
-                  '0 2px 12px rgba(0, 0, 0, 0.06)';
-                e.currentTarget.style.borderColor = '#f1f5f9';
+                background: '#f8f9fa',
+                borderBottom: '2px solid #e9ecef',
               }}
             >
-              {/* Left Section - Transaction Info */}
-              <div
+              <th
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '20px',
-                  flex: '1',
+                  padding: '12px 10px',
+                  textAlign: 'left',
+                  fontWeight: 600,
                 }}
               >
-                {/* Transaction Type Icon */}
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: typeBg,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px',
-                    color: typeColor,
-                    fontWeight: '600',
-                  }}
-                >
-                  {transactionType === 'Credit' ? '📈' : '📉'}
-                </div>
+                Date
+              </th>
 
-                {/* Transaction Details */}
-                <div
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'right',
+                  fontWeight: 600,
+                }}
+              >
+                Amount
+              </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'left',
+                  fontWeight: 600,
+                }}
+              >
+                Description
+              </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'right',
+                  fontWeight: 600,
+                }}
+              >
+                Balance
+              </th>
+              <th
+                style={{
+                  padding: '12px 10px',
+                  textAlign: 'right',
+                  fontWeight: 600,
+                }}
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((txn) => {
+              // {transactions.slice(0, displayCount).map((txn) => {
+              const { color } = txn;
+              const amount = txn.amountAdded || txn.amountDeducted;
+              // const { type, amount, color } = getType(txn);
+              return (
+                <tr
+                  key={txn._id}
                   style={{
-                    flex: '1',
-                    minWidth: '0',
+                    borderBottom: '1px solid #f0f0f0',
+                    backgroundColor:
+                      (txn.reasonOfAmountDeduction &&
+                        typeof txn.reasonOfAmountDeduction === 'string' &&
+                        txn.reasonOfAmountDeduction
+                          .toLowerCase()
+                          .includes('purchase')) ||
+                      (txn.reasonOfAmountDeduction &&
+                        typeof txn.reasonOfAmountDeduction === 'string' &&
+                        txn.reasonOfAmountDeduction
+                          .toLowerCase()
+                          .includes('take')) ||
+                      (txn.reasonOfAmountDeduction &&
+                        typeof txn.reasonOfAmountDeduction === 'string' &&
+                        !txn.reasonOfAmountDeduction
+                          .toLowerCase()
+                          .includes('take credit')) ||
+                      (txn.reasonOfAmountDeduction &&
+                        typeof txn.reasonOfAmountDeduction === 'string' &&
+                        txn.reasonOfAmountDeduction
+                          .toLowerCase()
+                          .includes('return'))
+                        ? '#ffebee'
+                        : '#e8f5e8',
                   }}
                 >
-                  <div
+                  <td
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      marginBottom: '8px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: '20px',
-                        fontWeight: '700',
-                        color: typeColor,
-                      }}
-                    >
-                      {amount ? `PKR ${amount.toLocaleString()}` : 'N/A'}
-                    </div>
-                    <div
-                      style={{
-                        background: typeBg,
-                        color: typeColor,
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                      }}
-                    >
-                      {transactionType}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '14px',
-                      color: '#64748b',
-                      marginBottom: '4px',
+                      padding: '12px 10px',
+                      color: '#495057',
                     }}
                   >
                     {formatDate(txn.createdAt)}
-                  </div>
-                  <div
+                  </td>
+                  {/* <td
                     style={{
-                      fontSize: '14px',
-                      color: '#475569',
-                      fontWeight: '500',
-                      lineHeight: '1.4',
+                      padding: '12px 10px',
+                      color,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {type}
+                  </td> */}
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      color,
+                      fontWeight: 600,
+                      textAlign: 'right',
+                    }}
+                  >
+                    {amount && amount.toLocaleString()}
+                  </td>
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      color: '#495057',
                     }}
                   >
                     {txn.sourceOfAmountAddition ||
                       txn.reasonOfAmountDeduction ||
-                      'No description available'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Section - Balance and Actions */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '20px',
-                }}
-              >
-                {/* Balance */}
-                <div
-                  style={{
-                    textAlign: 'right',
-                  }}
-                >
-                  <div
+                      '-'}
+                  </td>
+                  <td
                     style={{
-                      fontSize: '12px',
-                      color: '#64748b',
-                      marginBottom: '4px',
+                      padding: '12px 10px',
+                      fontWeight: 500,
+                      textAlign: 'right',
+                      color: '#2c3e50',
                     }}
                   >
-                    Balance
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '16px',
-                      fontWeight: '700',
-                      color: '#1e293b',
-                    }}
-                  >
-                    PKR{' '}
                     {(txn.remainingAmount ?? txn.accountCash)?.toLocaleString()}
-                  </div>
-                </div>
-
-                {/* Delete Button */}
-                <button
-                  onClick={() => deletePocketCashTransaction(txn._id)}
-                  style={{
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
-                    minWidth: '80px',
-                    justifyContent: 'center',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                    e.currentTarget.style.boxShadow =
-                      '0 4px 12px rgba(239, 68, 68, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.boxShadow =
-                      '0 2px 8px rgba(239, 68, 68, 0.3)';
-                  }}
-                >
-                  <FaTrash size={12} />
-                  Delete
-                </button>
-              </div>
-            </div>
-          );
-        })}
+                  </td>
+                  <td
+                    style={{
+                      padding: '12px 10px',
+                      fontWeight: 500,
+                      textAlign: 'right',
+                      color: '#2c3e50',
+                    }}
+                  >
+                    <FaTrash
+                      onClick={() => deletePocketCashTransaction(txn._id)}
+                      style={{ cursor: 'pointer', color: '#e74c3c' }}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      {/* Load More Button */}
       {transactions.length > displayCount && (
         <div
           style={{
+            marginTop: 20,
             textAlign: 'center',
-            marginTop: '32px',
           }}
         >
           <button
             onClick={handleViewMore}
             style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              padding: '8px 20px',
+              backgroundColor: '#3498db',
               color: 'white',
               border: 'none',
-              borderRadius: '12px',
-              padding: '14px 28px',
-              fontSize: '16px',
-              fontWeight: '600',
+              borderRadius: 4,
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow =
-                '0 8px 30px rgba(102, 126, 234, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow =
-                '0 4px 20px rgba(102, 126, 234, 0.3)';
+              fontWeight: 500,
+              transition: 'background-color 0.2s',
+              ':hover': {
+                backgroundColor: '#2980b9',
+              },
             }}
           >
-            📄 View More ({transactions.length - displayCount} remaining)
+            View More ({transactions.length - displayCount} remaining)
           </button>
         </div>
       )}
 
-      {/* Footer Stats */}
       <div
         style={{
-          marginTop: '32px',
-          padding: '20px',
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-          borderRadius: '12px',
+          marginTop: 16,
+          fontSize: 12,
+          color: '#7f8c8d',
           textAlign: 'center',
-          border: '1px solid #e2e8f0',
         }}
       >
-        <div
-          style={{
-            fontSize: '16px',
-            color: '#475569',
-            fontWeight: '600',
-            marginBottom: '8px',
-          }}
-        >
-          📊 Transaction Summary
-        </div>
-        <div
-          style={{
-            fontSize: '14px',
-            color: '#64748b',
-          }}
-        >
-          Showing {Math.min(displayCount, transactions.length)} of{' '}
-          {transactions.length} transactions
-        </div>
+        Showing {Math.min(displayCount, transactions.length)} of{' '}
+        {transactions.length} transactions
       </div>
     </div>
   );
