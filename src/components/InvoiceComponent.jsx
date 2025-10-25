@@ -26,7 +26,7 @@ export const InvoiceComponent = ({
 }) => {
   const invoiceRef = useRef();
   const [logoUrl, setLogoUrl] = useState(null);
-
+  console.log('imeiPrices', imeiPrices);
   useEffect(() => {
     let isMounted = true;
     const fetchLogo = async () => {
@@ -183,7 +183,7 @@ export const InvoiceComponent = ({
   };
 
   const totalAmount = getTotalAmount();
-
+  console.log('dataReceived', dataReceived);
   // Build per-IMEI details if provided (prefer dataReceived.imeiPrices, then imeiPrices prop)
   const sourceImeiPrices =
     Array.isArray(dataReceived?.imeiPrices) &&

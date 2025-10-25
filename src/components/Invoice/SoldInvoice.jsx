@@ -526,7 +526,14 @@ const SoldInvoice = () => {
       toast.success('Sold Successfully');
       console.log('✅ Sold successfully', response.data);
     } catch (error) {
-      toast.error('something went wrong');
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          error?.response?.data?.error ||
+          error?.response?.data?.errors ||
+          error?.response ||
+          'something went wrong'
+      );
       console.error(
         '❌ Error selling phone:',
         error.response?.data || error.message
@@ -2554,6 +2561,7 @@ const SoldInvoice = () => {
             invoiceData={dataReceived}
             shopData={shop}
             logoUrl={logoUrl}
+            phoneDetail={phoneDetail}
           />
         )}
         <InvoiceComponent

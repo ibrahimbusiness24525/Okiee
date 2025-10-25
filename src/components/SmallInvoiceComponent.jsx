@@ -1,8 +1,14 @@
 import React from 'react';
 
-export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
+export const SmallInvoiceComponent = ({
+  invoiceData,
+  shopData,
+  logoUrl,
+  phoneDetail = {},
+}) => {
   // Remove local state and API calls since we're getting data from props
   console.log('shopData', shopData);
+  console.log('phoneDetail', phoneDetail);
   // Static invoice data
   const staticInvoiceData = {
     shopInfo: 'Shop#46 Mall Road Opp. Meezan Bank Cantt.',
@@ -287,7 +293,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
         }
       });
     }
-
+    console.log('phoneDetail', phoneDetailArray);
     // Process accessories
     if (accessoriesArray.length > 0) {
       accessoriesArray.forEach((accessory) => {
@@ -784,7 +790,7 @@ export const SmallInvoiceComponent = ({ invoiceData, shopData, logoUrl }) => {
       </body>
       </html>`;
   };
-
+  console.log('data', data);
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>

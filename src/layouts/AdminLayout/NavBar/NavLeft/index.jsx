@@ -226,7 +226,7 @@ const NavLeft = () => {
     sellingType: '',
     accessoryName: '',
     accessoryPrice: 0,
-    accessories: [{ name: '', quantity: 1, price: '' }],
+    accessories: [],
     customerNumber: '',
     searchTerm: '',
     editMobile: null,
@@ -885,6 +885,7 @@ const NavLeft = () => {
         show={showSoldModal}
         onHide={() => setShowSoldModal(false)}
         size="lg"
+        style={{ fontSize: '14px' }}
       >
         <Modal.Header closeButton>
           {/* <Modal.Title>Sell Mobile</Modal.Title> */}
@@ -1124,85 +1125,37 @@ const NavLeft = () => {
                 />
               </Form.Group> */}
 
-            <div>
-              {formData.accessories.map((accessory, index) => (
-                <div key={index} className="mb-3 p-3 border rounded">
-                  <Form.Group>
-                    <Form.Label>Accessory Name</Form.Label>
-                    <Form.Select
-                      value={accessory.name}
-                      onChange={(e) =>
-                        handleAccessoryChange(index, 'name', e.target.value)
-                      }
-                    >
-                      <option value="">Select accessory</option>
-                      {data?.data?.map((item, index) => (
-                        <option key={item._id} value={item._id}>
-                          {item.accessoryName}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-
-                  <Form.Group>
-                    <Form.Label>Quantity</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={accessory.quantity}
-                      onChange={(e) =>
-                        handleAccessoryChange(index, 'quantity', e.target.value)
-                      }
-                      min="1"
-                    />
-                  </Form.Group>
-
-                  <Form.Group>
-                    <Form.Label>Accessory Price</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={accessory.price}
-                      onChange={(e) =>
-                        handleAccessoryChange(index, 'price', e.target.value)
-                      }
-                      placeholder="Enter price"
-                    />
-                  </Form.Group>
-
-                  <Button
-                    variant="secondary"
-                    className="mt-2"
-                    onClick={() => {
-                      const updatedAccessories = formData.accessories.filter(
-                        (_, i) => i !== index
-                      );
-                      setFormData((prev) => ({
-                        ...prev,
-                        accessories: updatedAccessories,
-                      }));
-                    }}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    accessories: [
-                      ...prev.accessories,
-                      { name: '', quantity: 1, price: '' },
-                    ],
-                  }));
+            {/* Phone Selection Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '10px',
                 }}
-                style={{ marginBottom: '20px' }}
               >
-                Add Another Accessory
-              </Button>
-              <Form.Group className="mb-3 imei-dropdown-container">
-                <Form.Label>Select Phone</Form.Label>
+                <h6
+                  style={{
+                    margin: 0,
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333',
+                  }}
+                >
+                  Phone Selection
+                </h6>
+              </div>
+              <Form.Group className="imei-dropdown-container">
+                <Form.Label
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Select Phone
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.imei}
@@ -1243,6 +1196,7 @@ const NavLeft = () => {
                     }
                   }}
                   placeholder="Type IMEI to search"
+                  style={{ fontSize: '13px', padding: '10px' }}
                 />
                 {console.log(
                   'Should show dropdown:',
@@ -1296,190 +1250,211 @@ const NavLeft = () => {
                 )}
               </Form.Group>
 
-              <Form.Group className="mb-3">
-                <Form.Label>Phone Price</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.imeiPrice}
-                  name="imeiPrice"
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      imeiPrice: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter price for this phone"
-                />
-              </Form.Group>
-
-              <Button
-                onClick={() => {
-                  if (!formData.imei || !formData.imeiPrice) {
-                    alert('Please enter both IMEI and price');
-                    return;
-                  }
-                  console.log(
-                    'Adding IMEI:',
-                    formData.imei,
-                    'with price:',
-                    formData.imeiPrice
-                  );
-
-                  const newImeiPrice = {
-                    imei: formData.imei,
-                    price: parseFloat(formData.imeiPrice),
-                  };
-
-                  setFormData((prev) => {
-                    const updatedImeiPrices = [
-                      ...(prev.imeiPrices || []),
-                      newImeiPrice,
-                    ];
-                    const totalPrice = updatedImeiPrices.reduce(
-                      (sum, item) => sum + (item.price || 0),
-                      0
-                    );
-
-                    return {
-                      ...prev,
-                      addedImeis: [...(prev.addedImeis || []), prev.imei],
-                      imeiPrices: updatedImeiPrices,
-                      finalPrice: totalPrice.toString(), // Update total sold price
-                      imei: '', // clear IMEI input
-                      imeiPrice: '', // clear price input
-                    };
-                  });
-                }}
-              >
-                Add This Phone
-              </Button>
-
-              <div style={{ marginTop: '10px' }}>
-                <h6
-                  style={{
-                    marginBottom: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                  }}
-                >
-                  Added Phones with Prices:
-                </h6>
-                {formData.imeiPrices && formData.imeiPrices.length > 0 ? (
-                  <div
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <div style={{ flex: 1 }}>
+                  <Form.Label
                     style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '8px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      marginBottom: '6px',
                     }}
                   >
-                    {formData.imeiPrices.map((item, idx) => (
-                      <div
-                        key={idx}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '8px 12px',
-                          backgroundColor: '#f8f9fa',
-                          borderRadius: '6px',
-                          border: '1px solid #dee2e6',
-                        }}
-                      >
-                        <span style={{ fontWeight: '500', minWidth: '80px' }}>
-                          Phone: {item.imei}
-                        </span>
-                        <span style={{ fontWeight: '500', minWidth: '80px' }}>
-                          Price: {item.price}
-                        </span>
-                        <input
-                          type="number"
-                          value={item.price}
-                          onChange={(e) => {
-                            const newPrice = parseFloat(e.target.value) || 0;
-                            setFormData((prev) => {
-                              const updatedImeiPrices = prev.imeiPrices.map(
-                                (priceItem, index) =>
-                                  index === idx
-                                    ? { ...priceItem, price: newPrice }
-                                    : priceItem
-                              );
-                              const totalPrice = updatedImeiPrices.reduce(
-                                (sum, priceItem) =>
-                                  sum + (priceItem.price || 0),
-                                0
-                              );
+                    Phone Price
+                  </Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={formData.imeiPrice}
+                    name="imeiPrice"
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        imeiPrice: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter price"
+                    style={{ fontSize: '13px', padding: '10px' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'end' }}>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      if (!formData.imei || !formData.imeiPrice) {
+                        alert('Please enter both IMEI and price');
+                        return;
+                      }
+                      console.log(
+                        'Adding IMEI:',
+                        formData.imei,
+                        'with price:',
+                        formData.imeiPrice
+                      );
 
-                              return {
-                                ...prev,
-                                imeiPrices: updatedImeiPrices,
-                                finalPrice: totalPrice.toString(),
-                              };
-                            });
-                          }}
-                          style={{
-                            width: '80px',
-                            padding: '4px 8px',
-                            border: '1px solid #ced4da',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                          }}
-                          placeholder="Price"
-                        />
-                        <button
-                          onClick={() => {
-                            setFormData((prev) => {
-                              const updatedImeiPrices = prev.imeiPrices.filter(
-                                (_, index) => index !== idx
-                              );
-                              const updatedAddedImeis = prev.addedImeis.filter(
-                                (_, index) => index !== idx
-                              );
-                              const totalPrice = updatedImeiPrices.reduce(
-                                (sum, priceItem) =>
-                                  sum + (priceItem.price || 0),
-                                0
-                              );
+                      const newImeiPrice = {
+                        imei: formData.imei,
+                        price: parseFloat(formData.imeiPrice),
+                      };
 
-                              return {
-                                ...prev,
-                                imeiPrices: updatedImeiPrices,
-                                addedImeis: updatedAddedImeis,
-                                finalPrice: totalPrice.toString(),
-                              };
-                            });
-                          }}
-                          style={{
-                            padding: '4px 8px',
-                            backgroundColor: '#dc3545',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
+                      setFormData((prev) => {
+                        const updatedImeiPrices = [
+                          ...(prev.imeiPrices || []),
+                          newImeiPrice,
+                        ];
+                        const totalPrice = updatedImeiPrices.reduce(
+                          (sum, item) => sum + (item.price || 0),
+                          0
+                        );
+
+                        return {
+                          ...prev,
+                          addedImeis: [...(prev.addedImeis || []), prev.imei],
+                          imeiPrices: updatedImeiPrices,
+                          finalPrice: totalPrice.toString(), // Update total sold price
+                          imei: '', // clear IMEI input
+                          imeiPrice: '', // clear price input
+                        };
+                      });
+                    }}
+                    style={{
+                      fontSize: '12px',
+                      padding: '10px 16px',
+                      height: 'fit-content',
+                    }}
+                  >
+                    Add This Phone
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Added Phones Section */}
+            <div style={{ marginTop: '20px' }}>
+              <h6
+                style={{
+                  marginBottom: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#333',
+                }}
+              >
+                Added Phones with Prices:
+              </h6>
+              {formData.imeiPrices && formData.imeiPrices.length > 0 ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                  }}
+                >
+                  {formData.imeiPrices.map((item, idx) => (
                     <div
+                      key={idx}
                       style={{
-                        marginTop: '8px',
-                        padding: '8px 12px',
-                        backgroundColor: '#e7f3ff',
-                        borderRadius: '6px',
-                        border: '1px solid #b3d9ff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '12px 15px',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '8px',
+                        border: '1px solid #e9ecef',
                       }}
                     >
-                      <strong>Total Price: {formData.finalPrice || '0'}</strong>
+                      <span style={{ fontWeight: '500', minWidth: '80px' }}>
+                        Phone: {item.imei}
+                      </span>
+                      <span style={{ fontWeight: '500', minWidth: '80px' }}>
+                        Price: {item.price}
+                      </span>
+                      <input
+                        type="number"
+                        value={item.price}
+                        onChange={(e) => {
+                          const newPrice = parseFloat(e.target.value) || 0;
+                          setFormData((prev) => {
+                            const updatedImeiPrices = prev.imeiPrices.map(
+                              (priceItem, index) =>
+                                index === idx
+                                  ? { ...priceItem, price: newPrice }
+                                  : priceItem
+                            );
+                            const totalPrice = updatedImeiPrices.reduce(
+                              (sum, priceItem) => sum + (priceItem.price || 0),
+                              0
+                            );
+
+                            return {
+                              ...prev,
+                              imeiPrices: updatedImeiPrices,
+                              finalPrice: totalPrice.toString(),
+                            };
+                          });
+                        }}
+                        style={{
+                          width: '90px',
+                          padding: '6px 8px',
+                          border: '1px solid #ced4da',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                        }}
+                        placeholder="Price"
+                      />
+                      <button
+                        onClick={() => {
+                          setFormData((prev) => {
+                            const updatedImeiPrices = prev.imeiPrices.filter(
+                              (_, index) => index !== idx
+                            );
+                            const updatedAddedImeis = prev.addedImeis.filter(
+                              (_, index) => index !== idx
+                            );
+                            const totalPrice = updatedImeiPrices.reduce(
+                              (sum, priceItem) => sum + (priceItem.price || 0),
+                              0
+                            );
+
+                            return {
+                              ...prev,
+                              imeiPrices: updatedImeiPrices,
+                              addedImeis: updatedAddedImeis,
+                              finalPrice: totalPrice.toString(),
+                            };
+                          });
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          backgroundColor: '#dc3545',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                        }}
+                      >
+                        Remove
+                      </button>
                     </div>
+                  ))}
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      padding: '12px 15px',
+                      backgroundColor: '#e7f3ff',
+                      borderRadius: '8px',
+                      border: '1px solid #b3d9ff',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <strong style={{ fontSize: '14px', color: '#0066cc' }}>
+                      Total Price: {formData.finalPrice || '0'}
+                    </strong>
                   </div>
-                ) : (
-                  <span style={{ color: '#888', fontStyle: 'italic' }}>
-                    No phones added yet
-                  </span>
-                )}
-              </div>
+                </div>
+              ) : (
+                <span style={{ color: '#888', fontStyle: 'italic' }}>
+                  No phones added yet
+                </span>
+              )}
             </div>
 
             {formData.sellingType === 'Credit' && (
@@ -1621,6 +1596,172 @@ const NavLeft = () => {
               )}
             </>
           )}
+
+          {/* Accessories Section */}
+          <div style={{ marginBottom: '20px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '15px',
+              }}
+            >
+              <h6
+                style={{
+                  margin: 0,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#333',
+                }}
+              >
+                Accessories
+              </h6>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    accessories: [
+                      ...prev.accessories,
+                      { name: '', quantity: 1, price: '' },
+                    ],
+                  }));
+                }}
+                style={{ fontSize: '12px', padding: '6px 12px' }}
+              >
+                + Add Accessory
+              </Button>
+            </div>
+
+            {formData.accessories.map((accessory, index) => (
+              <div
+                key={index}
+                style={{
+                  backgroundColor: '#f8f9fa',
+                  border: '1px solid #e9ecef',
+                  borderRadius: '8px',
+                  padding: '15px',
+                  marginBottom: '10px',
+                  position: 'relative',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '10px',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <Form.Label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      Accessory
+                    </Form.Label>
+                    <Form.Select
+                      value={accessory.name}
+                      onChange={(e) =>
+                        handleAccessoryChange(index, 'name', e.target.value)
+                      }
+                      style={{ fontSize: '13px', padding: '8px' }}
+                    >
+                      <option value="">Select accessory</option>
+                      {data?.data?.map((item, itemIndex) => (
+                        <option key={item._id} value={item._id}>
+                          {item.accessoryName} (Qty: {item.quantity || 0})
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </div>
+                  <div style={{ width: '80px' }}>
+                    <Form.Label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      Qty
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={accessory.quantity}
+                      onChange={(e) =>
+                        handleAccessoryChange(index, 'quantity', e.target.value)
+                      }
+                      min="1"
+                      style={{ fontSize: '13px', padding: '8px' }}
+                    />
+                  </div>
+                  <div style={{ width: '100px' }}>
+                    <Form.Label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      Price
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={accessory.price}
+                      onChange={(e) =>
+                        handleAccessoryChange(index, 'price', e.target.value)
+                      }
+                      placeholder="0"
+                      style={{ fontSize: '13px', padding: '8px' }}
+                    />
+                  </div>
+                  <div
+                    style={{ display: 'flex', alignItems: 'end', gap: '5px' }}
+                  >
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => {
+                        const updatedAccessories = formData.accessories.filter(
+                          (_, i) => i !== index
+                        );
+                        setFormData((prev) => ({
+                          ...prev,
+                          accessories: updatedAccessories,
+                        }));
+                      }}
+                      style={{ fontSize: '11px', padding: '8px 10px' }}
+                    >
+                      Remove
+                    </Button>
+                    {index === formData.accessories.length - 1 && (
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            accessories: [
+                              ...prev.accessories,
+                              { name: '', quantity: 1, price: '' },
+                            ],
+                          }));
+                        }}
+                        style={{ fontSize: '11px', padding: '8px 10px' }}
+                      >
+                        + Add Another
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div style={{ textAlign: 'right', marginTop: '20px' }}>
             <Button
               variant="secondary"
@@ -1629,7 +1770,7 @@ const NavLeft = () => {
               }
               disabled={loading}
             >
-              Submit Sold Phone
+              Proceed to get payment
             </Button>
           </div>
         </Modal.Body>
