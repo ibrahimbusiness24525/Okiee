@@ -4,6 +4,10 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { BASE_URL } from 'config/constant';
 import { api } from '../../../api/api';
+// Import sample images so bundler provides correct URLs
+import googlePixelLogo from '../../assets/images/Google_Pixel_Logo.jpg';
+import appleLogo from '../../assets/images/applelogo1.jpg';
+import samsungLogo from '../../assets/images/samsungimage1.jpg';
 
 const SetupShop = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +18,11 @@ const SetupShop = () => {
     terms: [],
     shopId: null, // Track shop ID for update calls
   });
+  const [images, setImages] = useState([
+    googlePixelLogo,
+    appleLogo,
+    samsungLogo,
+  ]);
   const [isEditing, setIsEditing] = useState(false); // Controls whether the form is editable
   const [hasShop, setHasShop] = useState(false); // Tracks if the user has a shop
   const [logo, setLogo] = useState(null); // Current logo URL
@@ -29,7 +38,9 @@ const SetupShop = () => {
       const user = JSON.parse(localStorage.getItem('user'));
       if (user?._id) {
         try {
-          const response = await axios.get(`${BASE_URL}api/shop/getshop/${user._id}`);
+          const response = await axios.get(
+            `${BASE_URL}api/shop/getshop/${user._id}`
+          );
           const shop = response.data?.shop;
 
           if (shop) {
@@ -43,7 +54,7 @@ const SetupShop = () => {
               shopId: shop._id || null,
             });
             setHasShop(true); // User has shop data
-            
+
             // Fetch logo if shop exists
             await fetchLogo();
           } else {
@@ -67,35 +78,53 @@ const SetupShop = () => {
     try {
       console.log('Fetching logo from API...');
       const response = await api.get(`/api/shop/logo`);
-      
+
       console.log('Logo API response:', response.data);
       console.log('Logo field:', response.data.logo);
       console.log('Logo type:', typeof response.data.logo);
-      
+
       if (response.data.success && response.data.logo) {
         // Handle the response format: {success: true, logo: "/uploads/shop-logos/filename.jpeg"}
         let logoUrl = '';
-        
-        if (typeof response.data.logo === 'string' && response.data.logo !== '{}') {
+
+        if (
+          typeof response.data.logo === 'string' &&
+          response.data.logo !== '{}'
+        ) {
           // Remove leading slash if present and construct full URL
-          const logoPath = response.data.logo.startsWith('/') ? response.data.logo.substring(1) : response.data.logo;
+          const logoPath = response.data.logo.startsWith('/')
+            ? response.data.logo.substring(1)
+            : response.data.logo;
           logoUrl = `${BASE_URL}${logoPath}`;
           console.log('Constructed logo URL:', logoUrl);
         } else if (response.data.logo?.url) {
-          logoUrl = response.data.logo.url.startsWith('http') ? response.data.logo.url : `${BASE_URL}${response.data.logo.url}`;
-        } else if (typeof response.data.logo === 'object' && Object.keys(response.data.logo).length > 0) {
+          logoUrl = response.data.logo.url.startsWith('http')
+            ? response.data.logo.url
+            : `${BASE_URL}${response.data.logo.url}`;
+        } else if (
+          typeof response.data.logo === 'object' &&
+          Object.keys(response.data.logo).length > 0
+        ) {
           // Handle object with properties
           const logoObj = response.data.logo;
           if (logoObj.path) {
-            logoUrl = logoObj.path.startsWith('http') ? logoObj.path : `${BASE_URL}${logoObj.path}`;
+            logoUrl = logoObj.path.startsWith('http')
+              ? logoObj.path
+              : `${BASE_URL}${logoObj.path}`;
           } else if (logoObj.url) {
-            logoUrl = logoObj.url.startsWith('http') ? logoObj.url : `${BASE_URL}${logoObj.url}`;
+            logoUrl = logoObj.url.startsWith('http')
+              ? logoObj.url
+              : `${BASE_URL}${logoObj.url}`;
           }
         }
-        
+
         console.log('Processed logo URL:', logoUrl);
-        
-        if (logoUrl && logoUrl !== `${BASE_URL}undefined` && logoUrl !== `${BASE_URL}null`) {
+
+        if (
+          logoUrl &&
+          logoUrl !== `${BASE_URL}undefined` &&
+          logoUrl !== `${BASE_URL}null`
+        ) {
           setLogo(logoUrl);
           setIsPreviewLogo(false);
           console.log('✅ Logo set successfully:', logoUrl);
@@ -110,7 +139,7 @@ const SetupShop = () => {
     } catch (error) {
       console.error('Error fetching logo:', error);
       console.error('Error response:', error.response?.data);
-      
+
       // Logo not found is not an error, just means no logo exists yet
       if (error.response?.status === 404) {
         console.log('No logo found for this shop');
@@ -144,7 +173,10 @@ const SetupShop = () => {
     try {
       if (hasShop && formData.shopId) {
         // Update existing shop
-        await axios.put(`${BASE_URL}api/shop/updateShop/${formData.shopId}`, payload);
+        await axios.put(
+          `${BASE_URL}api/shop/updateShop/${formData.shopId}`,
+          payload
+        );
         toast.success('Shop updated successfully');
       } else {
         // Create new shop
@@ -167,7 +199,8 @@ const SetupShop = () => {
 
       if (name === 'terms' || name === 'contactNumbers') {
         const index = parseInt(id, 10);
-        updatedData[name][index] = type === 'number' ? value.replace(/\D/g, '') : value;
+        updatedData[name][index] =
+          type === 'number' ? value.replace(/\D/g, '') : value;
       } else {
         updatedData[name] = value;
       }
@@ -195,9 +228,17 @@ const SetupShop = () => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+      ];
       if (!allowedTypes.includes(file.type)) {
-        toast.error('Only image files (JPEG, JPG, PNG, GIF, WEBP) are allowed!');
+        toast.error(
+          'Only image files (JPEG, JPG, PNG, GIF, WEBP) are allowed!'
+        );
         return;
       }
 
@@ -208,7 +249,7 @@ const SetupShop = () => {
       }
 
       setLogoFile(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -231,11 +272,11 @@ const SetupShop = () => {
     // }
 
     setIsUploadingLogo(true);
-    
+
     try {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user'));
-      
+
       // Debug logging
       console.log('Upload attempt:', {
         hasToken: !!token,
@@ -244,7 +285,7 @@ const SetupShop = () => {
         fileSize: logoFile.size,
         fileName: logoFile.name,
         fileType: logoFile.type,
-        baseURL: BASE_URL
+        baseURL: BASE_URL,
       });
 
       if (!token) {
@@ -265,7 +306,7 @@ const SetupShop = () => {
         logoFile: formData.get('logo'),
         fileSize: logoFile.size,
         fileName: logoFile.name,
-        fileType: logoFile.type
+        fileType: logoFile.type,
       });
 
       // Log FormData entries
@@ -280,7 +321,10 @@ const SetupShop = () => {
         const testResponse = await api.get('api/shop/logo');
         console.log('Current logo before upload:', testResponse.data);
       } catch (testError) {
-        console.log('No current logo or error fetching:', testError.response?.data);
+        console.log(
+          'No current logo or error fetching:',
+          testError.response?.data
+        );
       }
 
       // Test if the upload endpoint exists
@@ -289,7 +333,10 @@ const SetupShop = () => {
         const testUploadResponse = await api.get('api/shop/upload-logo');
         console.log('Upload endpoint test response:', testUploadResponse.data);
       } catch (testUploadError) {
-        console.log('Upload endpoint test error (expected):', testUploadError.response?.status);
+        console.log(
+          'Upload endpoint test error (expected):',
+          testUploadError.response?.status
+        );
       }
 
       // Try with explicit headers
@@ -297,18 +344,27 @@ const SetupShop = () => {
       const response = await api.post(`/api/shop/upload-logo`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-        }
+        },
       });
 
       console.log('Upload response:', response.data);
       console.log('Response logo field:', response.data.logo);
-      console.log('Full response structure:', JSON.stringify(response.data, null, 2));
+      console.log(
+        'Full response structure:',
+        JSON.stringify(response.data, null, 2)
+      );
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
-      
+
       // Check if the logo field is actually an empty object
-      if (response.data.logo && typeof response.data.logo === 'object' && Object.keys(response.data.logo).length === 0) {
-        console.error('Backend returned empty logo object - this indicates a backend issue');
+      if (
+        response.data.logo &&
+        typeof response.data.logo === 'object' &&
+        Object.keys(response.data.logo).length === 0
+      ) {
+        console.error(
+          'Backend returned empty logo object - this indicates a backend issue'
+        );
         console.log('Possible issues:');
         console.log('1. Backend not processing file upload correctly');
         console.log('2. File upload middleware not configured properly');
@@ -318,42 +374,51 @@ const SetupShop = () => {
 
       if (response.data.success) {
         toast.success('Logo uploaded successfully!');
-        
+
         // Handle different possible response formats
         let logoUrl = '';
         if (typeof response.data.logo === 'string') {
           // Handle the response format: {success: true, logo: "/uploads/shop-logos/filename.jpeg"}
-          const logoPath = response.data.logo.startsWith('/') ? response.data.logo.substring(1) : response.data.logo;
+          const logoPath = response.data.logo.startsWith('/')
+            ? response.data.logo.substring(1)
+            : response.data.logo;
           logoUrl = `${BASE_URL}${logoPath}`;
         } else if (response.data.shop?.logo) {
-          const shopLogoPath = response.data.shop.logo.startsWith('/') ? response.data.shop.logo.substring(1) : response.data.shop.logo;
+          const shopLogoPath = response.data.shop.logo.startsWith('/')
+            ? response.data.shop.logo.substring(1)
+            : response.data.shop.logo;
           logoUrl = `${BASE_URL}${shopLogoPath}`;
         } else if (response.data.logo?.url) {
-          logoUrl = response.data.logo.url.startsWith('http') ? response.data.logo.url : `${BASE_URL}${response.data.logo.url}`;
+          logoUrl = response.data.logo.url.startsWith('http')
+            ? response.data.logo.url
+            : `${BASE_URL}${response.data.logo.url}`;
         }
-        
+
         console.log('Processed logo URL:', logoUrl);
-        
+
         if (logoUrl) {
           setLogo(logoUrl);
           setLogoFile(null);
           setLogoPreview(null);
           setIsPreviewLogo(false); // Reset preview flag for real upload
           setUploadSuccess(true);
-          
+
           // Update shop data in localStorage if available
           const shop = JSON.parse(localStorage.getItem('shop') || '{}');
           if (shop) {
             shop.logo = response.data.logo;
             localStorage.setItem('shop', JSON.stringify(shop));
           }
-          
+
           // Hide success message after 3 seconds
           setTimeout(() => setUploadSuccess(false), 3000);
         } else {
           console.error('No valid logo URL found in response');
-          console.log('Full response structure:', JSON.stringify(response.data, null, 2));
-          
+          console.log(
+            'Full response structure:',
+            JSON.stringify(response.data, null, 2)
+          );
+
           // Since API is returning empty logo object, use the preview as temporary logo
           if (logoPreview) {
             console.log('Using preview as temporary logo due to API issue');
@@ -362,33 +427,45 @@ const SetupShop = () => {
             setLogoPreview(null);
             setIsPreviewLogo(true);
             setUploadSuccess(true);
-            toast.success('Logo uploaded! (Using preview due to API response issue)');
-            
+            toast.success(
+              'Logo uploaded! (Using preview due to API response issue)'
+            );
+
             // Hide success message after 3 seconds
             setTimeout(() => setUploadSuccess(false), 3000);
             return;
           }
-          
+
           // Try using axios directly as fallback
           console.log('Trying axios directly as fallback...');
           try {
             const token = localStorage.getItem('token');
             console.log('Using token:', token ? 'Present' : 'Missing');
             console.log('Using BASE_URL:', BASE_URL);
-            
-            const fallbackResponse = await axios.post(`${BASE_URL}api/shop/upload-logo`, formData, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'multipart/form-data',
+
+            const fallbackResponse = await axios.post(
+              `${BASE_URL}api/shop/upload-logo`,
+              formData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'multipart/form-data',
+                },
               }
-            });
+            );
             console.log('Fallback response:', fallbackResponse.data);
             console.log('Fallback response logo:', fallbackResponse.data.logo);
-            
+
             if (fallbackResponse.data.success) {
-              if (fallbackResponse.data.logo && typeof fallbackResponse.data.logo === 'string' && fallbackResponse.data.logo !== '{}') {
+              if (
+                fallbackResponse.data.logo &&
+                typeof fallbackResponse.data.logo === 'string' &&
+                fallbackResponse.data.logo !== '{}'
+              ) {
                 // Handle the response format: {success: true, logo: "/uploads/shop-logos/filename.jpeg"}
-                const logoPath = fallbackResponse.data.logo.startsWith('/') ? fallbackResponse.data.logo.substring(1) : fallbackResponse.data.logo;
+                const logoPath = fallbackResponse.data.logo.startsWith('/')
+                  ? fallbackResponse.data.logo.substring(1)
+                  : fallbackResponse.data.logo;
                 const logoUrl = `${BASE_URL}${logoPath}`;
                 setLogo(logoUrl);
                 setLogoFile(null);
@@ -396,7 +473,7 @@ const SetupShop = () => {
                 setIsPreviewLogo(false); // Reset preview flag for real upload
                 setUploadSuccess(true);
                 toast.success('Logo uploaded successfully via fallback!');
-                
+
                 // Hide success message after 3 seconds
                 setTimeout(() => setUploadSuccess(false), 3000);
                 return;
@@ -409,7 +486,9 @@ const SetupShop = () => {
                   setLogoPreview(null);
                   setIsPreviewLogo(true);
                   setUploadSuccess(true);
-                  toast.success('Logo uploaded! (Using preview due to API issue)');
+                  toast.success(
+                    'Logo uploaded! (Using preview due to API issue)'
+                  );
                   setTimeout(() => setUploadSuccess(false), 3000);
                   return;
                 }
@@ -417,8 +496,11 @@ const SetupShop = () => {
             }
           } catch (fallbackError) {
             console.error('Fallback upload failed:', fallbackError);
-            console.error('Fallback error response:', fallbackError.response?.data);
-            
+            console.error(
+              'Fallback error response:',
+              fallbackError.response?.data
+            );
+
             // Use preview as final fallback
             if (logoPreview) {
               setLogo(logoPreview);
@@ -431,7 +513,7 @@ const SetupShop = () => {
               return;
             }
           }
-          
+
           toast.error('Logo upload failed - API returned empty response');
         }
       } else {
@@ -443,9 +525,9 @@ const SetupShop = () => {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
       });
-      
+
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else if (error.response?.status === 401) {
@@ -457,6 +539,90 @@ const SetupShop = () => {
       } else {
         toast.error(`Upload failed: ${error.message}`);
       }
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  // Select a sample image and upload it as logo
+  const handleSelectSample = async (imageSrc) => {
+    try {
+      setIsUploadingLogo(true);
+
+      // Fetch the image as a blob
+      const res = await fetch(imageSrc);
+      if (!res.ok) throw new Error('Failed to fetch sample image');
+      const blob = await res.blob();
+
+      // Create a File object from the blob so backend receives multipart/form-data
+      const filename = imageSrc.split('/').pop() || 'sample-logo.png';
+      const file = new File([blob], filename, {
+        type: blob.type || 'image/png',
+      });
+
+      // Create FormData and upload directly
+      const formDataUpload = new FormData();
+      formDataUpload.append('logo', file);
+
+      // Attach auth token if available (backend likely requires it)
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'multipart/form-data' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const response = await api.post(`/api/shop/upload-logo`, formDataUpload, {
+        headers,
+      });
+
+      if (response.data && response.data.success) {
+        // Try to compute a usable logo URL from response
+        let logoUrl = '';
+        if (typeof response.data.logo === 'string') {
+          const logoPath = response.data.logo.startsWith('/')
+            ? response.data.logo.substring(1)
+            : response.data.logo;
+          logoUrl = `${BASE_URL}${logoPath}`;
+        } else if (response.data.shop?.logo) {
+          const shopLogoPath = response.data.shop.logo.startsWith('/')
+            ? response.data.shop.logo.substring(1)
+            : response.data.shop.logo;
+          logoUrl = `${BASE_URL}${shopLogoPath}`;
+        } else if (response.data.logo?.url) {
+          logoUrl = response.data.logo.url.startsWith('http')
+            ? response.data.logo.url
+            : `${BASE_URL}${response.data.logo.url}`;
+        }
+
+        if (logoUrl) {
+          setLogo(logoUrl);
+        } else {
+          // fallback to preview blob URL if API didn't return usable URL
+          const previewUrl = URL.createObjectURL(blob);
+          setLogo(previewUrl);
+          setIsPreviewLogo(true);
+        }
+
+        // Update localStorage shop object if present
+        const shop = JSON.parse(localStorage.getItem('shop') || '{}');
+        if (shop) {
+          shop.logo = response.data.logo || null;
+          localStorage.setItem('shop', JSON.stringify(shop));
+        }
+
+        toast.success('Logo updated from sample image');
+        setUploadSuccess(true);
+        setTimeout(() => setUploadSuccess(false), 3000);
+      } else {
+        // fallback: use preview
+        const previewUrl = URL.createObjectURL(blob);
+        setLogo(previewUrl);
+        setIsPreviewLogo(true);
+        toast.warn(
+          'Uploaded sample image but backend returned no usable URL; using preview as logo'
+        );
+      }
+    } catch (error) {
+      console.error('Error uploading sample image:', error);
+      toast.error('Failed to upload sample image');
     } finally {
       setIsUploadingLogo(false);
     }
@@ -495,19 +661,19 @@ const SetupShop = () => {
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Setup Your Shop</h2>
-      
+
       {/* Logo Section */}
       <div style={styles.logoSection}>
         <h4 style={styles.logoHeading}>Shop Logo</h4>
-        
+
         {/* Current Logo Display */}
         {logo && (
           <div style={styles.currentLogoContainer}>
             <div style={styles.logoHeader}>
               <p style={styles.currentLogoLabel}>✅ Current Shop Logo:</p>
-              <Button 
-                variant="outline-primary" 
-                size="sm" 
+              <Button
+                variant="outline-primary"
+                size="sm"
                 onClick={fetchLogo}
                 disabled={isFetchingLogo}
                 style={styles.refreshButton}
@@ -515,26 +681,54 @@ const SetupShop = () => {
                 {isFetchingLogo ? '⏳ Loading...' : '🔄 Refresh from API'}
               </Button>
             </div>
-            <img 
-              src={logo} 
-              alt="Current Shop Logo" 
+            <img
+              src={logo}
+              alt="Current Shop Logo"
               style={styles.currentLogo}
               onError={() => setLogo(null)}
             />
-            <div style={styles.logoInfo}>
+            <div>
+              Select Images:
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {images.map((imageSrc, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      marginTop: '10px',
+                      cursor: 'pointer',
+                      display: 'inline-block',
+                    }}
+                    onClick={() => handleSelectSample(imageSrc)}
+                    title="Use this image as shop logo"
+                  >
+                    <img
+                      src={imageSrc}
+                      style={{
+                        ...styles.sampleLogo,
+                        border: '2px solid transparent',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* <div style={styles.logoInfo}>
               <p style={styles.logoUrl}>Logo URL: {logo}</p>
               <p style={styles.logoStatus}>
-                Status: {isPreviewLogo ? 'Preview (API Issue)' : 'Successfully Uploaded'}
+                Status:{' '}
+                {isPreviewLogo
+                  ? 'Preview (API Issue)'
+                  : 'Successfully Uploaded'}
               </p>
               {isPreviewLogo && (
                 <p style={styles.previewWarning}>
                   ⚠️ Using preview due to API response issue
                 </p>
               )}
-            </div>
+            </div> */}
           </div>
         )}
-        
+
         {/* Upload Success Message */}
         {uploadSuccess && (
           <div style={styles.successContainer}>
@@ -542,17 +736,21 @@ const SetupShop = () => {
             <p style={styles.successSubtext}>Your shop logo is now live</p>
           </div>
         )}
-        
+
         {/* No Logo Message */}
         {!logo && hasShop && !uploadSuccess && (
           <div style={styles.noLogoContainer}>
             <div style={styles.noLogoIcon}>📷</div>
             <p style={styles.noLogoMessage}>No logo uploaded yet</p>
-            <p style={styles.noLogoSubtext}>Upload a logo to represent your shop</p>
-            <p style={styles.noLogoHint}>Click "Choose Logo File" below to get started</p>
-            <Button 
-              variant="outline-secondary" 
-              size="sm" 
+            <p style={styles.noLogoSubtext}>
+              Upload a logo to represent your shop
+            </p>
+            <p style={styles.noLogoHint}>
+              Click "Choose Logo File" below to get started
+            </p>
+            <Button
+              variant="outline-secondary"
+              size="sm"
               onClick={fetchLogo}
               disabled={isFetchingLogo}
               style={styles.fetchButton}
@@ -561,7 +759,7 @@ const SetupShop = () => {
             </Button>
           </div>
         )}
-        
+
         {/* Logo Upload Section */}
         {(isEditing || !hasShop) && (
           <div style={styles.logoUploadContainer}>
@@ -577,15 +775,17 @@ const SetupShop = () => {
                 📁 Choose Logo File
               </label>
             </div>
-            
+
             {/* File Info */}
             {logoFile && (
               <div style={styles.fileInfo}>
                 <p style={styles.fileName}>Selected: {logoFile.name}</p>
-                <p style={styles.fileSize}>Size: {(logoFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                <Button 
-                  variant="outline-danger" 
-                  size="sm" 
+                <p style={styles.fileSize}>
+                  Size: {(logoFile.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
                   onClick={removeLogoPreview}
                   style={styles.removeFileButton}
                 >
@@ -593,19 +793,19 @@ const SetupShop = () => {
                 </Button>
               </div>
             )}
-            
+
             {/* Logo Preview */}
             {logoPreview && (
               <div style={styles.previewContainer}>
                 <p style={styles.previewLabel}>Preview:</p>
-                <img 
-                  src={logoPreview} 
-                  alt="Logo Preview" 
+                <img
+                  src={logoPreview}
+                  alt="Logo Preview"
                   style={styles.previewImage}
                 />
               </div>
             )}
-            
+
             {/* Upload Button */}
             {logoFile && (
               <div style={styles.uploadButtonContainer}>
@@ -617,13 +817,13 @@ const SetupShop = () => {
                 >
                   {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
                 </Button>
-                
+
                 {/* Debug Info */}
                 <div style={styles.debugInfo}>
                   <p style={styles.debugText}>
-                    Debug: Has Shop: {hasShop ? 'Yes' : 'No'} | 
-                    Has Token: {localStorage.getItem('token') ? 'Yes' : 'No'} | 
-                    File: {logoFile?.name}
+                    Debug: Has Shop: {hasShop ? 'Yes' : 'No'} | Has Token:{' '}
+                    {localStorage.getItem('token') ? 'Yes' : 'No'} | File:{' '}
+                    {logoFile?.name}
                   </p>
                 </div>
               </div>
@@ -661,22 +861,26 @@ const SetupShop = () => {
           {formData?.contactNumbers?.map((_, index) =>
             renderField('contactNumbers', index, 'Contact')
           )}
-          {isEditing || !hasShop ?
-         ( <>
-          {formData?.contactNumbers?.map((_, index) =>
-            renderField('contactNumbers', index, 'Contact')
-          )}
-            <Button style={{ display: 'block' }} variant="secondary" onClick={() => addField('contactNumbers')}>
-              + Add Contact
-            </Button>
+          {isEditing || !hasShop ? (
+            <>
+              {formData?.contactNumbers?.map((_, index) =>
+                renderField('contactNumbers', index, 'Contact')
+              )}
+              <Button
+                style={{ display: 'block' }}
+                variant="secondary"
+                onClick={() => addField('contactNumbers')}
+              >
+                + Add Contact
+              </Button>
             </>
-         ):
-           ( <ul>
-             {formData?.contactNumbers?.map((contactNumbers, index) => (
+          ) : (
+            <ul>
+              {formData?.contactNumbers?.map((contactNumbers, index) => (
                 <li key={index}>{contactNumbers}</li>
               ))}
-          </ul>)
-          }
+            </ul>
+          )}
         </Form.Group>
 
         <Form.Group className="mb-3">
@@ -698,7 +902,11 @@ const SetupShop = () => {
               {formData.terms.map((_, index) =>
                 renderField('terms', index, 'Condition')
               )}
-              <Button style={{ display: 'block' }} variant="secondary" onClick={() => addField('terms')}>
+              <Button
+                style={{ display: 'block' }}
+                variant="secondary"
+                onClick={() => addField('terms')}
+              >
                 + Add Condition
               </Button>
             </>
@@ -966,6 +1174,17 @@ const styles = {
     borderRadius: '8px',
     padding: '10px',
     backgroundColor: '#f8f9fa',
+  },
+  sampleLogo: {
+    width: '72px',
+    height: '72px',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    padding: '6px',
+    backgroundColor: '#fff',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+    transition:
+      'transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease',
   },
   uploadButton: {
     padding: '10px 30px',

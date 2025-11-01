@@ -937,7 +937,54 @@ export const SmallInvoiceComponent = ({
             fontSize: '13px',
           }}
         >
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              marginTop: '15px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            {logoUrl && (
+              <img
+                src={logoUrl}
+                alt="logo"
+                style={{
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid #fff',
+                  boxShadow:
+                    '0 4px 12px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
+                }}
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+              />
+            )}
+          </div>
           <div>
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: 800,
+                  marginBottom: '4px',
+                  fontSize: '1.5rem',
+                  color: '#000',
+                }}
+              >
+                {shopName}
+              </div>
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -948,33 +995,7 @@ export const SmallInvoiceComponent = ({
               <div
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                {logoUrl && (
-                  <img
-                    src={logoUrl}
-                    alt="logo"
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid #fff',
-                      boxShadow:
-                        '0 4px 12px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
-                    }}
-                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                  />
-                )}
                 <div>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      marginBottom: '4px',
-                      fontSize: '18px',
-                      color: '#000',
-                    }}
-                  >
-                    {shopName}
-                  </div>
                   {ownerName && (
                     <div
                       style={{
@@ -1008,7 +1029,7 @@ export const SmallInvoiceComponent = ({
                   </div> */}
                 </div>
               </div>
-              <div>
+              {/* <div>
                 <h4
                   style={{
                     margin: 0,
@@ -1019,7 +1040,7 @@ export const SmallInvoiceComponent = ({
                 >
                   Okiiee
                 </h4>
-              </div>
+              </div> */}
             </div>
           </div>
           <div
@@ -1055,9 +1076,7 @@ export const SmallInvoiceComponent = ({
               gap: '4px',
             }}
           >
-            <div>
-              <strong>Address:</strong> {shopAddress}
-            </div>
+            <div>{/* <strong>Address:</strong> {shopAddress} */}</div>
             <div>{/* <strong>Date:</strong> {data.date} */}</div>
           </div>
 
@@ -1066,14 +1085,28 @@ export const SmallInvoiceComponent = ({
               fontSize: '15px',
               margin: '8px 0',
               color: '#000',
+              lineHeight: 0,
               fontWeight: 700,
             }}
           >
-            <strong>Name:</strong>{' '}
-            <span style={{ color: '#000' }}>{customerData.name}</span>
-            <br />
-            <strong>Cel No:</strong> {customerData.phone}
+            <p
+              style={{
+                fontSize: '1.1rem',
+                marginBottom: '25px',
+              }}
+            >
+              Customer Detail:
+            </p>
+            <p>Name: {customerData.name}</p>{' '}
+            <p
+              style={{
+                marginTop: '20px',
+              }}
+            >
+              Cel No: {customerData.phone}
+            </p>
           </div>
+          <hr />
 
           <table
             style={{
@@ -1499,6 +1532,29 @@ export const SmallInvoiceComponent = ({
                 </p>
               ))}
             </div>
+          </div>
+          <hr />
+          <div
+            style={{
+              color: '#000',
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '1.1rem',
+              }}
+            >
+              Okiiee Software
+            </p>
+            <p
+              style={{
+                fontSize: '1.1rem',
+              }}
+            >
+              03057903867
+            </p>
           </div>
         </div>
       </div>
