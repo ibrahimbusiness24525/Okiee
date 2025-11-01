@@ -260,8 +260,48 @@ const NewMobilesList = () => {
     try {
       const response = await api.get('/api/Purchase/bulk-phone-purchase');
       setBulkData(response.data);
+      // Helper: compute if a record is fully sold
+      const isFullySold = (record) => {
+        const allImeis = (record?.ramSimDetails || []).flatMap(
+          (r) => r?.imeiNumbers || []
+        );
+        if (allImeis.length === 0) return false;
+        const soldCount = allImeis.filter((i) => i?.status === 'Sold').length;
+        return soldCount === allImeis.length;
+      };
+
+      // Filter: match search AND exclude fully sold records
       setBulkMobiles(
-        response.data.filter((item) =>
+        response.data
+          .filter((item) =>
+            item.ramSimDetails?.some((ramSim) =>
+              ramSim.imeiNumbers?.some(
+                (imei) =>
+                  imei.imei1?.includes(searchTerm) ||
+                  imei.imei2?.includes(searchTerm)
+              )
+            )
+          )
+          .filter((item) => !isFullySold(item))
+      );
+    } catch (error) {
+      console.error('error in getting bulk mobiles', error);
+    }
+  };
+
+  useEffect(() => {
+    const isFullySold = (record) => {
+      const allImeis = (record?.ramSimDetails || []).flatMap(
+        (r) => r?.imeiNumbers || []
+      );
+      if (allImeis.length === 0) return false;
+      const soldCount = allImeis.filter((i) => i?.status === 'Sold').length;
+      return soldCount === allImeis.length;
+    };
+
+    setBulkMobiles(
+      bulkData
+        .filter((item) =>
           item.ramSimDetails?.some((ramSim) =>
             ramSim.imeiNumbers?.some(
               (imei) =>
@@ -270,25 +310,9 @@ const NewMobilesList = () => {
             )
           )
         )
-      );
-    } catch (error) {
-      console.error('error in getting bulk mobiles', error);
-    }
-  };
-
-  useEffect(() => {
-    setBulkMobiles(
-      bulkData.filter((item) =>
-        item.ramSimDetails?.some((ramSim) =>
-          ramSim.imeiNumbers?.some(
-            (imei) =>
-              imei.imei1?.includes(searchTerm) ||
-              imei.imei2?.includes(searchTerm)
-          )
-        )
-      )
+        .filter((item) => !isFullySold(item))
     );
-  }, [searchTerm]);
+  }, [searchTerm, bulkData]);
   console.log('bulkMobile:', bulkMobile);
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -1511,15 +1535,51 @@ const NewMobilesList = () => {
 
                 <Table
                   routes={['/app/dashboard/bulkPhoneDetail']}
-                  array={personData.filter((record) =>
-                    includeSold ? true : record.dispatch === false
-                  )}
+                  array={personData
+                    .filter((record) =>
+                      includeSold ? true : record.dispatch === false
+                    )
+                    .filter((record) => {
+                      // Exclude fully sold records in table
+                      const allImeis = (record?.ramSimDetails || []).flatMap(
+                        (r) => r?.imeiNumbers || []
+                      );
+                      if (allImeis.length === 0) return true;
+                      const soldCount = allImeis.filter(
+                        (i) => i?.status === 'Sold'
+                      ).length;
+                      return soldCount !== allImeis.length;
+                    })
+                    .map((record) => {
+                      // Compute fresh stats for display
+                      const imeis = (record?.ramSimDetails || []).flatMap(
+                        (r) => r?.imeiNumbers || []
+                      );
+                      const total = imeis.length;
+                      const sold = imeis.filter(
+                        (i) => i?.status === 'Sold'
+                      ).length;
+                      const dispatched = imeis.filter(
+                        (i) => i?.isDispatched === true
+                      ).length;
+                      const available = Math.max(total - sold - dispatched, 0);
+                      return {
+                        ...record,
+                        phoneStatistics: {
+                          totalPhones: total,
+                          dispatchedPhones: dispatched,
+                          availablePhones: available,
+                          soldPhones: sold,
+                        },
+                      };
+                    })}
                   keysToDisplay={[
                     'personId',
                     'date',
                     'prices',
                     'creditPaymentData',
                     'phoneStatistics',
+                    'phoneDetails',
                     'status',
                     'purchasePaymentType',
                   ]}
@@ -1529,6 +1589,7 @@ const NewMobilesList = () => {
                     'Buying Price',
                     'Remaining',
                     'Stats',
+                    'Model/Specs',
                     'Status',
                     'Payment Type',
                     'Actions',
@@ -1639,7 +1700,97 @@ const NewMobilesList = () => {
                       ),
                     },
                     {
-                      index: 6,
+                      index: 5,
+                      component: (phoneDetails, fullRecord) => {
+                        // Prefer structured phoneDetails if present; else derive from ramSimDetails
+                        const details = Array.isArray(phoneDetails)
+                          ? phoneDetails
+                          : [];
+                        const primary = details[0] || {};
+                        let companyName =
+                          primary.companyName || fullRecord?.companyName || '';
+                        let modelName =
+                          primary.modelName || fullRecord?.modelName || '';
+                        // Collect RAM variants and colors from either phoneDetails or ramSimDetails
+                        const ramSet = new Set();
+                        const colorSet = new Set();
+
+                        if (details.length > 0) {
+                          details.forEach((d) => {
+                            if (d?.ramMemory) ramSet.add(String(d.ramMemory));
+                            if (Array.isArray(d?.imeiDetails)) {
+                              d.imeiDetails.forEach((i) => {
+                                if (i?.color) colorSet.add(String(i.color));
+                              });
+                            }
+                          });
+                        } else if (Array.isArray(fullRecord?.ramSimDetails)) {
+                          fullRecord.ramSimDetails.forEach((r) => {
+                            if (r?.companyName && !companyName)
+                              companyName = r.companyName;
+                            if (r?.modelName && !modelName)
+                              modelName = r.modelName;
+                            if (r?.ramMemory) ramSet.add(String(r.ramMemory));
+                            if (Array.isArray(r?.imeiNumbers)) {
+                              r.imeiNumbers.forEach((i) => {
+                                if (i?.color) colorSet.add(String(i.color));
+                              });
+                            }
+                          });
+                        }
+
+                        const rams = Array.from(ramSet);
+                        const colors = Array.from(colorSet);
+                        const ramText =
+                          rams.length > 0 ? `${rams.join('/')}GB` : 'N/A';
+                        const colorText =
+                          colors.length > 0 ? colors.join(', ') : 'N/A';
+
+                        return (
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px',
+                            }}
+                          >
+                            <span
+                              style={{ fontWeight: 600 }}
+                            >{`${companyName || 'Brand'} ${modelName || 'Model'}`}</span>
+                            <div
+                              style={{
+                                display: 'flex',
+                                gap: '8px',
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  background: '#eef2ff',
+                                  color: '#3730a3',
+                                  padding: '2px 8px',
+                                  borderRadius: '8px',
+                                }}
+                              >
+                                RAM: {ramText}
+                              </span>
+                              <span
+                                style={{
+                                  background: '#ecfeff',
+                                  color: '#155e75',
+                                  padding: '2px 8px',
+                                  borderRadius: '8px',
+                                }}
+                              >
+                                Color: {colorText}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      },
+                    },
+                    {
+                      index: 7,
                       component: (purchasePaymentType) => (
                         <span style={{ fontWeight: 600, fontSize: '1rem' }}>
                           {purchasePaymentType === 'full-payment' ? (
@@ -1746,6 +1897,16 @@ const NewMobilesList = () => {
                 .filter((record) =>
                   includeSold ? true : record.dispatch === false
                 )
+                .filter((record) => {
+                  const allImeis = (record?.ramSimDetails || []).flatMap(
+                    (r) => r?.imeiNumbers || []
+                  );
+                  if (allImeis.length === 0) return true;
+                  const soldCount = allImeis.filter(
+                    (i) => i?.status === 'Sold'
+                  ).length;
+                  return soldCount !== allImeis.length;
+                })
                 .map((mobile) => (
                   <Col key={mobile._id}>
                     <Card
@@ -1912,7 +2073,7 @@ const NewMobilesList = () => {
                             </div>
                           </div>
 
-                          {mobile?.phoneStatistics && (
+                          {mobile?.ramSimDetails && (
                             <div style={{ marginTop: '8px' }}>
                               <strong
                                 style={{
@@ -1931,48 +2092,66 @@ const NewMobilesList = () => {
                                   flexWrap: 'wrap',
                                 }}
                               >
-                                <span
-                                  style={{
-                                    background: '#e0f2fe',
-                                    color: '#0369a1',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                  }}
-                                >
-                                  T: {mobile.phoneStatistics.totalPhones || 0}
-                                </span>
-                                <span
-                                  style={{
-                                    background: '#dcfce7',
-                                    color: '#166534',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                  }}
-                                >
-                                  A:{' '}
-                                  {mobile.phoneStatistics.availablePhones || 0}
-                                </span>
-                                <span
-                                  style={{
-                                    background: '#fee2e2',
-                                    color: '#991b1b',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                  }}
-                                >
-                                  D:{' '}
-                                  {mobile.phoneStatistics.dispatchedPhones || 0}
-                                </span>
-                                <span
-                                  style={{
-                                    background: '#fef9c3',
-                                    color: '#854d0e',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                  }}
-                                >
-                                  S: {mobile.phoneStatistics.soldPhones || 0}
-                                </span>
+                                {(() => {
+                                  const imeis = (
+                                    mobile?.ramSimDetails || []
+                                  ).flatMap((r) => r?.imeiNumbers || []);
+                                  const total = imeis.length;
+                                  const sold = imeis.filter(
+                                    (i) => i?.status === 'Sold'
+                                  ).length;
+                                  const dispatched = imeis.filter(
+                                    (i) => i?.isDispatched === true
+                                  ).length;
+                                  const available = Math.max(
+                                    total - sold - dispatched,
+                                    0
+                                  );
+                                  return (
+                                    <>
+                                      <span
+                                        style={{
+                                          background: '#e0f2fe',
+                                          color: '#0369a1',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        T: {total}
+                                      </span>
+                                      <span
+                                        style={{
+                                          background: '#dcfce7',
+                                          color: '#166534',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        A: {available}
+                                      </span>
+                                      <span
+                                        style={{
+                                          background: '#fee2e2',
+                                          color: '#991b1b',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        D: {dispatched}
+                                      </span>
+                                      <span
+                                        style={{
+                                          background: '#fef9c3',
+                                          color: '#854d0e',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        S: {sold}
+                                      </span>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </div>
                           )}

@@ -8,7 +8,9 @@ export const SmallInvoiceComponent = ({
 }) => {
   // Remove local state and API calls since we're getting data from props
   console.log('shopData', shopData);
-  console.log('phoneDetail', phoneDetail);
+  console.log('phoneDetailsdxsadsadsadsadsa', phoneDetail);
+  console.log('invoiceData', invoiceData);
+
   // Static invoice data
   const staticInvoiceData = {
     shopInfo: 'Shop#46 Mall Road Opp. Meezan Bank Cantt.',
@@ -102,6 +104,7 @@ export const SmallInvoiceComponent = ({
   const shopAddress = shopData?.address || data.shopInfo || 'Shop Address';
   const shopPhone =
     shopData?.phone || shopData?.contactNumber?.[0] || 'Phone Number';
+  const ownerName = shopData?.name || '';
 
   console.log('Shop data received:', shopData);
   console.log('Shop address:', shopAddress);
@@ -109,16 +112,36 @@ export const SmallInvoiceComponent = ({
   console.log('Shop address length:', shopAddress?.length);
 
   // Build items from phoneDetail/IMEI data when provided; fallback to data.items
-  const phoneDetailArray = Array.isArray(data?.phoneDetail)
-    ? data.phoneDetail
-    : Array.isArray(data?.dataReceived?.phoneDetail)
-      ? data.dataReceived.phoneDetail
-      : [];
-  const phoneDetailsArray = Array.isArray(data?.phoneDetails)
-    ? data.phoneDetails
-    : Array.isArray(data?.dataReceived?.phoneDetails)
-      ? data.dataReceived.phoneDetails
-      : [];
+  const phoneDetailArray = [
+    ...(Array.isArray(data?.phoneDetail)
+      ? data.phoneDetail
+      : Array.isArray(data?.dataReceived?.phoneDetail)
+        ? data.dataReceived.phoneDetail
+        : []),
+    ...(Array.isArray(phoneDetail)
+      ? phoneDetail
+      : phoneDetail &&
+          (phoneDetail.modelName ||
+            phoneDetail.companyName ||
+            phoneDetail.imei1)
+        ? [phoneDetail]
+        : []),
+  ];
+  const phoneDetailsArray = [
+    ...(Array.isArray(data?.phoneDetails)
+      ? data.phoneDetails
+      : Array.isArray(data?.dataReceived?.phoneDetails)
+        ? data.dataReceived.phoneDetails
+        : []),
+    ...(Array.isArray(phoneDetail)
+      ? phoneDetail
+      : phoneDetail &&
+          (phoneDetail.modelName ||
+            phoneDetail.companyName ||
+            phoneDetail.imei1)
+        ? [phoneDetail]
+        : []),
+  ];
   const accessoriesArray = Array.isArray(data?.accessories)
     ? data.accessories
     : Array.isArray(data?.dataReceived?.accessories)
@@ -172,15 +195,27 @@ export const SmallInvoiceComponent = ({
     const allItems = [];
     let itemCounter = 1;
 
-    // Process single phone data first (highest priority)
-    if (hasSinglePhoneData && phoneDetailsArray.length === 0) {
+    // Fallback: single phone data only if no IMEI-based or phoneDetails rows
+    if (
+      hasSinglePhoneData &&
+      imeisArray.length === 0 &&
+      imeiPricesArray.length === 0 &&
+      phoneDetailsArray.length === 0
+    ) {
+      const brand = data.companyName || data.brand || 'Brand';
+      const model = data.modelName || data.model || 'Model';
+      const ram = data.ramMemory ? `${data.ramMemory}GB` : '';
+      const color = data.color || '';
+      const nameWithSpecs =
+        `${brand} ${model} ${ram}`.trim() + (color ? ` (${color})` : '');
       allItems.push({
         no: itemCounter++,
-        name: `${data.companyName || 'Brand'} ${data.modelName || 'Model'} ${data.ramMemory || ''}`.trim(),
+        name: nameWithSpecs.trim(),
         code: data.imei1 || '-',
-        model: data.modelName || 'Model',
-        brand: data.companyName || 'Brand',
-        color: data.color || 'N/A',
+        model: model,
+        brand: brand,
+        color: color || 'N/A',
+        ram: data.ramMemory || '',
         simOption: data.simOption || 'N/A',
         batteryHealth: data.batteryHealth || 'N/A',
         warranty: data.warranty || 'N/A',
@@ -194,11 +229,8 @@ export const SmallInvoiceComponent = ({
       });
     }
 
-    // Process bulk phones from addedImeis/writtenImeis/imeiPrices (for dashboard sales)
-    if (
-      phoneDetailsArray.length === 0 &&
-      (imeisArray.length > 0 || imeiPricesArray.length > 0)
-    ) {
+    // Prefer IMEI-driven rows when per-IMEI data/prices are present
+    if (imeisArray.length > 0 || imeiPricesArray.length > 0) {
       const imeisToProcess =
         imeisArray.length > 0
           ? imeisArray
@@ -208,6 +240,7 @@ export const SmallInvoiceComponent = ({
       let phoneBrand = 'Brand';
       let phoneModel = 'Model';
       let phoneRam = '';
+      let phoneColor = '';
 
       if (data.entityData?.reference) {
         const reference = data.entityData.reference;
@@ -225,6 +258,21 @@ export const SmallInvoiceComponent = ({
         }
       }
 
+      // Try to enrich from provided phone details arrays
+      const firstDetail =
+        (phoneDetailArray && phoneDetailArray[0]) ||
+        (data?.phoneDetail && data.phoneDetail[0]) ||
+        null;
+      if (firstDetail) {
+        phoneBrand = firstDetail.companyName || phoneBrand;
+        phoneModel = firstDetail.modelName || phoneModel;
+        phoneRam = firstDetail.ramMemory || phoneRam;
+        phoneColor = firstDetail.color || phoneColor;
+      } else {
+        phoneRam = data.ramMemory || phoneRam;
+        phoneColor = data.color || phoneColor;
+      }
+
       imeisToProcess.forEach((imei, index) => {
         const imeiPrice =
           priceByImei[String(imei)] ||
@@ -233,13 +281,17 @@ export const SmallInvoiceComponent = ({
         const totalPrice = parseMoney(data.finalPrice || 0);
         const pricePerImei = imeiPrice || totalPrice / imeisToProcess.length;
 
+        const nameWithSpecs =
+          `${phoneBrand} ${phoneModel} ${phoneRam ? `${phoneRam}GB` : ''}`.trim() +
+          (phoneColor ? ` (${phoneColor})` : '');
         allItems.push({
           no: itemCounter++,
-          name: `${phoneBrand} ${phoneModel} ${phoneRam}`.trim(),
+          name: nameWithSpecs.trim(),
           code: imei || '-',
           model: phoneModel,
           brand: phoneBrand,
-          color: data.color || 'N/A',
+          color: phoneColor || data.color || 'N/A',
+          ram: phoneRam || '',
           simOption: data.simOption || 'N/A',
           batteryHealth: data.batteryHealth || 'N/A',
           warranty: data.warranty || 'N/A',
@@ -250,19 +302,30 @@ export const SmallInvoiceComponent = ({
       });
     }
 
-    // Process phoneDetails (bulk phones from other sources)
-    if (phoneDetailsArray.length > 0) {
+    // Else use phoneDetails (when IMEI-based rows are not present)
+    if (
+      phoneDetailsArray.length > 0 &&
+      imeisArray.length === 0 &&
+      imeiPricesArray.length === 0
+    ) {
       phoneDetailsArray.forEach((phoneDetail) => {
         // Process each IMEI in the phone detail
         if (phoneDetail.imeiDetails && phoneDetail.imeiDetails.length > 0) {
           phoneDetail.imeiDetails.forEach((imeiDetail) => {
+            const ram = phoneDetail.ramMemory
+              ? `${phoneDetail.ramMemory}GB`
+              : '';
+            const nameWithSpecs =
+              `${phoneDetail.companyName || 'Brand'} ${phoneDetail.modelName || 'Model'} ${ram}`.trim() +
+              (imeiDetail.color ? ` (${imeiDetail.color})` : '');
             allItems.push({
               no: itemCounter++,
-              name: `${phoneDetail.companyName || 'Brand'} ${phoneDetail.modelName || 'Model'} ${phoneDetail.ramMemory || ''}`.trim(),
+              name: nameWithSpecs.trim(),
               code: imeiDetail.imei1 || '-',
               model: phoneDetail.modelName || 'Model',
               brand: phoneDetail.companyName || 'Brand',
               color: imeiDetail.color || 'N/A',
+              ram: phoneDetail.ramMemory || '',
               simOption: phoneDetail.simOption || 'N/A',
               batteryHealth: phoneDetail.batteryHealth || 'N/A',
               warranty: data?.warranty || phoneDetail.warranty || 'N/A',
@@ -273,13 +336,18 @@ export const SmallInvoiceComponent = ({
           });
         } else {
           // If no IMEI details, create one item for the phone
+          const ram = phoneDetail.ramMemory ? `${phoneDetail.ramMemory}GB` : '';
+          const nameWithSpecs =
+            `${phoneDetail.companyName || 'Brand'} ${phoneDetail.modelName || 'Model'} ${ram}`.trim() +
+            (phoneDetail.color ? ` (${phoneDetail.color})` : '');
           allItems.push({
             no: itemCounter++,
-            name: `${phoneDetail.companyName || 'Brand'} ${phoneDetail.modelName || 'Model'} ${phoneDetail.ramMemory || ''}`.trim(),
-            code: '-',
+            name: nameWithSpecs.trim(),
+            code: phoneDetail.imei1 || '-',
             model: phoneDetail.modelName || 'Model',
             brand: phoneDetail.companyName || 'Brand',
             color: 'N/A',
+            ram: phoneDetail.ramMemory || '',
             simOption: phoneDetail.simOption || 'N/A',
             batteryHealth: phoneDetail.batteryHealth || 'N/A',
             warranty: data?.warranty || phoneDetail.warranty || 'N/A',
@@ -362,6 +430,14 @@ export const SmallInvoiceComponent = ({
               ? data.dataReceived.color[index]
               : data?.color || data?.dataReceived?.color) ??
           'N/A';
+        const ramMemory =
+          detail?.ramMemory ??
+          (Array.isArray(data?.ramMemory)
+            ? data.ramMemory[index]
+            : Array.isArray(data?.dataReceived?.ramMemory)
+              ? data.dataReceived.ramMemory[index]
+              : data?.ramMemory || data?.dataReceived?.ramMemory) ??
+          '';
         const simOption =
           detail?.simOption ??
           (Array.isArray(data?.simOption)
@@ -388,13 +464,19 @@ export const SmallInvoiceComponent = ({
         const rateNum = lookupPrice;
         const amountNum = rateNum * qty;
 
+        const ramText = ramMemory ? `${ramMemory}GB` : '';
+        const nameWithSpecs =
+          `${brand} ${model} ${ramText}`.trim() +
+          (color && color !== 'N/A' ? ` (${color})` : '');
+
         return {
           no: index + 1,
-          name: model,
+          name: nameWithSpecs.trim(),
           code: imei || '-',
           model,
           brand,
           color,
+          ram: ramMemory || '',
           simOption,
           batteryHealth,
           warranty: warranty || 'N/A',
@@ -477,16 +559,22 @@ export const SmallInvoiceComponent = ({
   const generateInvoiceHTML = () => {
     // Helper to render items rows
     const itemsRows = computedItems
-      .map(
-        (item) => `
+      .map((item) => {
+        const model = item.model || '';
+        const ramText = item.ram ? `${item.ram}GB` : '';
+        const composed = `${model} ${ramText}`.trim();
+        return `
           <tr>
               <td style="color: #000;">${item.no}</td>
-              <td style="color: #000;">${item.name}<br><small style="color: #000;">${item.code}</small></td>
+              <td style="color: #000;">
+                <small style="color: #000; font-weight: 600; font-size: 10px;">${composed || item.name || ''}</small><br>
+                <small style="color: #000; font-size: 8px; font-weight: 600;"> ${item.code}</small>
+              </td>
               <td style="color: #000;">${item.qty}</td>
               <td style="color: #000;">${item.amount}</td>
           </tr>
-          `
-      )
+        `;
+      })
       .join('');
 
     // Helper to render pending rows
@@ -708,6 +796,7 @@ export const SmallInvoiceComponent = ({
                   <div style="font-weight:800;margin-bottom:4px;font-size:18px;color:#000">
                     ${shopName}
                   </div>
+                  ${ownerName ? `<div style="font-weight:800;margin-bottom:4px;font-size:16px;color:#000">${ownerName}</div>` : ''}
                   <div style="font-weight:800;margin-bottom:4px;font-size:16px;color:#000">
                     ${shopNumber}
                   </div>
@@ -886,6 +975,18 @@ export const SmallInvoiceComponent = ({
                   >
                     {shopName}
                   </div>
+                  {ownerName && (
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        marginBottom: '4px',
+                        fontSize: '16px',
+                        color: '#000',
+                      }}
+                    >
+                      {ownerName}
+                    </div>
+                  )}
                   <div
                     style={{
                       fontWeight: 800,
@@ -896,7 +997,7 @@ export const SmallInvoiceComponent = ({
                   >
                     {shopNumber}
                   </div>
-                  <div
+                  {/* <div
                     style={{
                       fontSize: '12px',
                       color: '#000',
@@ -904,7 +1005,7 @@ export const SmallInvoiceComponent = ({
                     }}
                   >
                     {shopAddress}
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div>
@@ -957,9 +1058,7 @@ export const SmallInvoiceComponent = ({
             <div>
               <strong>Address:</strong> {shopAddress}
             </div>
-            <div>
-              <strong>Date:</strong> {data.date}
-            </div>
+            <div>{/* <strong>Date:</strong> {data.date} */}</div>
           </div>
 
           <div
@@ -1047,8 +1146,22 @@ export const SmallInvoiceComponent = ({
                       fontWeight: 700,
                     }}
                   >
-                    {item.name}
-                    <br />
+                    {/* {item.name} */}
+                    <small
+                      style={{
+                        fontSize: '10px',
+                        color: '#000',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {(() => {
+                        const brand = item.brand || '';
+                        const model = item.model || '';
+                        const ram = item.ram ? `${item.ram}GB` : '';
+                        const composed = `${model} ${ram}`.trim();
+                        return composed || item.name || '';
+                      })()}
+                    </small>
                     <small
                       style={{
                         fontSize: '8px',
@@ -1056,6 +1169,7 @@ export const SmallInvoiceComponent = ({
                         fontWeight: 600,
                       }}
                     >
+                      {' '}
                       {item.code}
                     </small>
                   </td>
