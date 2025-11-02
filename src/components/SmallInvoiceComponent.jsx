@@ -565,13 +565,13 @@ export const SmallInvoiceComponent = ({
         const composed = `${model} ${ramText}`.trim();
         return `
           <tr>
-              <td style="color: #000;">${item.no}</td>
-              <td style="color: #000;">
-                <small style="color: #000; font-weight: 600; font-size: 10px;">${composed || item.name || ''}</small><br>
-                <small style="color: #000; font-size: 8px; font-weight: 600;"> ${item.code}</small>
+              <td style="border: 1px solid #000; padding: 6px; color: #000; font-weight: 700;">${item.no}</td>
+              <td style="border: 1px solid #000; padding: 6px; color: #000; font-weight: 700;">
+                <small style="font-size: 10px; color: #000; font-weight: 600;">${composed || item.name || ''}</small><br>
+                <small style="font-size: 8px; color: #000; font-weight: 600;"> ${item.code}</small>
               </td>
-              <td style="color: #000;">${item.qty}</td>
-              <td style="color: #000;">${item.amount}</td>
+              <td style="border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 700;">${item.qty}</td>
+              <td style="border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 700;">${item.amount}</td>
           </tr>
         `;
       })
@@ -788,92 +788,80 @@ export const SmallInvoiceComponent = ({
       <body>
           <div class="invoice-container">
           <div class="header">
+            ${
+              logoUrl
+                ? `<div style="width: 100%; display: flex; margin-top: 15px; align-items: center; justify-content: center; margin-bottom: 20px;">
+              <img src="${logoUrl}" alt="logo" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);" onerror="this.style.display='none'" />
+            </div>`
+                : ''
+            }
             <div>
-            <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
-              <div style="display:flex;align-items:center;gap:8px">
-                ${logoUrl ? `<img src="${logoUrl}" alt="logo" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.2),0 2px 6px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.2)"/>` : ''}
-                <div>
-                  <div style="font-weight:800;margin-bottom:4px;font-size:18px;color:#000">
-                    ${shopName}
-                  </div>
-                  ${ownerName ? `<div style="font-weight:800;margin-bottom:4px;font-size:16px;color:#000">${ownerName}</div>` : ''}
-                  <div style="font-weight:800;margin-bottom:4px;font-size:16px;color:#000">
-                    ${shopNumber}
-                  </div>
-                  <div style="font-size:12px;color:#000;font-weight:600">
-                    ${shopAddress}
+              <div style="width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <div style="font-weight: 800; margin-bottom: 4px; font-size: 1.5rem; color: #000;">
+                  ${shopName}
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div>
+                    ${ownerName ? `<div style="font-weight: 800; margin-bottom: 4px; font-size: 16px; color: #000;">${ownerName}</div>` : ''}
+                    <div style="font-weight: 800; margin-bottom: 4px; font-size: 16px; color: #000;">
+                      ${shopNumber}
+                    </div>
                   </div>
                 </div>
               </div>
-              <div>
-                <h4 style="margin:0;font-size:16px;color:#000;font-weight:800">Okiiee</h4>
-              </div>
             </div>
+              <div class="title" style="font-size: 20px; margin: 8px 0; text-align: center; font-weight: 900; color: #000;">${data.title}</div>
+              <div class="subtitle" style="font-size: 14px; margin-bottom: 12px; text-align: center; font-style: italic; color: #000;">${data.subtitle}</div>
           </div>
-              <div class="title" style="font-size: 20px; margin: 8px 0;">${data.title}</div>
-              <div class="subtitle" style="font-size: 14px; margin-bottom: 12px;">${data.subtitle}</div>
+          <div class="customer" style="font-size: 15px; margin: 8px 0; color: #000; line-height: 0; font-weight: 700;">
+              <p style="font-size: 1.1rem; margin-bottom: 25px;">Customer Detail:</p>
+              <p>Name: ${customerData.name}</p>
+              <p style="margin-top: 20px;">Cel No: ${customerData.phone}</p>
           </div>
-          <div class="meta" style="flex-direction:column; align-items:flex-start; gap:4px; font-size: 14px; margin: 8px 0;">
-              <div><strong>Address:</strong> ${shopAddress}</div>
-              <div><strong>Date:</strong> ${data.date}</div>
-              <!-- <div><strong>Inv#:</strong> ${data.invoiceNumber}</div> -->
-          </div>
-          <div class="customer" style="font-size: 15px; margin: 8px 0; font-weight: 700;">
-              <strong>Name:</strong> <b>${customerData.name}</b><br>
-              <strong>Cel No:</strong> ${customerData.phone}
-          </div>
-          <table>
+          <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;" />
+          <table style="width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px;">
               <thead>
               <tr>
-                  <th style="color: #000;">No</th>
-                  <th style="color: #000;">Item</th>
-                  <th style="color: #000;">Qty</th>
-                  <th style="color: #000;">Amount</th>
+                  <th style="border: 1px solid #000; padding: 2px; text-align: left; color: #000; font-weight: bold;">No</th>
+                  <th style="border: 1px solid #000; padding: 2px; text-align: left; color: #000; font-weight: bold;">Item</th>
+                  <th style="border: 1px solid #000; padding: 2px; color: #000; font-weight: bold;">Qty</th>
+                  <th style="border: 1px solid #000; padding: 2px; color: #000; font-weight: bold;">Amount</th>
               </tr>
               </thead>
               <tbody>
               ${itemsRows}
               </tbody>
           </table>
-          <div class="summary">
-          
-              <div class="right">
-              <div><span class="label">SubTotal:</span><span class="value">${summaryData.subTotal}</span></div>
-              <div class="net"><span class="label">Net Total:</span><span class="value">${summaryData.netTotal}</span></div>
-              <div><span class="label">Total:</span><span class="value">${summaryData.total}</span></div>
-            
+          <div class="summary" style="display: flex; justify-content: space-between; font-size: 14px; margin: 12px 0; color: #000;">
+              <div style="width: 48%;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000;">
+                <span>SubTotal:</span>
+                <span>${summaryData.subTotal}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000;">
+                <span>Net Total:</span>
+                <span style="color: #000; font-weight: bold;">${summaryData.netTotal}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000;">
+                <span>Total:</span>
+                <span>${summaryData.total}</span>
+              </div>
               </div>
           </div>
-             <div
-            style={{
-              marginTop: '10px',
-              padding: '8px',
-              borderTop: '1px solid #ccc',
-              fontSize: '6px',
-              color: '#000',
-              fontFamily: 'Arial, sans-serif',
-            }}
-          >
-            <div
-              style={{
-                fontWeight: 'bold',
-                fontSize: '12px',
-                marginBottom: '4px',
-                textTransform: 'uppercase',
-                color: '#000',
-              }}
-            >
+          <div style="margin-top: 10px; padding: 8px; border-top: 1px solid #ccc; font-size: 6px; color: #000; font-family: Arial, sans-serif;">
+            <div style="font-weight: bold; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; color: #000;">
               Terms & Conditions
             </div>
-
-            <div style="margin-top: 10px; padding: 8px; border-top: 1px solid #ccc; font-size: 6px; color: #000; font-family: Arial, sans-serif">
-        <div  style="font-weight: bold; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; color: #000">
-          Terms & Conditions
-        </div>
-        <div style="font-size: 8px; display: flex; flex-direction: column; gap: 2px">
-          ${termsHtml}
-        </div>
-      </div>
+            <div style="font-size: 5px; display: flex; flex-direction: column; gap: 2px;">
+              ${termsHtml}
+            </div>
+          </div>
+          <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;" />
+          <div style="color: #000; display: flex; justify-content: space-between;">
+            <p style="font-size: 1.1rem; margin: 0;">Okiiee Software</p>
+            <p style="font-size: 1.1rem; margin: 0;">03057903867</p>
           </div>
           </div>
       </body>
