@@ -1438,14 +1438,39 @@ export const InvoiceComponent = ({
               <div>
                 <strong>Amount With Tax</strong>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'end' }}>
-                <span style={{ width: '120px', textAlign: 'left' }}>
-                  Previous Bal :
-                </span>
-                <span style={{ width: '80px', textAlign: 'right' }}>
-                  {formatNumber(saleData?.previousBalance || '0.00')}
-                </span>
-              </div>
+              {/* Show previous balance (receiving/giving credit) */}
+              {(() => {
+                // Check both saleData and dataReceived for balance information
+                const entityData = saleData?.entityData || dataReceived?.entityData;
+                const prevBal = saleData?.previousBalance !== undefined && saleData?.previousBalance !== null 
+                  ? saleData?.previousBalance 
+                  : dataReceived?.previousBalance;
+                const givingCredit = entityData?.givingCredit || 0;
+                const takingCredit = entityData?.takingCredit || 0;
+                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
+                
+                return hasBalance ? (
+                  <div style={{ display: 'flex', justifyContent: 'end' }}>
+                    <span style={{ width: '120px', textAlign: 'left' }}>
+                      Previous Balance :
+                    </span>
+                    <span style={{ width: '80px', textAlign: 'right' }}>
+                      {(() => {
+                        if (prevBal !== undefined && prevBal !== null) {
+                          return formatNumber(prevBal);
+                        }
+                        const netBalance = givingCredit - takingCredit;
+                        if (netBalance > 0) {
+                          return `Receiving: ${formatNumber(netBalance)}`;
+                        } else if (netBalance < 0) {
+                          return `Giving: ${formatNumber(Math.abs(netBalance))}`;
+                        }
+                        return formatNumber(0);
+                      })()}
+                    </span>
+                  </div>
+                ) : null;
+              })()}
               <div style={{ display: 'flex', justifyContent: 'end' }}>
                 <span style={{ width: '120px', textAlign: 'left' }}>
                   Gross Total :
@@ -1459,7 +1484,7 @@ export const InvoiceComponent = ({
                   Cash Rec. :
                 </span>
                 <span style={{ width: '80px', textAlign: 'right' }}>
-                  {formatNumber(saleData?.cashReceived || '0.00')}
+                  {formatNumber(saleData?.cashReceived || dataReceived?.cashReceived || '0.00')}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -1467,7 +1492,22 @@ export const InvoiceComponent = ({
                   Net Balance :
                 </span>
                 <span style={{ width: '80px', textAlign: 'right' }}>
-                  {formatNumber(totalAmount - (saleData?.cashReceived || 0))}
+                  {formatNumber(
+                    (() => {
+                      // Check both saleData and dataReceived for balance information
+                      const entityData = saleData?.entityData || dataReceived?.entityData;
+                      const prevBal = saleData?.previousBalance !== undefined && saleData?.previousBalance !== null 
+                        ? saleData?.previousBalance 
+                        : dataReceived?.previousBalance;
+                      const givingCredit = entityData?.givingCredit || 0;
+                      const takingCredit = entityData?.takingCredit || 0;
+                      const previousBalance = prevBal !== undefined && prevBal !== null 
+                        ? prevBal 
+                        : (givingCredit - takingCredit);
+                      const cashReceived = saleData?.cashReceived || dataReceived?.cashReceived || 0;
+                      return totalAmount - cashReceived + previousBalance;
+                    })()
+                  )}
                 </span>
               </div>
             </div>

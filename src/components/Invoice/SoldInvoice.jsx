@@ -884,7 +884,22 @@ const SoldInvoice = () => {
       netTotal: String(
         dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
       ),
-      previousBal: '–',
+      previousBal: (() => {
+        const entityData = dataReceived?.entityData || phoneDetail?.entityData;
+        const prevBal = dataReceived?.previousBalance || phoneDetail?.previousBalance;
+        const givingCredit = entityData?.givingCredit || 0;
+        const takingCredit = entityData?.takingCredit || 0;
+        if (prevBal !== undefined && prevBal !== null) {
+          return String(prevBal);
+        }
+        const netBalance = givingCredit - takingCredit;
+        if (netBalance !== 0) {
+          return netBalance > 0 
+            ? `Receiving: ${netBalance.toLocaleString()}` 
+            : `Giving: ${Math.abs(netBalance).toLocaleString()}`;
+        }
+        return '–';
+      })(),
       total: String(
         dataReceived?.totalInvoice ||
           phoneDetail?.totalInvoice ||
@@ -2615,7 +2630,15 @@ const SoldInvoice = () => {
           }
           warranty={phoneDetail?.warranty ?? dataReceived?.warranty ?? null}
           display={displayHalfP4}
-          saleData={dataReceived}
+          saleData={{
+            ...dataReceived,
+            // Merge balance information from phoneDetail if not in dataReceived
+            entityData: dataReceived?.entityData || phoneDetail?.entityData || (phoneDetail && !Array.isArray(phoneDetail) ? phoneDetail?.entityData : undefined),
+            previousBalance: dataReceived?.previousBalance !== undefined && dataReceived?.previousBalance !== null 
+              ? dataReceived?.previousBalance 
+              : (phoneDetail && !Array.isArray(phoneDetail) ? phoneDetail?.previousBalance : undefined),
+            cashReceived: dataReceived?.cashReceived || (phoneDetail && !Array.isArray(phoneDetail) ? phoneDetail?.cashReceived : undefined),
+          }}
           shopName={shop?.shopName ?? ''}
           number={shop?.contactNumber?.[0] ?? ''}
           address={shop?.address ?? 'Address not available'}

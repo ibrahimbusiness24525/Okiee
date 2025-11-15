@@ -153,11 +153,23 @@ const DashDefault = () => {
     };
   }, []);
 
-  const payables = persons.filter((p) => (p.takingCredit || 0) > (p.givingCredit || 0));
-  const receivables = persons.filter((p) => (p.givingCredit || 0) > (p.takingCredit || 0));
+  const payables = persons.filter(
+    (p) => (p.takingCredit || 0) > (p.givingCredit || 0)
+  );
+  const receivables = persons.filter(
+    (p) => (p.givingCredit || 0) > (p.takingCredit || 0)
+  );
 
-  const totalReceivables = receivables.reduce((sum, p) => sum + Math.max((p.givingCredit || 0) - (p.takingCredit || 0), 0), 0);
-  const totalPayables = payables.reduce((sum, p) => sum + Math.max((p.takingCredit || 0) - (p.givingCredit || 0), 0), 0);
+  const totalReceivables = receivables.reduce(
+    (sum, p) =>
+      sum + Math.max((p.givingCredit || 0) - (p.takingCredit || 0), 0),
+    0
+  );
+  const totalPayables = payables.reduce(
+    (sum, p) =>
+      sum + Math.max((p.takingCredit || 0) - (p.givingCredit || 0), 0),
+    0
+  );
 
   return (
     <React.Fragment>
@@ -186,7 +198,9 @@ const DashDefault = () => {
                   <i className="fa fa-arrow-up text-success fa-lg"></i>
                 </div>
                 <div>
-                  <h4 className="mb-0 text-success">Rs. {totalReceivables.toLocaleString()}</h4>
+                  <h4 className="mb-0 text-success">
+                    Rs. {totalReceivables.toLocaleString()}
+                  </h4>
                   <small className="text-muted">Receivables</small>
                 </div>
               </div>
@@ -201,7 +215,9 @@ const DashDefault = () => {
                   <i className="fa fa-arrow-down text-danger fa-lg"></i>
                 </div>
                 <div>
-                  <h4 className="mb-0 text-danger">Rs. {totalPayables.toLocaleString()}</h4>
+                  <h4 className="mb-0 text-danger">
+                    Rs. {totalPayables.toLocaleString()}
+                  </h4>
                   <small className="text-muted">Payables</small>
                 </div>
               </div>
@@ -216,7 +232,9 @@ const DashDefault = () => {
                   <i className="fa fa-chart-line text-info fa-lg"></i>
                 </div>
                 <div>
-                  <h4 className="mb-0 text-info">{receivables.length + payables.length}</h4>
+                  <h4 className="mb-0 text-info">
+                    {receivables.length + payables.length}
+                  </h4>
                   <small className="text-muted">Active Accounts</small>
                 </div>
               </div>
@@ -227,138 +245,209 @@ const DashDefault = () => {
 
       {/* Quick Actions */}
       <div style={{ marginBottom: '30px' }}>
-        <div style={{ 
-          fontSize: '24px', 
-          fontWeight: 'bold', 
-          color: '#2d3748', 
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
+        <div
+          style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#2d3748',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
           <i className="fa fa-bolt" style={{ color: '#667eea' }}></i>
           Quick Actions
         </div>
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-          <Link to={'/todayBook'} style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '15px',
-              padding: '25px',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-              border: '1px solid #e2e8f0',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '20px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)';
-              e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-            }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
+          <Link
+            to={'/todayBook'}
+            style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
+          >
+            <div
+              style={{
+                background: 'white',
                 borderRadius: '15px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '25px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <i className="fa fa-book" style={{ fontSize: '24px', color: 'white' }}></i>
+                gap: '20px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow =
+                  '0 12px 30px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+              }}
+            >
+              <div
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '15px',
+                  background:
+                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <i
+                  className="fa fa-book"
+                  style={{ fontSize: '24px', color: 'white' }}
+                ></i>
               </div>
               <div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2d3748', marginBottom: '5px' }}>Today Book</div>
-                <div style={{ fontSize: '14px', color: '#718096' }}>View today's transactions and activities</div>
+                <div
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#2d3748',
+                    marginBottom: '5px',
+                  }}
+                >
+                  Today Book
+                </div>
+                <div style={{ fontSize: '14px', color: '#718096' }}>
+                  View today's transactions and activities
+                </div>
               </div>
             </div>
           </Link>
 
-          <Link to={'/app/dashboard/getCustomerRecord'} style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '15px',
-              padding: '25px',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-              border: '1px solid #e2e8f0',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '20px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)';
-              e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-            }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
+          <Link
+            to={'/app/dashboard/getCustomerRecord'}
+            style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
+          >
+            <div
+              style={{
+                background: 'white',
                 borderRadius: '15px',
-                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                padding: '25px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <i className="fa fa-users" style={{ fontSize: '24px', color: 'white' }}></i>
+                gap: '20px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow =
+                  '0 12px 30px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+              }}
+            >
+              <div
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '15px',
+                  background:
+                    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <i
+                  className="fa fa-users"
+                  style={{ fontSize: '24px', color: 'white' }}
+                ></i>
               </div>
               <div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2d3748', marginBottom: '5px' }}>Customer Records</div>
-                <div style={{ fontSize: '14px', color: '#718096' }}>Manage and view customer data</div>
+                <div
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#2d3748',
+                    marginBottom: '5px',
+                  }}
+                >
+                  Customer Records
+                </div>
+                <div style={{ fontSize: '14px', color: '#718096' }}>
+                  Manage and view customer data
+                </div>
               </div>
             </div>
           </Link>
 
-          <Link to={'/app/dashboard/balanceSheet'} style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '15px',
-              padding: '25px',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-              border: '1px solid #e2e8f0',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '20px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)';
-              e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-            }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
+          <Link
+            to={'/app/dashboard/balanceSheet'}
+            style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
+          >
+            <div
+              style={{
+                background: 'white',
                 borderRadius: '15px',
-                background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                padding: '25px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <i className="fa fa-balance-scale" style={{ fontSize: '24px', color: 'white' }}></i>
+                gap: '20px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow =
+                  '0 12px 30px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+              }}
+            >
+              <div
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '15px',
+                  background:
+                    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <i
+                  className="fa fa-balance-scale"
+                  style={{ fontSize: '24px', color: 'white' }}
+                ></i>
               </div>
               <div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2d3748', marginBottom: '5px' }}>Balance Sheet</div>
-                <div style={{ fontSize: '14px', color: '#718096' }}>View financial overview and reports</div>
+                <div
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#2d3748',
+                    marginBottom: '5px',
+                  }}
+                >
+                  Balance Sheet
+                </div>
+                <div style={{ fontSize: '14px', color: '#718096' }}>
+                  View financial overview and reports
+                </div>
               </div>
             </div>
           </Link>
@@ -366,122 +455,191 @@ const DashDefault = () => {
       </div>
 
       {/* Financial Summary Section */}
-      <div style={{ marginBottom: '30px' }}>
-        <div style={{ 
-          fontSize: '24px', 
-          fontWeight: 'bold', 
-          color: '#2d3748', 
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <i className="fa fa-chart-pie" style={{ color: '#667eea' }}></i>
-          Financial Overview
-        </div>
-        <div style={{ 
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', 
-          borderRadius: '20px', 
-          padding: '30px',
-          boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-            <div style={{ textAlign: 'center', flex: '1', minWidth: '200px' }}>
-              <div style={{ 
-                fontSize: '36px', 
-                fontWeight: 'bold', 
-                color: '#16a34a',
-                marginBottom: '8px',
-                textShadow: '0 2px 4px rgba(22, 163, 74, 0.3)'
-              }}>
-                Rs. {totalReceivables.toLocaleString()}
+      {/* <div style={{ marginBottom: '30px' }}>
+          <div
+            style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#2d3748',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            <i className="fa fa-chart-pie" style={{ color: '#667eea' }}></i>
+            Financial Overview
+          </div>
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+              borderRadius: '20px',
+              padding: '30px',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                gap: '40px',
+                flexWrap: 'wrap',
+                justifyContent: 'space-around',
+              }}
+            >
+              <div style={{ textAlign: 'center', flex: '1', minWidth: '200px' }}>
+                <div
+                  style={{
+                    fontSize: '36px',
+                    fontWeight: 'bold',
+                    color: '#16a34a',
+                    marginBottom: '8px',
+                    textShadow: '0 2px 4px rgba(22, 163, 74, 0.3)',
+                  }}
+                >
+                  Rs. {totalReceivables.toLocaleString()}
+                </div>
+                <div
+                  style={{
+                    fontSize: '16px',
+                    color: '#374151',
+                    fontWeight: '600',
+                    marginBottom: '5px',
+                  }}
+                >
+                  Total Receivables
+                </div>
+                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                  {receivables.length} accounts
+                </div>
+                <div
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    background: '#dcfce7',
+                    borderRadius: '3px',
+                    marginTop: '10px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #16a34a, #22c55e)',
+                      borderRadius: '3px',
+                    }}
+                  ></div>
+                </div>
               </div>
-              <div style={{ fontSize: '16px', color: '#374151', fontWeight: '600', marginBottom: '5px' }}>Total Receivables</div>
-              <div style={{ fontSize: '14px', color: '#6b7280' }}>{receivables.length} accounts</div>
-              <div style={{ 
-                width: '100%', 
-                height: '6px', 
-                background: '#dcfce7', 
-                borderRadius: '3px', 
-                marginTop: '10px',
-                overflow: 'hidden'
-              }}>
-                <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  background: 'linear-gradient(90deg, #16a34a, #22c55e)',
-                  borderRadius: '3px'
-                }}></div>
-              </div>
-            </div>
 
-            <div style={{ textAlign: 'center', flex: '1', minWidth: '200px' }}>
-              <div style={{ 
-                fontSize: '36px', 
-                fontWeight: 'bold', 
-                color: '#dc2626',
-                marginBottom: '8px',
-                textShadow: '0 2px 4px rgba(220, 38, 38, 0.3)'
-              }}>
-                Rs. {totalPayables.toLocaleString()}
+              <div style={{ textAlign: 'center', flex: '1', minWidth: '200px' }}>
+                <div
+                  style={{
+                    fontSize: '36px',
+                    fontWeight: 'bold',
+                    color: '#dc2626',
+                    marginBottom: '8px',
+                    textShadow: '0 2px 4px rgba(220, 38, 38, 0.3)',
+                  }}
+                >
+                  Rs. {totalPayables.toLocaleString()}
+                </div>
+                <div
+                  style={{
+                    fontSize: '16px',
+                    color: '#374151',
+                    fontWeight: '600',
+                    marginBottom: '5px',
+                  }}
+                >
+                  Total Payables
+                </div>
+                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                  {payables.length} accounts
+                </div>
+                <div
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    background: '#fef2f2',
+                    borderRadius: '3px',
+                    marginTop: '10px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #dc2626, #ef4444)',
+                      borderRadius: '3px',
+                    }}
+                  ></div>
+                </div>
               </div>
-              <div style={{ fontSize: '16px', color: '#374151', fontWeight: '600', marginBottom: '5px' }}>Total Payables</div>
-              <div style={{ fontSize: '14px', color: '#6b7280' }}>{payables.length} accounts</div>
-              <div style={{ 
-                width: '100%', 
-                height: '6px', 
-                background: '#fef2f2', 
-                borderRadius: '3px', 
-                marginTop: '10px',
-                overflow: 'hidden'
-              }}>
-                <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  background: 'linear-gradient(90deg, #dc2626, #ef4444)',
-                  borderRadius: '3px'
-                }}></div>
-              </div>
-            </div>
 
-            <div style={{ textAlign: 'center', flex: '1', minWidth: '200px' }}>
-              <div style={{ 
-                fontSize: '36px', 
-                fontWeight: 'bold', 
-                color: totalReceivables > totalPayables ? '#16a34a' : '#dc2626',
-                marginBottom: '8px',
-                textShadow: totalReceivables > totalPayables ? '0 2px 4px rgba(22, 163, 74, 0.3)' : '0 2px 4px rgba(220, 38, 38, 0.3)'
-              }}>
-                Rs. {Math.abs(totalReceivables - totalPayables).toLocaleString()}
-              </div>
-              <div style={{ fontSize: '16px', color: '#374151', fontWeight: '600', marginBottom: '5px' }}>
-                {totalReceivables > totalPayables ? 'Net Receivables' : 'Net Payables'}
-              </div>
-              <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                {totalReceivables > totalPayables ? 'Positive balance' : 'Outstanding amount'}
-              </div>
-              <div style={{ 
-                width: '100%', 
-                height: '6px', 
-                background: totalReceivables > totalPayables ? '#dcfce7' : '#fef2f2', 
-                borderRadius: '3px', 
-                marginTop: '10px',
-                overflow: 'hidden'
-              }}>
-                <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  background: totalReceivables > totalPayables ? 
-                    'linear-gradient(90deg, #16a34a, #22c55e)' : 
-                    'linear-gradient(90deg, #dc2626, #ef4444)',
-                  borderRadius: '3px'
-                }}></div>
+              <div style={{ textAlign: 'center', flex: '1', minWidth: '200px' }}>
+                <div
+                  style={{
+                    fontSize: '36px',
+                    fontWeight: 'bold',
+                    color:
+                      totalReceivables > totalPayables ? '#16a34a' : '#dc2626',
+                    marginBottom: '8px',
+                    textShadow:
+                      totalReceivables > totalPayables
+                        ? '0 2px 4px rgba(22, 163, 74, 0.3)'
+                        : '0 2px 4px rgba(220, 38, 38, 0.3)',
+                  }}
+                >
+                  Rs.{' '}
+                  {Math.abs(totalReceivables - totalPayables).toLocaleString()}
+                </div>
+                <div
+                  style={{
+                    fontSize: '16px',
+                    color: '#374151',
+                    fontWeight: '600',
+                    marginBottom: '5px',
+                  }}
+                >
+                  {totalReceivables > totalPayables
+                    ? 'Net Receivables'
+                    : 'Net Payables'}
+                </div>
+                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                  {totalReceivables > totalPayables
+                    ? 'Positive balance'
+                    : 'Outstanding amount'}
+                </div>
+                <div
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    background:
+                      totalReceivables > totalPayables ? '#dcfce7' : '#fef2f2',
+                    borderRadius: '3px',
+                    marginTop: '10px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      background:
+                        totalReceivables > totalPayables
+                          ? 'linear-gradient(90deg, #16a34a, #22c55e)'
+                          : 'linear-gradient(90deg, #dc2626, #ef4444)',
+                      borderRadius: '3px',
+                    }}
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </div> */}
 
       <Row>
         <Col xl={12}>
@@ -493,44 +651,108 @@ const DashDefault = () => {
             }}
           >
             <Card.Header>
-              <Card.Title as="h5" style={{ fontWeight: 800, letterSpacing: '0.2px' }}>Payables & Receivables</Card.Title>
+              <Card.Title
+                as="h5"
+                style={{ fontWeight: 800, letterSpacing: '0.2px' }}
+              >
+                Payables & Receivables
+              </Card.Title>
             </Card.Header>
             <Card.Body className="p-0">
-              
               <div
                 style={{
                   display: 'flex',
-                  padding: "26px",
-                  gap: "20px",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  width: '100%'
+                  padding: '26px',
+                  gap: '20px',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  width: '100%',
                 }}
               >
                 {/* Receivables Section */}
-                <div style={{ flex: '1', minWidth: 0, boxSizing: 'border-box', width: '50%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', backgroundColor: '#ecfdf5', border: '1px solid #86efac', padding: '8px 10px', borderRadius: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <h6 style={{ margin: 0, fontWeight: 800, color: '#166534' }}>Receivables</h6>
-                      <span style={{ fontSize: '12px', color: '#065f46', backgroundColor: '#d1fae5', padding: '2px 8px', borderRadius: 999 }}>{receivables.length}</span>
+                <div
+                  style={{
+                    flex: '1',
+                    minWidth: 0,
+                    boxSizing: 'border-box',
+                    width: '50%',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                      backgroundColor: '#ecfdf5',
+                      border: '1px solid #86efac',
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                    }}
+                  >
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                    >
+                      <h6
+                        style={{ margin: 0, fontWeight: 800, color: '#166534' }}
+                      >
+                        Receivables
+                      </h6>
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          color: '#065f46',
+                          backgroundColor: '#d1fae5',
+                          padding: '2px 8px',
+                          borderRadius: 999,
+                        }}
+                      >
+                        {receivables.length}
+                      </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                    >
                       <span
                         onClick={() => setShowReceivablesNumbers((s) => !s)}
-                        title={showReceivablesNumbers ? 'Hide numbers' : 'Show numbers'}
-                        style={{ cursor: 'pointer', color: '#065f46', fontSize: 16 }}
+                        title={
+                          showReceivablesNumbers
+                            ? 'Hide numbers'
+                            : 'Show numbers'
+                        }
+                        style={{
+                          cursor: 'pointer',
+                          color: '#065f46',
+                          fontSize: 16,
+                        }}
                         className={`fa ${showReceivablesNumbers ? 'fa-eye' : 'fa-eye-slash'}`}
                       />
                       <span
                         onClick={() => setShowReceivablesTotal((s) => !s)}
-                        title={showReceivablesTotal ? 'Hide total' : 'Show total'}
-                        style={{ cursor: 'pointer', color: '#065f46', fontSize: 16 }}
+                        title={
+                          showReceivablesTotal ? 'Hide total' : 'Show total'
+                        }
+                        style={{
+                          cursor: 'pointer',
+                          color: '#065f46',
+                          fontSize: 16,
+                        }}
                         className="fa fa-calculator"
                       />
                     </div>
                   </div>
                   {showReceivablesTotal && (
-                    <div style={{ marginBottom: '8px', backgroundColor: '#f0fdf4', border: '1px dashed #86efac', padding: '8px 10px', borderRadius: 8, color: '#166534', fontWeight: 700 }}>
+                    <div
+                      style={{
+                        marginBottom: '8px',
+                        backgroundColor: '#f0fdf4',
+                        border: '1px dashed #86efac',
+                        padding: '8px 10px',
+                        borderRadius: 8,
+                        color: '#166534',
+                        fontWeight: 700,
+                      }}
+                    >
                       Total Receivables: Rs. {totalReceivables.toLocaleString()}
                     </div>
                   )}
@@ -543,65 +765,175 @@ const DashDefault = () => {
                     }}
                   >
                     {isLoadingPersons ? (
-                      <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center', width: '100%' }}>Loading…</div>) : (
-                      receivables.length === 0 ? (
-                        <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center', width: '100%' }}>No receivables</div>
-                      ) : (
-                        receivables.map((p, idx) => {
-                          const amount = (p.givingCredit || 0) - (p.takingCredit || 0);
-                          return (
-                            <div key={p._id}
+                      <div
+                        style={{
+                          padding: '12px',
+                          color: '#6b7280',
+                          textAlign: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        Loading…
+                      </div>
+                    ) : receivables.length === 0 ? (
+                      <div
+                        style={{
+                          padding: '12px',
+                          color: '#6b7280',
+                          textAlign: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        No receivables
+                      </div>
+                    ) : (
+                      receivables.map((p, idx) => {
+                        const amount =
+                          (p.givingCredit || 0) - (p.takingCredit || 0);
+                        return (
+                          <div
+                            key={p._id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: '10px 12px',
+                              borderBottom: '1px solid #f3f4f6',
+                              gap: '10px',
+                            }}
+                          >
+                            <img
+                              src={avatarsArr[idx % avatarsArr.length]}
+                              alt="avatar"
                               style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '10px 12px',
-                                borderBottom: '1px solid #f3f4f6',
-                                gap: '10px',
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '50%',
+                                objectFit: 'cover',
                               }}
-                            >
-                              <img src={avatarsArr[idx % avatarsArr.length]} alt="avatar"
-                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <h6 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#14532d' }}>{p.name}</h6>
-                                  <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 700 }}>Rs. {Math.abs(amount).toLocaleString()}</span>
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                                  {showReceivablesNumbers ? p.number : '••••••••••'}
-                                </div>
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <h6
+                                  style={{
+                                    margin: 0,
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#14532d',
+                                  }}
+                                >
+                                  {p.name}
+                                </h6>
+                                <span
+                                  style={{
+                                    fontSize: '12px',
+                                    color: '#16a34a',
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  Rs. {Math.abs(amount).toLocaleString()}
+                                </span>
+                              </div>
+                              <div
+                                style={{ fontSize: '12px', color: '#6b7280' }}
+                              >
+                                {showReceivablesNumbers
+                                  ? p.number
+                                  : '••••••••••'}
                               </div>
                             </div>
-                          );
-                        })
-                      )
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>
 
                 {/* Payables Section */}
-                <div style={{ flex: '1', minWidth: 0, boxSizing: 'border-box', width: '50%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '8px 10px', borderRadius: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <h6 style={{ margin: 0, fontWeight: 800, color: '#7f1d1d' }}>Payables</h6>
-                      <span style={{ fontSize: '12px', color: '#7f1d1d', backgroundColor: '#fee2e2', padding: '2px 8px', borderRadius: 999 }}>{payables.length}</span>
+                <div
+                  style={{
+                    flex: '1',
+                    minWidth: 0,
+                    boxSizing: 'border-box',
+                    width: '50%',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                      backgroundColor: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                    }}
+                  >
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                    >
+                      <h6
+                        style={{ margin: 0, fontWeight: 800, color: '#7f1d1d' }}
+                      >
+                        Payables
+                      </h6>
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          color: '#7f1d1d',
+                          backgroundColor: '#fee2e2',
+                          padding: '2px 8px',
+                          borderRadius: 999,
+                        }}
+                      >
+                        {payables.length}
+                      </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                    >
                       <span
                         onClick={() => setShowPayablesNumbers((s) => !s)}
-                        title={showPayablesNumbers ? 'Hide numbers' : 'Show numbers'}
-                        style={{ cursor: 'pointer', color: '#7f1d1d', fontSize: 16 }}
+                        title={
+                          showPayablesNumbers ? 'Hide numbers' : 'Show numbers'
+                        }
+                        style={{
+                          cursor: 'pointer',
+                          color: '#7f1d1d',
+                          fontSize: 16,
+                        }}
                         className={`fa ${showPayablesNumbers ? 'fa-eye' : 'fa-eye-slash'}`}
                       />
                       <span
                         onClick={() => setShowPayablesTotal((s) => !s)}
                         title={showPayablesTotal ? 'Hide total' : 'Show total'}
-                        style={{ cursor: 'pointer', color: '#7f1d1d', fontSize: 16 }}
+                        style={{
+                          cursor: 'pointer',
+                          color: '#7f1d1d',
+                          fontSize: 16,
+                        }}
                         className="fa fa-calculator"
                       />
                     </div>
                   </div>
                   {showPayablesTotal && (
-                    <div style={{ marginBottom: '8px', backgroundColor: '#fef2f2', border: '1px dashed #fecaca', padding: '8px 10px', borderRadius: 8, color: '#7f1d1d', fontWeight: 700 }}>
+                    <div
+                      style={{
+                        marginBottom: '8px',
+                        backgroundColor: '#fef2f2',
+                        border: '1px dashed #fecaca',
+                        padding: '8px 10px',
+                        borderRadius: 8,
+                        color: '#7f1d1d',
+                        fontWeight: 700,
+                      }}
+                    >
                       Total Payables: Rs. {totalPayables.toLocaleString()}
                     </div>
                   )}
@@ -614,42 +946,92 @@ const DashDefault = () => {
                     }}
                   >
                     {isLoadingPersons ? (
-                      <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center' }}>Loading…</div>) : (
-                      payables.length === 0 ? (
-                        <div style={{ padding: '12px', color: '#6b7280', textAlign: 'center' }}>No payables</div>
-                      ) : (
-                        payables.map((p, idx) => {
-                          const amount = (p.takingCredit || 0) - (p.givingCredit || 0);
-                          return (
-                            <div key={p._id}
+                      <div
+                        style={{
+                          padding: '12px',
+                          color: '#6b7280',
+                          textAlign: 'center',
+                        }}
+                      >
+                        Loading…
+                      </div>
+                    ) : payables.length === 0 ? (
+                      <div
+                        style={{
+                          padding: '12px',
+                          color: '#6b7280',
+                          textAlign: 'center',
+                        }}
+                      >
+                        No payables
+                      </div>
+                    ) : (
+                      payables.map((p, idx) => {
+                        const amount =
+                          (p.takingCredit || 0) - (p.givingCredit || 0);
+                        return (
+                          <div
+                            key={p._id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: '10px 12px',
+                              borderBottom: '1px solid #f3f4f6',
+                              gap: '10px',
+                            }}
+                          >
+                            <img
+                              src={avatarsArr[idx % avatarsArr.length]}
+                              alt="avatar"
                               style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '10px 12px',
-                                borderBottom: '1px solid #f3f4f6',
-                                gap: '10px',
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '50%',
+                                objectFit: 'cover',
                               }}
-                            >
-                              <img src={avatarsArr[idx % avatarsArr.length]} alt="avatar"
-                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <h6 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#7f1d1d' }}>{p.name}</h6>
-                                  <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: 700 }}>Rs. {Math.abs(amount).toLocaleString()}</span>
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                                  {showPayablesNumbers ? p.number : '••••••••••'}
-                                </div>
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <h6
+                                  style={{
+                                    margin: 0,
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#7f1d1d',
+                                  }}
+                                >
+                                  {p.name}
+                                </h6>
+                                <span
+                                  style={{
+                                    fontSize: '12px',
+                                    color: '#dc2626',
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  Rs. {Math.abs(amount).toLocaleString()}
+                                </span>
+                              </div>
+                              <div
+                                style={{ fontSize: '12px', color: '#6b7280' }}
+                              >
+                                {showPayablesNumbers ? p.number : '••••••••••'}
                               </div>
                             </div>
-                          );
-                        })
-                      )
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>
               </div>
-              </Card.Body>
+            </Card.Body>
           </Card>
         </Col>
 
@@ -706,29 +1088,35 @@ const DashDefault = () => {
         </Col> */}
 
         <Col xl={12} className="user-activity">
-          <div style={{
-            background: 'white',
-            borderRadius: '15px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-            border: '1px solid #e2e8f0',
-            marginTop: '25px',
-            width: '100%',
-            overflow: 'hidden'
-          }}>
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '15px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+              border: '1px solid #e2e8f0',
+              marginTop: '25px',
+              width: '100%',
+              overflow: 'hidden',
+            }}
+          >
             {/* Header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              padding: '20px 25px',
-              borderBottom: '1px solid #e2e8f0'
-            }}>
-              <div style={{ 
-                fontSize: '20px', 
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
-              }}>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                padding: '20px 25px',
+                borderBottom: '1px solid #e2e8f0',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
                 <i className="fa fa-history" style={{ fontSize: '18px' }}></i>
                 Recent Activity
               </div>
@@ -736,57 +1124,70 @@ const DashDefault = () => {
 
             {/* Tabs */}
             <div style={{ width: '100%' }}>
-              <Tabs defaultActiveKey="today" id="uncontrolled-tab-example" className="mb-0">
-                <Tab eventKey="today" title={
-                  <span style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    padding: '12px 16px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}>
-                    <i className="fa fa-calendar-day"></i>
-                    Today
-                  </span>
-                }>
-                  <div style={{ padding: '25px' }}>
-                    {tabContent}
-                  </div>
+              <Tabs
+                defaultActiveKey="today"
+                id="uncontrolled-tab-example"
+                className="mb-0"
+              >
+                <Tab
+                  eventKey="today"
+                  title={
+                    <span
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                      }}
+                    >
+                      <i className="fa fa-calendar-day"></i>
+                      Today
+                    </span>
+                  }
+                >
+                  <div style={{ padding: '25px' }}>{tabContent}</div>
                 </Tab>
-                <Tab eventKey="week" title={
-                  <span style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    padding: '12px 16px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}>
-                    <i className="fa fa-calendar-week"></i>
-                    This Week
-                  </span>
-                }>
-                  <div style={{ padding: '25px' }}>
-                    {tabContent}
-                  </div>
+                <Tab
+                  eventKey="week"
+                  title={
+                    <span
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                      }}
+                    >
+                      <i className="fa fa-calendar-week"></i>
+                      This Week
+                    </span>
+                  }
+                >
+                  <div style={{ padding: '25px' }}>{tabContent}</div>
                 </Tab>
-                <Tab eventKey="all" title={
-                  <span style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    padding: '12px 16px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}>
-                    <i className="fa fa-calendar-alt"></i>
-                    All Time
-                  </span>
-                }>
-                  <div style={{ padding: '25px' }}>
-                    {tabContent}
-                  </div>
+                <Tab
+                  eventKey="all"
+                  title={
+                    <span
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                      }}
+                    >
+                      <i className="fa fa-calendar-alt"></i>
+                      All Time
+                    </span>
+                  }
+                >
+                  <div style={{ padding: '25px' }}>{tabContent}</div>
                 </Tab>
               </Tabs>
             </div>

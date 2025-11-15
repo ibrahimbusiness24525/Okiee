@@ -545,16 +545,18 @@ export const SmallInvoiceComponent = ({
   const termsHtml = (
     Array.isArray(termsAndConditionsData) ? termsAndConditionsData : []
   )
-    .map(
-      (item, index) => `
+    .filter((x) => typeof x === 'string' && x.trim().length > 0)
+    .map((item, index) => {
+      const safeItem = item.trim();
+      return `
     <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
       <strong style="font-weight: 600; color: #000; margin-right: 4px;">
         ${index + 1}.
       </strong>
-      <span>${item}</span>
+      <span>${safeItem}</span>
     </div>
-  `
-    )
+  `;
+    })
     .join('');
   const generateInvoiceHTML = () => {
     // Helper to render items rows
@@ -568,7 +570,7 @@ export const SmallInvoiceComponent = ({
               <td style="border: 1px solid #000; padding: 6px; color: #000; font-weight: 700;">${item.no}</td>
               <td style="border: 1px solid #000; padding: 6px; color: #000; font-weight: 700;">
                 <small style="font-size: 10px; color: #000; font-weight: 600;">${composed || item.name || ''}</small><br>
-                <small style="font-size: 8px; color: #000; font-weight: 600;"> ${item.code}</small>
+                <small style="font-size: 8px; color: #000; font-weight: 600;"> ${item.code || ''}</small>
               </td>
               <td style="border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 700;">${item.qty}</td>
               <td style="border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 700;">${item.amount}</td>
@@ -805,15 +807,16 @@ export const SmallInvoiceComponent = ({
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <div>
                     ${ownerName ? `<div style="font-weight: 800; margin-bottom: 4px; font-size: 16px; color: #000;">${ownerName}</div>` : ''}
-                    <div style="font-weight: 800; margin-bottom: 4px; font-size: 16px; color: #000;">
-                      ${shopNumber}
+                    <div style="font-weight: 800; margin-bottom: 2px; font-size: 16px; color: #000;">
+                      ${shopPhone ? `Cell No: ${shopPhone}` : ''}
                     </div>
+                    ${shopAddress ? `<div style="font-weight: 600; margin-bottom: 4px; font-size: 12px; color: #000; max-width: 220px;">${shopAddress}</div>` : ''}
                   </div>
                 </div>
               </div>
             </div>
-              <div class="title" style="font-size: 20px; margin: 8px 0; text-align: center; font-weight: 900; color: #000;">${data.title}</div>
-              <div class="subtitle" style="font-size: 14px; margin-bottom: 12px; text-align: center; font-style: italic; color: #000;">${data.subtitle}</div>
+              <div class="title" style="font-size: 20px; margin: 8px 0; text-align: center; font-weight: 900; color: #000;">${data && data.title ? data.title : ''}</div>
+              <div class="subtitle" style="font-size: 14px; margin-bottom: 12px; text-align: center; font-style: italic; color: #000;">${data && data.subtitle ? data.subtitle : ''}</div>
           </div>
           <div class="customer" style="font-size: 15px; margin: 8px 0; color: #000; line-height: 0; font-weight: 700;">
               <p style="font-size: 1.1rem; margin-bottom: 25px;">Customer Detail:</p>
@@ -821,7 +824,7 @@ export const SmallInvoiceComponent = ({
               <p style="margin-top: 20px;">Cel No: ${customerData.phone}</p>
           </div>
           <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;" />
-          <table style="width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px;">
+          <table style="width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px;">
               <thead>
               <tr>
                   <th style="border: 1px solid #000; padding: 2px; text-align: left; color: #000; font-weight: bold;">No</th>
@@ -840,6 +843,31 @@ export const SmallInvoiceComponent = ({
                 <span>SubTotal:</span>
                 <span>${summaryData.subTotal}</span>
               </div>
+              ${(() => {
+                const invoiceData = data || {};
+                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData || {};
+                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const givingCredit = entityData?.givingCredit || 0;
+                const takingCredit = entityData?.takingCredit || 0;
+                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
+                
+                if (hasBalance) {
+                  const previousBalance = prevBal !== undefined && prevBal !== null
+                    ? prevBal
+                    : (givingCredit - takingCredit);
+                  const balanceLabel = prevBal !== undefined && prevBal !== null
+                    ? 'Previous Balance'
+                    : (previousBalance > 0 ? 'Receiving Credit' : previousBalance < 0 ? 'Giving Credit' : 'Previous Balance');
+                  
+                  return `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000;">
+                      <span>${balanceLabel}:</span>
+                      <span>${Math.abs(previousBalance).toLocaleString()}</span>
+                    </div>
+                  `;
+                }
+                return '';
+              })()}
               <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000;">
                 <span>Net Total:</span>
                 <span style="color: #000; font-weight: bold;">${summaryData.netTotal}</span>
@@ -848,13 +876,38 @@ export const SmallInvoiceComponent = ({
                 <span>Total:</span>
                 <span>${summaryData.total}</span>
               </div>
+              ${(() => {
+                const invoiceData = data || {};
+                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData || {};
+                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const givingCredit = entityData?.givingCredit || 0;
+                const takingCredit = entityData?.takingCredit || 0;
+                const cashReceived = invoiceData?.cashReceived || invoiceData?.dataReceived?.cashReceived || 0;
+                const totalAmount = parseMoney(summaryData.total);
+                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
+                
+                if (hasBalance) {
+                  const previousBalance = prevBal !== undefined && prevBal !== null
+                    ? prevBal
+                    : (givingCredit - takingCredit);
+                  const netBalance = totalAmount - cashReceived + previousBalance;
+                  
+                  return `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000; font-weight: bold;">
+                      <span>Net Balance:</span>
+                      <span>${netBalance.toLocaleString()}</span>
+                    </div>
+                  `;
+                }
+                return '';
+              })()}
               </div>
           </div>
-          <div style="margin-top: 10px; padding: 8px; border-top: 1px solid #ccc; font-size: 6px; color: #000; font-family: Arial, sans-serif;">
-            <div style="font-weight: bold; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; color: #000;">
+          <div style="margin-top: 10px; padding: 8px; border-top: 1px solid #ccc; font-size: 10px; color: #000; font-family: Arial, sans-serif;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px; text-transform: uppercase; color: #000;">
               Terms & Conditions
             </div>
-            <div style="font-size: 5px; display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 9px; display: flex; flex-direction: column; gap: 3px; line-height: 1.3;">
               ${termsHtml}
             </div>
           </div>
@@ -996,25 +1049,30 @@ export const SmallInvoiceComponent = ({
                       {ownerName}
                     </div>
                   )}
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      marginBottom: '4px',
-                      fontSize: '16px',
-                      color: '#000',
-                    }}
-                  >
-                    {shopNumber}
-                  </div>
-                  {/* <div
-                    style={{
-                      fontSize: '12px',
-                      color: '#000',
-                      fontWeight: '600',
-                    }}
-                  >
-                    {shopAddress}
-                  </div> */}
+                  {shopPhone && (
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        marginBottom: '2px',
+                        fontSize: '16px',
+                        color: '#000',
+                      }}
+                    >
+                      {`Cell No: ${shopPhone}`}
+                    </div>
+                  )}
+                  {shopAddress && (
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        color: '#000',
+                        fontWeight: 600,
+                        maxWidth: '280px',
+                      }}
+                    >
+                      {shopAddress}
+                    </div>
+                  )}
                 </div>
               </div>
               {/* <div>
@@ -1040,7 +1098,7 @@ export const SmallInvoiceComponent = ({
               color: '#000',
             }}
           >
-            {data.title}
+            {data?.title || ''}
           </div>
           <div
             style={{
@@ -1051,7 +1109,7 @@ export const SmallInvoiceComponent = ({
               color: '#000',
             }}
           >
-            {data.subtitle}
+            {data?.subtitle || ''}
           </div>
           <div
             style={{
@@ -1316,6 +1374,40 @@ export const SmallInvoiceComponent = ({
                 <span>{summaryData.subTotal}</span>
               </div>
 
+              {/* Show previous balance if available */}
+              {(() => {
+                const invoiceData = data;
+                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData;
+                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const givingCredit = entityData?.givingCredit || 0;
+                const takingCredit = entityData?.takingCredit || 0;
+                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
+                
+                if (hasBalance) {
+                  const previousBalance = prevBal !== undefined && prevBal !== null
+                    ? prevBal
+                    : (givingCredit - takingCredit);
+                  const balanceLabel = prevBal !== undefined && prevBal !== null
+                    ? 'Previous Balance'
+                    : (previousBalance > 0 ? 'Receiving Credit' : previousBalance < 0 ? 'Giving Credit' : 'Previous Balance');
+                  
+                  return (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '3px',
+                        color: '#000',
+                      }}
+                    >
+                      <span>{balanceLabel}:</span>
+                      <span>{toCurrency(Math.abs(previousBalance))}</span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               <div
                 style={{
                   display: 'flex',
@@ -1341,6 +1433,41 @@ export const SmallInvoiceComponent = ({
                 <span>Total:</span>
                 <span>{summaryData.total}</span>
               </div>
+
+              {/* Show net balance after payment */}
+              {(() => {
+                const invoiceData = data;
+                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData;
+                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const givingCredit = entityData?.givingCredit || 0;
+                const takingCredit = entityData?.takingCredit || 0;
+                const cashReceived = invoiceData?.cashReceived || invoiceData?.dataReceived?.cashReceived || 0;
+                const totalAmount = parseMoney(summaryData.total);
+                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
+                
+                if (hasBalance) {
+                  const previousBalance = prevBal !== undefined && prevBal !== null
+                    ? prevBal
+                    : (givingCredit - takingCredit);
+                  const netBalance = totalAmount - cashReceived + previousBalance;
+                  
+                  return (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '3px',
+                        color: '#000',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      <span>Net Balance:</span>
+                      <span>{toCurrency(netBalance)}</span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
               {/* <div
                 style={{
                   display: 'flex',

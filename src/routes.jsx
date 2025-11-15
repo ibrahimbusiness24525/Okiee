@@ -109,6 +109,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/repairing',
+        element: lazy(() => import('./views/repairing/Repairing')),
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/getCustomerRecord',
         element: lazy(() => import('./components/mobileCards/CustomerRecord')), // Mobile List
       },

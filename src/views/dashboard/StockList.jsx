@@ -17,6 +17,7 @@ const StockList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [bulkToDelete, setBulkToDelete] = useState(null);
   const [selectedImeis, setSelectedImeis] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const getAllStock = async () => {
     const response = await api.get('/api/purchase/all-purchase-phone');
@@ -106,6 +107,31 @@ const StockList = () => {
     return false;
   };
 
+  // Helper function to filter ramSimDetails by company
+  const filterBulkByCompany = (bulkPhone, company) => {
+    if (company === 'all') {
+      return bulkPhone;
+    }
+    // Create a copy of the bulk phone with filtered ramSimDetails
+    return {
+      ...bulkPhone,
+      ramSimDetails: (bulkPhone.ramSimDetails || []).filter(
+        (detail) => detail.companyName === company
+      ),
+    };
+  };
+
+  // Helper: total IMEIs in a bulk purchase
+  const getBulkImeiCount = (bulk) => {
+    if (!bulk || !Array.isArray(bulk.ramSimDetails)) return 0;
+    return bulk.ramSimDetails.reduce((sum, detail) => {
+      const count = Array.isArray(detail?.imeiNumbers)
+        ? detail.imeiNumbers.length
+        : 0;
+      return sum + count;
+    }, 0);
+  };
+
   const printSelected = async () => {
     try {
       const selectedBulkIds = selectedItems
@@ -116,13 +142,29 @@ const StockList = () => {
         .filter((id) => id.startsWith('single-'))
         .map((id) => id.replace('single-', ''));
 
-      const selectedBulkPhones = data.bulkPhones.filter((phone) =>
+      // Get selected bulk phones from original data
+      let selectedBulkPhones = data.bulkPhones.filter((phone) =>
         selectedBulkIds.includes(phone._id)
       );
 
-      const selectedSinglePhones = data.singlePhones.filter((phone) =>
+      // Filter bulk phones by selected company if a company is selected
+      if (selectedCompany !== 'all') {
+        selectedBulkPhones = selectedBulkPhones
+          .map((phone) => filterBulkByCompany(phone, selectedCompany))
+          .filter((phone) => getBulkImeiCount(phone) > 0); // Only include if there are IMEIs after filtering
+      }
+
+      // Get selected single phones
+      let selectedSinglePhones = data.singlePhones.filter((phone) =>
         selectedSingleIds.includes(phone._id)
       );
+
+      // Filter single phones by selected company if a company is selected
+      if (selectedCompany !== 'all') {
+        selectedSinglePhones = selectedSinglePhones.filter(
+          (phone) => phone.companyName === selectedCompany
+        );
+      }
 
       const printContent = preparePrintContent(
         selectedBulkPhones,
@@ -557,16 +599,24 @@ const StockList = () => {
 
     return companySections;
   };
-  // Filter phones by type and company
+
+  // Filter phones by type and company, exclude bulk with zero phones
   const filteredBulkPhones = (() => {
     let phones = filter === 'all' || filter === 'bulk' ? data.bulkPhones : [];
 
+    // Exclude bulk records that have 0 IMEIs overall
+    phones = phones.filter((bulk) => getBulkImeiCount(bulk) > 0);
+
     if (selectedCompany !== 'all') {
-      phones = phones.filter((phone) =>
-        phone.ramSimDetails?.some(
-          (detail) => detail.companyName === selectedCompany
+      // Filter to only show bulk purchases that have the selected company
+      phones = phones
+        .filter((phone) =>
+          phone.ramSimDetails?.some(
+            (detail) => detail.companyName === selectedCompany
+          )
         )
-      );
+        .map((phone) => filterBulkByCompany(phone, selectedCompany))
+        .filter((phone) => getBulkImeiCount(phone) > 0); // Filter out if no IMEIs after filtering
     }
 
     // Reverse the array to show newest first
@@ -587,7 +637,9 @@ const StockList = () => {
 
   // Build base lists for current type filter (without company filter) for pills/counts
   const baseBulkForFilter =
-    filter === 'all' || filter === 'bulk' ? data.bulkPhones : [];
+    filter === 'all' || filter === 'bulk'
+      ? data.bulkPhones.filter((bulk) => getBulkImeiCount(bulk) > 0)
+      : [];
   const baseSingleForFilter =
     filter === 'all' || filter === 'single' ? data.singlePhones : [];
 
@@ -652,9 +704,34 @@ const StockList = () => {
     }
   }, [filter, data]);
 
+  // Filter companies by search query
+  const filteredCompanies = getCompaniesForCurrentFilter().filter((company) =>
+    company.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="stock-list" style={{ padding: '20px' }}>
       <h1>Stock List</h1>
+
+      {/* Search Bar */}
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Search companies..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%',
+            maxWidth: '400px',
+            padding: '10px 15px',
+            fontSize: '14px',
+            border: '1px solid #d1d5db',
+            borderRadius: '8px',
+            outline: 'none',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          }}
+        />
+      </div>
 
       {/* Company Filter Pills */}
       <div style={{ marginBottom: '20px' }}>
@@ -695,7 +772,7 @@ const StockList = () => {
             All Companies ({totalUnderCurrentFilter})
           </button>
 
-          {getCompaniesForCurrentFilter().map((company) => {
+          {filteredCompanies.map((company) => {
             const companyCount = getCompanyCountUnderFilter(company);
             return (
               <button
@@ -855,7 +932,7 @@ const StockList = () => {
                 marginBottom: '10px',
               }}
             >
-              <h2>Bulk Phones ({filteredBulkPhones.length})</h2>
+              {/* <h2>Bulk Phones ({filteredBulkPhones.length})</h2> */}
               <button
                 onClick={() => {
                   const allBulkSelected = filteredBulkPhones.every((phone) =>
@@ -1041,159 +1118,167 @@ const StockList = () => {
                   </div>
                 </div>
 
-                {phone.ramSimDetails?.map((detail, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      marginLeft: '20px',
-                      padding: '15px',
-                      backgroundColor: index % 2 === 0 ? '#f9fafb' : 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px',
-                      marginBottom: '10px',
-                    }}
-                  >
-                    <div style={{ marginBottom: '10px' }}>
-                      <h4
-                        style={{
-                          margin: '0 0 8px 0',
-                          color: '#374151',
-                          fontSize: '16px',
-                        }}
-                      >
-                        {detail.companyName} {detail.modelName}{' '}
-                        {detail.ramMemory}
-                      </h4>
+                {(phone.ramSimDetails || [])
+                  .filter(
+                    (detail) =>
+                      Array.isArray(detail?.imeiNumbers) &&
+                      detail.imeiNumbers.length > 0 &&
+                      (selectedCompany === 'all' || detail.companyName === selectedCompany)
+                  )
+                  .map((detail, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        marginLeft: '20px',
+                        padding: '15px',
+                        backgroundColor: index % 2 === 0 ? '#f9fafb' : 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        marginBottom: '10px',
+                      }}
+                    >
+                      <div style={{ marginBottom: '10px' }}>
+                        <h4
+                          style={{
+                            margin: '0 0 8px 0',
+                            color: '#374151',
+                            fontSize: '16px',
+                          }}
+                        >
+                          {detail.companyName} {detail.modelName}{' '}
+                          {detail.ramMemory}
+                        </h4>
 
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns:
-                            'repeat(auto-fit, minmax(180px, 1fr))',
-                          gap: '8px',
-                          marginBottom: '15px',
-                        }}
-                      >
-                        <div>
-                          <strong>Price per Unit:</strong> Rs.{' '}
-                          {detail.priceOfOne?.toLocaleString() || ''}
-                        </div>
-                        <div>
-                          <strong>SIM Option:</strong> {detail.simOption || ''}
-                        </div>
-                        <div>
-                          <strong>Battery Health:</strong>{' '}
-                          {detail.batteryHealth || ''}
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                              'repeat(auto-fit, minmax(180px, 1fr))',
+                            gap: '8px',
+                            marginBottom: '15px',
+                          }}
+                        >
+                          <div>
+                            <strong>Price per Unit:</strong> Rs.{' '}
+                            {detail.priceOfOne?.toLocaleString() || ''}
+                          </div>
+                          <div>
+                            <strong>SIM Option:</strong>{' '}
+                            {detail.simOption || ''}
+                          </div>
+                          <div>
+                            <strong>Battery Health:</strong>{' '}
+                            {detail.batteryHealth || ''}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div style={{ marginTop: '10px' }}>
-                      <h5
-                        style={{
-                          margin: '0 0 8px 0',
-                          color: '#6b7280',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                        }}
-                      >
-                        IMEI Numbers ({detail.imeiNumbers?.length || 0}):
-                      </h5>
+                      <div style={{ marginTop: '10px' }}>
+                        <h5
+                          style={{
+                            margin: '0 0 8px 0',
+                            color: '#6b7280',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                          }}
+                        >
+                          IMEI Numbers ({detail.imeiNumbers?.length || 0}):
+                        </h5>
 
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns:
-                            'repeat(auto-fit, minmax(280px, 1fr))',
-                          gap: '10px',
-                        }}
-                      >
-                        {detail.imeiNumbers?.map((imei, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              fontSize: '13px',
-                              padding: '12px',
-                              backgroundColor: '#f8fafc',
-                              borderRadius: '6px',
-                              border: '1px solid #e2e8f0',
-                              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                            }}
-                          >
-                            <div style={{ marginBottom: '6px' }}>
-                              <strong style={{ color: '#374151' }}>
-                                IMEI1:
-                              </strong>
-                              <span
-                                style={{
-                                  marginLeft: '5px',
-                                  fontFamily: 'monospace',
-                                }}
-                              >
-                                {imei.imei1 || 'N/A'}
-                              </span>
-                            </div>
-                            <div style={{ marginBottom: '6px' }}>
-                              <strong style={{ color: '#374151' }}>
-                                IMEI2:
-                              </strong>
-                              <span
-                                style={{
-                                  marginLeft: '5px',
-                                  fontFamily: 'monospace',
-                                }}
-                              >
-                                {imei.imei2 || 'N/A'}
-                              </span>
-                            </div>
-                            <div style={{ marginBottom: '6px' }}>
-                              <strong style={{ color: '#374151' }}>
-                                Color:
-                              </strong>
-                              <span
-                                style={{
-                                  marginLeft: '5px',
-                                  textTransform: 'capitalize',
-                                }}
-                              >
-                                {imei.color || 'N/A'}
-                              </span>
-                            </div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                              'repeat(auto-fit, minmax(280px, 1fr))',
+                            gap: '10px',
+                          }}
+                        >
+                          {detail.imeiNumbers?.map((imei, i) => (
                             <div
+                              key={i}
                               style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                paddingTop: '6px',
-                                borderTop: '1px solid #e5e7eb',
+                                fontSize: '13px',
+                                padding: '12px',
+                                backgroundColor: '#f8fafc',
+                                borderRadius: '6px',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
                               }}
                             >
-                              <strong style={{ color: '#374151' }}>
-                                Dispatched:
-                              </strong>
-                              <span
+                              <div style={{ marginBottom: '6px' }}>
+                                <strong style={{ color: '#374151' }}>
+                                  IMEI1:
+                                </strong>
+                                <span
+                                  style={{
+                                    marginLeft: '5px',
+                                    fontFamily: 'monospace',
+                                  }}
+                                >
+                                  {imei.imei1 || 'N/A'}
+                                </span>
+                              </div>
+                              <div style={{ marginBottom: '6px' }}>
+                                <strong style={{ color: '#374151' }}>
+                                  IMEI2:
+                                </strong>
+                                <span
+                                  style={{
+                                    marginLeft: '5px',
+                                    fontFamily: 'monospace',
+                                  }}
+                                >
+                                  {imei.imei2 || 'N/A'}
+                                </span>
+                              </div>
+                              <div style={{ marginBottom: '6px' }}>
+                                <strong style={{ color: '#374151' }}>
+                                  Color:
+                                </strong>
+                                <span
+                                  style={{
+                                    marginLeft: '5px',
+                                    textTransform: 'capitalize',
+                                  }}
+                                >
+                                  {imei.color || 'N/A'}
+                                </span>
+                              </div>
+                              <div
                                 style={{
-                                  color: imei.isDispatched
-                                    ? '#059669'
-                                    : '#dc2626',
-                                  fontWeight: 'bold',
-                                  padding: '2px 8px',
-                                  borderRadius: '4px',
-                                  backgroundColor: imei.isDispatched
-                                    ? '#d1fae5'
-                                    : '#fee2e2',
-                                  fontSize: '12px',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  paddingTop: '6px',
+                                  borderTop: '1px solid #e5e7eb',
                                 }}
                               >
-                                {imei.isDispatched ? 'Yes' : 'No'}
-                              </span>
+                                <strong style={{ color: '#374151' }}>
+                                  Dispatched:
+                                </strong>
+                                <span
+                                  style={{
+                                    color: imei.isDispatched
+                                      ? '#059669'
+                                      : '#dc2626',
+                                    fontWeight: 'bold',
+                                    padding: '2px 8px',
+                                    borderRadius: '4px',
+                                    backgroundColor: imei.isDispatched
+                                      ? '#d1fae5'
+                                      : '#fee2e2',
+                                    fontSize: '12px',
+                                  }}
+                                >
+                                  {imei.isDispatched ? 'Yes' : 'No'}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             ))}
           </div>

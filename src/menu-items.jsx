@@ -11,9 +11,9 @@ const menuItems = {
           title: 'Dashboard',
           type: 'item',
           icon: 'feather icon-home',
-          url: ''
+          url: '',
         },
-      ]
+      ],
     },
     {
       id: 'adduser',
@@ -26,16 +26,16 @@ const menuItems = {
           title: 'Add New Shop',
           type: 'item',
           icon: 'feather icon-user',
-          url: '/app/dashboard/addUser'
+          url: '/app/dashboard/addUser',
         },
         {
           id: 'shop',
           title: 'Shop Records',
           type: 'item',
           icon: 'feather icon-user',
-          url: '/app/dashboard/addShop'
-        }
-      ]
+          url: '/app/dashboard/addShop',
+        },
+      ],
     },
     {
       id: 'mobile',
@@ -48,44 +48,51 @@ const menuItems = {
           title: 'New Phones',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/newMobileList'
+          url: '/app/dashboard/newMobileList',
         },
         {
           id: 'mobile',
           title: 'Used Phones',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/usedMobileList'
+          url: '/app/dashboard/usedMobileList',
         },
         {
           id: 'mobile',
           title: 'Bulk Phones',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/bulkPhones'
+          url: '/app/dashboard/bulkPhones',
         },
         {
           id: 'mobile',
           title: 'Add Accessory',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/addAccessory'
+          url: '/app/dashboard/addAccessory',
+        },
+        {
+          id: 'mobile',
+          title: 'Repairing',
+          type: 'item',
+          icon: 'feather icon-settings',
+          url: '/app/dashboard/repairing',
         },
         {
           id: 'mobile',
           title: 'Dispatch Phones',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/DispachmobileList'
+          url: '/app/dashboard/DispachmobileList',
         },
         {
           id: 'mobile',
           title: 'Get Customer Record',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/getCustomerRecord'
+          url: '/app/dashboard/getCustomerRecord',
         },
-      ]
+      ],
     },
     {
       id: 'mobile',
@@ -93,7 +100,6 @@ const menuItems = {
       type: 'group',
       icon: 'icon-navigation',
       children: [
-
         // {
         //   id: 'mobile',
         //   title: 'Pocket Cash',
@@ -106,21 +112,21 @@ const menuItems = {
           title: 'My Wallet',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/wallet'
+          url: '/app/dashboard/wallet',
         },
         {
           id: 'mobile',
           title: 'Payables and Receivables',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/PayablesAndReceivables'
+          url: '/app/dashboard/PayablesAndReceivables',
         },
         {
           id: 'mobile',
           title: 'Expense',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/app/dashboard/addLedger'
+          url: '/app/dashboard/addLedger',
         },
         // {
         //   id: 'mobile',
@@ -143,7 +149,7 @@ const menuItems = {
         //   icon: 'feather icon-file-text',
         //   url: '/app/dashboard/ledgerRecords'
         // },
-      ]
+      ],
     },
 
     {
@@ -157,16 +163,16 @@ const menuItems = {
           title: 'Today Purchase',
           type: 'item',
           icon: 'feather icon-file-text',
-          url: '/purchase/todayPurchase'
+          url: '/purchase/todayPurchase',
         },
         {
           id: 'tabel',
           title: 'Purchase Records',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/purchase/purchaseRecords'
-        }
-      ]
+          url: '/purchase/purchaseRecords',
+        },
+      ],
     },
     {
       id: 'ui-forms',
@@ -179,17 +185,16 @@ const menuItems = {
           title: 'Today Sale',
           type: 'item',
           icon: 'feather icon-file-text',
-          url: '/sales/todaySales'
+          url: '/sales/todaySales',
         },
         {
           id: 'tabel',
           title: 'Sale Records',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/sales/saleInvoices'
+          url: '/sales/saleInvoices',
         },
-
-      ]
+      ],
     },
     {
       id: 'ui-forms',
@@ -202,16 +207,16 @@ const menuItems = {
           title: 'My Shop',
           type: 'item',
           icon: 'feather icon-server',
-          url: '/setup/shop'
+          url: '/setup/shop',
         },
         {
           id: 'tabel',
           title: 'Shop Invoice',
           type: 'item',
           icon: 'feather icon-file-text',
-          url: '/invoice/shop'
-        }
-      ]
+          url: '/invoice/shop',
+        },
+      ],
     },
     {
       id: 'ui-forms',
@@ -224,9 +229,9 @@ const menuItems = {
           title: 'Payment Methods',
           type: 'item',
           icon: 'feather icon-file-text',
-          url: '/subscription/paymentMethod'
-        }
-      ]
+          url: '/subscription/paymentMethod',
+        },
+      ],
     },
     {
       id: 'ui-forms',
@@ -239,10 +244,10 @@ const menuItems = {
           title: 'For Support',
           type: 'item',
           icon: 'feather icon-file-text',
-          url: '/help/forsupport'
-        }
-      ]
-    }
+          url: '/help/forsupport',
+        },
+      ],
+    },
     // {
     //   id: 'ui-element',
     //   title: 'UI ELEMENT',
@@ -447,7 +452,7 @@ const menuItems = {
     //     }
     //   ]
     // }
-  ]
+  ],
 };
 
 export default menuItems;
