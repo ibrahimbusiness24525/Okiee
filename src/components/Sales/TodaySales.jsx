@@ -11,6 +11,7 @@ import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
 import { Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import Modal from 'components/Modal/Modal';
+import SaleInvoiceTable from './SaleInvoiceTable';
 
 const TodaySales = () => {
   const [allInvoices, setAllInvoices] = useState([]);
@@ -41,7 +42,7 @@ const TodaySales = () => {
           );
         })
       );
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const getAllBulkSales = async () => {
@@ -113,26 +114,42 @@ const TodaySales = () => {
     navigate('/invoice/shop', { state: formattedInvoice });
   };
   const handlePrintBulkClick = (invoice) => {
-    console.log(invoice);
+    console.log('📦 Bulk invoice object:', invoice);
+    console.log('🆔 Invoice ID fields:', {
+      id: invoice.id,
+      _id: invoice._id,
+      bulkSoldId: invoice.bulkSoldId,
+    });
+
+    // Ensure we have an ID - bulk invoices should have _id
+    const invoiceId = invoice._id || invoice.id || invoice.bulkSoldId;
+
+    if (!invoiceId) {
+      console.error('❌ No ID found in invoice:', invoice);
+      toast.error('Invoice ID not found. Cannot open invoice.');
+      return;
+    }
 
     const formattedInvoice = {
       showInvoice: true,
       editing: true,
-      id: invoice.id,
+      id: invoiceId, // Use the found ID
+      _id: invoiceId, // Keep both for compatibility
       invoiceNumber: invoice.invoiceNumber,
       customerName: invoice.customerName,
       customerNumber: invoice.customerNumber,
       salePrice: invoice.salePrice,
+      finalPrice: invoice.salePrice || invoice.finalPrice, // Map salePrice to finalPrice
       profit: invoice.profit,
-      salePrice: invoice.salePrice,
       totalInvoice: invoice.totalInvoice,
       sellingPaymentType: invoice.sellingPaymentType,
+      sellingType: invoice.sellingPaymentType || invoice.sellingType, // Map sellingPaymentType to sellingType
       warranty: invoice.warranty,
       accessoriesList: invoice.accessories || [],
       dateSold: invoice.dateSold,
+      saleDate: invoice.dateSold || invoice.saleDate, // Map dateSold to saleDate
       imei1: invoice.imei1,
       createdAt: invoice.createdAt,
-      invoiceNumber: invoice.invoiceNumber,
       imei2: invoice.imei2,
       cnicFrontPic: invoice.cnicFrontPic,
       cnicBackPic: invoice.cnicBackPic,
@@ -140,25 +157,11 @@ const TodaySales = () => {
       addedImeis: invoice.addedImeis || [],
       type: invoice.type,
       bulkPhonePurchaseId: invoice.bulkPhonePurchaseId,
+      companyName: invoice.companyName || '', // Add companyName
+      modelName: invoice.modelName || '', // Add modelName
+      bankName: invoice.bankName || '', // Add bankName
     };
-    //     const formattedInvoice = {
-    //   ...invoice,
-    //   finalPrice: invoice.salePrice,
-    //   sellingType: invoice.sellingPaymentType,
-    //   warranty: invoice.warranty,
-    //   saleDate: invoice.dateSold,
-    //   addedImeis: invoice.addedImeis || [],
-    //   cnicBackPic: invoice.cnicBackPic,
-    //   cnicFrontPic: invoice.cnicFrontPic,
-    //   customerName: invoice.customerName,
-    //   accessories: invoice.accessories || [],
-    //   bankName: invoice.bankName || '',
-    //   payableAmountNow: invoice.payableAmountNow || 0,
-    //   payableAmountLater: invoice.payableAmountLater || 0,
-    //   payableAmountLaterDate: invoice.payableAmountLaterDate || null,
-    //   exchangePhoneDetail: invoice.exchangePhoneDetail || null,
-    //   customerNumber: invoice.customerNumber,
-    // };
+    console.log('✅ Formatted invoice for navigation:', formattedInvoice);
     navigate('/invoice/shop', { state: formattedInvoice });
   };
   console.log('allBulkInvoice', allbulkSales);
@@ -255,6 +258,7 @@ const TodaySales = () => {
     setScannedBarcodeValue(value);
   };
   console.log('allInvoices', allInvoices);
+
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Today Sales Invoices</h2>
@@ -431,7 +435,7 @@ const TodaySales = () => {
         label={[
           'Type of Sale',
           // 'Purchase Price',
-          "IMEI",
+          'IMEI',
           'Sale Price',
           'Selling Payment Type',
           'Customer Name',
@@ -449,7 +453,7 @@ const TodaySales = () => {
           {
             index: 1,
             component: (imei1) => {
-              return imei1 ? imei1.join(",") : 'Not mentioned';
+              return imei1 ? imei1.join(',') : 'Not mentioned';
             },
           },
           {
@@ -514,6 +518,20 @@ const TodaySales = () => {
           },
         ]}
       />
+      {/* New unified sale-invoice table using /api/sale-invoice/ */}
+      <div>
+        <h3
+          style={{
+            textAlign: 'start',
+            marginBottom: '16px',
+            fontWeight: '700',
+            marginTop: '2rem',
+          }}
+        >
+          Sale Invoices (From /api/sale-invoice)
+        </h3>
+      </div>
+      <SaleInvoiceTable mode="today" />
       <h3
         style={{
           textAlign: 'start',
@@ -712,15 +730,15 @@ const TodaySales = () => {
                   const payload = {
                     sales: Array.isArray(obj.accessoriesList)
                       ? obj.accessoriesList.map((accessory) => ({
-                        accessoryId:
-                          accessory.name ||
-                          accessory.accessoryName ||
-                          accessory._id ||
-                          accessory.accessoryId,
-                        quantity: Number(accessory.quantity),
-                        perPiecePrice: Number(accessory.perPiecePrice),
-                        name: accessory.name || accessory.accessoryName,
-                      }))
+                          accessoryId:
+                            accessory.name ||
+                            accessory.accessoryName ||
+                            accessory._id ||
+                            accessory.accessoryId,
+                          quantity: Number(accessory.quantity),
+                          perPiecePrice: Number(accessory.perPiecePrice),
+                          name: accessory.name || accessory.accessoryName,
+                        }))
                       : [],
                     getPayment: {
                       // Include payment details if available in obj

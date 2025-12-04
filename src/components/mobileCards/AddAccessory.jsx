@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'components/Modal/Modal';
-import { api } from '../../../api/api';
+import { api, editAccessory } from '../../../api/api';
 import { toast } from 'react-toastify';
 import { useGetAccessories } from 'hooks/accessory';
 import { Button, Form, Toast } from 'react-bootstrap';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import { useNavigate } from 'react-router-dom';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaEdit } from 'react-icons/fa';
 import CustomSelect from 'components/CustomSelect';
 
 const AddAccessory = () => {
@@ -49,6 +49,12 @@ const AddAccessory = () => {
   const [showAccessoryModal, setShowAccessoryModal] = useState(false);
   const [showPrintDemandModal, setShowPrintDemandModal] = useState(false);
   const [demandList, setDemandList] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAccessory, setEditingAccessory] = useState(null);
+  const [editForm, setEditForm] = useState({
+    accessoryName: '',
+    perPiecePrice: '',
+  });
   const { data } = useGetAccessories();
   const [filteredData, setFilteredData] = useState(data?.data || []);
 
@@ -316,6 +322,70 @@ const AddAccessory = () => {
       deleteAccessory(id);
     }
   };
+
+  const handleEditAccessory = (accessory) => {
+    setEditingAccessory(accessory);
+    setEditForm({
+      accessoryName: accessory.accessoryName || '',
+      perPiecePrice: accessory.perPiecePrice || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateAccessory = async () => {
+    if (!editingAccessory?._id) {
+      toast.error('Accessory ID is required');
+      return;
+    }
+
+    // Validate that at least one field is provided
+    if (!editForm.accessoryName.trim() && !editForm.perPiecePrice) {
+      toast.error('At least one field (name or price) is required to update');
+      return;
+    }
+
+    // Validate price if provided
+    if (editForm.perPiecePrice && Number(editForm.perPiecePrice) <= 0) {
+      toast.error('Price must be a positive number');
+      return;
+    }
+
+    try {
+      const updateData = {};
+      if (editForm.accessoryName.trim()) {
+        updateData.accessoryName = editForm.accessoryName.trim();
+      }
+      if (editForm.perPiecePrice) {
+        updateData.perPiecePrice = Number(editForm.perPiecePrice);
+      }
+
+      const response = await editAccessory(editingAccessory._id, updateData);
+      toast.success(response.data.message || 'Accessory updated successfully');
+
+      // Refresh the accessory list
+      if (data?.refetch) {
+        data.refetch();
+      }
+
+      // Update local state
+      setFilteredData((prev) =>
+        prev.map((acc) =>
+          acc._id === editingAccessory._id
+            ? { ...acc, ...response.data.accessory }
+            : acc
+        )
+      );
+
+      setShowEditModal(false);
+      setEditingAccessory(null);
+      setEditForm({ accessoryName: '', perPiecePrice: '' });
+    } catch (error) {
+      console.error('Error updating accessory:', error);
+      toast.error(
+        error?.response?.data?.message || 'Failed to update accessory'
+      );
+    }
+  };
   const handleAddAccessory = () => {
     setAccessories([
       ...accessories,
@@ -357,10 +427,12 @@ const AddAccessory = () => {
   // Print Demand functionality
   const handlePrintDemand = () => {
     const lowStockAccessories =
-      data?.data?.filter((accessory) => accessory.stock < 10).map((item) => ({
-        ...item,
-        demandQuantity: 0,
-      })) || [];
+      data?.data
+        ?.filter((accessory) => accessory.stock < 10)
+        .map((item) => ({
+          ...item,
+          demandQuantity: 0,
+        })) || [];
     setDemandList(lowStockAccessories);
     setShowPrintDemandModal(true);
   };
@@ -399,7 +471,8 @@ const AddAccessory = () => {
       new Promise((resolve, reject) => {
         if (window.html2pdf) return resolve();
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+        script.src =
+          'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
         script.onload = () => resolve();
         script.onerror = () => reject(new Error('Failed to load html2pdf.js'));
         document.body.appendChild(script);
@@ -440,7 +513,7 @@ const AddAccessory = () => {
         document.body.appendChild(container);
         const opt = {
           margin: 10,
-          filename: `Accessory_Demand_${new Date().toISOString().slice(0,10)}.pdf`,
+          filename: `Accessory_Demand_${new Date().toISOString().slice(0, 10)}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -464,21 +537,34 @@ const AddAccessory = () => {
                     new Promise((resolve, reject) => {
                       if (window.jspdf && window.jspdf.jsPDF) return resolve();
                       const s = document.createElement('script');
-                      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                      s.src =
+                        'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
                       s.onload = () => resolve();
-                      s.onerror = () => reject(new Error('Failed to load jsPDF'));
+                      s.onerror = () =>
+                        reject(new Error('Failed to load jsPDF'));
                       document.body.appendChild(s);
                     });
                   try {
                     await loadJsPDF();
                     const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    const doc = new jsPDF({
+                      orientation: 'portrait',
+                      unit: 'mm',
+                      format: 'a4',
+                    });
                     let y = 15;
                     doc.setFontSize(14);
-                    doc.text('Accessory Demand List', 105, y, { align: 'center' });
+                    doc.text('Accessory Demand List', 105, y, {
+                      align: 'center',
+                    });
                     y += 8;
                     doc.setFontSize(10);
-                    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, y, { align: 'right' });
+                    doc.text(
+                      `Date: ${new Date().toLocaleDateString()}`,
+                      195,
+                      y,
+                      { align: 'right' }
+                    );
                     y += 8;
                     doc.setFontSize(11);
                     doc.text('Accessory Name', 10, y);
@@ -503,7 +589,9 @@ const AddAccessory = () => {
                       doc.text(qty, 170, y);
                       y += Math.max(lineHeight, nameLines.length * lineHeight);
                     });
-                    doc.save(`Accessory_Demand_${new Date().toISOString().slice(0, 10)}.pdf`);
+                    doc.save(
+                      `Accessory_Demand_${new Date().toISOString().slice(0, 10)}.pdf`
+                    );
                   } catch (e) {
                     // As last resort, open printable view
                     const w = window.open('', '_blank');
@@ -520,7 +608,8 @@ const AddAccessory = () => {
                         <table><thead><tr><th>Accessory Name</th><th>Quantity</th></tr></thead><tbody>
                         ${demandList
                           .map(
-                            (item) => `<tr><td>${item.accessoryName}</td><td>${Number(item.demandQuantity) || 0}</td></tr>`
+                            (item) =>
+                              `<tr><td>${item.accessoryName}</td><td>${Number(item.demandQuantity) || 0}</td></tr>`
                           )
                           .join('')}
                         </tbody></table></body></html>`);
@@ -2054,14 +2143,32 @@ const AddAccessory = () => {
                       >
                         {accessory.accessoryName}
                       </h4>
-                      <FaTrash
-                        onClick={() => confirmDelete(accessory._id)}
+                      <div
                         style={{
-                          color: '#e53935',
-                          cursor: 'pointer',
-                          fontSize: '1rem',
+                          display: 'flex',
+                          gap: '8px',
+                          alignItems: 'center',
                         }}
-                      />
+                      >
+                        <FaEdit
+                          onClick={() => handleEditAccessory(accessory)}
+                          style={{
+                            color: '#3b82f6',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                          title="Edit accessory"
+                        />
+                        <FaTrash
+                          onClick={() => confirmDelete(accessory._id)}
+                          style={{
+                            color: '#e53935',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                          title="Delete accessory"
+                        />
+                      </div>
                     </div>
                     <div
                       style={{
@@ -2875,7 +2982,8 @@ const AddAccessory = () => {
                     >
                       Accessory Name
                     </th>
-                    <th className="no-print"
+                    <th
+                      className="no-print"
                       style={{
                         padding: '12px',
                         textAlign: 'left',
@@ -2886,7 +2994,8 @@ const AddAccessory = () => {
                     >
                       Current Quantity
                     </th>
-                    <th className="no-print"
+                    <th
+                      className="no-print"
                       style={{
                         padding: '12px',
                         textAlign: 'left',
@@ -2923,14 +3032,21 @@ const AddAccessory = () => {
                 </thead>
                 <tbody>
                   {demandList.map((item, index) => (
-                    <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <tr
+                      key={index}
+                      style={{ borderBottom: '1px solid #f1f5f9' }}
+                    >
                       <td style={{ padding: '12px' }}>
                         {item.isCustom ? (
                           <input
                             type="text"
                             value={item.accessoryName}
                             onChange={(e) =>
-                              handleDemandItemChange(index, 'accessoryName', e.target.value)
+                              handleDemandItemChange(
+                                index,
+                                'accessoryName',
+                                e.target.value
+                              )
                             }
                             placeholder="Enter accessory name"
                             style={{
@@ -2942,17 +3058,22 @@ const AddAccessory = () => {
                             }}
                           />
                         ) : (
-                          <span style={{ fontWeight: '500' }}>{item.accessoryName}</span>
+                          <span style={{ fontWeight: '500' }}>
+                            {item.accessoryName}
+                          </span>
                         )}
                       </td>
                       <td className="no-print" style={{ padding: '12px' }}>
                         <span
                           style={{
-                            color: !item.isCustom && Number(item.stock) < 10 ? '#f59e0b' : '#374151',
+                            color:
+                              !item.isCustom && Number(item.stock) < 10
+                                ? '#f59e0b'
+                                : '#374151',
                             fontWeight: '600',
                           }}
                         >
-                          {item.isCustom ? '-' : (Number(item.stock) || 0)}
+                          {item.isCustom ? '-' : Number(item.stock) || 0}
                         </span>
                       </td>
                       <td className="no-print" style={{ padding: '12px' }}>
@@ -2979,7 +3100,9 @@ const AddAccessory = () => {
                             }}
                           />
                         ) : (
-                          <span>{Number(item.perPiecePrice || 0).toFixed(2)} PKR</span>
+                          <span>
+                            {Number(item.perPiecePrice || 0).toFixed(2)} PKR
+                          </span>
                         )}
                       </td>
                       <td style={{ padding: '12px' }}>
@@ -3117,6 +3240,184 @@ const AddAccessory = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Edit Accessory Modal */}
+      {showEditModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setShowEditModal(false);
+            setEditingAccessory(null);
+            setEditForm({ accessoryName: '', perPiecePrice: '' });
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: 8,
+              width: '90vw',
+              maxWidth: 500,
+              padding: 24,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 20,
+                paddingBottom: 12,
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
+                Edit Accessory
+              </h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingAccessory(null);
+                  setEditForm({ accessoryName: '', perPiecePrice: '' });
+                }}
+                style={{
+                  background: '#6b7280',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 6,
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#374151',
+                  marginBottom: 8,
+                }}
+              >
+                Accessory Name
+              </label>
+              <input
+                type="text"
+                value={editForm.accessoryName}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, accessoryName: e.target.value })
+                }
+                placeholder="Enter accessory name"
+                style={{
+                  width: '100%',
+                  padding: 10,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 6,
+                  fontSize: 14,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#374151',
+                  marginBottom: 8,
+                }}
+              >
+                Per Piece Price
+              </label>
+              <input
+                type="number"
+                value={editForm.perPiecePrice}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, perPiecePrice: e.target.value })
+                }
+                placeholder="Enter price (must be > 0)"
+                min="0"
+                step="0.01"
+                style={{
+                  width: '100%',
+                  padding: 10,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 6,
+                  fontSize: 14,
+                }}
+              />
+              <p
+                style={{
+                  fontSize: 12,
+                  color: '#6b7280',
+                  marginTop: 4,
+                  marginBottom: 0,
+                }}
+              >
+                At least one field (name or price) must be provided
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 12,
+              }}
+            >
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingAccessory(null);
+                  setEditForm({ accessoryName: '', perPiecePrice: '' });
+                }}
+                style={{
+                  padding: '10px 20px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: 6,
+                  background: 'white',
+                  color: '#374151',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateAccessory}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: 6,
+                  background: '#3b82f6',
+                  color: 'white',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                Update Accessory
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

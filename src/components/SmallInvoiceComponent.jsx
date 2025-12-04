@@ -106,6 +106,64 @@ export const SmallInvoiceComponent = ({
     shopData?.phone || shopData?.contactNumber?.[0] || 'Phone Number';
   const ownerName = shopData?.name || '';
 
+  // Format date and time for display - always show current date/time if not found
+  const formatDateTime = () => {
+    const dateTimeSource =
+      data?.timestamp ||
+      data?.date ||
+      data?.dataReceived?.saleDate ||
+      data?.dataReceived?.createdAt ||
+      data?.createdAt ||
+      new Date(); // Default to current date/time
+
+    try {
+      const dateObj = new Date(dateTimeSource);
+      if (isNaN(dateObj.getTime())) {
+        // If invalid date, use current date/time
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        });
+        const timeStr = now.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+        return `${dateStr} ${timeStr}`;
+      }
+
+      const dateStr = dateObj.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+      const timeStr = dateObj.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      return `${dateStr} ${timeStr}`;
+    } catch (error) {
+      // On error, use current date/time
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+      const timeStr = now.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      return `${dateStr} ${timeStr}`;
+    }
+  };
+
+  const dateTimeDisplay = formatDateTime();
+
   console.log('Shop data received:', shopData);
   console.log('Shop address:', shopAddress);
   console.log('Shop address type:', typeof shopAddress);
@@ -806,6 +864,7 @@ export const SmallInvoiceComponent = ({
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <div>
+                    <div style="font-weight: 600; margin-bottom: 4px; font-size: 12px; color: #000;">${dateTimeDisplay}</div>
                     ${ownerName ? `<div style="font-weight: 800; margin-bottom: 4px; font-size: 16px; color: #000;">${ownerName}</div>` : ''}
                     <div style="font-weight: 800; margin-bottom: 2px; font-size: 16px; color: #000;">
                       ${shopPhone ? `Cell No: ${shopPhone}` : ''}
@@ -845,20 +904,32 @@ export const SmallInvoiceComponent = ({
               </div>
               ${(() => {
                 const invoiceData = data || {};
-                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData || {};
-                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const entityData =
+                  invoiceData?.entityData ||
+                  invoiceData?.dataReceived?.entityData ||
+                  {};
+                const prevBal =
+                  invoiceData?.previousBalance ||
+                  invoiceData?.dataReceived?.previousBalance;
                 const givingCredit = entityData?.givingCredit || 0;
                 const takingCredit = entityData?.takingCredit || 0;
-                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
-                
+                const hasBalance =
+                  prevBal !== undefined || givingCredit || takingCredit;
+
                 if (hasBalance) {
-                  const previousBalance = prevBal !== undefined && prevBal !== null
-                    ? prevBal
-                    : (givingCredit - takingCredit);
-                  const balanceLabel = prevBal !== undefined && prevBal !== null
-                    ? 'Previous Balance'
-                    : (previousBalance > 0 ? 'Receiving Credit' : previousBalance < 0 ? 'Giving Credit' : 'Previous Balance');
-                  
+                  const previousBalance =
+                    prevBal !== undefined && prevBal !== null
+                      ? prevBal
+                      : givingCredit - takingCredit;
+                  const balanceLabel =
+                    prevBal !== undefined && prevBal !== null
+                      ? 'Previous Balance'
+                      : previousBalance > 0
+                        ? 'Receiving Credit'
+                        : previousBalance < 0
+                          ? 'Giving Credit'
+                          : 'Previous Balance';
+
                   return `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000;">
                       <span>${balanceLabel}:</span>
@@ -878,20 +949,31 @@ export const SmallInvoiceComponent = ({
               </div>
               ${(() => {
                 const invoiceData = data || {};
-                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData || {};
-                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const entityData =
+                  invoiceData?.entityData ||
+                  invoiceData?.dataReceived?.entityData ||
+                  {};
+                const prevBal =
+                  invoiceData?.previousBalance ||
+                  invoiceData?.dataReceived?.previousBalance;
                 const givingCredit = entityData?.givingCredit || 0;
                 const takingCredit = entityData?.takingCredit || 0;
-                const cashReceived = invoiceData?.cashReceived || invoiceData?.dataReceived?.cashReceived || 0;
+                const cashReceived =
+                  invoiceData?.cashReceived ||
+                  invoiceData?.dataReceived?.cashReceived ||
+                  0;
                 const totalAmount = parseMoney(summaryData.total);
-                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
-                
+                const hasBalance =
+                  prevBal !== undefined || givingCredit || takingCredit;
+
                 if (hasBalance) {
-                  const previousBalance = prevBal !== undefined && prevBal !== null
-                    ? prevBal
-                    : (givingCredit - takingCredit);
-                  const netBalance = totalAmount - cashReceived + previousBalance;
-                  
+                  const previousBalance =
+                    prevBal !== undefined && prevBal !== null
+                      ? prevBal
+                      : givingCredit - takingCredit;
+                  const netBalance =
+                    totalAmount - cashReceived + previousBalance;
+
                   return `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #000; font-weight: bold;">
                       <span>Net Balance:</span>
@@ -1037,6 +1119,16 @@ export const SmallInvoiceComponent = ({
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <div>
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      marginBottom: '4px',
+                      fontSize: '12px',
+                      color: '#000',
+                    }}
+                  >
+                    {dateTimeDisplay}
+                  </div>
                   {ownerName && (
                     <div
                       style={{
@@ -1377,20 +1469,31 @@ export const SmallInvoiceComponent = ({
               {/* Show previous balance if available */}
               {(() => {
                 const invoiceData = data;
-                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData;
-                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const entityData =
+                  invoiceData?.entityData ||
+                  invoiceData?.dataReceived?.entityData;
+                const prevBal =
+                  invoiceData?.previousBalance ||
+                  invoiceData?.dataReceived?.previousBalance;
                 const givingCredit = entityData?.givingCredit || 0;
                 const takingCredit = entityData?.takingCredit || 0;
-                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
-                
+                const hasBalance =
+                  prevBal !== undefined || givingCredit || takingCredit;
+
                 if (hasBalance) {
-                  const previousBalance = prevBal !== undefined && prevBal !== null
-                    ? prevBal
-                    : (givingCredit - takingCredit);
-                  const balanceLabel = prevBal !== undefined && prevBal !== null
-                    ? 'Previous Balance'
-                    : (previousBalance > 0 ? 'Receiving Credit' : previousBalance < 0 ? 'Giving Credit' : 'Previous Balance');
-                  
+                  const previousBalance =
+                    prevBal !== undefined && prevBal !== null
+                      ? prevBal
+                      : givingCredit - takingCredit;
+                  const balanceLabel =
+                    prevBal !== undefined && prevBal !== null
+                      ? 'Previous Balance'
+                      : previousBalance > 0
+                        ? 'Receiving Credit'
+                        : previousBalance < 0
+                          ? 'Giving Credit'
+                          : 'Previous Balance';
+
                   return (
                     <div
                       style={{
@@ -1437,20 +1540,30 @@ export const SmallInvoiceComponent = ({
               {/* Show net balance after payment */}
               {(() => {
                 const invoiceData = data;
-                const entityData = invoiceData?.entityData || invoiceData?.dataReceived?.entityData;
-                const prevBal = invoiceData?.previousBalance || invoiceData?.dataReceived?.previousBalance;
+                const entityData =
+                  invoiceData?.entityData ||
+                  invoiceData?.dataReceived?.entityData;
+                const prevBal =
+                  invoiceData?.previousBalance ||
+                  invoiceData?.dataReceived?.previousBalance;
                 const givingCredit = entityData?.givingCredit || 0;
                 const takingCredit = entityData?.takingCredit || 0;
-                const cashReceived = invoiceData?.cashReceived || invoiceData?.dataReceived?.cashReceived || 0;
+                const cashReceived =
+                  invoiceData?.cashReceived ||
+                  invoiceData?.dataReceived?.cashReceived ||
+                  0;
                 const totalAmount = parseMoney(summaryData.total);
-                const hasBalance = prevBal !== undefined || givingCredit || takingCredit;
-                
+                const hasBalance =
+                  prevBal !== undefined || givingCredit || takingCredit;
+
                 if (hasBalance) {
-                  const previousBalance = prevBal !== undefined && prevBal !== null
-                    ? prevBal
-                    : (givingCredit - takingCredit);
-                  const netBalance = totalAmount - cashReceived + previousBalance;
-                  
+                  const previousBalance =
+                    prevBal !== undefined && prevBal !== null
+                      ? prevBal
+                      : givingCredit - takingCredit;
+                  const netBalance =
+                    totalAmount - cashReceived + previousBalance;
+
                   return (
                     <div
                       style={{

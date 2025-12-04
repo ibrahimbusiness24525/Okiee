@@ -173,13 +173,109 @@ const DashDefault = () => {
 
   return (
     <React.Fragment>
+      <style>{`
+        @media (max-width: 768px) {
+          .quick-actions-container {
+            flex-direction: column !important;
+          }
+          .quick-action-item {
+            min-width: 100% !important;
+            width: 100% !important;
+          }
+          .payables-receivables-container {
+            flex-direction: column !important;
+          }
+          .payables-receivables-section {
+            width: 100% !important;
+            margin-bottom: 20px;
+          }
+          .payables-receivables-section:last-child {
+            margin-bottom: 0;
+          }
+          .section-title {
+            font-size: 18px !important;
+          }
+          .quick-action-icon {
+            width: 50px !important;
+            height: 50px !important;
+          }
+          .quick-action-icon i {
+            font-size: 20px !important;
+          }
+          .stats-card-icon {
+            padding: 12px !important;
+          }
+          .stats-card-icon i {
+            font-size: 18px !important;
+          }
+          .stats-card h4 {
+            font-size: 20px !important;
+          }
+          .recent-activity-header {
+            padding: 15px 20px !important;
+          }
+          .recent-activity-header > div {
+            font-size: 18px !important;
+          }
+          .tab-content-padding {
+            padding: 15px !important;
+          }
+          .payables-receivables-padding {
+            padding: 15px !important;
+          }
+          .quick-action-item > div {
+            padding: 20px !important;
+          }
+        }
+        @media (max-width: 576px) {
+          .section-title {
+            font-size: 16px !important;
+          }
+          .quick-action-title {
+            font-size: 16px !important;
+          }
+          .quick-action-desc {
+            font-size: 12px !important;
+          }
+          .stats-card h4 {
+            font-size: 18px !important;
+          }
+          .stats-card small {
+            font-size: 11px !important;
+          }
+          .recent-activity-header {
+            padding: 12px 15px !important;
+          }
+          .recent-activity-header > div {
+            font-size: 16px !important;
+          }
+          .tab-content-padding {
+            padding: 12px !important;
+          }
+          .payables-receivables-padding {
+            padding: 12px !important;
+            gap: 15px !important;
+          }
+          .quick-action-item > div {
+            padding: 15px !important;
+            gap: 15px !important;
+          }
+          .quick-action-icon {
+            width: 45px !important;
+            height: 45px !important;
+          }
+          .quick-action-icon i {
+            font-size: 18px !important;
+          }
+        }
+      `}</style>
       {/* Professional Stats Overview */}
       <Row className="mb-4">
-        <Col md={3} className="mb-3">
+        <Col xs={12} sm={6} md={3} className="mb-3">
           <Card className="h-100 border-0 shadow-sm">
             <Card.Body className="text-center">
               <div className="d-flex align-items-center justify-content-center mb-2">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-users text-primary fa-lg"></i>
                 </div>
                 <div>
@@ -190,11 +286,11 @@ const DashDefault = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3} className="mb-3">
+        <Col xs={12} sm={6} md={3} className="mb-3">
           <Card className="h-100 border-0 shadow-sm">
             <Card.Body className="text-center">
               <div className="d-flex align-items-center justify-content-center mb-2">
-                <div className="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                <div className="bg-success bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-arrow-up text-success fa-lg"></i>
                 </div>
                 <div>
@@ -207,11 +303,11 @@ const DashDefault = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3} className="mb-3">
+        <Col xs={12} sm={6} md={3} className="mb-3">
           <Card className="h-100 border-0 shadow-sm">
             <Card.Body className="text-center">
               <div className="d-flex align-items-center justify-content-center mb-2">
-                <div className="bg-danger bg-opacity-10 rounded-circle p-3 me-3">
+                <div className="bg-danger bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-arrow-down text-danger fa-lg"></i>
                 </div>
                 <div>
@@ -224,11 +320,11 @@ const DashDefault = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3} className="mb-3">
+        <Col xs={12} sm={6} md={3} className="mb-3">
           <Card className="h-100 border-0 shadow-sm">
             <Card.Body className="text-center">
               <div className="d-flex align-items-center justify-content-center mb-2">
-                <div className="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                <div className="bg-info bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-chart-line text-info fa-lg"></i>
                 </div>
                 <div>
@@ -246,6 +342,7 @@ const DashDefault = () => {
       {/* Quick Actions */}
       <div style={{ marginBottom: '30px' }}>
         <div
+          className="section-title"
           style={{
             fontSize: '24px',
             fontWeight: 'bold',
@@ -259,9 +356,13 @@ const DashDefault = () => {
           <i className="fa fa-bolt" style={{ color: '#667eea' }}></i>
           Quick Actions
         </div>
-        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+        <div
+          className="quick-actions-container"
+          style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}
+        >
           <Link
             to={'/todayBook'}
+            className="quick-action-item"
             style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
           >
             <div
@@ -289,6 +390,7 @@ const DashDefault = () => {
               }}
             >
               <div
+                className="quick-action-icon"
                 style={{
                   width: '60px',
                   height: '60px',
@@ -308,6 +410,7 @@ const DashDefault = () => {
               </div>
               <div>
                 <div
+                  className="quick-action-title"
                   style={{
                     fontSize: '18px',
                     fontWeight: 'bold',
@@ -317,7 +420,10 @@ const DashDefault = () => {
                 >
                   Today Book
                 </div>
-                <div style={{ fontSize: '14px', color: '#718096' }}>
+                <div
+                  className="quick-action-desc"
+                  style={{ fontSize: '14px', color: '#718096' }}
+                >
                   View today's transactions and activities
                 </div>
               </div>
@@ -326,6 +432,7 @@ const DashDefault = () => {
 
           <Link
             to={'/app/dashboard/getCustomerRecord'}
+            className="quick-action-item"
             style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
           >
             <div
@@ -353,6 +460,7 @@ const DashDefault = () => {
               }}
             >
               <div
+                className="quick-action-icon"
                 style={{
                   width: '60px',
                   height: '60px',
@@ -372,6 +480,7 @@ const DashDefault = () => {
               </div>
               <div>
                 <div
+                  className="quick-action-title"
                   style={{
                     fontSize: '18px',
                     fontWeight: 'bold',
@@ -381,7 +490,10 @@ const DashDefault = () => {
                 >
                   Customer Records
                 </div>
-                <div style={{ fontSize: '14px', color: '#718096' }}>
+                <div
+                  className="quick-action-desc"
+                  style={{ fontSize: '14px', color: '#718096' }}
+                >
                   Manage and view customer data
                 </div>
               </div>
@@ -390,6 +502,7 @@ const DashDefault = () => {
 
           <Link
             to={'/app/dashboard/balanceSheet'}
+            className="quick-action-item"
             style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
           >
             <div
@@ -417,6 +530,7 @@ const DashDefault = () => {
               }}
             >
               <div
+                className="quick-action-icon"
                 style={{
                   width: '60px',
                   height: '60px',
@@ -436,6 +550,7 @@ const DashDefault = () => {
               </div>
               <div>
                 <div
+                  className="quick-action-title"
                   style={{
                     fontSize: '18px',
                     fontWeight: 'bold',
@@ -445,7 +560,10 @@ const DashDefault = () => {
                 >
                   Balance Sheet
                 </div>
-                <div style={{ fontSize: '14px', color: '#718096' }}>
+                <div
+                  className="quick-action-desc"
+                  style={{ fontSize: '14px', color: '#718096' }}
+                >
                   View financial overview and reports
                 </div>
               </div>
@@ -660,6 +778,7 @@ const DashDefault = () => {
             </Card.Header>
             <Card.Body className="p-0">
               <div
+                className="payables-receivables-container payables-receivables-padding"
                 style={{
                   display: 'flex',
                   padding: '26px',
@@ -671,6 +790,7 @@ const DashDefault = () => {
               >
                 {/* Receivables Section */}
                 <div
+                  className="payables-receivables-section"
                   style={{
                     flex: '1',
                     minWidth: 0,
@@ -856,6 +976,7 @@ const DashDefault = () => {
 
                 {/* Payables Section */}
                 <div
+                  className="payables-receivables-section"
                   style={{
                     flex: '1',
                     minWidth: 0,
@@ -1101,6 +1222,7 @@ const DashDefault = () => {
           >
             {/* Header */}
             <div
+              className="recent-activity-header"
               style={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
@@ -1147,7 +1269,12 @@ const DashDefault = () => {
                     </span>
                   }
                 >
-                  <div style={{ padding: '25px' }}>{tabContent}</div>
+                  <div
+                    className="tab-content-padding"
+                    style={{ padding: '25px' }}
+                  >
+                    {tabContent}
+                  </div>
                 </Tab>
                 <Tab
                   eventKey="week"
@@ -1167,7 +1294,12 @@ const DashDefault = () => {
                     </span>
                   }
                 >
-                  <div style={{ padding: '25px' }}>{tabContent}</div>
+                  <div
+                    className="tab-content-padding"
+                    style={{ padding: '25px' }}
+                  >
+                    {tabContent}
+                  </div>
                 </Tab>
                 <Tab
                   eventKey="all"
@@ -1187,7 +1319,12 @@ const DashDefault = () => {
                     </span>
                   }
                 >
-                  <div style={{ padding: '25px' }}>{tabContent}</div>
+                  <div
+                    className="tab-content-padding"
+                    style={{ padding: '25px' }}
+                  >
+                    {tabContent}
+                  </div>
                 </Tab>
               </Tabs>
             </div>

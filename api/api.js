@@ -52,3 +52,34 @@ storeBaseURL(api.baseURL);
 
 // Add the new endpoint for getting all IMEIs
 export const getAllImeis = () => api.get('/api/Purchase/all-imeis');
+
+// Repair Job API endpoints
+export const toggleRepairJobStatusPrevious = (id) =>
+  api.patch(`/api/repair/repair-job/${id}/toggle-status-previous`);
+
+export const updateRepairJob = (id, data) =>
+  api.put(`/api/repair/repair-job/${id}`, data);
+
+// New: delete repair job (backend: DELETE /repair-job/:id with auth)
+export const deleteRepairJob = (id) =>
+  api.delete(`/api/repair/repair-job/${id}`);
+
+// Edit accessory endpoint: PUT /api/accessory/:id
+export const editAccessory = (id, data) =>
+  api.put(`/api/accessory/${id}`, data);
+
+// Return repair job endpoint: POST /api/repair/repair-job/:id/return
+export const returnRepairJob = (id, data) =>
+  api.post(`/api/repair/repair-job/${id}/return`, data);
+
+// -------- Expense Module APIs --------
+
+// Expense Types
+export const createExpenseType = (data) => api.post('/api/expense/types', data);
+
+export const getExpenseTypes = () => api.get('/api/expense/types');
+
+// Expenses
+export const createExpenseApi = (data) => api.post('/api/expense', data);
+
+export const getExpenses = (params = {}) => api.get('/api/expense', { params });

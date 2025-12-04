@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiSearch } from 'react-icons/fi';
 import { Modal, Button, Form } from 'react-bootstrap';
@@ -10,39 +10,51 @@ const UserTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(false);
-  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: 'employee' });
+  const [newUser, setNewUser] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'employee',
+  });
 
-   useEffect(() => {
+  useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-    const response = await axios.post(`${BASE_URL}api/admin/getAlluser`, {user});
+      const response = await axios.post(`${BASE_URL}api/admin/getAlluser`, {
+        user,
+      });
       setUsers(response.data.data);
     } catch (error) {
-      console.error("Error fetching users:", error.response ? error.response.data.message : error.message);
+      console.error(
+        'Error fetching users:',
+        error.response ? error.response.data.message : error.message
+      );
     }
   };
 
-  const filteredUsers = users?.filter(user =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users?.filter(
+    (user) =>
+      user?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user?.role?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const toggleUserStatus = async (user) => {
     try {
-  
       // Make the API call to activate or deactivate the user
       await axios.put(`${BASE_URL}api/admin/activateDeactivateUser`, user);
-      fetchUsers()
+      fetchUsers();
     } catch (error) {
-      console.error("Error toggling user status:", error.response ? error.response.data.message : error.message);
+      console.error(
+        'Error toggling user status:',
+        error.response ? error.response.data.message : error.message
+      );
     }
   };
-  
 
   const handleShow = () => setShowModal(true);
   const handleClose = () => {
@@ -59,7 +71,7 @@ const UserTable = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
-      if (editUser) {        
+      if (editUser) {
         await axios.put(`${BASE_URL}api/admin/updateUser`, newUser);
         fetchUsers();
       } else {
@@ -69,7 +81,10 @@ const UserTable = () => {
         setUsers([...users, { ...newUser, id: users.length + 1 }]);
       }
     } catch (error) {
-      console.error("Error:", error.response ? error.response.data.message : error.message);
+      console.error(
+        'Error:',
+        error.response ? error.response.data.message : error.message
+      );
     }
     handleClose();
   };
@@ -84,7 +99,9 @@ const UserTable = () => {
     <div>
       <div style={headerContainerStyle}>
         <h2 style={headingStyle}>User List</h2>
-        <button style={addButtonStyle} onClick={handleShow}>Add User</button>
+        <button style={addButtonStyle} onClick={handleShow}>
+          Add User
+        </button>
         <div style={searchContainerStyle}>
           <FiSearch style={searchIconStyle} />
           <input
@@ -108,15 +125,27 @@ const UserTable = () => {
           </thead>
           <tbody>
             {filteredUsers.map((user, index) => (
-              <tr key={user.id} style={index % 2 === 0 ? rowStyle : altRowStyle}>
+              <tr
+                key={user.id}
+                style={index % 2 === 0 ? rowStyle : altRowStyle}
+              >
                 <td style={cellStyle}>{user.username}</td>
                 <td style={cellStyle}>{user.email}</td>
                 <td style={cellStyle}>{user.role}</td>
                 <td style={cellStyle}>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button style={editButtonStyle} onClick={() => handleEditUser(user)}>Edit</button>
                     <button
-                      style={!user.active ? deactivateButtonStyle : activateButtonStyle}
+                      style={editButtonStyle}
+                      onClick={() => handleEditUser(user)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      style={
+                        !user.active
+                          ? deactivateButtonStyle
+                          : activateButtonStyle
+                      }
                       onClick={() => toggleUserStatus(user)}
                     >
                       {!user.active ? 'Deactivate' : 'Activate'}
@@ -202,7 +231,7 @@ const headerContainerStyle = {
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: '20px',
-  flexWrap: 'wrap'
+  flexWrap: 'wrap',
 };
 
 const headingStyle = {
@@ -218,7 +247,7 @@ const searchContainerStyle = {
   padding: '5px 10px',
   backgroundColor: '#f0f0f0',
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-  width: '100%'
+  width: '100%',
 };
 
 const searchIconStyle = {
@@ -242,7 +271,7 @@ const tableWrapper = {
   border: '1px solid rgba(0, 0, 0, 0.2)',
   width: '100%',
   overflow: 'auto',
-  maxHeight: '500px'
+  maxHeight: '500px',
 };
 
 const tableStyle = {
@@ -286,7 +315,7 @@ const addButtonStyle = {
   cursor: 'pointer',
   display: 'block',
   boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  marginLeft: 'auto'
+  marginLeft: 'auto',
 };
 
 const editButtonStyle = {

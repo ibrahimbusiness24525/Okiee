@@ -192,6 +192,17 @@ const SoldInvoice = () => {
 
   const location = useLocation();
   const dataReceived = location?.state ?? {};
+
+  // Debug: Log dataReceived to see what we're working with
+  useEffect(() => {
+    console.log('📋 dataReceived on component load:', dataReceived);
+    console.log('🆔 Available ID fields:', {
+      id: dataReceived.id,
+      _id: dataReceived._id,
+      bulkSoldId: dataReceived.bulkSoldId,
+      bulkPhonePurchaseId: dataReceived.bulkPhonePurchaseId,
+    });
+  }, []);
   const getValidDate = (inputDate) => {
     const date = new Date(inputDate);
     return isNaN(date.getTime())
@@ -548,10 +559,11 @@ const SoldInvoice = () => {
     companyName: dataReceived.companyName || '',
     modelName: dataReceived.modelName || '',
     warranty: dataReceived.warranty || '',
-    saleDate: dataReceived.saleDate || '',
-    sellingType: dataReceived.sellingType || '',
+    saleDate: dataReceived.saleDate || dataReceived.dateSold || '', // Handle both saleDate and dateSold
+    sellingType:
+      dataReceived.sellingType || dataReceived.sellingPaymentType || '', // Handle both sellingType and sellingPaymentType
     bankName: dataReceived.bankName || '',
-    finalPrice: dataReceived.finalPrice || '',
+    finalPrice: dataReceived.finalPrice || dataReceived.salePrice || '', // Handle both finalPrice and salePrice
     // payableAmountNow: dataReceived.payableAmountNow || '',
     // payableAmountLater: dataReceived.payableAmountLater || '',
     // payableAmountLaterDate: dataReceived.payableAmountLaterDate || '',
@@ -559,18 +571,51 @@ const SoldInvoice = () => {
     cnicFrontPic: dataReceived.cnicFrontPic || '',
     cnicBackPic: dataReceived.cnicBackPic || '',
     accessories: dataReceived.accessories || [],
-    imei1: dataReceived.imei1 || '',
+    imei1:
+      dataReceived.imei1 ||
+      (Array.isArray(dataReceived.imei1) ? dataReceived.imei1[0] : '') ||
+      '', // Handle array IMEI
     // Add more fields as needed
   });
 
   // Modal state for editing invoice
   const [invoiceModal, setInvoiceModal] = useState(false);
 
+  // Update editInvoiceFields when modal opens
+  useEffect(() => {
+    if (invoiceModal) {
+      setEditInvoiceFields({
+        customerName: dataReceived.customerName || '',
+        customerNumber: dataReceived.customerNumber || '',
+        companyName: dataReceived.companyName || '',
+        modelName: dataReceived.modelName || '',
+        warranty: dataReceived.warranty || '',
+        saleDate: dataReceived.saleDate || dataReceived.dateSold || '', // Handle both saleDate and dateSold
+        sellingType:
+          dataReceived.sellingType || dataReceived.sellingPaymentType || '', // Handle both sellingType and sellingPaymentType
+        bankName: dataReceived.bankName || '',
+        finalPrice: dataReceived.finalPrice || dataReceived.salePrice || '', // Handle both finalPrice and salePrice
+        cnicFrontPic: dataReceived.cnicFrontPic || '',
+        cnicBackPic: dataReceived.cnicBackPic || '',
+        accessories: dataReceived.accessories || [],
+        imei1:
+          dataReceived.imei1 ||
+          (Array.isArray(dataReceived.imei1) ? dataReceived.imei1[0] : '') ||
+          '', // Handle array IMEI
+      });
+    }
+  }, [invoiceModal]);
+
   // Update invoice data function (for edit/save)
   const updateInvoiceData = async () => {
     try {
+      const invoiceId = dataReceived.id || dataReceived._id;
+      if (!invoiceId) {
+        toast.error('Invoice ID not found');
+        return;
+      }
       const response = await api.put(
-        `/update-sold-phone/${dataReceived.id}`,
+        `/api/Purchase/update-sold-phone/${invoiceId}`,
         editInvoiceFields
       );
       toast.success('Invoice data updated successfully');
@@ -886,7 +931,8 @@ const SoldInvoice = () => {
       ),
       previousBal: (() => {
         const entityData = dataReceived?.entityData || phoneDetail?.entityData;
-        const prevBal = dataReceived?.previousBalance || phoneDetail?.previousBalance;
+        const prevBal =
+          dataReceived?.previousBalance || phoneDetail?.previousBalance;
         const givingCredit = entityData?.givingCredit || 0;
         const takingCredit = entityData?.takingCredit || 0;
         if (prevBal !== undefined && prevBal !== null) {
@@ -894,8 +940,8 @@ const SoldInvoice = () => {
         }
         const netBalance = givingCredit - takingCredit;
         if (netBalance !== 0) {
-          return netBalance > 0 
-            ? `Receiving: ${netBalance.toLocaleString()}` 
+          return netBalance > 0
+            ? `Receiving: ${netBalance.toLocaleString()}`
             : `Giving: ${Math.abs(netBalance).toLocaleString()}`;
         }
         return '–';
@@ -2499,7 +2545,7 @@ const SoldInvoice = () => {
                       color: '#333',
                     }}
                   >
-                    {dataReceived?.imei1.map((imei) => {
+                    {dataReceived?.imei1?.map((imei) => {
                       return (
                         <span
                           style={{
@@ -2633,11 +2679,24 @@ const SoldInvoice = () => {
           saleData={{
             ...dataReceived,
             // Merge balance information from phoneDetail if not in dataReceived
-            entityData: dataReceived?.entityData || phoneDetail?.entityData || (phoneDetail && !Array.isArray(phoneDetail) ? phoneDetail?.entityData : undefined),
-            previousBalance: dataReceived?.previousBalance !== undefined && dataReceived?.previousBalance !== null 
-              ? dataReceived?.previousBalance 
-              : (phoneDetail && !Array.isArray(phoneDetail) ? phoneDetail?.previousBalance : undefined),
-            cashReceived: dataReceived?.cashReceived || (phoneDetail && !Array.isArray(phoneDetail) ? phoneDetail?.cashReceived : undefined),
+            entityData:
+              dataReceived?.entityData ||
+              phoneDetail?.entityData ||
+              (phoneDetail && !Array.isArray(phoneDetail)
+                ? phoneDetail?.entityData
+                : undefined),
+            previousBalance:
+              dataReceived?.previousBalance !== undefined &&
+              dataReceived?.previousBalance !== null
+                ? dataReceived?.previousBalance
+                : phoneDetail && !Array.isArray(phoneDetail)
+                  ? phoneDetail?.previousBalance
+                  : undefined,
+            cashReceived:
+              dataReceived?.cashReceived ||
+              (phoneDetail && !Array.isArray(phoneDetail)
+                ? phoneDetail?.cashReceived
+                : undefined),
           }}
           shopName={shop?.shopName ?? ''}
           number={shop?.contactNumber?.[0] ?? ''}
@@ -2929,15 +2988,68 @@ const SoldInvoice = () => {
         <button
           onClick={async () => {
             try {
+              // Try multiple possible ID fields
+              let invoiceId =
+                dataReceived.id ||
+                dataReceived._id ||
+                dataReceived.bulkSoldId ||
+                (dataReceived.bulkPhonePurchaseId &&
+                typeof dataReceived.bulkPhonePurchaseId === 'string'
+                  ? dataReceived.bulkPhonePurchaseId
+                  : null);
+
+              console.log('dataReceived for update:', dataReceived);
+              console.log('Attempting to use invoiceId:', invoiceId);
+
+              // If no ID found but we have invoiceNumber, try to fetch the invoice by invoice number
+              if (!invoiceId && dataReceived.invoiceNumber) {
+                try {
+                  console.log(
+                    '🔍 No ID found, attempting to fetch by invoice number:',
+                    dataReceived.invoiceNumber
+                  );
+                  const fetchResponse = await api.get(`api/Purchase/all-sales`);
+                  const allSales = fetchResponse?.data?.data || [];
+                  const foundInvoice = allSales.find(
+                    (sale) => sale.invoiceNumber === dataReceived.invoiceNumber
+                  );
+                  if (foundInvoice && foundInvoice._id) {
+                    invoiceId = foundInvoice._id;
+                    console.log(
+                      '✅ Found invoice ID by invoice number:',
+                      invoiceId
+                    );
+                  }
+                } catch (fetchError) {
+                  console.error(
+                    'Error fetching invoice by invoice number:',
+                    fetchError
+                  );
+                }
+              }
+
+              if (!invoiceId) {
+                console.error(
+                  'No invoice ID found. dataReceived:',
+                  JSON.stringify(dataReceived, null, 2)
+                );
+                toast.error(
+                  'Invoice ID not found. Cannot update invoice without ID. Please contact support.'
+                );
+                return;
+              }
               await api.put(
-                `/api/Purchase/update-sold-phone/${dataReceived.id}`,
+                `/api/Purchase/update-sold-phone/${invoiceId}`,
                 editInvoiceFields
               );
               toast.success('Invoice updated successfully');
               setInvoiceModal(false);
             } catch (error) {
               console.error('Error updating invoice:', error);
-              toast.error('Failed to update invoice');
+              console.error('Error response:', error.response);
+              toast.error(
+                error?.response?.data?.message || 'Failed to update invoice'
+              );
             }
           }}
           style={{

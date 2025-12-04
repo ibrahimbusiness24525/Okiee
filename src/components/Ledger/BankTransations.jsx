@@ -2,45 +2,71 @@ import { useParams } from 'react-router-dom';
 import { api } from '../../../api/api';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FaTrash, FaDownload, FaCalendarAlt } from 'react-icons/fa';
+import {
+  FaTrash,
+  FaDownload,
+  FaCalendarAlt,
+  FaArrowUp,
+  FaArrowDown,
+} from 'react-icons/fa';
 import { dateFormatter } from 'utils/dateFormatter';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 
 const BankTransactions = () => {
   const [transactions, setTransactions] = useState([]);
-  const [displayCount, setDisplayCount] = useState(20);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [displayCount, setDisplayCount] = useState(10);
   const [dateRange, setDateRange] = useState([null, null]);
+  const [deletingId, setDeletingId] = useState(null);
   const { id } = useParams();
 
   const getBankTransactions = async () => {
     try {
+      setLoading(true);
       const response = await api.get(`/api/banks/getBankTransaction/${id}`);
       setTransactions(response?.data?.transactions || []);
+      setError(null);
     } catch (error) {
       toast.error('Failed to fetch bank transactions');
       console.error('Error fetching bank transactions:', error);
+      setError('Failed to load transactions');
+      setTransactions([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteBankTransaction = async (id) => {
+    if (deletingId === id) return; // Prevent multiple clicks on the same item
+
     if (!confirm('Are you sure you want to delete this bank transaction?'))
       return;
 
     try {
+      setDeletingId(id); // Set loading state for this specific transaction
       const response = await api.delete(`/api/banks/deleteTransaction/${id}`);
-      getBankTransactions();
+      await getBankTransactions(); // Wait for refresh to complete
       toast.success('Transaction deleted successfully');
       return response?.data || [];
     } catch (error) {
       toast.error('Failed to delete transaction');
       console.error('Error fetching bank transactions:', error);
       throw error;
+    } finally {
+      setDeletingId(null); // Clear loading state
     }
   };
 
-  const handleShowNext = () => {
+  const handleViewMore = () => {
     setDisplayCount((prev) => prev + 20);
+  };
+
+  // Helper to format date
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toLocaleString();
   };
 
   useEffect(() => {
@@ -200,27 +226,51 @@ const BankTransactions = () => {
     }
   };
 
-  // Helper function to get background color based on transaction status
-  const getRowBackgroundColor = (transaction) => {
-    if (transaction.sourceOfAmountAddition) {
-      return '#e8f5e8'; // Light green for incoming transactions
-    } else if (
-      transaction.reasonOfAmountDeduction &&
-      typeof transaction.reasonOfAmountDeduction === 'string' &&
-      transaction.reasonOfAmountDeduction.toLowerCase().includes('take')
-    ) {
-      return '#ffebee'; // Light red for outgoing transactions
-    } else if (
-      transaction.reasonOfAmountDeduction &&
-      typeof transaction.reasonOfAmountDeduction === 'string' &&
-      transaction.reasonOfAmountDeduction.toLowerCase().includes('give')
-    ) {
-      return '#e8f5e8'; // Light green for outgoing transactions
-    } else if (transaction.reasonOfAmountDeduction) {
-      return '#ffebee'; // Light red for outgoing transactions
-    }
-    return '#ffffff'; // Default white
-  };
+  if (loading) {
+    return (
+      <div
+        style={{
+          maxWidth: 700,
+          margin: '30px auto',
+          padding: 24,
+          textAlign: 'center',
+          color: '#666',
+        }}
+      >
+        Loading transactions...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          maxWidth: 700,
+          margin: '30px auto',
+          padding: 24,
+          textAlign: 'center',
+          color: '#c0392b',
+        }}
+      >
+        {error}
+        <button
+          onClick={getBankTransactions}
+          style={{
+            marginTop: 10,
+            padding: '8px 16px',
+            background: '#3498db',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -389,159 +439,255 @@ const BankTransactions = () => {
         </div>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '14px',
-            backgroundColor: '#ffffff',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            borderRadius: '8px',
-            overflow: 'hidden',
-          }}
-        >
-          <thead>
-            <tr
+      {/* Transactions Cards Container */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}
+      >
+        {filteredTransactions.slice(0, displayCount).map((txn) => {
+          const amount = txn.accountCash;
+          const isCredit = !!txn.sourceOfAmountAddition;
+          const description =
+            txn.sourceOfAmountAddition || txn.reasonOfAmountDeduction || '-';
+
+          // Determine card background color based on transaction type
+          const cardBgColor =
+            txn.reasonOfAmountDeduction &&
+            typeof txn.reasonOfAmountDeduction === 'string' &&
+            (txn.reasonOfAmountDeduction.toLowerCase().includes('take') ||
+              (!txn.reasonOfAmountDeduction
+                .toLowerCase()
+                .includes('take credit') &&
+                txn.reasonOfAmountDeduction.toLowerCase().includes('return')))
+              ? 'linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%)'
+              : 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+
+          const borderColor = isCredit ? '#22c55e' : '#ef4444';
+          const amountColor = isCredit ? '#16a34a' : '#dc2626';
+
+          return (
+            <div
+              key={txn._id}
               style={{
-                backgroundColor: '#f8f9fa',
-                borderBottom: '2px solid #e9ecef',
+                background: cardBgColor,
+                borderRadius: 12,
+                padding: 14,
+                boxShadow:
+                  '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
+                border: `2px solid ${borderColor}20`,
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow =
+                  '0 10px 15px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow =
+                  '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)';
               }}
             >
-              <th
+              {/* Decorative accent bar */}
+              <div
                 style={{
-                  padding: '15px 12px',
-                  textAlign: 'left',
-                  fontWeight: '600',
-                  color: '#2c3e50',
-                  borderBottom: '2px solid #e9ecef',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 4,
+                  height: '100%',
+                  background: borderColor,
+                }}
+              />
+
+              {/* Card Content - Horizontal Layout */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 16,
+                  marginLeft: 6,
+                  flexWrap: 'wrap',
                 }}
               >
-                Date
-              </th>
-              <th
-                style={{
-                  padding: '15px 12px',
-                  textAlign: 'right',
-                  fontWeight: '600',
-                  color: '#2c3e50',
-                  borderBottom: '2px solid #e9ecef',
-                }}
-              >
-                Amount
-              </th>
-              <th
-                style={{
-                  padding: '15px 12px',
-                  textAlign: 'left',
-                  fontWeight: '600',
-                  color: '#2c3e50',
-                  borderBottom: '2px solid #e9ecef',
-                }}
-              >
-                Description
-              </th>
-              <th
-                style={{
-                  padding: '15px 12px',
-                  textAlign: 'right',
-                  fontWeight: '600',
-                  color: '#2c3e50',
-                  borderBottom: '2px solid #e9ecef',
-                }}
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions
-              .slice(0, displayCount)
-              .map((transaction, index) => (
-                <tr
-                  key={transaction._id}
+                {/* Left Section - Icon, Date, Description */}
+                <div
                   style={{
-                    backgroundColor: getRowBackgroundColor(transaction),
-                    borderBottom: '1px solid #f0f0f0',
-                    transition: 'background-color 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    flex: 1,
+                    minWidth: 250,
                   }}
                 >
-                  <td
+                  <div
                     style={{
-                      padding: '15px 12px',
-                      color: '#495057',
-                      fontSize: '14px',
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: `${borderColor}20`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: `2px solid ${borderColor}40`,
+                      flexShrink: 0,
                     }}
                   >
-                    {dateFormatter(transaction.createdAt)}
-                  </td>
-                  <td
-                    style={{
-                      padding: '15px 12px',
-                      textAlign: 'right',
-                      fontWeight: '600',
-                      fontSize: '16px',
-                    }}
-                  >
-                    {transaction.accountCash?.toLocaleString()}
-                  </td>
-                  <td
-                    style={{
-                      padding: '15px 12px',
-                      color: '#495057',
-                      fontSize: '14px',
-                    }}
-                  >
-                    {transaction.sourceOfAmountAddition ||
-                      transaction.reasonOfAmountDeduction ||
-                      'Not mentioned'}
-                  </td>
-                  <td
-                    style={{
-                      padding: '15px 12px',
-                      textAlign: 'right',
-                    }}
-                  >
-                    <FaTrash
-                      onClick={() => deleteBankTransaction(transaction._id)}
+                    {isCredit ? (
+                      <FaArrowUp size={16} color={amountColor} />
+                    ) : (
+                      <FaArrowDown size={16} color={amountColor} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
                       style={{
-                        color: '#e74c3c',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        transition: 'color 0.2s ease',
+                        fontSize: 12,
+                        color: '#6b7280',
+                        fontWeight: 500,
+                        marginBottom: 2,
                       }}
-                      onMouseEnter={(e) => (e.target.style.color = '#c0392b')}
-                      onMouseLeave={(e) => (e.target.style.color = '#e74c3c')}
-                    />
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+                    >
+                      {formatDate(txn.createdAt)}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: '#1f2937',
+                        fontWeight: 600,
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {description}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Section - Amount, Delete */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 20,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {/* Amount */}
+                  <div style={{ textAlign: 'right' }}>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: '#6b7280',
+                        fontWeight: 500,
+                        marginBottom: 2,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      {isCredit ? 'Added' : 'Deducted'}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 18,
+                        color: amountColor,
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {isCredit ? '+' : '-'}
+                      {amount
+                        ? `Rs. ${Math.abs(amount).toLocaleString()}`
+                        : '-'}
+                    </div>
+                  </div>
+
+                  {/* Delete Button */}
+                  <div>
+                    {deletingId === txn._id ? (
+                      <div
+                        style={{
+                          padding: '6px 12px',
+                          background: '#f3f4f6',
+                          borderRadius: 6,
+                          color: '#6b7280',
+                          fontSize: 11,
+                          fontWeight: 500,
+                        }}
+                      >
+                        Deleting...
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => deleteBankTransaction(txn._id)}
+                        style={{
+                          padding: '6px 10px',
+                          background: '#fee2e2',
+                          border: '1px solid #fecaca',
+                          borderRadius: 6,
+                          cursor: 'pointer',
+                          color: '#dc2626',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          transition: 'all 0.2s ease',
+                          fontWeight: 500,
+                          fontSize: 11,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#fecaca';
+                          e.currentTarget.style.borderColor = '#fca5a5';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#fee2e2';
+                          e.currentTarget.style.borderColor = '#fecaca';
+                        }}
+                      >
+                        <FaTrash size={12} />
+                        <span>Delete</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {filteredTransactions.length > displayCount && (
         <div
           style={{
-            marginTop: '20px',
+            marginTop: 20,
             textAlign: 'center',
           }}
         >
           <button
-            onClick={handleShowNext}
+            onClick={handleViewMore}
             style={{
-              padding: '10px 20px',
+              padding: '8px 20px',
               backgroundColor: '#3498db',
               color: 'white',
               border: 'none',
-              borderRadius: '5px',
+              borderRadius: 4,
               cursor: 'pointer',
-              fontWeight: '500',
-              fontSize: '14px',
-              transition: 'background-color 0.2s ease',
+              fontWeight: 500,
+              transition: 'background-color 0.2s',
             }}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = '#2980b9')}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = '#3498db')}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#2980b9';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#3498db';
+            }}
           >
             View More ({filteredTransactions.length - displayCount} remaining)
           </button>
@@ -553,12 +699,41 @@ const BankTransactions = () => {
           style={{
             marginTop: 20,
             textAlign: 'center',
-            padding: 40,
-            color: '#7f8c8d',
-            fontSize: 14,
+            padding: '60px 40px',
+            background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
+            borderRadius: 16,
+            border: '2px dashed #d1d5db',
           }}
         >
-          No transactions found for the selected date range.
+          <div
+            style={{
+              fontSize: 48,
+              color: '#9ca3af',
+              marginBottom: 16,
+            }}
+          >
+            📭
+          </div>
+          <div
+            style={{
+              color: '#6b7280',
+              fontSize: 16,
+              fontWeight: 500,
+              marginBottom: 8,
+            }}
+          >
+            No transactions found
+          </div>
+          <div
+            style={{
+              color: '#9ca3af',
+              fontSize: 14,
+            }}
+          >
+            {dateRange[0] && dateRange[1]
+              ? 'Try adjusting your date range filter'
+              : 'No transactions available for this bank account'}
+          </div>
         </div>
       )}
 

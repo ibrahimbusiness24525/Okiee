@@ -273,15 +273,31 @@ const NewMobilesList = () => {
       // Filter: match search AND exclude fully sold records
       setBulkMobiles(
         response.data
-          .filter((item) =>
-            item.ramSimDetails?.some((ramSim) =>
+          .filter((item) => {
+            if (!searchTerm) return true;
+            const searchLower = searchTerm.toLowerCase();
+            // Search by IMEI
+            const matchesImei = item.ramSimDetails?.some((ramSim) =>
               ramSim.imeiNumbers?.some(
                 (imei) =>
-                  imei.imei1?.includes(searchTerm) ||
-                  imei.imei2?.includes(searchTerm)
+                  imei.imei1?.toLowerCase().includes(searchLower) ||
+                  imei.imei2?.toLowerCase().includes(searchLower)
               )
-            )
-          )
+            );
+            // Search by modelName
+            const matchesModel = item.ramSimDetails?.some(
+              (ramSim) =>
+                ramSim.modelName?.toLowerCase().includes(searchLower) ||
+                item.modelName?.toLowerCase().includes(searchLower)
+            );
+            // Search by companyName
+            const matchesCompany = item.ramSimDetails?.some(
+              (ramSim) =>
+                ramSim.companyName?.toLowerCase().includes(searchLower) ||
+                item.companyName?.toLowerCase().includes(searchLower)
+            );
+            return matchesImei || matchesModel || matchesCompany;
+          })
           .filter((item) => !isFullySold(item))
       );
     } catch (error) {
@@ -301,15 +317,31 @@ const NewMobilesList = () => {
 
     setBulkMobiles(
       bulkData
-        .filter((item) =>
-          item.ramSimDetails?.some((ramSim) =>
+        .filter((item) => {
+          if (!searchTerm) return true;
+          const searchLower = searchTerm.toLowerCase();
+          // Search by IMEI
+          const matchesImei = item.ramSimDetails?.some((ramSim) =>
             ramSim.imeiNumbers?.some(
               (imei) =>
-                imei.imei1?.includes(searchTerm) ||
-                imei.imei2?.includes(searchTerm)
+                imei.imei1?.toLowerCase().includes(searchLower) ||
+                imei.imei2?.toLowerCase().includes(searchLower)
             )
-          )
-        )
+          );
+          // Search by modelName
+          const matchesModel = item.ramSimDetails?.some(
+            (ramSim) =>
+              ramSim.modelName?.toLowerCase().includes(searchLower) ||
+              item.modelName?.toLowerCase().includes(searchLower)
+          );
+          // Search by companyName
+          const matchesCompany = item.ramSimDetails?.some(
+            (ramSim) =>
+              ramSim.companyName?.toLowerCase().includes(searchLower) ||
+              item.companyName?.toLowerCase().includes(searchLower)
+          );
+          return matchesImei || matchesModel || matchesCompany;
+        })
         .filter((item) => !isFullySold(item))
     );
   }, [searchTerm, bulkData]);
@@ -618,12 +650,29 @@ const NewMobilesList = () => {
     if (!Array.isArray(bulk?.ramSimDetails)) return outerTotal;
     const bulkAmount = bulk.ramSimDetails.reduce((innerTotal, ramSim) => {
       const imeiCount = Array.isArray(ramSim?.imeiNumbers)
-        ? ramSim.imeiNumbers.length
+        ? ramSim.imeiNumbers.filter((imei) => imei.status !== 'Sold').length
         : 0;
       const priceOfOne = parseFloat(ramSim?.priceOfOne) || 0;
       return innerTotal + imeiCount * priceOfOne;
     }, 0);
     return outerTotal + bulkAmount;
+  }, 0);
+
+  // Calculate total available phones quantity
+  const totalAvailablePhones = (bulkMobile || []).reduce((total, bulk) => {
+    if (!Array.isArray(bulk?.ramSimDetails)) return total;
+    return (
+      total +
+      bulk.ramSimDetails.reduce((innerTotal, ramSim) => {
+        if (!Array.isArray(ramSim?.imeiNumbers)) return innerTotal;
+        return (
+          innerTotal +
+          ramSim.imeiNumbers.filter(
+            (imei) => imei.status !== 'Sold' && !imei.isDispatched
+          ).length
+        );
+      }, 0)
+    );
   }, 0);
   console.log('bulkMobile', bulkMobile);
 
@@ -685,7 +734,7 @@ const NewMobilesList = () => {
         </InputGroup.Text>
         <Form.Control
           type="text"
-          placeholder="Search by name or company"
+          placeholder="Search by IMEI, model name, or company"
           value={searchTerm}
           onChange={handleSearch}
         />
@@ -731,31 +780,83 @@ const NewMobilesList = () => {
             borderRadius: '12px',
             boxShadow: '0 4px 15px rgba(0,123,255,0.1)',
             border: '2px solid #e3f2fd',
-            minWidth: '350px',
+            minWidth: '450px',
+            flexWrap: 'wrap',
           }}
         >
-          <div>
-            <h5
+          <div style={{ flex: 1, minWidth: 300 }}>
+            <div
               style={{
-                fontSize: 28,
-                margin: 0,
-                color: '#2c3e50',
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flexWrap: 'wrap',
               }}
             >
-              Total Stock Amount :
-              <span
+              <div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: '#6b7280',
+                    fontWeight: 500,
+                    marginBottom: 4,
+                  }}
+                >
+                  Available Phones
+                </div>
+                <div
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 'bold',
+                    color: '#16a34a',
+                    textShadow: '0 2px 4px rgba(22,163,74,0.2)',
+                  }}
+                >
+                  {totalAvailablePhones}
+                </div>
+              </div>
+              <div
                 style={{
-                  fontWeight: 'bold',
-                  color: '#007bff',
-                  fontSize: 32,
-                  marginLeft: '8px',
-                  textShadow: '0 2px 4px rgba(0,123,255,0.2)',
+                  width: '2px',
+                  height: '50px',
+                  background: '#e5e7eb',
+                  margin: '0 8px',
                 }}
-              >
-                {showAmount ? totalBulkStockAmount : '••••••'}
-              </span>
-            </h5>
+              />
+              <div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: '#6b7280',
+                    fontWeight: 500,
+                    marginBottom: 4,
+                  }}
+                >
+                  Total Stock Amount
+                </div>
+                <h5
+                  style={{
+                    fontSize: 28,
+                    margin: 0,
+                    color: '#2c3e50',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 'bold',
+                      color: '#007bff',
+                      fontSize: 32,
+                      textShadow: '0 2px 4px rgba(0,123,255,0.2)',
+                    }}
+                  >
+                    {showAmount
+                      ? `${totalBulkStockAmount.toLocaleString()} PKR`
+                      : '••••••'}
+                  </span>
+                </h5>
+              </div>
+            </div>
           </div>
           <button
             onClick={() => setShowAmount(!showAmount)}
@@ -773,6 +874,7 @@ const NewMobilesList = () => {
               boxShadow: '0 4px 12px rgba(0,123,255,0.3)',
               width: '45px',
               height: '45px',
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               e.target.style.background =
@@ -1574,7 +1676,7 @@ const NewMobilesList = () => {
                       };
                     })}
                   keysToDisplay={[
-                    'personId',
+                    'ramSimDetails',
                     'date',
                     'prices',
                     'creditPaymentData',
@@ -1584,7 +1686,7 @@ const NewMobilesList = () => {
                     'purchasePaymentType',
                   ]}
                   label={[
-                    'Supplier',
+                    'Model Name',
                     'Date',
                     'Buying Price',
                     'Remaining',
@@ -1597,25 +1699,74 @@ const NewMobilesList = () => {
                   customBlocks={[
                     {
                       index: 0,
-                      component: (person) => (
-                        <span style={{ fontWeight: 500 }}>
-                          {(person && person.name) || 'Unknown'}
-                          {person?.number ? (
-                            <span
-                              style={{
-                                marginLeft: '8px',
-                                backgroundColor: '#e0e7ff',
-                                color: '#4f46e5',
-                                padding: '2px 8px',
-                                borderRadius: '12px',
-                                fontSize: '0.8rem',
-                              }}
-                            >
-                              {person.number}
+                      component: (ramSimDetails, fullRecord) => {
+                        // Collect all unique model names from ramSimDetails
+                        const modelNamesSet = new Set();
+                        if (Array.isArray(ramSimDetails)) {
+                          ramSimDetails.forEach((ramSim) => {
+                            if (ramSim?.modelName) {
+                              modelNamesSet.add(ramSim.modelName);
+                            }
+                          });
+                        }
+                        // Also check fullRecord for modelName
+                        if (fullRecord?.modelName) {
+                          modelNamesSet.add(fullRecord.modelName);
+                        }
+                        // Also check phoneDetails
+                        if (Array.isArray(fullRecord?.phoneDetails)) {
+                          fullRecord.phoneDetails.forEach((phone) => {
+                            if (phone?.modelName) {
+                              modelNamesSet.add(phone.modelName);
+                            }
+                          });
+                        }
+
+                        const modelNames = Array.from(modelNamesSet).filter(
+                          (name) => name && name.trim()
+                        );
+
+                        if (modelNames.length === 0) {
+                          return <span style={{ color: '#9ca3af' }}>N/A</span>;
+                        }
+
+                        // If 1-2 models, show with slashes
+                        if (modelNames.length <= 2) {
+                          return (
+                            <span style={{ fontWeight: 500 }}>
+                              {modelNames.join(' / ')}
                             </span>
-                          ) : null}
-                        </span>
-                      ),
+                          );
+                        }
+
+                        // If more than 2, show in dropdown
+                        return (
+                          <Select
+                            value={modelNames[0]}
+                            displayEmpty
+                            size="small"
+                            sx={{
+                              minWidth: 150,
+                              '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#d1d5db',
+                              },
+                              '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#9ca3af',
+                              },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline':
+                                {
+                                  borderColor: '#4f46e5',
+                                },
+                            }}
+                          >
+                            {modelNames.map((modelName, idx) => (
+                              <MenuItem key={idx} value={modelName}>
+                                {modelName}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        );
+                      },
                     },
                     {
                       index: 1,

@@ -583,100 +583,410 @@ const NavLeft = () => {
     }
   };
 
-  const buttonStyles = {
-    base: {
-      background: 'linear-gradient(to right, #50b5f4, #b8bee2)',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '5px',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    largeScreen: {
-      height: '40px',
-      width: '120px',
-      marginLeft: '40px',
-      marginTop: '0px',
-    },
-    mediumScreen: {
-      height: '45px',
-      width: '180px',
-      marginLeft: '20px',
-      marginTop: '5px',
-    },
-    smallScreen: {
-      height: '40px',
-      width: '100%',
-      marginLeft: '5px',
-      marginTop: '10px',
-    },
-  };
+  console.log('formdata imei', formData.imei);
 
-  const hoverStyle = {
-    background: 'linear-gradient(to right, #3a97d4, #9ea9d2)',
-  };
-
-  let dynamicStyles = {};
-  if (windowSize.width > 1200) {
-    dynamicStyles = buttonStyles.largeScreen;
-  } else if (windowSize.width > 768) {
-    dynamicStyles = buttonStyles.mediumScreen;
-  } else {
-    dynamicStyles = buttonStyles.smallScreen;
-  }
-  console.log('formdata imei', formData?.addedImeis);
   return (
     <>
-      <ListGroup as="ul" bsPrefix=" " className="navbar-nav mr-auto">
+      <style>{`
+        .navbar-left-container {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .nav-left-button {
+          background: linear-gradient(to right, #50b5f4, #b8bee2);
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 40px;
+          width: 120px;
+          margin-left: 40px;
+          margin-top: 0px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .nav-left-button:hover {
+          background: linear-gradient(to right, #3a97d4, #9ea9d2);
+        }
+        .sale-mobile-btn-nav {
+          background-color: #4285F4 !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 4px !important;
+          padding: 10px 16px !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          cursor: pointer !important;
+          transition: all 0.3s ease !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        }
+        .sale-mobile-btn-nav:hover {
+          background-color: #3367D6 !important;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+        }
+        .sale-mobile-btn-nav:active {
+          transform: translateY(1px) !important;
+        }
+        @media (max-width: 1200px) {
+          .nav-left-button {
+            width: 180px;
+            margin-left: 20px;
+            margin-top: 5px;
+            height: 45px;
+          }
+        }
+        @media (max-width: 768px) {
+          .navbar-left-container {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 8px !important;
+          }
+          .navbar-left-container > li {
+            width: 100% !important;
+            margin: 0 !important;
+          }
+          .nav-left-button {
+            width: 100% !important;
+            margin-left: 0 !important;
+            margin-top: 0 !important;
+            height: 45px !important;
+            font-size: 14px !important;
+          }
+          .sale-mobile-btn-nav {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 12px 16px !important;
+          }
+        }
+        @media (max-width: 576px) {
+          .nav-left-button {
+            height: 42px !important;
+            font-size: 13px !important;
+            padding: 10px 12px !important;
+          }
+          .sale-mobile-btn-nav {
+            padding: 10px 14px !important;
+            font-size: 13px !important;
+          }
+        }
+        /* Enhanced Modal Styles */
+        .enhanced-modal .modal-dialog {
+          max-width: 600px;
+        }
+        .enhanced-modal-content {
+          min-width: 500px;
+        }
+        .modal-title-enhanced {
+          font-size: 24px !important;
+          font-weight: 700 !important;
+          color: #1f2937 !important;
+          margin: 0 !important;
+        }
+        .modal-body-enhanced {
+          padding: 30px !important;
+        }
+        .form-group-enhanced {
+          margin-bottom: 25px;
+        }
+        .form-label-enhanced {
+          display: block;
+          font-size: 15px;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 10px;
+        }
+        .form-input-enhanced {
+          width: 100%;
+          padding: 14px 16px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-sizing: border-box;
+          background-color: #fff;
+        }
+        .form-input-enhanced:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form-input-enhanced::placeholder {
+          color: #9ca3af;
+        }
+        .form-input-enhanced:disabled {
+          background-color: #f3f4f6;
+          cursor: not-allowed;
+        }
+        .modal-actions-enhanced {
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #e5e7eb;
+        }
+        .btn-cancel-enhanced {
+          padding: 12px 24px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          background-color: white;
+          color: #6b7280;
+          font-size: 15px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .btn-cancel-enhanced:hover {
+          background-color: #f9fafb;
+          border-color: #d1d5db;
+          color: #374151;
+        }
+        .btn-submit-enhanced {
+          padding: 12px 24px;
+          border: none;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #4CAF50, #45a049);
+          color: white;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+        }
+        .btn-submit-enhanced:hover:not(:disabled) {
+          background: linear-gradient(135deg, #45a049, #3d8b40);
+          box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+          transform: translateY(-1px);
+        }
+        .btn-submit-enhanced:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .btn-submit-enhanced:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        .enhanced-modal-content {
+          padding: 30px !important;
+        }
+
+        /* Modal Responsive Styles */
+        @media (max-width: 768px) {
+          .enhanced-modal .modal-dialog {
+            max-width: calc(100% - 20px) !important;
+            margin: 10px auto !important;
+          }
+          .enhanced-modal-content {
+            min-width: auto !important;
+            width: 100% !important;
+          }
+          .modal-body-enhanced {
+            padding: 20px !important;
+          }
+          .modal-title-enhanced {
+            font-size: 20px !important;
+          }
+          .form-group-enhanced {
+            margin-bottom: 20px;
+          }
+          .form-input-enhanced {
+            padding: 12px 14px;
+            font-size: 15px;
+          }
+          .modal-actions-enhanced {
+            flex-direction: column;
+            margin-top: 20px;
+            gap: 12px !important;
+          }
+          .btn-cancel-enhanced,
+          .btn-submit-enhanced {
+            width: 100% !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
+          .modal-header {
+            padding: 15px 20px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+          }
+          .modal-header .btn-close,
+          .modal-header button[aria-label="Close"] {
+            margin: 0 !important;
+            padding: 8px !important;
+            font-size: 24px !important;
+            width: 36px !important;
+            height: 36px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
+          .responsive-modal,
+          .responsive-modal .modal-dialog {
+            margin: 10px !important;
+            max-width: calc(100% - 20px) !important;
+          }
+          .modal-content-responsive {
+            padding: 15px !important;
+          }
+          .modal-title-responsive {
+            font-size: 18px !important;
+            margin-bottom: 15px !important;
+          }
+          .modal-input-responsive {
+            font-size: 14px !important;
+            padding: 10px 12px !important;
+          }
+          .modal-button-responsive {
+            font-size: 14px !important;
+            padding: 10px 16px !important;
+          }
+          .modal-content {
+            margin: 10px !important;
+            width: calc(100% - 20px) !important;
+            max-width: 100% !important;
+          }
+          .modal-body {
+            padding: 15px !important;
+          }
+          .modal-header {
+            padding: 12px 15px !important;
+          }
+          .modal-footer {
+            padding: 10px 15px !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+          }
+          .modal-footer button {
+            width: 100% !important;
+            margin: 0 !important;
+          }
+          .form-group {
+            margin-bottom: 15px !important;
+          }
+          .form-control, .form-select {
+            font-size: 14px !important;
+            padding: 10px 12px !important;
+          }
+          .btn {
+            padding: 10px 16px !important;
+            font-size: 14px !important;
+          }
+        }
+        @media (max-width: 576px) {
+          .responsive-modal,
+          .responsive-modal .modal-dialog {
+            margin: 5px !important;
+            max-width: calc(100% - 10px) !important;
+          }
+          .modal-content-responsive {
+            padding: 12px !important;
+          }
+          .modal-title-responsive {
+            font-size: 16px !important;
+            margin-bottom: 12px !important;
+          }
+          .modal-input-responsive {
+            font-size: 13px !important;
+            padding: 8px 10px !important;
+            margin-bottom: 15px !important;
+          }
+          .modal-button-responsive {
+            font-size: 13px !important;
+            padding: 8px 14px !important;
+          }
+          .modal-content {
+            margin: 5px !important;
+            width: calc(100% - 10px) !important;
+            border-radius: 8px !important;
+          }
+          .modal-body {
+            padding: 12px !important;
+            font-size: 14px !important;
+          }
+          .modal-header {
+            padding: 10px 12px !important;
+          }
+          .modal-header h2, .modal-header h5 {
+            font-size: 18px !important;
+          }
+          .modal-footer {
+            padding: 8px 12px !important;
+          }
+          .form-control, .form-select {
+            font-size: 13px !important;
+            padding: 8px 10px !important;
+          }
+          .btn {
+            padding: 8px 14px !important;
+            font-size: 13px !important;
+          }
+          .enhanced-modal .modal-dialog {
+            max-width: calc(100% - 10px) !important;
+            margin: 5px auto !important;
+          }
+          .enhanced-modal-content {
+            min-width: auto !important;
+            width: 100% !important;
+            padding: 15px !important;
+          }
+          .modal-body-enhanced {
+            padding: 15px !important;
+          }
+          .modal-title-enhanced {
+            font-size: 18px !important;
+          }
+          .form-group-enhanced {
+            margin-bottom: 18px;
+          }
+          .form-input-enhanced {
+            padding: 10px 12px !important;
+            font-size: 14px !important;
+          }
+          .modal-actions-enhanced {
+            margin-top: 15px !important;
+            padding-top: 15px !important;
+            gap: 10px !important;
+          }
+          .btn-cancel-enhanced,
+          .btn-submit-enhanced {
+            width: 100% !important;
+            padding: 12px 18px !important;
+            font-size: 14px !important;
+          }
+          .modal-header {
+            padding: 12px 15px !important;
+          }
+          .modal-header .btn-close,
+          .modal-header button[aria-label="Close"] {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 22px !important;
+          }
+        }
+      `}</style>
+      <ListGroup
+        as="ul"
+        bsPrefix=" "
+        className="navbar-nav mr-auto navbar-left-container"
+      >
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
-          <button
-            style={{ ...buttonStyles.base, ...dynamicStyles }}
-            onMouseEnter={(e) =>
-              (e.target.style.background = hoverStyle.background)
-            }
-            onMouseLeave={(e) =>
-              (e.target.style.background = buttonStyles.base.background)
-            }
-            onClick={handlePurchasePhoneShow}
-          >
+          <button className="nav-left-button" onClick={handlePurchasePhoneShow}>
             Purchase Phone
           </button>
         </ListGroup.Item>
 
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <button
-            className="sale-mobile-btn"
-            style={{
-              ...buttonStyles.base,
-              ...dynamicStyles,
-              backgroundColor: '#4285F4', // Google blue
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '10px 16px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#3367D6';
-              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#4285F4';
-              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-            }}
-            onMouseDown={(e) => {
-              e.currentTarget.style.transform = 'translateY(1px)';
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            className="nav-left-button sale-mobile-btn-nav"
             onClick={() => setShowSoldModal(true)}
           >
             Sale Mobile
@@ -684,12 +994,9 @@ const NavLeft = () => {
         </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <button
-            style={{
-              ...buttonStyles.base,
-              ...dynamicStyles,
-              background: '#4CAF50', // Simple green
-            }}
-            onMouseEnter={(e) => (e.target.style.background = '#45a049')} // Darker green
+            className="nav-left-button"
+            style={{ background: '#4CAF50' }}
+            onMouseEnter={(e) => (e.target.style.background = '#45a049')}
             onMouseLeave={(e) => (e.target.style.background = '#4CAF50')}
             onClick={handleAddCompanyShow}
           >
@@ -699,12 +1006,9 @@ const NavLeft = () => {
 
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <button
-            style={{
-              ...buttonStyles.base,
-              ...dynamicStyles,
-              background: '#2196F3', // Simple blue
-            }}
-            onMouseEnter={(e) => (e.target.style.background = '#1976D2')} // Darker blue
+            className="nav-left-button"
+            style={{ background: '#2196F3' }}
+            onMouseEnter={(e) => (e.target.style.background = '#1976D2')}
             onMouseLeave={(e) => (e.target.style.background = '#2196F3')}
             onClick={handleAddModelShow}
           >
@@ -713,13 +1017,10 @@ const NavLeft = () => {
         </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <button
-            style={{
-              ...buttonStyles.base,
-              ...dynamicStyles,
-              background: '#4CAF50', // Simple blue
-            }}
-            onMouseEnter={(e) => (e.target.style.background = '#1976D2')} // Darker blue
-            onMouseLeave={(e) => (e.target.style.background = '#2196F3')}
+            className="nav-left-button"
+            style={{ background: '#4CAF50' }}
+            onMouseEnter={(e) => (e.target.style.background = '#45a049')}
+            onMouseLeave={(e) => (e.target.style.background = '#4CAF50')}
             onClick={() => setShowCreateModal(true)}
           >
             Create Entity
@@ -739,152 +1040,114 @@ const NavLeft = () => {
       <Modal
         show={showAddCompanyModal}
         onHide={handleAddCompanyClose}
-        size="sm"
+        size="md"
         centered
+        className="responsive-modal enhanced-modal"
       >
-        <div style={{ padding: '24px' }}>
-          <h2
-            style={{
-              marginBottom: '24px',
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#333',
-            }}
-          >
+        <Modal.Header closeButton>
+          <Modal.Title className="modal-title-enhanced">
             Add Company
-          </h2>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="modal-body-enhanced">
           <form onSubmit={handleAddCompany}>
-            <input
-              type="text"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Company Name"
-              required
-              style={{
-                padding: '12px',
-                width: '100%',
-                marginBottom: '20px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-              }}
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                padding: '12px',
-                width: '100%',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: '500',
-                transition: 'background-color 0.3s',
-              }}
-              onMouseOver={(e) =>
-                !isSubmitting && (e.target.style.backgroundColor = '#45a049')
-              }
-              onMouseOut={(e) =>
-                !isSubmitting && (e.target.style.backgroundColor = '#4CAF50')
-              }
-            >
-              {isSubmitting ? 'Adding...' : 'Add Company'}
-            </button>
+            <div className="form-group-enhanced">
+              <label className="form-label-enhanced">Company Name</label>
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Enter company name"
+                required
+                className="form-input-enhanced"
+              />
+            </div>
+            <div className="modal-actions-enhanced">
+              <button
+                type="button"
+                onClick={handleAddCompanyClose}
+                className="btn-cancel-enhanced"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-submit-enhanced"
+              >
+                {isSubmitting ? 'Adding...' : 'Add Company'}
+              </button>
+            </div>
           </form>
-        </div>
+        </Modal.Body>
       </Modal>
 
       <Modal
         show={showAddModelModal}
         onHide={handleAddModelClose}
-        size="sm"
+        size="md"
         centered
+        className="responsive-modal enhanced-modal"
       >
-        <div style={{ padding: '24px' }}>
-          <h2
-            style={{
-              marginBottom: '24px',
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#333',
-            }}
-          >
-            Add Model
-          </h2>
+        <Modal.Header closeButton>
+          <Modal.Title className="modal-title-enhanced">Add Model</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="modal-body-enhanced">
           <form onSubmit={handleAddModel}>
-            <select
-              value={selectedCompanyId}
-              onChange={(e) => setSelectedCompanyId(e.target.value)}
-              required
-              style={{
-                padding: '12px',
-                width: '100%',
-                marginBottom: '20px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: 'white',
-                appearance: 'none',
-              }}
-            >
-              <option value="">Select Company</option>
-              {companies.map((company) => (
-                <option key={company._id} value={company._id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
+            <div className="form-group-enhanced">
+              <label className="form-label-enhanced">Select Company</label>
+              <select
+                value={selectedCompanyId}
+                onChange={(e) => setSelectedCompanyId(e.target.value)}
+                required
+                className="form-input-enhanced"
+              >
+                <option value="">Choose a company</option>
+                {companies.map((company) => (
+                  <option key={company._id} value={company._id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <input
-              type="text"
-              value={modelName}
-              onChange={(e) => setModelName(e.target.value)}
-              placeholder="Model Name"
-              required
-              style={{
-                padding: '12px',
-                width: '100%',
-                marginBottom: '20px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-              }}
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                padding: '12px',
-                width: '100%',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: '500',
-                transition: 'background-color 0.3s',
-              }}
-              onMouseOver={(e) =>
-                !isSubmitting && (e.target.style.backgroundColor = '#45a049')
-              }
-              onMouseOut={(e) =>
-                !isSubmitting && (e.target.style.backgroundColor = '#4CAF50')
-              }
-            >
-              {isSubmitting ? 'Adding...' : 'Add Model'}
-            </button>
+            <div className="form-group-enhanced">
+              <label className="form-label-enhanced">Model Name</label>
+              <input
+                type="text"
+                value={modelName}
+                onChange={(e) => setModelName(e.target.value)}
+                placeholder="Enter model name"
+                required
+                className="form-input-enhanced"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="modal-actions-enhanced">
+              <button
+                type="button"
+                onClick={handleAddModelClose}
+                className="btn-cancel-enhanced"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-submit-enhanced"
+              >
+                {isSubmitting ? 'Adding...' : 'Add Model'}
+              </button>
+            </div>
           </form>
-        </div>
+        </Modal.Body>
       </Modal>
       <Modal
         show={showSoldModal}
         onHide={() => setShowSoldModal(false)}
-        size="lg"
+        size="xl"
+        className="responsive-modal enhanced-modal"
         style={{ fontSize: '14px' }}
       >
         <Modal.Header closeButton>
@@ -1861,228 +2124,149 @@ const NavLeft = () => {
       </Modal>
       <ModalComponent
         show={showCreateModal}
-        size="sm"
+        size="md"
         onClick={() => setShowCreateModal(false)}
+        className="responsive-modal enhanced-modal"
       >
-        <h2
-          style={{
-            margin: '0 0 24px 0',
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: '#1f2937',
-          }}
-        >
-          Create New Person
-        </h2>
-
-        <form onSubmit={handleCreatePerson}>
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151',
-              }}
-            >
-              Name *
-            </label>
-            <div style={{ position: 'relative' }}>
-              <FaUser
-                style={{
-                  position: 'absolute',
-                  left: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#9ca3af',
-                  fontSize: '16px',
-                }}
-              />
-              <input
-                type="text"
-                value={createPersonData.name}
-                onChange={(e) =>
-                  setCreatePersonData({
-                    ...createPersonData,
-                    name: e.target.value,
-                  })
-                }
-                placeholder="Enter person name"
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 40px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
-                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
-                required
-              />
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151',
-              }}
-            >
-              Phone Number *
-            </label>
-            <div style={{ position: 'relative' }}>
-              <FaPhone
-                style={{
-                  position: 'absolute',
-                  left: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#9ca3af',
-                  fontSize: '16px',
-                }}
-              />
-              <input
-                type="tel"
-                value={createPersonData.number}
-                onChange={(e) =>
-                  setCreatePersonData({
-                    ...createPersonData,
-                    number: e.target.value,
-                  })
-                }
-                placeholder="Enter phone number"
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 40px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
-                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
-                required
-              />
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '32px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151',
-              }}
-            >
-              Reference *
-            </label>
-            <div style={{ position: 'relative' }}>
-              <FaFileAlt
-                style={{
-                  position: 'absolute',
-                  left: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#9ca3af',
-                  fontSize: '16px',
-                }}
-              />
-              <input
-                type="text"
-                value={createPersonData.reference}
-                onChange={(e) =>
-                  setCreatePersonData({
-                    ...createPersonData,
-                    reference: e.target.value,
-                  })
-                }
-                placeholder="Enter reference"
-                style={{
-                  width: '100%',
-                  padding: '12px 12px 12px 40px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
-                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
-                required
-              />
-            </div>
-          </div>
-
-          <div
+        <div className="modal-content-responsive enhanced-modal-content">
+          <h2
+            className="modal-title-enhanced"
             style={{
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'flex-end',
+              margin: '0 0 30px 0',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#1f2937',
             }}
           >
-            <button
-              type="button"
-              onClick={() => setShowCreateModal(false)}
-              style={{
-                padding: '12px 24px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                color: '#6b7280',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = '#f9fafb')
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = 'white')
-              }
+            Create New Person
+          </h2>
+
+          <form onSubmit={handleCreatePerson}>
+            <div className="form-group-enhanced">
+              <label className="form-label-enhanced">Name *</label>
+              <div style={{ position: 'relative' }}>
+                <FaUser
+                  style={{
+                    position: 'absolute',
+                    left: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '18px',
+                    zIndex: 1,
+                  }}
+                />
+                <input
+                  type="text"
+                  value={createPersonData.name}
+                  onChange={(e) =>
+                    setCreatePersonData({
+                      ...createPersonData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Enter person name"
+                  className="form-input-enhanced"
+                  style={{
+                    paddingLeft: '48px',
+                  }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-group-enhanced">
+              <label className="form-label-enhanced">Phone Number *</label>
+              <div style={{ position: 'relative' }}>
+                <FaPhone
+                  style={{
+                    position: 'absolute',
+                    left: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '18px',
+                    zIndex: 1,
+                  }}
+                />
+                <input
+                  type="tel"
+                  value={createPersonData.number}
+                  onChange={(e) =>
+                    setCreatePersonData({
+                      ...createPersonData,
+                      number: e.target.value,
+                    })
+                  }
+                  placeholder="Enter phone number"
+                  className="form-input-enhanced"
+                  style={{
+                    paddingLeft: '48px',
+                  }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div
+              className="form-group-enhanced"
+              style={{ marginBottom: '32px' }}
             >
-              Cancel
-            </button>
-            <button
-              // type="submit"
-              disabled={isCreatingEntity}
-              style={{
-                padding: '12px 24px',
-                border: 'none',
-                borderRadius: '8px',
-                backgroundColor: isCreatingEntity ? '#9ca3af' : '#3b82f6',
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: isCreatingEntity ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseOver={(e) => {
-                if (!isCreatingEntity)
-                  e.currentTarget.style.backgroundColor = '#2563eb';
-              }}
-              onMouseOut={(e) => {
-                if (!isSubmitting)
-                  e.currentTarget.style.backgroundColor = '#3b82f6';
-              }}
-            >
-              {isCreatingEntity ? 'Creating...' : 'Create Person'}
-            </button>
-          </div>
-        </form>
+              <label className="form-label-enhanced">Reference *</label>
+              <div style={{ position: 'relative' }}>
+                <FaFileAlt
+                  style={{
+                    position: 'absolute',
+                    left: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '18px',
+                    zIndex: 1,
+                  }}
+                />
+                <input
+                  type="text"
+                  value={createPersonData.reference}
+                  onChange={(e) =>
+                    setCreatePersonData({
+                      ...createPersonData,
+                      reference: e.target.value,
+                    })
+                  }
+                  placeholder="Enter reference"
+                  className="form-input-enhanced"
+                  style={{
+                    paddingLeft: '48px',
+                  }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="modal-actions-enhanced">
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="btn-cancel-enhanced"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isCreatingEntity}
+                className="btn-submit-enhanced"
+                style={{
+                  background: isCreatingEntity
+                    ? 'linear-gradient(135deg, #9ca3af, #6b7280)'
+                    : 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                }}
+              >
+                {isCreatingEntity ? 'Creating...' : 'Create Person'}
+              </button>
+            </div>
+          </form>
+        </div>
       </ModalComponent>
     </>
   );

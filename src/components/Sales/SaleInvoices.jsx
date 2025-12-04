@@ -13,6 +13,7 @@ import { get } from 'jquery';
 import { toast } from 'react-toastify';
 import Modal from 'components/Modal/Modal';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import SaleInvoiceTable from './SaleInvoiceTable';
 
 const SaleInvoices = () => {
   const [search, setSearch] = useState('');
@@ -50,8 +51,20 @@ const SaleInvoices = () => {
   const getAllBulkSales = async () => {
     try {
       const response = await api.get(`api/Purchase/all-sales`);
+      const bulkSales = response?.data?.data || [];
 
-      setAllBulkSales(response?.data?.data);
+      // Log first invoice to see structure
+      if (bulkSales.length > 0) {
+        console.log('📋 Sample bulk invoice from API:', bulkSales[0]);
+        console.log('🔑 Sample invoice keys:', Object.keys(bulkSales[0]));
+        console.log('🆔 Sample invoice ID fields:', {
+          id: bulkSales[0].id,
+          _id: bulkSales[0]._id,
+          bulkSoldId: bulkSales[0].bulkSoldId,
+        });
+      }
+
+      setAllBulkSales(bulkSales);
     } catch (error) {
       console.error('Error fetching bulk sales:', error);
     }
@@ -68,7 +81,8 @@ const SaleInvoices = () => {
     amountFromBank: '',
     amountFromPocket: '',
   });
-  const [showWalletTransactionModal, setShowWalletTransactionModal] = useState(false);
+  const [showWalletTransactionModal, setShowWalletTransactionModal] =
+    useState(false);
   const getAccessoriesRecords = async () => {
     try {
       const response = await api.get(`api/accessory/accessoryRecord`);
@@ -112,26 +126,59 @@ const SaleInvoices = () => {
   };
 
   const handlePrintBulkClick = (invoice) => {
-    console.log(invoice);
+    console.log(
+      '📦 Full bulk invoice object:',
+      JSON.stringify(invoice, null, 2)
+    );
+    console.log('🆔 Invoice ID fields:', {
+      id: invoice.id,
+      _id: invoice._id,
+      bulkSoldId: invoice.bulkSoldId,
+    });
+    console.log('🔍 All invoice keys:', Object.keys(invoice));
+
+    // Try multiple possible ID fields - bulk invoices might have _id at root or nested
+    const invoiceId =
+      invoice._id ||
+      invoice.id ||
+      invoice.bulkSoldId ||
+      (invoice.bulkPhonePurchaseId &&
+      typeof invoice.bulkPhonePurchaseId === 'string'
+        ? invoice.bulkPhonePurchaseId
+        : null) ||
+      invoice.bulkPhonePurchaseId?._id ||
+      invoice.bulkPhonePurchaseId?.id;
+
+    console.log('✅ Resolved invoiceId:', invoiceId);
+
+    if (!invoiceId) {
+      console.error('❌ No ID found in invoice. Full object:', invoice);
+      toast.error(
+        'Invoice ID not found. Cannot open invoice. Check console for details.'
+      );
+      return;
+    }
 
     const formattedInvoice = {
       showInvoice: true,
       editing: true,
-      id: invoice.id,
+      id: invoiceId, // Use the found ID
+      _id: invoiceId, // Keep both for compatibility
       invoiceNumber: invoice.invoiceNumber,
       customerName: invoice.customerName,
       customerNumber: invoice?.customerNumber,
       salePrice: invoice.salePrice,
+      finalPrice: invoice.salePrice || invoice.finalPrice, // Map salePrice to finalPrice
       profit: invoice.profit,
-      salePrice: invoice.salePrice,
       totalInvoice: invoice.totalInvoice,
       sellingPaymentType: invoice.sellingPaymentType,
+      sellingType: invoice.sellingPaymentType || invoice.sellingType, // Map sellingPaymentType to sellingType
       warranty: invoice.warranty,
       accessoriesList: invoice.accessories || [],
       dateSold: invoice.dateSold,
+      saleDate: invoice.dateSold || invoice.saleDate, // Map dateSold to saleDate
       imei1: invoice.imei1,
       createdAt: invoice.createdAt,
-      invoiceNumber: invoice.invoiceNumber,
       imei2: invoice.imei2,
       cnicFrontPic: invoice.cnicFrontPic,
       cnicBackPic: invoice.cnicBackPic,
@@ -139,6 +186,9 @@ const SaleInvoices = () => {
       addedImeis: invoice.addedImeis || [],
       type: invoice.type,
       bulkPhonePurchaseId: invoice.bulkPhonePurchaseId,
+      companyName: invoice.companyName || '', // Add companyName
+      modelName: invoice.modelName || '', // Add modelName
+      bankName: invoice.bankName || '', // Add bankName
     };
 
     navigate('/invoice/shop', { state: formattedInvoice });
@@ -154,7 +204,11 @@ const SaleInvoices = () => {
     }));
     setSelectedBulkSale(bulkSale);
     setBulkReturnForm({ imeiSelections });
-    setWalletTransaction({ bankAccountUsed: '', amountFromBank: '', amountFromPocket: '' });
+    setWalletTransaction({
+      bankAccountUsed: '',
+      amountFromBank: '',
+      amountFromPocket: '',
+    });
     setShowBulkReturnModal(true);
   };
 
@@ -170,7 +224,10 @@ const SaleInvoices = () => {
     const numeric = Number(value);
     setBulkReturnForm((prev) => {
       const copy = [...prev.imeiSelections];
-      copy[index] = { ...copy[index], returnPrice: isNaN(numeric) ? 0 : numeric };
+      copy[index] = {
+        ...copy[index],
+        returnPrice: isNaN(numeric) ? 0 : numeric,
+      };
       return { ...prev, imeiSelections: copy };
     });
   };
@@ -183,14 +240,21 @@ const SaleInvoices = () => {
       }
       const imeiNumbersWithPrices = bulkReturnForm.imeiSelections
         .filter((x) => x.selected)
-        .map((x) => ({ imei1: x.imei1, returnPrice: Number(x.returnPrice) || 0 }));
+        .map((x) => ({
+          imei1: x.imei1,
+          returnPrice: Number(x.returnPrice) || 0,
+        }));
 
       const payload = {
         bulkSoldId: selectedBulkSale._id,
         imeiNumbersWithPrices,
         bankAccountUsed: walletTransaction.bankAccountUsed || undefined,
-        pocketCash: walletTransaction.amountFromPocket ? Number(walletTransaction.amountFromPocket) : undefined,
-        accountCash: walletTransaction.amountFromBank ? Number(walletTransaction.amountFromBank) : undefined,
+        pocketCash: walletTransaction.amountFromPocket
+          ? Number(walletTransaction.amountFromPocket)
+          : undefined,
+        accountCash: walletTransaction.amountFromBank
+          ? Number(walletTransaction.amountFromBank)
+          : undefined,
       };
 
       await api.post('api/Purchase/return-bulk-sold-to-purchase', payload);
@@ -198,11 +262,17 @@ const SaleInvoices = () => {
       setShowBulkReturnModal(false);
       setSelectedBulkSale(null);
       setBulkReturnForm({ imeiSelections: [] });
-      setWalletTransaction({ bankAccountUsed: '', amountFromBank: '', amountFromPocket: '' });
+      setWalletTransaction({
+        bankAccountUsed: '',
+        amountFromBank: '',
+        amountFromPocket: '',
+      });
       getAllBulkSales();
     } catch (error) {
       console.error('Error returning bulk sold phones:', error);
-      toast.error(error?.response?.data?.message || 'Error returning bulk phones');
+      toast.error(
+        error?.response?.data?.message || 'Error returning bulk phones'
+      );
     }
   };
   const handleReturnSinglePhone = async (invoice) => {
@@ -478,7 +548,7 @@ const SaleInvoices = () => {
         label={[
           'Type of Sale',
           // 'Purchase Price',
-          "IMEI",
+          'IMEI',
           'Sale Price',
           'Selling Payment Type',
           'Customer Name',
@@ -496,7 +566,7 @@ const SaleInvoices = () => {
           {
             index: 1,
             component: (imei1) => {
-              return imei1 ? imei1.join(",") : 'Not mentioned';
+              return imei1 ? imei1.join(',') : 'Not mentioned';
             },
           },
           {
@@ -773,15 +843,15 @@ const SaleInvoices = () => {
                   const payload = {
                     sales: Array.isArray(obj.accessoriesList)
                       ? obj.accessoriesList.map((accessory) => ({
-                        accessoryId:
-                          accessory.name ||
-                          accessory.accessoryName ||
-                          accessory._id ||
-                          accessory.accessoryId,
-                        quantity: Number(accessory.quantity),
-                        perPiecePrice: Number(accessory.perPiecePrice),
-                        name: accessory.name || accessory.accessoryName,
-                      }))
+                          accessoryId:
+                            accessory.name ||
+                            accessory.accessoryName ||
+                            accessory._id ||
+                            accessory.accessoryId,
+                          quantity: Number(accessory.quantity),
+                          perPiecePrice: Number(accessory.perPiecePrice),
+                          name: accessory.name || accessory.accessoryName,
+                        }))
                       : [],
                     getPayment: {
                       // Include payment details if available in obj
@@ -849,6 +919,20 @@ const SaleInvoices = () => {
           ),
         ]}
       />
+      {/* New unified sale-invoice table using /api/sale-invoice/ */}
+      <div>
+        <h3
+          style={{
+            textAlign: 'start',
+            marginBottom: '16px',
+            fontWeight: '700',
+            marginTop: '2rem',
+          }}
+        >
+          Sale Invoices (From /api/sale-invoice)
+        </h3>
+      </div>
+      <SaleInvoiceTable mode="all" />
       <Modal
         toggleModal={() => setShowUpdateReturnModal(false)}
         show={showUpdateReturnModal}
@@ -1003,64 +1087,158 @@ const SaleInvoices = () => {
           show={showBulkReturnModal}
           size="md"
         >
-          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#333' }}>Return Bulk Phones</h3>
+          <div
+            style={{
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: 700,
+                color: '#333',
+              }}
+            >
+              Return Bulk Phones
+            </h3>
 
             <div style={{ fontSize: '14px', color: '#555' }}>
-              <div><strong>Customer:</strong> {selectedBulkSale?.customerName || '-'}</div>
-              <div><strong>Invoice Date:</strong> {selectedBulkSale?.dateSold ? dateFormatter(selectedBulkSale.dateSold) : '-'}</div>
+              <div>
+                <strong>Customer:</strong>{' '}
+                {selectedBulkSale?.customerName || '-'}
+              </div>
+              <div>
+                <strong>Invoice Date:</strong>{' '}
+                {selectedBulkSale?.dateSold
+                  ? dateFormatter(selectedBulkSale.dateSold)
+                  : '-'}
+              </div>
             </div>
 
-            <div style={{ maxHeight: '50vh', overflowY: 'auto', border: '1px solid #eee', borderRadius: '6px', padding: '10px' }}>
+            <div
+              style={{
+                maxHeight: '50vh',
+                overflowY: 'auto',
+                border: '1px solid #eee',
+                borderRadius: '6px',
+                padding: '10px',
+              }}
+            >
               {bulkReturnForm.imeiSelections.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#888' }}>No IMEIs found</div>
+                <div style={{ textAlign: 'center', color: '#888' }}>
+                  No IMEIs found
+                </div>
               ) : (
                 bulkReturnForm.imeiSelections.map((row, idx) => (
-                  <div key={row.imei1 + idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <input type="checkbox" checked={!!row.selected} onChange={() => toggleImeiSelection(idx)} />
-                    <div style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px' }}>{row.imei1}</div>
+                  <div
+                    key={row.imei1 + idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '8px 0',
+                      borderBottom: '1px solid #f0f0f0',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!row.selected}
+                      onChange={() => toggleImeiSelection(idx)}
+                    />
+                    <div
+                      style={{
+                        flex: 1,
+                        fontFamily: 'monospace',
+                        fontSize: '13px',
+                      }}
+                    >
+                      {row.imei1}
+                    </div>
                     <input
                       type="number"
                       value={row.returnPrice}
-                      onChange={(e) => updateImeiReturnPrice(idx, e.target.value)}
+                      onChange={(e) =>
+                        updateImeiReturnPrice(idx, e.target.value)
+                      }
                       placeholder="Return price"
-                      style={{ width: '140px', padding: '6px 8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                      style={{
+                        width: '140px',
+                        padding: '6px 8px',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                      }}
                     />
                   </div>
                 ))
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
               <div style={{ fontSize: '14px', color: '#333' }}>
-                <strong>Selected:</strong> {bulkReturnForm.imeiSelections.filter((x) => x.selected).length}
-                {' '} | {' '}
-                <strong>Total Return:</strong> {
-                  bulkReturnForm.imeiSelections
-                    .filter((x) => x.selected)
-                    .reduce((sum, x) => sum + (Number(x.returnPrice) || 0), 0)
-                    .toLocaleString()
-                }
+                <strong>Selected:</strong>{' '}
+                {bulkReturnForm.imeiSelections.filter((x) => x.selected).length}{' '}
+                | <strong>Total Return:</strong>{' '}
+                {bulkReturnForm.imeiSelections
+                  .filter((x) => x.selected)
+                  .reduce((sum, x) => sum + (Number(x.returnPrice) || 0), 0)
+                  .toLocaleString()}
               </div>
 
               <button
                 onClick={() => setShowWalletTransactionModal(true)}
-                style={{ padding: '8px 12px', backgroundColor: '#6c5ce7', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#6c5ce7',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
               >
                 Proceed To Pay
               </button>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px',
+              }}
+            >
               <button
                 onClick={() => setShowBulkReturnModal(false)}
-                style={{ padding: '8px 12px', backgroundColor: '#f0f0f0', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#f0f0f0',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitBulkReturn}
-                style={{ padding: '8px 12px', backgroundColor: '#1890ff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#1890ff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
               >
                 Confirm Return
               </button>
@@ -1071,7 +1249,9 @@ const SaleInvoices = () => {
 
       <WalletTransactionModal
         show={showWalletTransactionModal}
-        toggleModal={() => setShowWalletTransactionModal(!showWalletTransactionModal)}
+        toggleModal={() =>
+          setShowWalletTransactionModal(!showWalletTransactionModal)
+        }
         singleTransaction={walletTransaction}
         setSingleTransaction={setWalletTransaction}
         type="purchase"

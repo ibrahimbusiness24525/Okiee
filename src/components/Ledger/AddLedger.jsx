@@ -1,1566 +1,491 @@
-
-import { useEffect, useState } from "react"
-import { toast } from "react-toastify"
-import { api } from "../../../api/api"
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import {
+  createExpenseType,
+  getExpenseTypes,
+  createExpenseApi,
+  getExpenses,
+} from '../../../api/api';
 
 const AddLedger = () => {
-  const [entities, setAllEntities] = useState([])
-  const [allEntitiesRecords, setAllEntitiesRecords] = useState([])
-  const [entitiesWithLedger, setEntitiesWithLedger] = useState([])
-
-  const [showModal, setShowModal] = useState(false)
-  const [showExpenseModal, setShowExpenseModal] = useState(false)
-  const [showCashPaidModal, setShowCashPaidModal] = useState(false)
-  const [showCashReceivedModal, setShowCashReceivedModal] = useState(false)
-
-  const [formData, setFormData] = useState({
-    name: "",
-    reference: "",
-  })
+  const [expenseTypes, setExpenseTypes] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [summary, setSummary] = useState({ count: 0, totalAmount: 0 });
 
   const [expenseData, setExpenseData] = useState({
-    entityId: "",
-    expense: "",
-    description: "",
-  })
+    expenseTypeId: '',
+    price: '',
+    note: '',
+    date: '',
+  });
 
-  const [cashPaidData, setCashPaidData] = useState({
-    entityId: "",
-    cashPaid: "",
-    description: "",
-  })
+  const [isCreatingType, setIsCreatingType] = useState(false);
+  const [newType, setNewType] = useState({ name: '', description: '' });
 
-  const [cashReceivedData, setCashReceivedData] = useState({
-    entityId: "",
-    cashReceived: "",
-    description: "",
-  })
-
-  const createEntity = async () => {
+  const fetchExpenseTypes = async () => {
     try {
-      const payload = {
-        name: formData.name,
-        reference: formData.reference,
+      const res = await getExpenseTypes();
+      const raw = res?.data;
+      const list = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.data)
+          ? raw.data
+          : [];
+      setExpenseTypes(list);
+    } catch (e) {
+      setExpenseTypes([]);
+    }
+  };
+
+  const fetchExpenses = async () => {
+    try {
+      const res = await getExpenses();
+      if (res?.data?.success) {
+        setSummary({
+          count: res.data.count,
+          totalAmount: res.data.totalAmount,
+        });
+        setExpenses(res.data.data || []);
       }
+    } catch (e) {}
+  };
 
-      const response = await api.post("/api/entity/add", payload)
-      setShowModal(false)
-      setFormData({ name: "", reference: "" })
-      getAllEntities() // Refresh entities list
-      toast.success("Entity created successfully!")
-    } catch (error) {
-      toast.error("Entity creation failed. Please try again.")
-    }
-  }
-
-  const createExpense = async () => {
-    try {
-      const payload = {
-        expense: Number.parseFloat(expenseData.expense),
-      }
-
-      const response = await api.post(`/api/entity/expense/${expenseData?.entityId}`, payload)
-      setShowExpenseModal(false)
-      setExpenseData({ entityId: "", expense: "", description: "" })
-      toast.success("Expense recorded successfully!")
-    } catch (error) {
-      toast.error("Failed to record expense. Please try again.")
-    }
-  }
-
-  const createCashPaid = async () => {
-    try {
-      const payload = {
-        cashPaid: Number.parseFloat(cashPaidData.cashPaid),
-      }
-
-      const response = await api.post(`/api/entity/cash-payment/${cashPaidData?.entityId}`, payload)
-      setShowCashPaidModal(false)
-      setCashPaidData({ entityId: "", cashPaid: "", description: "" })
-      toast.success("Cash payment recorded successfully!")
-    } catch (error) {
-      toast.error("Failed to record cash payment. Please try again.")
-    }
-  }
-
-  const createCashReceived = async () => {
-    try {
-      const payload = {
-        receiveCash: Number.parseFloat(cashReceivedData.cashReceived),
-      }
-
-      const response = await api.post(`/api/entity/cash-receive/${cashReceivedData?.entityId}`, payload)
-      setShowCashReceivedModal(false)
-      setCashReceivedData({ entityId: "", cashReceived: "", description: "" })
-      toast.success("Cash receipt recorded successfully!")
-    } catch (error) {
-      toast.error("Failed to record cash receipt. Please try again.")
-    }
-  }
-
-  const getAllEntities = async () => {
-    try {
-      const response = await api.get("/api/entity/all")
-      setAllEntities(response?.data)
-    } catch (error) {
-    }
-  }
-  const getAllEntitiesRecords = async () => {
-    try {
-      const response = await api.get("/api/entity/records/all")
-      setAllEntitiesRecords(response?.data)
-    } catch (error) {
-    }
-  }
   useEffect(() => {
-    getAllEntities()
-    getAllEntitiesRecords()
-  }, [])
+    fetchExpenseTypes();
+    fetchExpenses();
+  }, []);
 
+  const handleCreateExpenseType = async () => {
+    try {
+      if (!newType.name.trim()) {
+        toast.error('Expense type name is required');
+        return;
+      }
+      await createExpenseType({
+        name: newType.name.trim(),
+        description: newType.description.trim() || undefined,
+      });
+      toast.success('Expense type created');
+      setNewType({ name: '', description: '' });
+      setIsCreatingType(false);
+      fetchExpenseTypes();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || 'Failed to create type');
+    }
+  };
 
-  const getTotalsByType = () => {
-    const totals = { CashPaid: 0, CashReceived: 0, Expense: 0 }
-    entitiesWithLedger.forEach((entity) => {
-      entity.entries.forEach((entry) => {
-        totals[entry.type] = (totals[entry.type] || 0) + entry.amount
-      })
-    })
-    return totals
-  }
+  const handleCreateExpense = async () => {
+    try {
+      if (!expenseData.expenseTypeId || !expenseData.price) return;
 
-  const totals = getTotalsByType()
+      await createExpenseApi({
+        expenseTypeId: expenseData.expenseTypeId,
+        price: Number(expenseData.price),
+        note: expenseData.note || undefined,
+        date: expenseData.date || undefined,
+      });
 
-  // Icon components as SVGs
-  const PlusIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  )
+      toast.success('Expense added');
+      setExpenseData({ expenseTypeId: '', price: '', note: '', date: '' });
+      fetchExpenses();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || 'Failed to add expense');
+    }
+  };
 
-  const DollarIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="12" y1="1" x2="12" y2="23" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-    </svg>
-  )
-
-  const TrendingUpIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-      <polyline points="17 6 23 6 23 12" />
-    </svg>
-  )
-
-  const TrendingDownIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-      <polyline points="17 18 23 18 23 12" />
-    </svg>
-  )
-
-  const ReceiptIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
-      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
-      <path d="M12 18V6" />
-    </svg>
-  )
-
-  const UsersIcon = () => (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  )
-
-  const ArrowUpRightIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M7 17L17 7" />
-      <path d="M7 7h10v10" />
-    </svg>
-  )
-
-  const ArrowDownRightIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M7 7l10 10" />
-      <path d="M17 7v10H7" />
-    </svg>
-  )
-
-  const CloseIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M18 6L6 18" />
-      <path d="M6 6l12 12" />
-    </svg>
-  )
-
-  const ChevronDownIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  )
+  const formatDate = (value) => {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleDateString();
+  };
 
   return (
     <div
       style={{
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-        minHeight: "100vh",
-        padding: "24px",
+        fontFamily:
+          "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        minHeight: '100vh',
+        padding: '24px',
       }}
     >
-      {/* Header Section */}
+      {/* Header */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "32px",
-          background: "white",
-          padding: "24px",
-          borderRadius: "16px",
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+          background: 'white',
+          padding: '24px',
+          borderRadius: '16px',
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+          marginBottom: '24px',
         }}
       >
-        <div>
-          <h1
+        <h1
+          style={{
+            fontSize: '28px',
+            fontWeight: 700,
+            color: '#0f172a',
+            marginBottom: '4px',
+          }}
+        >
+          Expenses
+        </h1>
+        <p style={{ color: '#64748b', margin: 0 }}>
+          Add expenses, manage types, and see all expenses in one place.
+        </p>
+        <p style={{ color: '#94a3b8', marginTop: '8px', fontSize: '14px' }}>
+          Total records: <b>{summary.count}</b> | Total amount:{' '}
+          <b>PKR {Number(summary.totalAmount || 0).toLocaleString()}</b>
+        </p>
+      </div>
+
+      {/* Add Expense + Type */}
+      <div
+        style={{
+          background: 'white',
+          padding: '24px',
+          borderRadius: '16px',
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+          marginBottom: '24px',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '20px',
+            fontWeight: 600,
+            marginBottom: '16px',
+            color: '#0f172a',
+          }}
+        >
+          Add Expense
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '16px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            marginBottom: '16px',
+          }}
+        >
+          {/* Expense Type */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#334155',
+                marginBottom: '6px',
+                display: 'block',
+              }}
+            >
+              Expense Type
+            </label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <select
+                value={expenseData.expenseTypeId}
+                onChange={(e) =>
+                  setExpenseData({
+                    ...expenseData,
+                    expenseTypeId: e.target.value,
+                  })
+                }
+                style={{
+                  flex: 1,
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db',
+                  padding: '10px 12px',
+                  fontSize: '14px',
+                }}
+              >
+                <option value="">Select expense type...</option>
+                {Array.isArray(expenseTypes) &&
+                  expenseTypes.map((t) => (
+                    <option key={t.id || t._id} value={t.id || t._id}>
+                      {t.name}
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setIsCreatingType((v) => !v)}
+                style={{
+                  borderRadius: '8px',
+                  border: '1px solid #c7d2fe',
+                  background: '#eef2ff',
+                  color: '#4f46e5',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                + New Type
+              </button>
+            </div>
+
+            {isCreatingType && (
+              <div
+                style={{
+                  marginTop: '10px',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Type name (e.g. Rent, Salary)"
+                  value={newType.name}
+                  onChange={(e) =>
+                    setNewType({ ...newType, name: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    padding: '8px 10px',
+                    fontSize: '13px',
+                    marginBottom: '6px',
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Description (optional)"
+                  value={newType.description}
+                  onChange={(e) =>
+                    setNewType({ ...newType, description: e.target.value })
+                  }
+                  style={{
+                    width: '100%',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    padding: '8px 10px',
+                    fontSize: '13px',
+                    marginBottom: '8px',
+                  }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={handleCreateExpenseType}
+                    style={{
+                      borderRadius: '6px',
+                      border: 'none',
+                      background:
+                        'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
+                      color: 'white',
+                      padding: '8px 14px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Save Type
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#334155',
+                marginBottom: '6px',
+                display: 'block',
+              }}
+            >
+              Amount
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={expenseData.price}
+              onChange={(e) =>
+                setExpenseData({ ...expenseData, price: e.target.value })
+              }
+              placeholder="0.00"
+              style={{
+                width: '100%',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                padding: '10px 12px',
+                fontSize: '14px',
+              }}
+            />
+          </div>
+
+          {/* Date */}
+          <div>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#334155',
+                marginBottom: '6px',
+                display: 'block',
+              }}
+            >
+              Date (optional)
+            </label>
+            <input
+              type="date"
+              value={expenseData.date}
+              onChange={(e) =>
+                setExpenseData({ ...expenseData, date: e.target.value })
+              }
+              style={{
+                width: '100%',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                padding: '9px 12px',
+                fontSize: '14px',
+              }}
+            />
+          </div>
+
+          {/* Note */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#334155',
+                marginBottom: '6px',
+                display: 'block',
+              }}
+            >
+              Note (optional)
+            </label>
+            <textarea
+              rows={2}
+              value={expenseData.note}
+              onChange={(e) =>
+                setExpenseData({ ...expenseData, note: e.target.value })
+              }
+              placeholder="Add a short description..."
+              style={{
+                width: '100%',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                padding: '10px 12px',
+                fontSize: '14px',
+                resize: 'vertical',
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'right' }}>
+          <button
+            type="button"
+            onClick={handleCreateExpense}
+            disabled={!expenseData.expenseTypeId || !expenseData.price}
             style={{
-              fontSize: "32px",
-              fontWeight: "700",
-              color: "#1e293b",
-              margin: "0 0 8px 0",
+              borderRadius: '8px',
+              border: 'none',
+              padding: '10px 22px',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'white',
+              cursor:
+                !expenseData.expenseTypeId || !expenseData.price
+                  ? 'not-allowed'
+                  : 'pointer',
+              background:
+                !expenseData.expenseTypeId || !expenseData.price
+                  ? '#9ca3af'
+                  : 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
             }}
           >
-            Expenses
-          </h1>
-          <p
-            style={{
-              fontSize: "16px",
-              color: "#64748b",
-              margin: "0",
-            }}
-          >
-            Track expenses, payments, and receipts across all your business entities
+            Add Expense
+          </button>
+        </div>
+      </div>
+
+      {/* Expenses Table */}
+      <div
+        style={{
+          background: 'white',
+          padding: '24px',
+          borderRadius: '16px',
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '20px',
+            fontWeight: 600,
+            marginBottom: '16px',
+            color: '#0f172a',
+          }}
+        >
+          All Expenses
+        </h2>
+
+        {expenses?.length === 0 ? (
+          <p style={{ color: '#94a3b8', fontSize: '14px' }}>
+            No expenses found. Add your first expense above.
           </p>
-        </div>
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-            border: "none",
-            padding: "12px 24px",
-            fontSize: "16px",
-            fontWeight: "600",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
-            transition: "all 0.2s ease",
-            color: "white",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-          onMouseOver={(e) => {
-            e.target.style.transform = "translateY(-2px)"
-            e.target.style.boxShadow = "0 6px 16px rgba(59, 130, 246, 0.4)"
-          }}
-          onMouseOut={(e) => {
-            e.target.style.transform = "translateY(0)"
-            e.target.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)"
-          }}
-        >
-          <PlusIcon />
-          Create New Entity
-        </button>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontSize: '14px',
+              }}
+            >
+              <thead>
+                <tr
+                  style={{
+                    background: '#f9fafb',
+                    borderBottom: '1px solid #e5e7eb',
+                  }}
+                >
+                  <th style={{ padding: '8px', textAlign: 'left' }}>Date</th>
+                  <th style={{ padding: '8px', textAlign: 'left' }}>Type</th>
+                  <th style={{ padding: '8px', textAlign: 'left' }}>Note</th>
+                  <th style={{ padding: '8px', textAlign: 'right' }}>
+                    Amount (PKR)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {expenses?.map((exp, idx) => (
+                  <tr
+                    key={exp.id || exp._id || idx}
+                    style={{
+                      borderBottom: '1px solid #e5e7eb',
+                      background: idx % 2 === 0 ? '#ffffff' : '#f9fafb',
+                    }}
+                  >
+                    <td style={{ padding: '8px' }}>{formatDate(exp.date)}</td>
+                    <td style={{ padding: '8px' }}>
+                      {exp.expenseType?.name || '-'}
+                    </td>
+                    <td style={{ padding: '8px' }}>
+                      {exp.note || exp.expenseType?.description || '-'}
+                    </td>
+                    <td style={{ padding: '8px', textAlign: 'right' }}>
+                      {Number(exp.price || 0).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
-      {/* Quick Actions Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
-          gap: "24px",
-          marginBottom: "48px",
-        }}
-      >
-        {/* Cash Paid Card */}
-        <div
-          style={{
-            background: "white",
-            borderRadius: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            transition: "all 0.2s ease",
-          }}
-        >
-          <div style={{ padding: "24px 24px 16px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div
-                  style={{
-                    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                    padding: "12px",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                  }}
-                >
-                  <ArrowUpRightIcon />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "20px", fontWeight: "600", color: "#1e293b", margin: "0" }}>Cash Paid</h3>
-                  <p style={{ fontSize: "14px", color: "#64748b", margin: "4px 0 0 0" }}>
-                    Outgoing payments and advances
-                  </p>
-                </div>
-              </div>
-              <span
-                style={{
-                  background: "#fef2f2",
-                  color: "#dc2626",
-                  border: "1px solid #fecaca",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  padding: "4px 12px",
-                  borderRadius: "12px",
-                }}
-              >
-                ${totals.CashPaid?.toLocaleString() || 0}
-              </span>
-            </div>
-          </div>
-          <div style={{ padding: "0 24px 24px 24px" }}>
-            <p
-              style={{
-                fontSize: "14px",
-                color: "#64748b",
-                lineHeight: "1.5",
-                marginBottom: "16px",
-              }}
-            >
-              Record payments made to suppliers, vendors, or advance payments for services and goods.
-            </p>
-            <button
-              onClick={() => setShowCashPaidModal(true)}
-              style={{
-                width: "100%",
-                borderColor: "#ef4444",
-                color: "#ef4444",
-                fontWeight: "600",
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #ef4444",
-                background: "white",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseOver={(e) => {
-                e.target.style.background = "#ef4444"
-                e.target.style.color = "white"
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = "white"
-                e.target.style.color = "#ef4444"
-              }}
-            >
-              <DollarIcon />
-              Record Payment
-            </button>
-          </div>
-        </div>
-
-        {/* Cash Received Card */}
-        <div
-          style={{
-            background: "white",
-            borderRadius: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            transition: "all 0.2s ease",
-          }}
-        >
-          <div style={{ padding: "24px 24px 16px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div
-                  style={{
-                    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                    padding: "12px",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                  }}
-                >
-                  <ArrowDownRightIcon />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "20px", fontWeight: "600", color: "#1e293b", margin: "0" }}>Cash Received</h3>
-                  <p style={{ fontSize: "14px", color: "#64748b", margin: "4px 0 0 0" }}>
-                    Incoming payments and receipts
-                  </p>
-                </div>
-              </div>
-              <span
-                style={{
-                  background: "#f0fdf4",
-                  color: "#16a34a",
-                  border: "1px solid #bbf7d0",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  padding: "4px 12px",
-                  borderRadius: "12px",
-                }}
-              >
-                ${totals.CashReceived?.toLocaleString() || 0}
-              </span>
-            </div>
-          </div>
-          <div style={{ padding: "0 24px 24px 24px" }}>
-            <p
-              style={{
-                fontSize: "14px",
-                color: "#64748b",
-                lineHeight: "1.5",
-                marginBottom: "16px",
-              }}
-            >
-              Track money received from customers, refunds, or any incoming cash transactions.
-            </p>
-            <button
-              onClick={() => setShowCashReceivedModal(true)}
-              style={{
-                width: "100%",
-                borderColor: "#10b981",
-                color: "#10b981",
-                fontWeight: "600",
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #10b981",
-                background: "white",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseOver={(e) => {
-                e.target.style.background = "#10b981"
-                e.target.style.color = "white"
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = "white"
-                e.target.style.color = "#10b981"
-              }}
-            >
-              <TrendingUpIcon />
-              Record Receipt
-            </button>
-          </div>
-        </div>
-
-        {/* Expenses Card */}
-        <div
-          style={{
-            background: "white",
-            borderRadius: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            transition: "all 0.2s ease",
-          }}
-        >
-          <div style={{ padding: "24px 24px 16px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div
-                  style={{
-                    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                    padding: "12px",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                  }}
-                >
-                  <ReceiptIcon />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "20px", fontWeight: "600", color: "#1e293b", margin: "0" }}>
-                    Expenses
-                  </h3>
-                  <p style={{ fontSize: "14px", color: "#64748b", margin: "4px 0 0 0" }}>
-                    Operating costs and expenditures
-                  </p>
-                </div>
-              </div>
-              <span
-                style={{
-                  background: "#fffbeb",
-                  color: "#d97706",
-                  border: "1px solid #fed7aa",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  padding: "4px 12px",
-                  borderRadius: "12px",
-                }}
-              >
-                ${totals.Expense?.toLocaleString() || 0}
-              </span>
-            </div>
-          </div>
-          <div style={{ padding: "0 24px 24px 24px" }}>
-            <p
-              style={{
-                fontSize: "14px",
-                color: "#64748b",
-                lineHeight: "1.5",
-                marginBottom: "16px",
-              }}
-            >
-              Log business expenses including materials, services, utilities, and operational costs.
-            </p>
-            <button
-              onClick={() => setShowExpenseModal(true)}
-              style={{
-                width: "100%",
-                borderColor: "#f59e0b",
-                color: "#f59e0b",
-                fontWeight: "600",
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #f59e0b",
-                background: "white",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseOver={(e) => {
-                e.target.style.background = "#f59e0b"
-                e.target.style.color = "white"
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = "white"
-                e.target.style.color = "#f59e0b"
-              }}
-            >
-              <TrendingDownIcon />
-              Add Expense
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Entities Section */}
-      <div
-        style={{
-          background: "white",
-          borderRadius: "16px",
-          padding: "32px",
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-          <div style={{ color: "#3b82f6" }}>
-            <UsersIcon />
-          </div>
-          <h2
-            style={{
-              fontSize: "24px",
-              fontWeight: "700",
-              color: "#1e293b",
-              margin: "0",
-            }}
-          >
-            Business Entities & Transactions
-          </h2>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gap: "16px",
-          }}
-        >
-          {entities.map((entity) => (
-            <div
-              key={entity._id}
-              style={{
-                border: "1px solid #e2e8f0",
-                borderRadius: "12px",
-                background: "#fafafa",
-              }}
-            >
-              <div style={{ padding: "20px 24px 12px 24px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", margin: "0" }}>
-                      {entity.name}
-                    </h3>
-                    <p style={{ fontSize: "14px", color: "#64748b", margin: "4px 0 0 0" }}>
-                      Reference: {entity.reference}
-                    </p>
-                    <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0" }}>
-                      Status: {entity.status}
-                    </p>
-                  </div>
-                  <span
-                    style={{
-                      background: "#f1f5f9",
-                      color: "#475569",
-                      fontSize: "12px",
-                      padding: "4px 8px",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    Total: ${(Number(entity.cashPaid) + Number(entity.expense) + Number(entity.receiveCash)).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              <div style={{ padding: "0 24px 24px 24px" }}>
-                <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-                  <div
-                    style={{
-                      background: "#fef2f2",
-                      color: "#dc2626",
-                      border: "1px solid #fecaca",
-                      borderRadius: "8px",
-                      padding: "8px 16px",
-                      minWidth: "120px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "13px", fontWeight: "500" }}>Cash Paid</div>
-                    <div style={{ fontSize: "16px", fontWeight: "700" }}>${Number(entity.cashPaid).toLocaleString()}</div>
-                  </div>
-                  <div
-                    style={{
-                      background: "#fffbeb",
-                      color: "#d97706",
-                      border: "1px solid #fed7aa",
-                      borderRadius: "8px",
-                      padding: "8px 16px",
-                      minWidth: "120px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "13px", fontWeight: "500" }}>Expense</div>
-                    <div style={{ fontSize: "16px", fontWeight: "700" }}>${Number(entity.expense).toLocaleString()}</div>
-                  </div>
-                  <div
-                    style={{
-                      background: "#f0fdf4",
-                      color: "#16a34a",
-                      border: "1px solid #bbf7d0",
-                      borderRadius: "8px",
-                      padding: "8px 16px",
-                      minWidth: "120px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "13px", fontWeight: "500" }}>Cash Received</div>
-                    <div style={{ fontSize: "16px", fontWeight: "700" }}>${Number(entity.receiveCash).toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: "16px",
-              border: "1px solid #e2e8f0",
-              maxWidth: "500px",
-              width: "90%",
-              maxHeight: "90vh",
-              overflow: "auto",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                padding: "24px",
-                borderBottom: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <h2
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    color: "#1e293b",
-                    margin: "0 0 8px 0",
-                  }}
-                >
-                  Create New Business Entity
-                </h2>
-                <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#64748b",
-                    lineHeight: "1.5",
-                    margin: "0",
-                  }}
-                >
-                  Add a new entity to track financial transactions. This could be a supplier, customer, or business
-                  partner.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "8px",
-                  borderRadius: "8px",
-                  color: "#64748b",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.background = "#f1f5f9"
-                  e.target.style.color = "#1e293b"
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = "none"
-                  e.target.style.color = "#64748b"
-                }}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <div style={{ padding: "24px" }}>
-              <div style={{ display: "grid", gap: "20px" }}>
-                <div>
-                  <label
-                    htmlFor="entity-name"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Entity Name
-                  </label>
-                  <input
-                    id="entity-name"
-                    type="text"
-                    placeholder="e.g., ABC Suppliers Ltd."
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    style={{
-                      width: "100%",
-                      borderRadius: "8px",
-                      border: "1px solid #d1d5db",
-                      padding: "12px",
-                      fontSize: "14px",
-                      outline: "none",
-                      transition: "border-color 0.2s ease",
-                      boxSizing: "border-box",
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = "#3b82f6"
-                      e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)"
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = "#d1d5db"
-                      e.target.style.boxShadow = "none"
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reference"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Reference Code
-                  </label>
-                  <input
-                    id="reference"
-                    type="text"
-                    placeholder="e.g., SUP001"
-                    value={formData.reference}
-                    onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                    style={{
-                      width: "100%",
-                      borderRadius: "8px",
-                      border: "1px solid #d1d5db",
-                      padding: "12px",
-                      fontSize: "14px",
-                      outline: "none",
-                      transition: "border-color 0.2s ease",
-                      boxSizing: "border-box",
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = "#3b82f6"
-                      e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)"
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = "#d1d5db"
-                      e.target.style.boxShadow = "none"
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "24px",
-                borderTop: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "12px",
-              }}
-            >
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  border: "1px solid #d1d5db",
-                  background: "white",
-                  color: "#374151",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.background = "#f9fafb"
-                  e.target.style.borderColor = "#9ca3af"
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = "white"
-                  e.target.style.borderColor = "#d1d5db"
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createEntity}
-                disabled={!formData.name || !formData.reference}
-                style={{
-                  background:
-                    !formData.name || !formData.reference
-                      ? "#9ca3af"
-                      : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  color: "white",
-                  cursor: !formData.name || !formData.reference ? "not-allowed" : "pointer",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseOver={(e) => {
-                  if (formData.name && formData.reference) {
-                    e.target.style.transform = "translateY(-1px)"
-                    e.target.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)"
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (formData.name && formData.reference) {
-                    e.target.style.transform = "translateY(0)"
-                    e.target.style.boxShadow = "none"
-                  }
-                }}
-              >
-                Create Entity
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Expense Modal */}
-      {showExpenseModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setShowExpenseModal(false)}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: "16px",
-              border: "1px solid #e2e8f0",
-              maxWidth: "500px",
-              width: "90%",
-              maxHeight: "90vh",
-              overflow: "auto",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                padding: "24px",
-                borderBottom: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <h2
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    color: "#1e293b",
-                    margin: "0 0 8px 0",
-                  }}
-                >
-                  Record Business Expense
-                </h2>
-                <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#64748b",
-                    lineHeight: "1.5",
-                    margin: "0",
-                  }}
-                >
-                  Add a new expense transaction for the selected entity.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowExpenseModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "8px",
-                  borderRadius: "8px",
-                  color: "#64748b",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <div style={{ padding: "24px" }}>
-              <div style={{ display: "grid", gap: "20px" }}>
-                <div>
-                  <label
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Select Entity
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <select
-                      value={expenseData.entityId}
-                      onChange={(e) => setExpenseData({ ...expenseData, entityId: e.target.value })}
-                      style={{
-                        width: "100%",
-                        borderRadius: "8px",
-                        border: "1px solid #d1d5db",
-                        padding: "12px",
-                        fontSize: "14px",
-                        outline: "none",
-                        transition: "border-color 0.2s ease",
-                        boxSizing: "border-box",
-                        appearance: "none",
-                        background: "white",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <option value="">Choose an entity...</option>
-                      {entities.map((entity) => (
-                        <option key={entity._id} value={entity._id}>
-                          {entity.name} ({entity.reference})
-                        </option>
-                      ))}
-                    </select>
-                    <div
-                      style={{
-                        position: "absolute",
-                        right: "12px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        pointerEvents: "none",
-                        color: "#64748b",
-                      }}
-                    >
-                      <ChevronDownIcon />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Expense Amount
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={expenseData.expense}
-                    onChange={(e) => setExpenseData({ ...expenseData, expense: e.target.value })}
-                    style={{
-                      width: "100%",
-                      borderRadius: "8px",
-                      border: "1px solid #d1d5db",
-                      padding: "12px",
-                      fontSize: "14px",
-                      outline: "none",
-                      transition: "border-color 0.2s ease",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "24px",
-                borderTop: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "12px",
-              }}
-            >
-              <button
-                onClick={() => setShowExpenseModal(false)}
-                style={{
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  border: "1px solid #d1d5db",
-                  background: "white",
-                  color: "#374151",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createExpense}
-                disabled={!expenseData.entityId || !expenseData.expense}
-                style={{
-                  background:
-                    !expenseData.entityId || !expenseData.expense
-                      ? "#9ca3af"
-                      : "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  color: "white",
-                  cursor:
-                    !expenseData.entityId || !expenseData.expense
-                      ? "not-allowed"
-                      : "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                Record Expense
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cash Paid Modal */}
-      {showCashPaidModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setShowCashPaidModal(false)}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: "16px",
-              border: "1px solid #e2e8f0",
-              maxWidth: "500px",
-              width: "90%",
-              maxHeight: "90vh",
-              overflow: "auto",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                padding: "24px",
-                borderBottom: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <h2
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    color: "#1e293b",
-                    margin: "0 0 8px 0",
-                  }}
-                >
-                  Record Cash Payment
-                </h2>
-                <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#64748b",
-                    lineHeight: "1.5",
-                    margin: "0",
-                  }}
-                >
-                  Record a cash payment made to the selected entity.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowCashPaidModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "8px",
-                  borderRadius: "8px",
-                  color: "#64748b",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <div style={{ padding: "24px" }}>
-              <div style={{ display: "grid", gap: "20px" }}>
-                <div>
-                  <label
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Select Entity
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <select
-                      value={cashPaidData.entityId}
-                      onChange={(e) => setCashPaidData({ ...cashPaidData, entityId: e.target.value })}
-                      style={{
-                        width: "100%",
-                        borderRadius: "8px",
-                        border: "1px solid #d1d5db",
-                        padding: "12px",
-                        fontSize: "14px",
-                        outline: "none",
-                        transition: "border-color 0.2s ease",
-                        boxSizing: "border-box",
-                        appearance: "none",
-                        background: "white",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <option value="">Choose an entity...</option>
-                      {entities.map((entity) => (
-                        <option key={entity._id} value={entity._id}>
-                          {entity.name} ({entity.reference})
-                        </option>
-                      ))}
-                    </select>
-                    <div
-                      style={{
-                        position: "absolute",
-                        right: "12px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        pointerEvents: "none",
-                        color: "#64748b",
-                      }}
-                    >
-                      <ChevronDownIcon />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Cash Paid Amount
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={cashPaidData.cashPaid}
-                    onChange={(e) => setCashPaidData({ ...cashPaidData, cashPaid: e.target.value })}
-                    style={{
-                      width: "100%",
-                      borderRadius: "8px",
-                      border: "1px solid #d1d5db",
-                      padding: "12px",
-                      fontSize: "14px",
-                      outline: "none",
-                      transition: "border-color 0.2s ease",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-
-
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "24px",
-                borderTop: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "12px",
-              }}
-            >
-              <button
-                onClick={() => setShowCashPaidModal(false)}
-                style={{
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  border: "1px solid #d1d5db",
-                  background: "white",
-                  color: "#374151",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createCashPaid}
-                disabled={!cashPaidData.entityId || !cashPaidData.cashPaid}
-                style={{
-                  background:
-                    !cashPaidData.entityId || !cashPaidData.cashPaid
-                      ? "#9ca3af"
-                      : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  color: "white",
-                  cursor:
-                    !cashPaidData.entityId || !cashPaidData.cashPaid
-                      ? "not-allowed"
-                      : "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                Record Payment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cash Received Modal */}
-      {showCashReceivedModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setShowCashReceivedModal(false)}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: "16px",
-              border: "1px solid #e2e8f0",
-              maxWidth: "500px",
-              width: "90%",
-              maxHeight: "90vh",
-              overflow: "auto",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                padding: "24px",
-                borderBottom: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <h2
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    color: "#1e293b",
-                    margin: "0 0 8px 0",
-                  }}
-                >
-                  Record Cash Receipt
-                </h2>
-                <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#64748b",
-                    lineHeight: "1.5",
-                    margin: "0",
-                  }}
-                >
-                  Record cash received from the selected entity.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowCashReceivedModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "8px",
-                  borderRadius: "8px",
-                  color: "#64748b",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <div style={{ padding: "24px" }}>
-              <div style={{ display: "grid", gap: "20px" }}>
-                <div>
-                  <label
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Select Entity
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <select
-                      value={cashReceivedData.entityId}
-                      onChange={(e) => setCashReceivedData({ ...cashReceivedData, entityId: e.target.value })}
-                      style={{
-                        width: "100%",
-                        borderRadius: "8px",
-                        border: "1px solid #d1d5db",
-                        padding: "12px",
-                        fontSize: "14px",
-                        outline: "none",
-                        transition: "border-color 0.2s ease",
-                        boxSizing: "border-box",
-                        appearance: "none",
-                        background: "white",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <option value="">Choose an entity...</option>
-                      {entities.map((entity) => (
-                        <option key={entity._id} value={entity._id}>
-                          {entity.name} ({entity.reference})
-                        </option>
-                      ))}
-                    </select>
-                    <div
-                      style={{
-                        position: "absolute",
-                        right: "12px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        pointerEvents: "none",
-                        color: "#64748b",
-                      }}
-                    >
-                      <ChevronDownIcon />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: "8px",
-                      display: "block",
-                    }}
-                  >
-                    Cash Received Amount
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={cashReceivedData.cashReceived}
-                    onChange={(e) => setCashReceivedData({ ...cashReceivedData, cashReceived: e.target.value })}
-                    style={{
-                      width: "100%",
-                      borderRadius: "8px",
-                      border: "1px solid #d1d5db",
-                      padding: "12px",
-                      fontSize: "14px",
-                      outline: "none",
-                      transition: "border-color 0.2s ease",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-
-
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "24px",
-                borderTop: "1px solid #e2e8f0",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "12px",
-              }}
-            >
-              <button
-                onClick={() => setShowCashReceivedModal(false)}
-                style={{
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  border: "1px solid #d1d5db",
-                  background: "white",
-                  color: "#374151",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createCashReceived}
-                disabled={!cashReceivedData.entityId || !cashReceivedData.cashReceived}
-                style={{
-                  background:
-                    !cashReceivedData.entityId || !cashReceivedData.cashReceived
-                      ? "#9ca3af"
-                      : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: "12px 24px",
-                  fontWeight: "600",
-                  color: "white",
-                  cursor:
-                    !cashReceivedData.entityId || !cashReceivedData.cashReceived
-                      ? "not-allowed"
-                      : "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                Record Receipt
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  )
-}
+  );
+};
 
-export default AddLedger
+export default AddLedger;

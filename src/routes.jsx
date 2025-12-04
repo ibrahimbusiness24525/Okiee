@@ -363,6 +363,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/invoice/sale-invoice/:id',
+        element: lazy(() => import('./components/Invoice/SaleInvoiceDetail')),
+      },
+      {
+        exact: 'true',
         path: '/invoice/accessory',
         element: lazy(() => import('./components/Invoice/AccessoryInvoice')),
       },
