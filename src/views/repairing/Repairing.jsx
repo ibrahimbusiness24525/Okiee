@@ -2839,6 +2839,752 @@ const Repairing = () => {
                 </div>
               );
             })()}
+
+            {/* Statistics Cards Section */}
+            {(() => {
+              const todoJobs = jobs.filter((job) => job.status === 'todo');
+              const inProgressJobs = jobs.filter(
+                (job) => job.status === 'in-progress'
+              );
+              const completeJobs = jobs.filter(
+                (job) => job.status === 'complete'
+              );
+              const handoverJobs = jobs.filter(
+                (job) => job.status === 'handover'
+              );
+
+              const totalDealsDone = completeJobs.length + handoverJobs.length;
+              const totalPending = todoJobs.length + inProgressJobs.length;
+
+              const totalRevenue = jobs.reduce(
+                (sum, job) => sum + Number(job.estimatedAmount || 0),
+                0
+              );
+              const totalProfit = jobs.reduce(
+                (sum, job) => sum + getJobProfit(job),
+                0
+              );
+
+              const handoverRevenue = handoverJobs.reduce(
+                (sum, job) => sum + Number(job.estimatedAmount || 0),
+                0
+              );
+              const handoverProfit = handoverJobs.reduce(
+                (sum, job) => sum + getJobProfit(job),
+                0
+              );
+
+              return (
+                <div
+                  style={{
+                    marginTop: '40px',
+                    padding: '30px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
+                    boxShadow:
+                      '0 10px 25px rgba(15, 23, 42, 0.18), 0 4px 10px rgba(15, 23, 42, 0.08)',
+                  }}
+                >
+                  <h2
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 700,
+                      marginBottom: '30px',
+                      color: '#2c3e50',
+                      textAlign: 'center',
+                    }}
+                  >
+                    📊 Repair Jobs Statistics
+                  </h2>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns:
+                        'repeat(auto-fit, minmax(280px, 1fr))',
+                      gap: '20px',
+                    }}
+                  >
+                    {/* Total Deals Done Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #27ae60',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(39, 174, 96, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Total Deals Done
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '32px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            {totalDealsDone}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          ✅
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        Complete: {completeJobs.length} | Handover:{' '}
+                        {handoverJobs.length}
+                      </div>
+                    </div>
+
+                    {/* Pending Jobs Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #e67e22',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(230, 126, 34, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Pending Jobs
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '32px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            {totalPending}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          ⏳
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        Todo: {todoJobs.length} | In Progress:{' '}
+                        {inProgressJobs.length}
+                      </div>
+                    </div>
+
+                    {/* Todo Jobs Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #f39c12',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(243, 156, 18, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            To Do
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '32px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            {todoJobs.length}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          📝
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        Jobs waiting to start
+                      </div>
+                    </div>
+
+                    {/* In Progress Jobs Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #3498db',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(52, 152, 219, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            In Progress
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '32px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            {inProgressJobs.length}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          🔧
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        Currently being repaired
+                      </div>
+                    </div>
+
+                    {/* Complete Jobs Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #27ae60',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(39, 174, 96, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Complete
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '32px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            {completeJobs.length}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          ✓
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        Ready for handover
+                      </div>
+                    </div>
+
+                    {/* Handover Jobs Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #8e44ad',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(142, 68, 173, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Handover
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '32px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            {handoverJobs.length}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          📦
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        Delivered to customers
+                      </div>
+                    </div>
+
+                    {/* Total Revenue Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #16a085',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(22, 160, 133, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Total Revenue
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '24px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            Rs. {Number(totalRevenue || 0).toLocaleString()}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #16a085 0%, #138d75 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          💰
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        From all {jobs.length} jobs
+                      </div>
+                    </div>
+
+                    {/* Total Profit Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #10b981',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(16, 185, 129, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Total Profit
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '24px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            Rs. {Number(totalProfit || 0).toLocaleString()}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          📈
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        After parts cost deduction
+                      </div>
+                    </div>
+
+                    {/* Handover Revenue Card */}
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                        borderTop: '4px solid #9b59b6',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 8px 20px rgba(155, 89, 182, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0px 4px 15px rgba(0, 0, 0, 0.1)';
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#7f8c8d',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Handover Revenue
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '24px',
+                              fontWeight: 700,
+                              color: '#2c3e50',
+                            }}
+                          >
+                            Rs. {Number(handoverRevenue || 0).toLocaleString()}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '12px',
+                            background:
+                              'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '28px',
+                          }}
+                        >
+                          💵
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          color: '#7f8c8d',
+                        }}
+                      >
+                        Profit: Rs.{' '}
+                        {Number(handoverProfit || 0).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
       </div>

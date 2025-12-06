@@ -40,7 +40,7 @@ const TodayBook = () => {
       const params = {};
       if (startDate && endDate) {
         params.startDate = startDate; // YYYY-MM-DD
-        params.endDate = endDate;     // YYYY-MM-DD
+        params.endDate = endDate; // YYYY-MM-DD
       } else if (date) {
         params.date = date; // single day
       }
@@ -50,9 +50,9 @@ const TodayBook = () => {
       });
 
       setTodayBookData(response?.data?.data || []);
-    } catch (error) { }
+    } catch (error) {}
   };
-  console.log("todayBookData",todayBookData)
+  console.log('todayBookData', todayBookData);
   const fetchTotalCash = async () => {
     try {
       const res = await api.get('/api/pocketCash/total');
@@ -98,11 +98,11 @@ const TodayBook = () => {
 
   const uniqueSoldBulkPhones = todayBookData?.soldBulkPhone
     ? Object.values(
-      todayBookData.soldBulkPhone.reduce((acc, phone) => {
-        acc[phone.bulkPhonePurchaseId] = phone; // override duplicates
-        return acc;
-      }, {})
-    )
+        todayBookData.soldBulkPhone.reduce((acc, phone) => {
+          acc[phone.bulkPhonePurchaseId] = phone; // override duplicates
+          return acc;
+        }, {})
+      )
     : [];
 
   const totalPurchasePrice =
@@ -299,7 +299,7 @@ const TodayBook = () => {
   // Calculate opening balance from banks
   const openingBalance =
     bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) +
-    totalCash || 0 + totalCash;
+      totalCash || 0 + totalCash;
   const bankTotalBalance =
     bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) ||
     0;
@@ -322,7 +322,7 @@ const TodayBook = () => {
   const totalAmount = totalInvoices + openingBalance - totalExpenses;
 
   const formatCurrency = (amount, pkr = true) => {
-    return `${amount}${pkr ? ' PKR' : ''}`  ;
+    return `${amount}${pkr ? ' PKR' : ''}`;
   };
 
   const formatDate = (dateString) => {
@@ -359,7 +359,11 @@ const TodayBook = () => {
     },
     {
       title: 'Accessories Profit',
-      value: formatCurrency(todayBookData?.totalAccessoriesProfit && todayBookData?.totalAccessoriesProfit.toFixed(0), false),
+      value: formatCurrency(
+        todayBookData?.totalAccessoriesProfit &&
+          todayBookData?.totalAccessoriesProfit.toFixed(0),
+        false
+      ),
       icon: Package,
       color: '#7c3aed', // purple-600
       bgColor: '#f5f3ff', // purple-50
@@ -464,7 +468,11 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.totalStockAmount && todayBookData?.totalStockAmount?.toFixed(0) || 0),
+      value: formatCurrency(
+        (todayBookData?.totalStockAmount &&
+          todayBookData?.totalStockAmount?.toFixed(0)) ||
+          0
+      ),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -473,7 +481,9 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.creditSummary?.totalPayable.toFixed(0) || 0),
+      value: formatCurrency(
+        todayBookData?.creditSummary?.totalPayable.toFixed(0) || 0
+      ),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -482,7 +492,9 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.creditSummary?.totalReceivable.toFixed(0) || 0),
+      value: formatCurrency(
+        todayBookData?.creditSummary?.totalReceivable.toFixed(0) || 0
+      ),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -647,7 +659,9 @@ const TodayBook = () => {
                     color: '#374151',
                   }}
                 >
-                  <span style={{ fontWeight: '600' }}>{accessory.accessoryName}</span>
+                  <span style={{ fontWeight: '600' }}>
+                    {accessory.accessoryName}
+                  </span>
                   <span style={{ color: '#10b981', fontWeight: '500' }}>
                     Profit {accessory.profit}PKR
                   </span>
@@ -1310,15 +1324,15 @@ const TodayBook = () => {
             },
           },
         ]}
-      // extraColumns={[
-      //     () => {
-      //         return (
-      //             <MdEdit
+        // extraColumns={[
+        //     () => {
+        //         return (
+        //             <MdEdit
 
-      //                 className="text-[#ccccc] text-[1.3rem]" />
-      //         );
-      //     },
-      // ]}
+        //                 className="text-[#ccccc] text-[1.3rem]" />
+        //         );
+        //     },
+        // ]}
       />
       <div style={{ marginTop: '50px' }}></div>
       <StyledHeading>Today Purchased Single Phones</StyledHeading>
@@ -1403,7 +1417,9 @@ const TodayBook = () => {
 
             return (
               <p>
-                {profitOrLoss < 0 ? `Loss of ${-profitOrLoss}` : `Profit of ${profitOrLoss}`}
+                {profitOrLoss < 0
+                  ? `Loss of ${-profitOrLoss}`
+                  : `Profit of ${profitOrLoss}`}
               </p>
             );
           },
@@ -1454,4 +1470,4 @@ const TodayBook = () => {
   );
 };
 
-export default TodayBook;
+export default TodayBook;
