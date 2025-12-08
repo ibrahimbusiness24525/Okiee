@@ -1,0 +1,92 @@
+.table_th,
+.table_data {
+  border-collapse: collapse;
+  height: 3.8rem;
+  font-size: 12px;
+  width: 10.5rem;
+}
+
+.table_th {
+  background-color: #f6f4f4;
+}
+
+.table_data {
+  border-bottom: 0.5px solid;
+  border-color: #e1e1fb;
+}
+
+.pagination_box {
+  width: 100%;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table_head {
+  width: 100%;
+}
+.order_paginationBox {
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}
+
+.order_paginationNumbers {
+  padding: 5px 10px;
+  margin: 1rem 1rem 1rem 1rem;
+  cursor: pointer;
+}
+
+.table_container {
+  width: 100%;
+  display: inline-block;
+  margin-top: 1rem;
+  background-color: #ffffff;
+  border-radius: 4px;
+  display: flex;
+  /* display: none; */
+  flex-direction: column;
+  padding: 1rem 2rem;
+}
+
+.searchBar_box {
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}
+
+.dotMenu {
+  width: 0;
+  cursor: pointer;
+  margin-left: 5rem;
+  font-weight: 2rem;
+  font-weight: 700;
+  font-size: 2rem;
+}
+
+/* search*/
+
+.table_searchBar {
+  width: 22rem;
+  height: 4rem;
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  color: #999999;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.table_searchBar span {
+  font-size: 2.1rem;
+}
+
+.searchBar_input {
+  margin-left: 1rem;
+  width: 70%;
+  border: none;
+  outline: none;
+  color: #999999;
+  background-color: transparent;
+}

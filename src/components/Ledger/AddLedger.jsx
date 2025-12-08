@@ -6,6 +6,7 @@ import {
   createExpenseApi,
   getExpenses,
 } from '../../../api/api';
+import { api } from '../../../api/api';
 
 const AddLedger = () => {
   const [expenseTypes, setExpenseTypes] = useState([]);
@@ -17,6 +18,10 @@ const AddLedger = () => {
     price: '',
     note: '',
     date: '',
+    paymentMethod: 'none', // 'none', 'bank', 'pocket', 'split'
+    bankAccountUsed: '',
+    accountCash: '',
+    pocketCash: '',
   });
 
   const [isCreatingType, setIsCreatingType] = useState(false);
@@ -26,6 +31,9 @@ const AddLedger = () => {
     startDate: '',
     endDate: '',
   });
+  const [banks, setBanks] = useState([]);
+  const [pocketCashBalance, setPocketCashBalance] = useState(0);
+  const [selectedBank, setSelectedBank] = useState(null);
 
   const fetchExpenseTypes = async () => {
     try {
@@ -39,6 +47,26 @@ const AddLedger = () => {
       setExpenseTypes(list);
     } catch (e) {
       setExpenseTypes([]);
+    }
+  };
+
+  const fetchBanks = async () => {
+    try {
+      const response = await api.get('/api/banks/getAllBanks');
+      setBanks(response?.data?.banks || []);
+    } catch (error) {
+      console.error('Error fetching banks:', error);
+      setBanks([]);
+    }
+  };
+
+  const fetchPocketCashBalance = async () => {
+    try {
+      const res = await api.get('/api/pocketCash/total');
+      setPocketCashBalance(res?.data?.total || 0);
+    } catch (error) {
+      console.error('Error fetching pocket cash balance:', error);
+      setPocketCashBalance(0);
     }
   };
 
@@ -59,13 +87,27 @@ const AddLedger = () => {
         });
         setExpenses(res.data.data || []);
       }
-    } catch (e) {}
+    } catch (e) {
+      // Silently handle error - expenses list will remain empty
+    }
   };
 
   useEffect(() => {
     fetchExpenseTypes();
     fetchExpenses();
+    fetchBanks();
+    fetchPocketCashBalance();
   }, []);
+
+  // Update selected bank when bankAccountUsed changes
+  useEffect(() => {
+    if (expenseData.bankAccountUsed) {
+      const bank = banks.find((b) => b._id === expenseData.bankAccountUsed);
+      setSelectedBank(bank || null);
+    } else {
+      setSelectedBank(null);
+    }
+  }, [expenseData.bankAccountUsed, banks]);
 
   useEffect(() => {
     fetchExpenses();
@@ -94,16 +136,73 @@ const AddLedger = () => {
     try {
       if (!expenseData.expenseTypeId || !expenseData.price) return;
 
-      await createExpenseApi({
+      const price = Number(expenseData.price);
+      const accountCash = expenseData.accountCash ? Number(expenseData.accountCash) : 0;
+      const pocketCash = expenseData.pocketCash ? Number(expenseData.pocketCash) : 0;
+      const totalPayment = accountCash + pocketCash;
+
+      // Validate payment amounts
+      if (expenseData.paymentMethod !== 'none' && totalPayment > price) {
+        toast.error('Total payment amount (accountCash + pocketCash) cannot exceed expense price');
+        return;
+      }
+
+      if (expenseData.paymentMethod === 'bank' && !expenseData.bankAccountUsed) {
+        toast.error('Please select a bank account');
+        return;
+      }
+
+      if (expenseData.paymentMethod === 'bank' && !accountCash) {
+        toast.error('Please enter amount to pay from bank');
+        return;
+      }
+
+      if (expenseData.paymentMethod === 'pocket' && !pocketCash) {
+        toast.error('Please enter amount to pay from pocket cash');
+        return;
+      }
+
+      if (expenseData.paymentMethod === 'split') {
+        if (!expenseData.bankAccountUsed || !accountCash || !pocketCash) {
+          toast.error('Please fill all payment fields for split payment');
+          return;
+        }
+      }
+
+      // Build API payload
+      const payload = {
         expenseTypeId: expenseData.expenseTypeId,
-        price: Number(expenseData.price),
+        price: price,
         note: expenseData.note || undefined,
         date: expenseData.date || undefined,
-      });
+      };
+
+      // Add payment fields if payment method is not 'none'
+      if (expenseData.paymentMethod !== 'none') {
+        if (expenseData.bankAccountUsed) {
+          payload.bankAccountUsed = expenseData.bankAccountUsed;
+          payload.accountCash = accountCash;
+        }
+        if (pocketCash > 0) {
+          payload.pocketCash = pocketCash;
+        }
+      }
+
+      await createExpenseApi(payload);
 
       toast.success('Expense added');
-      setExpenseData({ expenseTypeId: '', price: '', note: '', date: '' });
+      setExpenseData({
+        expenseTypeId: '',
+        price: '',
+        note: '',
+        date: '',
+        paymentMethod: 'none',
+        bankAccountUsed: '',
+        accountCash: '',
+        pocketCash: '',
+      });
       fetchExpenses();
+      fetchPocketCashBalance(); // Refresh pocket cash balance
     } catch (e) {
       toast.error(e?.response?.data?.message || 'Failed to add expense');
     }
@@ -477,6 +576,253 @@ const AddLedger = () => {
                 resize: 'vertical',
               }}
             />
+          </div>
+
+          {/* Payment Method Selection */}
+          <div style={{ gridColumn: '1 / -1', marginTop: '10px' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#2c3e50',
+                marginBottom: '8px',
+                display: 'block',
+              }}
+            >
+              Payment Method (optional)
+            </label>
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                flexWrap: 'wrap',
+                marginBottom: '15px',
+              }}
+            >
+              {['none', 'bank', 'pocket', 'split'].map((method) => (
+                <label
+                  key={method}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    border:
+                      expenseData.paymentMethod === method
+                        ? '2px solid #3498db'
+                        : '1px solid #ccc',
+                    backgroundColor:
+                      expenseData.paymentMethod === method
+                        ? '#e3f2fd'
+                        : '#fff',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value={method}
+                    checked={expenseData.paymentMethod === method}
+                    onChange={(e) =>
+                      setExpenseData({
+                        ...expenseData,
+                        paymentMethod: e.target.value,
+                        bankAccountUsed: '',
+                        accountCash: '',
+                        pocketCash: '',
+                      })
+                    }
+                    style={{ marginRight: '8px', cursor: 'pointer' }}
+                  />
+                  {method === 'none'
+                    ? 'No Payment'
+                    : method === 'bank'
+                      ? 'Bank Account'
+                      : method === 'pocket'
+                        ? 'Pocket Cash'
+                        : 'Split Payment'}
+                </label>
+              ))}
+            </div>
+
+            {/* Bank Account Payment */}
+            {(expenseData.paymentMethod === 'bank' ||
+              expenseData.paymentMethod === 'split') && (
+              <div
+                style={{
+                  marginBottom: '15px',
+                  padding: '15px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#2c3e50',
+                    marginBottom: '8px',
+                    display: 'block',
+                  }}
+                >
+                  Bank Account
+                </label>
+                <select
+                  value={expenseData.bankAccountUsed}
+                  onChange={(e) =>
+                    setExpenseData({
+                      ...expenseData,
+                      bankAccountUsed: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: '100%',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    padding: '12px',
+                    fontSize: '14px',
+                    marginBottom: '10px',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <option value="">-- Select Bank --</option>
+                  {Array.isArray(banks) &&
+                    banks.map((bank) => (
+                      <option key={bank._id} value={bank._id}>
+                        {bank.bankName} - {bank.accountType}
+                        {bank.currentBalance !== undefined
+                          ? ` (Balance: PKR ${Number(bank.currentBalance || 0).toLocaleString()})`
+                          : ''}
+                      </option>
+                    ))}
+                </select>
+                {selectedBank && (
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      color: '#7f8c8d',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Available Balance: PKR{' '}
+                    {Number(selectedBank.currentBalance || 0).toLocaleString()}
+                  </div>
+                )}
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={expenseData.accountCash}
+                  onChange={(e) =>
+                    setExpenseData({
+                      ...expenseData,
+                      accountCash: e.target.value,
+                    })
+                  }
+                  placeholder="Amount from bank"
+                  style={{
+                    width: '100%',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    padding: '12px',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Pocket Cash Payment */}
+            {(expenseData.paymentMethod === 'pocket' ||
+              expenseData.paymentMethod === 'split') && (
+              <div
+                style={{
+                  marginBottom: '15px',
+                  padding: '15px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#2c3e50',
+                    marginBottom: '8px',
+                    display: 'block',
+                  }}
+                >
+                  Pocket Cash
+                </label>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: '#7f8c8d',
+                    marginBottom: '10px',
+                  }}
+                >
+                  Available Balance: PKR{' '}
+                  {Number(pocketCashBalance || 0).toLocaleString()}
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={expenseData.pocketCash}
+                  onChange={(e) =>
+                    setExpenseData({
+                      ...expenseData,
+                      pocketCash: e.target.value,
+                    })
+                  }
+                  placeholder="Amount from pocket cash"
+                  style={{
+                    width: '100%',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    padding: '12px',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Payment Summary */}
+            {expenseData.paymentMethod !== 'none' &&
+              expenseData.price && (
+                <div
+                  style={{
+                    marginTop: '15px',
+                    padding: '12px',
+                    backgroundColor: '#e8f5e9',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: '#27ae60',
+                  }}
+                >
+                  <div style={{ marginBottom: '5px' }}>
+                    <strong>Expense Amount:</strong> PKR{' '}
+                    {Number(expenseData.price || 0).toLocaleString()}
+                  </div>
+                  <div style={{ marginBottom: '5px' }}>
+                    <strong>Total Payment:</strong> PKR{' '}
+                    {(
+                      Number(expenseData.accountCash || 0) +
+                      Number(expenseData.pocketCash || 0)
+                    ).toLocaleString()}
+                  </div>
+                  {Number(expenseData.accountCash || 0) +
+                    Number(expenseData.pocketCash || 0) >
+                    Number(expenseData.price || 0) && (
+                    <div style={{ color: '#e74c3c', fontWeight: 600 }}>
+                      ⚠️ Total payment exceeds expense amount!
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
         </div>
 
