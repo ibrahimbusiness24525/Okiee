@@ -131,6 +131,10 @@ const DashDefault = () => {
   const [showPayablesTotal, setShowPayablesTotal] = useState(false);
   const [showReceivablesNumbers, setShowReceivablesNumbers] = useState(false);
   const [showPayablesNumbers, setShowPayablesNumbers] = useState(false);
+  const [showTotalCustomers, setShowTotalCustomers] = useState(false);
+  const [showReceivables, setShowReceivables] = useState(false);
+  const [showPayables, setShowPayables] = useState(false);
+  const [showActiveAccounts, setShowActiveAccounts] = useState(false);
   const avatarsArr = [avatar1, avatar2, avatar3];
 
   useEffect(() => {
@@ -278,10 +282,30 @@ const DashDefault = () => {
                 <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-users text-primary fa-lg"></i>
                 </div>
-                <div>
-                  <h4 className="mb-0 text-primary">{persons.length}</h4>
+                <div style={{ flex: 1 }}>
+                  <h4
+                    className="mb-0 text-primary"
+                    style={{
+                      filter: showTotalCustomers ? 'none' : 'blur(5px)',
+                      transition: 'filter 0.3s ease',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setShowTotalCustomers(!showTotalCustomers)}
+                  >
+                    {persons.length}
+                  </h4>
                   <small className="text-muted">Total Customers</small>
                 </div>
+                <i
+                  className={`fa ${showTotalCustomers ? 'fa-eye' : 'fa-eye-slash'} text-primary`}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    marginLeft: '8px',
+                  }}
+                  onClick={() => setShowTotalCustomers(!showTotalCustomers)}
+                  title={showTotalCustomers ? 'Hide value' : 'Show value'}
+                ></i>
               </div>
             </Card.Body>
           </Card>
@@ -293,12 +317,30 @@ const DashDefault = () => {
                 <div className="bg-success bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-arrow-up text-success fa-lg"></i>
                 </div>
-                <div>
-                  <h4 className="mb-0 text-success">
+                <div style={{ flex: 1 }}>
+                  <h4
+                    className="mb-0 text-success"
+                    style={{
+                      filter: showReceivables ? 'none' : 'blur(5px)',
+                      transition: 'filter 0.3s ease',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setShowReceivables(!showReceivables)}
+                  >
                     Rs. {totalReceivables.toLocaleString()}
                   </h4>
                   <small className="text-muted">Receivables</small>
                 </div>
+                <i
+                  className={`fa ${showReceivables ? 'fa-eye' : 'fa-eye-slash'} text-success`}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    marginLeft: '8px',
+                  }}
+                  onClick={() => setShowReceivables(!showReceivables)}
+                  title={showReceivables ? 'Hide value' : 'Show value'}
+                ></i>
               </div>
             </Card.Body>
           </Card>
@@ -310,12 +352,30 @@ const DashDefault = () => {
                 <div className="bg-danger bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-arrow-down text-danger fa-lg"></i>
                 </div>
-                <div>
-                  <h4 className="mb-0 text-danger">
+                <div style={{ flex: 1 }}>
+                  <h4
+                    className="mb-0 text-danger"
+                    style={{
+                      filter: showPayables ? 'none' : 'blur(5px)',
+                      transition: 'filter 0.3s ease',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setShowPayables(!showPayables)}
+                  >
                     Rs. {totalPayables.toLocaleString()}
                   </h4>
                   <small className="text-muted">Payables</small>
                 </div>
+                <i
+                  className={`fa ${showPayables ? 'fa-eye' : 'fa-eye-slash'} text-danger`}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    marginLeft: '8px',
+                  }}
+                  onClick={() => setShowPayables(!showPayables)}
+                  title={showPayables ? 'Hide value' : 'Show value'}
+                ></i>
               </div>
             </Card.Body>
           </Card>
@@ -327,12 +387,30 @@ const DashDefault = () => {
                 <div className="bg-info bg-opacity-10 rounded-circle p-3 me-3 stats-card-icon">
                   <i className="fa fa-chart-line text-info fa-lg"></i>
                 </div>
-                <div>
-                  <h4 className="mb-0 text-info">
+                <div style={{ flex: 1 }}>
+                  <h4
+                    className="mb-0 text-info"
+                    style={{
+                      filter: showActiveAccounts ? 'none' : 'blur(5px)',
+                      transition: 'filter 0.3s ease',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setShowActiveAccounts(!showActiveAccounts)}
+                  >
                     {receivables.length + payables.length}
                   </h4>
                   <small className="text-muted">Active Accounts</small>
                 </div>
+                <i
+                  className={`fa ${showActiveAccounts ? 'fa-eye' : 'fa-eye-slash'} text-info`}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    marginLeft: '8px',
+                  }}
+                  onClick={() => setShowActiveAccounts(!showActiveAccounts)}
+                  title={showActiveAccounts ? 'Hide value' : 'Show value'}
+                ></i>
               </div>
             </Card.Body>
           </Card>

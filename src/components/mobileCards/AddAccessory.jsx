@@ -31,6 +31,29 @@ const AddAccessory = () => {
     quantity: 1,
     purchasePrice: 0,
   });
+  const [showNewEntityFormForStock, setShowNewEntityFormForStock] =
+    useState(false);
+  const [showPayForStockModal, setShowPayForStockModal] = useState(false);
+  const [addStockEntityData, setAddStockEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
+  const [newEntityForStock, setNewEntityForStock] = useState({
+    name: '',
+    number: '',
+  });
+  const [addStockPaymentData, setAddStockPaymentData] = useState({
+    paymentType: '',
+    payableAmountNow: '',
+    payableAmountLater: '',
+    dateOfPayment: '',
+  });
+  const [givePaymentForStock, setGivePaymentForStock] = useState({
+    amountFromBank: Number(''),
+    amountFromPocket: Number(''),
+    bankAccountUsed: Number(''),
+  });
   const [getPayment, setGetPayment] = useState({
     amountFromBank: Number(''),
     amountFromPocket: Number(''),
@@ -82,16 +105,54 @@ const AddAccessory = () => {
     console.log(addStockForm);
 
     try {
-      await api.post(`/api/accessory/${addStockForm.accessoryId}`, {
+      const payload = {
         quantity: addStockForm.quantity,
         perPiecePrice: addStockForm.purchasePrice,
-      });
+        givePayment: givePaymentForStock,
+        purchasePaymentType: addStockPaymentData.paymentType,
+        creditPaymentData: {
+          payableAmountNow: addStockPaymentData.payableAmountNow,
+          payableAmountLater: addStockPaymentData.payableAmountLater,
+          dateOfPayment: addStockPaymentData.dateOfPayment,
+        },
+        entityData: showNewEntityFormForStock
+          ? newEntityForStock
+          : addStockEntityData,
+      };
+
+      await api.post(`/api/accessory/${addStockForm.accessoryId}`, payload);
       toast.success('Stock added successfully');
       setShowAddStockModal(false);
+      // Reset form
+      setAddStockForm({
+        accessoryId: '',
+        quantity: 1,
+        purchasePrice: 0,
+      });
+      setAddStockPaymentData({
+        paymentType: '',
+        payableAmountNow: '',
+        payableAmountLater: '',
+        dateOfPayment: '',
+      });
+      setAddStockEntityData({
+        name: '',
+        number: '',
+        _id: '',
+      });
+      setNewEntityForStock({
+        name: '',
+        number: '',
+      });
+      setGivePaymentForStock({
+        amountFromBank: Number(''),
+        amountFromPocket: Number(''),
+        bankAccountUsed: Number(''),
+      });
+      setShowNewEntityFormForStock(false);
     } catch (error) {
       console.error('Error adding stock', error);
-      toast.console.error();
-      ('error adding stock');
+      toast.error('Error adding stock');
     }
   };
   const fetchAccessories = async () => {
@@ -2362,6 +2423,297 @@ const AddAccessory = () => {
                 />
               </Form.Group>
 
+              {/* Payment Type Selection */}
+              <div style={{ marginBottom: '24px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontWeight: '600',
+                  }}
+                >
+                  Select Payment Type *
+                </label>
+                <select
+                  value={addStockPaymentData.paymentType}
+                  onChange={(e) =>
+                    setAddStockPaymentData({
+                      ...addStockPaymentData,
+                      paymentType: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                  required
+                >
+                  <option value="">Select Payment Type</option>
+                  <option value="full-payment">Full Payment</option>
+                  <option value="credit">Credit</option>
+                </select>
+              </div>
+
+              {/* Entity Selection */}
+              {addStockPaymentData.paymentType && (
+                <div style={{ marginBottom: '24px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <label style={{ fontWeight: '600' }}>Entity *</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewEntityFormForStock(false)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          background: !showNewEntityFormForStock
+                            ? '#e5e7eb'
+                            : 'transparent',
+                          border: '1px solid #d1d5db',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Select Existing
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewEntityFormForStock(true)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          background: showNewEntityFormForStock
+                            ? '#e5e7eb'
+                            : 'transparent',
+                          border: '1px solid #d1d5db',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Create New
+                      </button>
+                    </div>
+                  </div>
+
+                  {showNewEntityFormForStock ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '12px',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '8px',
+                            fontSize: '14px',
+                            color: '#4b5563',
+                          }}
+                        >
+                          Entity Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={newEntityForStock.name}
+                          onChange={(e) =>
+                            setNewEntityForStock({
+                              ...newEntityForStock,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder="Enter entity name"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            border: '2px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '8px',
+                            fontSize: '14px',
+                            color: '#4b5563',
+                          }}
+                        >
+                          Entity Number *
+                        </label>
+                        <input
+                          type="text"
+                          value={newEntityForStock.number}
+                          onChange={(e) =>
+                            setNewEntityForStock({
+                              ...newEntityForStock,
+                              number: e.target.value,
+                            })
+                          }
+                          placeholder="Enter entity number"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            border: '2px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: '16px' }}>
+                      <CustomSelect
+                        value={addStockEntityData._id}
+                        onChange={(selectedOption) => {
+                          const selectedEntity = getAllEntities.find(
+                            (entity) => entity._id === selectedOption?.value
+                          );
+                          setAddStockEntityData(
+                            selectedEntity || { name: '', number: '', _id: '' }
+                          );
+                        }}
+                        options={getAllEntities.map((entity) => ({
+                          value: entity._id,
+                          label: `${entity.name} || ${entity.number}`,
+                        }))}
+                        placeholder="Select Entity"
+                        noOptionsMessage="No entities found"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Credit Payment Fields */}
+              {addStockPaymentData.paymentType === 'credit' && (
+                <div style={{ marginBottom: '24px' }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '16px',
+                    }}
+                  >
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Payable Now
+                      </label>
+                      <input
+                        type="number"
+                        value={addStockPaymentData.payableAmountNow}
+                        onChange={(e) =>
+                          setAddStockPaymentData({
+                            ...addStockPaymentData,
+                            payableAmountNow: e.target.value,
+                          })
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Payable Later
+                      </label>
+                      <input
+                        type="number"
+                        value={addStockPaymentData.payableAmountLater}
+                        onChange={(e) =>
+                          setAddStockPaymentData({
+                            ...addStockPaymentData,
+                            payableAmountLater: e.target.value,
+                          })
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Due Date
+                    </label>
+                    <input
+                      type="date"
+                      value={addStockPaymentData.dateOfPayment}
+                      onChange={(e) =>
+                        setAddStockPaymentData({
+                          ...addStockPaymentData,
+                          dateOfPayment: e.target.value,
+                        })
+                      }
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Proceed To Pay Button */}
+              {addStockPaymentData.paymentType && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowPayForStockModal(!showPayForStockModal)}
+                  style={{ marginBottom: '10px' }}
+                >
+                  Proceed To Give Payment
+                </Button>
+              )}
+
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                 <Button variant="primary" onClick={handleAddStock}>
                   Add Stock
@@ -2546,34 +2898,25 @@ const AddAccessory = () => {
                   </div>
                 </div>
               ) : (
-                <select
-                  value={entityData._id}
-                  onChange={(e) => {
-                    const selectedEntity = getAllEntities.find(
-                      (entity) => entity._id === e.target.value
-                    );
-                    setEntityData(
-                      selectedEntity || { name: '', number: '', _id: '' }
-                    );
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '2px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    marginBottom: '16px',
-                  }}
-                >
-                  <option value="">Select Entity</option>
-                  {getAllEntities.map((entity) => (
-                    <option key={entity._id} value={entity._id}>
-                      {`                    ${entity.name} || ${entity.number} 
-                      `}
-                    </option>
-                  ))}
-                </select>
+                <div style={{ marginBottom: '16px' }}>
+                  <CustomSelect
+                    value={entityData._id}
+                    onChange={(selectedOption) => {
+                      const selectedEntity = getAllEntities.find(
+                        (entity) => entity._id === selectedOption?.value
+                      );
+                      setEntityData(
+                        selectedEntity || { name: '', number: '', _id: '' }
+                      );
+                    }}
+                    options={getAllEntities.map((entity) => ({
+                      value: entity._id,
+                      label: `${entity.name} || ${entity.number}`,
+                    }))}
+                    placeholder="Select Entity"
+                    noOptionsMessage="No entities found"
+                  />
+                </div>
               )}
             </div>
           )}
@@ -2917,6 +3260,13 @@ const AddAccessory = () => {
         toggleModal={() => setShowGetFromSaleModel(!showGetFromSaleModel)}
         singleTransaction={getPayment}
         setSingleTransaction={setGetPayment}
+      />
+      <WalletTransactionModal
+        show={showPayForStockModal}
+        toggleModal={() => setShowPayForStockModal(!showPayForStockModal)}
+        singleTransaction={givePaymentForStock}
+        setSingleTransaction={setGivePaymentForStock}
+        type="purchase"
       />
 
       {/* Print Demand Modal */}
