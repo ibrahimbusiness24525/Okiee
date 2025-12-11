@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'components/Modal/Modal';
-import { api, editAccessory } from '../../../api/api';
+import { api, editAccessory, reduceAccessoryStock } from '../../../api/api';
 import { toast } from 'react-toastify';
 import { useGetAccessories } from 'hooks/accessory';
 import { Button, Form, Toast } from 'react-bootstrap';
@@ -24,12 +24,17 @@ const AddAccessory = () => {
   const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
   const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
   const [hideAccessories, setHideAccessories] = useState(true);
   const [hideStockValue, setHideStockValue] = useState(true);
   const [addStockForm, setAddStockForm] = useState({
     accessoryId: '',
     quantity: 1,
     purchasePrice: 0,
+  });
+  const [returnForm, setReturnForm] = useState({
+    accessoryId: '',
+    quantity: 1,
   });
   const [showNewEntityFormForStock, setShowNewEntityFormForStock] =
     useState(false);
@@ -153,6 +158,53 @@ const AddAccessory = () => {
     } catch (error) {
       console.error('Error adding stock', error);
       toast.error('Error adding stock');
+    }
+  };
+
+  const handleReturnAccessory = async () => {
+    if (!returnForm.accessoryId) {
+      toast.error('Please select an accessory');
+      return;
+    }
+
+    if (!returnForm.quantity || returnForm.quantity <= 0) {
+      toast.error('Please enter a valid quantity');
+      return;
+    }
+
+    try {
+      const response = await reduceAccessoryStock(
+        returnForm.accessoryId,
+        returnForm.quantity
+      );
+      toast.success(response.data.message || 'Stock reduced successfully');
+      setShowReturnModal(false);
+      // Reset form
+      setReturnForm({
+        accessoryId: '',
+        quantity: 1,
+      });
+      // Refresh accessories data
+      if (data?.refetch) {
+        await data.refetch();
+      }
+      // Also update filtered data if available
+      if (response.data?.accessory) {
+        setFilteredData((prev) =>
+          prev.map((acc) =>
+            acc._id === response.data.accessory._id
+              ? { ...acc, ...response.data.accessory }
+              : acc
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error reducing stock', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to reduce accessory stock';
+      toast.error(errorMessage);
     }
   };
   const fetchAccessories = async () => {
@@ -1012,6 +1064,29 @@ const AddAccessory = () => {
             }}
           >
             + Add Stock
+          </button>
+
+          <button
+            onClick={() => setShowReturnModal(true)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #dc2626, #ef4444)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #b91c1c',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(220, 38, 38, 0.4)',
+              },
+            }}
+          >
+            ↻ Return Accessory
           </button>
         </div>
 
@@ -2721,6 +2796,84 @@ const AddAccessory = () => {
                 <Button
                   variant="secondary"
                   onClick={() => setShowAddStockModal(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </Form>
+          </div>
+        </Modal>
+
+        {/* Return Accessory Modal */}
+        <Modal
+          size="sm"
+          show={showReturnModal}
+          toggleModal={() => setShowReturnModal(!showReturnModal)}
+        >
+          <div
+            style={{
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+            }}
+          >
+            <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>
+              Return Accessory
+            </h2>
+
+            <Form
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              {/* Select Accessory */}
+              <Form.Group className="mb-3">
+                <Form.Label>Select Accessory</Form.Label>
+                <CustomSelect
+                  value={returnForm.accessoryId}
+                  onChange={(selectedOption) =>
+                    setReturnForm({
+                      ...returnForm,
+                      accessoryId: selectedOption?.value || '',
+                    })
+                  }
+                  options={data?.data?.map((item) => ({
+                    value: item._id,
+                    label: `${item.accessoryName} | Price: $${item.perPiecePrice} | Stock: ${item.stock}`,
+                  }))}
+                  placeholder="Select Accessory"
+                  noOptionsMessage="No accessories found"
+                />
+              </Form.Group>
+
+              {/* Quantity to Return */}
+              <Form.Group controlId="returnQuantity">
+                <Form.Label>Quantity to Return</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={returnForm.quantity}
+                  onChange={(e) =>
+                    setReturnForm({
+                      ...returnForm,
+                      quantity: Number(e.target.value),
+                    })
+                  }
+                  placeholder="Enter quantity to return"
+                  required
+                  min="1"
+                />
+              </Form.Group>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <Button variant="primary" onClick={handleReturnAccessory}>
+                  Return Accessory
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowReturnModal(false)}
                 >
                   Cancel
                 </Button>

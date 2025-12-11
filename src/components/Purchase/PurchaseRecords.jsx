@@ -1,43 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { FaPrint } from 'react-icons/fa';
-import { BASE_URL } from 'config/constant';
-import { useNavigate } from 'react-router-dom';
 import Table from 'components/Table/Table';
 import { dateFormatter } from 'utils/dateFormatter';
 import { StyledHeading } from 'components/StyledHeading/StyledHeading';
-import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
-import { api } from '../../../api/api';
+import { api, returnPurchasePhone, returnAccessoryPurchase } from '../../../api/api';
 import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import CommentIcon from '@mui/icons-material/Comment';
+import { toast } from 'react-toastify';
+import Modal from 'components/Modal/Modal';
+import { Button, Form } from 'react-bootstrap';
+import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 const PurchaseRecords = () => {
-  const navigate = useNavigate();
   const [purchasedPhones, setPurchasedPhone] = useState([]);
   const [newPhones, setNewPhones] = useState([]);
   const [oldPhones, setOldPhones] = useState([]);
-  // const[list,setList]= useState(false)
-  const [checked, setChecked] = React.useState([0]);
-
-  const handleToggle = (value) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
-
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-
-    setChecked(newChecked);
-  };
   const [accessoriesRecords, setAccessoriesRecords] = useState([]);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [returningItem, setReturningItem] = useState(null);
+  const [returnType, setReturnType] = useState(''); // 'single', 'bulk', or 'accessory'
+  const [returnForm, setReturnForm] = useState({
+    returnAmount: '',
+    bankAccountUsed: '',
+    amountFromPocket: 0,
+    amountFromBank: '',
+  });
+  const [walletTransaction, setWalletTransaction] = useState({
+    bankAccountUsed: '',
+    amountFromBank: '',
+    amountFromPocket: '',
+  });
+
   const getAccessoriesRecords = async () => {
     try {
       const response = await api.get(`api/accessory/accessoryRecord/purchase`);
@@ -47,6 +38,87 @@ const PurchaseRecords = () => {
     } catch (error) {
       console.error('Error fetching accessories records:', error);
       return [];
+    }
+  };
+
+  const handleReturnClick = (item, type) => {
+    setReturningItem(item);
+    setReturnType(type);
+    // Set default return amount based on item
+    if (type === 'accessory') {
+      setReturnForm({
+        returnAmount: item.totalPrice || '',
+        bankAccountUsed: '',
+        amountFromPocket: 0,
+        amountFromBank: '',
+      });
+    } else {
+      // For phones, use price.finalPrice or similar
+      const price = item.price?.finalPrice || item.totalPrice || '';
+      setReturnForm({
+        returnAmount: price,
+        bankAccountUsed: '',
+        amountFromPocket: 0,
+        amountFromBank: '',
+      });
+    }
+    // Reset wallet transaction
+    setWalletTransaction({
+      bankAccountUsed: '',
+      amountFromBank: '',
+      amountFromPocket: '',
+    });
+    setShowReturnModal(true);
+  };
+
+  const handleReturnSubmit = async () => {
+    if (!returningItem || !returningItem._id) {
+      toast.error('Invalid item selected');
+      return;
+    }
+
+    try {
+      const payload = {
+        returnAmount: returnForm.returnAmount ? Number(returnForm.returnAmount) : undefined,
+        bankAccountUsed: walletTransaction.bankAccountUsed || undefined,
+        amountFromPocket: walletTransaction.amountFromPocket
+          ? Number(walletTransaction.amountFromPocket)
+          : 0,
+      };
+
+      if (returnType === 'accessory') {
+        await returnAccessoryPurchase(returningItem._id, payload);
+        toast.success('Accessory purchase returned successfully');
+      } else {
+        // For single or bulk phones
+        payload.phoneType = returnType;
+        await returnPurchasePhone(returningItem._id, payload);
+        toast.success('Purchase phone returned successfully');
+      }
+
+      // Refresh data
+      getAllPurchasedPhones();
+      getAccessoriesRecords();
+      setShowReturnModal(false);
+      setReturningItem(null);
+      setReturnForm({
+        returnAmount: '',
+        bankAccountUsed: '',
+        amountFromPocket: 0,
+        amountFromBank: '',
+      });
+      setWalletTransaction({
+        bankAccountUsed: '',
+        amountFromBank: '',
+        amountFromPocket: '',
+      });
+    } catch (error) {
+      console.error('Error returning purchase:', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to return purchase';
+      toast.error(errorMessage);
     }
   };
   // Inline styles for the table
@@ -122,11 +194,9 @@ const PurchaseRecords = () => {
         })
       );
       setPurchasedPhone(response?.data?.data);
-    } catch (error) { }
-  };
-  const [scannedBarcodeValue, setScannedBarcodeValue] = useState('');
-  const handleScan = (value) => {
-    setScannedBarcodeValue(value);
+    } catch (error) {
+      console.error('Error fetching purchased phones:', error);
+    }
   };
 
   useEffect(() => {
@@ -240,7 +310,31 @@ const PurchaseRecords = () => {
             },
           },
         ]}
-        extraColumns={[(obj) => <BarcodePrinter obj={obj} />]}
+        extraColumns={[
+          (obj) => (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <BarcodePrinter obj={obj} />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleReturnClick(obj, 'single');
+                }}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                Return
+              </button>
+            </div>
+          ),
+        ]}
       />
       {/* </>
     }
@@ -278,7 +372,31 @@ const PurchaseRecords = () => {
               },
             },
           ]}
-          extraColumns={[(obj) => <BarcodePrinter type={'single'} obj={obj} />]}
+          extraColumns={[
+            (obj) => (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <BarcodePrinter type={'single'} obj={obj} />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReturnClick(obj, 'single');
+                  }}
+                  style={{
+                    backgroundColor: '#dc2626',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                  }}
+                >
+                  Return
+                </button>
+              </div>
+            ),
+          ]}
         />
       </div>
       <div>
@@ -325,7 +443,7 @@ const PurchaseRecords = () => {
         ]}
         extraColumns={[
           (obj) => (
-            <>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <div style={{ marginRight: '1rem' }}>
                 <select
                   style={{
@@ -358,7 +476,25 @@ const PurchaseRecords = () => {
               </div>
 
               <BarcodePrinter type="bulk" obj={obj} />
-            </>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleReturnClick(obj, 'bulk');
+                }}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                Return
+              </button>
+            </div>
           ),
         ]}
       />
@@ -523,6 +659,168 @@ const PurchaseRecords = () => {
             ),
           },
         ]}
+        extraColumns={[
+          (obj) => (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReturnClick(obj, 'accessory');
+              }}
+              style={{
+                backgroundColor: '#dc2626',
+                color: '#fff',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+              }}
+            >
+              Return
+            </button>
+          ),
+        ]}
+      />
+
+      {/* Return Modal */}
+      <Modal
+        size="sm"
+        show={showReturnModal}
+        toggleModal={() => {
+          setShowReturnModal(false);
+          setReturningItem(null);
+          setReturnForm({
+            returnAmount: '',
+            bankAccountUsed: '',
+            amountFromPocket: 0,
+            amountFromBank: '',
+          });
+          setWalletTransaction({
+            bankAccountUsed: '',
+            amountFromBank: '',
+            amountFromPocket: '',
+          });
+        }}
+      >
+        <div
+          style={{
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px',
+          }}
+        >
+          <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>
+            Return {returnType === 'accessory' ? 'Accessory Purchase' : 'Purchase Phone'}
+          </h2>
+
+          <Form
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+            }}
+          >
+            {/* Return Amount */}
+            <Form.Group controlId="returnAmount">
+              <Form.Label>
+                Return Amount {returnType !== 'accessory' && '(optional)'}
+              </Form.Label>
+              <Form.Control
+                type="number"
+                value={returnForm.returnAmount}
+                onChange={(e) =>
+                  setReturnForm({
+                    ...returnForm,
+                    returnAmount: e.target.value,
+                  })
+                }
+                placeholder="Enter return amount (defaults to purchase price)"
+                min="0"
+                step="0.01"
+              />
+              <Form.Text className="text-muted">
+                Leave empty to use original purchase price
+              </Form.Text>
+            </Form.Group>
+
+            {/* Wallet Transaction Button */}
+            <div style={{ marginTop: '10px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowWalletModal(true)}
+                style={{ width: '100%', marginBottom: '10px' }}
+              >
+                Select Payment Method (Bank/Pocket Cash)
+              </Button>
+              {(walletTransaction.bankAccountUsed ||
+                walletTransaction.amountFromPocket) && (
+                <div
+                  style={{
+                    padding: '10px',
+                    backgroundColor: '#f0f0f0',
+                    borderRadius: '6px',
+                    fontSize: '0.875rem',
+                    marginBottom: '10px',
+                  }}
+                >
+                  {walletTransaction.bankAccountUsed && (
+                    <div>
+                      <strong>Bank Account:</strong> {walletTransaction.bankAccountUsed}
+                      {walletTransaction.amountFromBank && (
+                        <span>
+                          {' '}
+                          - Amount: {walletTransaction.amountFromBank}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {walletTransaction.amountFromPocket && (
+                    <div>
+                      <strong>Pocket Cash:</strong> {walletTransaction.amountFromPocket}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <Button variant="primary" onClick={handleReturnSubmit}>
+                Confirm Return
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowReturnModal(false);
+                  setReturningItem(null);
+                  setReturnForm({
+                    returnAmount: '',
+                    bankAccountUsed: '',
+                    amountFromPocket: 0,
+                    amountFromBank: '',
+                  });
+                  setWalletTransaction({
+                    bankAccountUsed: '',
+                    amountFromBank: '',
+                    amountFromPocket: '',
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Form>
+        </div>
+      </Modal>
+
+      {/* Wallet Transaction Modal */}
+      <WalletTransactionModal
+        show={showWalletModal}
+        toggleModal={() => setShowWalletModal(false)}
+        singleTransaction={walletTransaction}
+        setSingleTransaction={setWalletTransaction}
+        type="return"
       />
     </div>
   );

@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'https://api.okiiee.com',
-  // baseURL: 'http://localhost:8000',
+  // baseURL: 'https://api.okiiee.com',
+  baseURL: 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -83,3 +83,15 @@ export const getExpenseTypes = () => api.get('/api/expense/types');
 export const createExpenseApi = (data) => api.post('/api/expense', data);
 
 export const getExpenses = (params = {}) => api.get('/api/expense', { params });
+
+// Reduce accessory stock endpoint: POST /api/accessory/:id/reduce-stock
+export const reduceAccessoryStock = (id, quantity) =>
+  api.post(`/api/accessory/${id}/reduce-stock`, { quantity });
+
+// Return purchase phone endpoint: POST /api/Purchase/return-purchase-phone/:id
+export const returnPurchasePhone = (id, data) =>
+  api.post(`/api/Purchase/return-purchase-phone/${id}`, data);
+
+// Return accessory purchase endpoint: POST /api/accessory/accessoryRecord/purchase/return/:id
+export const returnAccessoryPurchase = (id, data) =>
+  api.post(`/api/accessory/accessoryRecord/purchase/return/${id}`, data);
