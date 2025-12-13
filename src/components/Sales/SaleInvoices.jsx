@@ -6,9 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { dateFormatter } from 'utils/dateFormatter';
 import Table from 'components/Table/Table';
 import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
-import { api } from '../../../api/api';
+import { api, returnSoldAccessory } from '../../../api/api';
 import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import { get } from 'jquery';
 import { toast } from 'react-toastify';
 import Modal from 'components/Modal/Modal';
@@ -83,15 +83,84 @@ const SaleInvoices = () => {
   });
   const [showWalletTransactionModal, setShowWalletTransactionModal] =
     useState(false);
+  const [showAccessoryReturnModal, setShowAccessoryReturnModal] = useState(false);
+  const [returningAccessory, setReturningAccessory] = useState(null);
+  const [accessoryReturnForm, setAccessoryReturnForm] = useState({
+    returnAmount: '',
+  });
+  const [accessoryWalletTransaction, setAccessoryWalletTransaction] = useState({
+    bankAccountUsed: '',
+    amountFromBank: '',
+    amountFromPocket: '',
+  });
+  const [showAccessoryWalletModal, setShowAccessoryWalletModal] = useState(false);
+
   const getAccessoriesRecords = async () => {
     try {
       const response = await api.get(`api/accessory/accessoryRecord`);
       console.log('Accessories Records:', response.data);
-      setAccessoriesRecords(response?.data);
-      return response?.data || [];
+      // Filter only sale transactions (type === 'sale')
+      const saleRecords = response?.data?.filter((record) => record.type === 'sale') || [];
+      setAccessoriesRecords(saleRecords);
+      return saleRecords;
     } catch (error) {
       console.error('Error fetching accessories records:', error);
       return [];
+    }
+  };
+
+  const handleReturnAccessoryClick = (item) => {
+    setReturningAccessory(item);
+    setAccessoryReturnForm({
+      returnAmount: item.totalPrice || '',
+    });
+    setAccessoryWalletTransaction({
+      bankAccountUsed: '',
+      amountFromBank: '',
+      amountFromPocket: '',
+    });
+    setShowAccessoryReturnModal(true);
+  };
+
+  const handleReturnAccessorySubmit = async () => {
+    if (!returningAccessory || !returningAccessory._id) {
+      toast.error('Invalid accessory sale record');
+      return;
+    }
+
+    try {
+      const payload = {
+        returnAmount: accessoryReturnForm.returnAmount
+          ? Number(accessoryReturnForm.returnAmount)
+          : undefined,
+        bankAccountUsed: accessoryWalletTransaction.bankAccountUsed || undefined,
+        amountFromPocket: accessoryWalletTransaction.amountFromPocket
+          ? Number(accessoryWalletTransaction.amountFromPocket)
+          : 0,
+      };
+
+      await returnSoldAccessory(returningAccessory._id, payload);
+      toast.success('Sold accessory returned successfully');
+      
+      // Refresh data
+      getAccessoriesRecords();
+      setShowAccessoryReturnModal(false);
+      setReturningAccessory(null);
+      setAccessoryReturnForm({
+        returnAmount: '',
+      });
+      setAccessoryWalletTransaction({
+        bankAccountUsed: '',
+        amountFromBank: '',
+        amountFromPocket: '',
+      });
+    } catch (error) {
+      console.error('Error returning sold accessory:', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to return sold accessory';
+      toast.error(errorMessage);
     }
   };
   console.log('accessoriesRecords', accessoriesRecords);
@@ -915,6 +984,26 @@ const SaleInvoices = () => {
                 <FaPrint style={{ marginRight: '8px' }} />
                 Get Invoice
               </Button>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleReturnAccessoryClick(obj);
+                }}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <FaBackward style={{ marginRight: '8px' }} />
+                Return
+              </Button>
             </div>
           ),
         ]}
@@ -1255,6 +1344,140 @@ const SaleInvoices = () => {
         singleTransaction={walletTransaction}
         setSingleTransaction={setWalletTransaction}
         type="purchase"
+      />
+
+      {/* Accessory Return Modal */}
+      <Modal
+        size="sm"
+        show={showAccessoryReturnModal}
+        toggleModal={() => {
+          setShowAccessoryReturnModal(false);
+          setReturningAccessory(null);
+          setAccessoryReturnForm({
+            returnAmount: '',
+          });
+          setAccessoryWalletTransaction({
+            bankAccountUsed: '',
+            amountFromBank: '',
+            amountFromPocket: '',
+          });
+        }}
+      >
+        <div
+          style={{
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px',
+          }}
+        >
+          <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>
+            Return Sold Accessory
+          </h2>
+
+          <Form
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+            }}
+          >
+            {/* Return Amount */}
+            <Form.Group controlId="returnAmount">
+              <Form.Label>Return Amount (optional)</Form.Label>
+              <Form.Control
+                type="number"
+                value={accessoryReturnForm.returnAmount}
+                onChange={(e) =>
+                  setAccessoryReturnForm({
+                    ...accessoryReturnForm,
+                    returnAmount: e.target.value,
+                  })
+                }
+                placeholder="Enter return amount (defaults to sale price)"
+                min="0"
+                step="0.01"
+              />
+              <Form.Text className="text-muted">
+                Leave empty to use original sale price
+              </Form.Text>
+            </Form.Group>
+
+            {/* Wallet Transaction Button */}
+            <div style={{ marginTop: '10px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowAccessoryWalletModal(true)}
+                style={{ width: '100%', marginBottom: '10px' }}
+              >
+                Select Payment Method (Bank/Pocket Cash)
+              </Button>
+              {(accessoryWalletTransaction.bankAccountUsed ||
+                accessoryWalletTransaction.amountFromPocket) && (
+                <div
+                  style={{
+                    padding: '10px',
+                    backgroundColor: '#f0f0f0',
+                    borderRadius: '6px',
+                    fontSize: '0.875rem',
+                    marginBottom: '10px',
+                  }}
+                >
+                  {accessoryWalletTransaction.bankAccountUsed && (
+                    <div>
+                      <strong>Bank Account:</strong>{' '}
+                      {accessoryWalletTransaction.bankAccountUsed}
+                      {accessoryWalletTransaction.amountFromBank && (
+                        <span>
+                          {' '}
+                          - Amount: {accessoryWalletTransaction.amountFromBank}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {accessoryWalletTransaction.amountFromPocket && (
+                    <div>
+                      <strong>Pocket Cash:</strong>{' '}
+                      {accessoryWalletTransaction.amountFromPocket}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <Button variant="primary" onClick={handleReturnAccessorySubmit}>
+                Confirm Return
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowAccessoryReturnModal(false);
+                  setReturningAccessory(null);
+                  setAccessoryReturnForm({
+                    returnAmount: '',
+                  });
+                  setAccessoryWalletTransaction({
+                    bankAccountUsed: '',
+                    amountFromBank: '',
+                    amountFromPocket: '',
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Form>
+        </div>
+      </Modal>
+
+      {/* Accessory Wallet Transaction Modal */}
+      <WalletTransactionModal
+        show={showAccessoryWalletModal}
+        toggleModal={() => setShowAccessoryWalletModal(false)}
+        singleTransaction={accessoryWalletTransaction}
+        setSingleTransaction={setAccessoryWalletTransaction}
+        type="return"
       />
     </div>
   );
