@@ -3,11 +3,15 @@ import { useParams } from 'react-router-dom';
 import { api } from '../../../api/api';
 import { toast } from 'react-toastify';
 import { dateFormatter } from 'utils/dateFormatter';
+import { BASE_URL } from 'config/constant';
 
 const SaleInvoiceDetail = () => {
   const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [shop, setShop] = useState(null);
+  const [selectedColor] = useState('#004B87');
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -36,6 +40,44 @@ const SaleInvoiceDetail = () => {
     }
   }, [id]);
 
+  // Load shop from localStorage + fetch logo (same as SoldInvoice style)
+  useEffect(() => {
+    try {
+      const shopData = localStorage.getItem('shop');
+      if (shopData) {
+        setShop(JSON.parse(shopData));
+      }
+    } catch {
+      // ignore
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await api.get('/api/shop/logo');
+        if (!mounted) return;
+        if (res?.data?.success && res?.data?.logo) {
+          const path = String(res.data.logo);
+          if (
+            path &&
+            path !== '{}' &&
+            path !== 'null' &&
+            path !== 'undefined'
+          ) {
+            const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+            setLogoUrl(full);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   if (loading || !invoice) {
     return (
       <div style={{ padding: 24 }}>
@@ -44,200 +86,453 @@ const SaleInvoiceDetail = () => {
     );
   }
 
-  const phoneDetails = invoice.phoneDetails || {};
-  const pricing = invoice.pricing || {};
-  const payment = invoice.payment || {};
-  const accessories = invoice.accessories || [];
-  const metadata = invoice.metadata || {};
-  const entityData = invoice.entityData || {};
-  const entityCore = entityData._id || {};
-  const imeiPrices = metadata.imeiPrices || [];
+  const pricing = invoice?.pricing || {};
+  const payment = invoice?.payment || {};
+  const accessories = Array.isArray(invoice?.accessories)
+    ? invoice.accessories
+    : [];
+  const metadata = invoice?.metadata || {};
+  const entityData = invoice?.entityData || {};
+  const entityCore = entityData?._id || {};
+
+  const toNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const splitMaybeList = (raw) => {
+    if (raw == null) return [];
+    if (Array.isArray(raw)) return raw.filter(Boolean).map(String);
+    const str = String(raw).trim();
+    if (!str) return [];
+    // split by comma/newline or pipe
+    if (/[,\n|]/.test(str)) {
+      return str
+        .split(/[,|\n]/g)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    return [str];
+  };
+
+  // metadata.imeiPrices can be array [{imei, price}] OR object map {imei: price}
+  const imeiPriceMap = (() => {
+    const raw = metadata?.imeiPrices;
+    if (Array.isArray(raw)) {
+      return raw.reduce((acc, row) => {
+        const k = row?.imei != null ? String(row.imei).trim() : '';
+        if (!k) return acc;
+        acc[k] = toNumber(row?.price);
+        return acc;
+      }, {});
+    }
+    if (raw && typeof raw === 'object') {
+      return Object.entries(raw).reduce((acc, [k, v]) => {
+        const key = String(k).trim();
+        if (!key) return acc;
+        acc[key] = toNumber(v);
+        return acc;
+      }, {});
+    }
+    return {};
+  })();
+
+  const normalizePhones = () => {
+    const rawPhoneDetails = invoice?.phoneDetails;
+    const detailsArray = Array.isArray(rawPhoneDetails)
+      ? rawPhoneDetails
+      : rawPhoneDetails && typeof rawPhoneDetails === 'object'
+        ? [rawPhoneDetails]
+        : [];
+
+    const phones = [];
+
+    detailsArray.forEach((detail) => {
+      const companyName =
+        detail?.companyName ||
+        detail?.mobileCompany ||
+        detail?.company ||
+        invoice?.companyName ||
+        '';
+      const modelName =
+        detail?.modelName ||
+        detail?.mobileName ||
+        detail?.modelSpecifications ||
+        detail?.model ||
+        invoice?.modelName ||
+        '';
+
+      const imeis = [
+        ...splitMaybeList(detail?.imei1 ?? detail?.imei ?? detail?.imeis),
+      ];
+      const imei2List = splitMaybeList(detail?.imei2);
+
+      // If there are no imeis, still show a single line item
+      const count = Math.max(imeis.length, 1);
+      for (let i = 0; i < count; i++) {
+        const imei = imeis[i] || '';
+        const imei2 = imei2List[i] || '';
+        const fallbackUnit =
+          toNumber(detail?.salePrice) ||
+          toNumber(detail?.finalPrice) ||
+          toNumber(detail?.price) ||
+          0;
+        const salePrice = imei
+          ? imeiPriceMap[imei] ?? fallbackUnit
+          : fallbackUnit;
+
+        phones.push({
+          companyName,
+          modelName,
+          imei,
+          imei2,
+          ramMemory: detail?.ramMemory || '',
+          color: detail?.color || '',
+          phoneCondition: detail?.phoneCondition || '',
+          warranty: detail?.warranty || '',
+          salePrice: toNumber(salePrice),
+        });
+      }
+    });
+
+    return phones;
+  };
+
+  const phones = normalizePhones();
+
+  const phonesTotalComputed = phones.reduce(
+    (sum, p) => sum + toNumber(p.salePrice),
+    0
+  );
+  const accessoriesTotalComputed = accessories.reduce((sum, acc) => {
+    const unit =
+      acc?.price != null
+        ? toNumber(acc.price)
+        : acc?.perPiecePrice != null
+          ? toNumber(acc.perPiecePrice)
+          : 0;
+    const qty = toNumber(acc?.quantity || 1);
+    const total =
+      acc?.totalPrice != null ? toNumber(acc.totalPrice) : unit * qty;
+    return sum + total;
+  }, 0);
+
+  const phonesTotal =
+    phonesTotalComputed ||
+    toNumber(pricing?.salePrice) ||
+    toNumber(pricing?.finalPrice) ||
+    0;
+
+  const grandTotal =
+    toNumber(pricing?.totalInvoice) ||
+    toNumber(pricing?.totalAmount) ||
+    toNumber(pricing?.finalPrice) ||
+    phonesTotal + accessoriesTotalComputed;
+
+  const allSameModel =
+    phones.length > 0 &&
+    phones.every(
+      (p) =>
+        String(p.companyName || '')
+          .trim()
+          .toLowerCase() ===
+          String(phones[0].companyName || '')
+            .trim()
+            .toLowerCase() &&
+        String(p.modelName || '')
+          .trim()
+          .toLowerCase() ===
+          String(phones[0].modelName || '')
+            .trim()
+            .toLowerCase()
+    );
+
+  const paidNow = (() => {
+    // Prefer payableAmountNow if provided for credit flows, otherwise bank+pocket cash
+    const byCredit =
+      payment?.payableAmountNow != null
+        ? toNumber(payment.payableAmountNow)
+        : 0;
+    const byWallet =
+      toNumber(payment?.accountCash) + toNumber(payment?.pocketCash);
+    return byCredit || byWallet;
+  })();
+
+  const creditAfterSale = (() => {
+    // Prefer payableAmountLater if provided, otherwise compute from totals
+    if (payment?.payableAmountLater != null)
+      return toNumber(payment.payableAmountLater);
+    const computed = grandTotal - paidNow;
+    return computed > 0 ? computed : 0;
+  })();
+
+  const previousBalanceRaw =
+    metadata?.previousBalance ??
+    invoice?.previousBalance ??
+    metadata?.prevBalance ??
+    null;
+
+  const previousBalance =
+    previousBalanceRaw != null ? toNumber(previousBalanceRaw) : null;
+
+  const remainingAfterSale =
+    (previousBalance != null ? previousBalance : 0) + creditAfterSale;
+
+  const isCredit =
+    String(payment?.sellingPaymentType || '').toLowerCase() === 'credit' ||
+    creditAfterSale > 0;
+
+  const dueDate =
+    payment?.payableAmountLaterDate ||
+    payment?.dateOfPayment ||
+    payment?.dueDate ||
+    null;
+
+  // If backend does not provide previousBalance, we can infer it from entity credits:
+  // currentNetBalance(after sale) = (givingCredit - takingCredit)
+  // previousBalance(before sale) = currentNetBalance - creditAfterSale
+  const currentNetBalance =
+    toNumber(entityCore?.givingCredit) - toNumber(entityCore?.takingCredit);
+  const previousBalanceFinal =
+    previousBalance != null
+      ? previousBalance
+      : isCredit &&
+          (entityCore?.givingCredit != null || entityCore?.takingCredit != null)
+        ? currentNetBalance - creditAfterSale
+        : 0;
+  const remainingAfterSaleFinal =
+    isCredit &&
+    (entityCore?.givingCredit != null || entityCore?.takingCredit != null)
+      ? currentNetBalance
+      : previousBalanceFinal + creditAfterSale;
 
   const styles = {
     container: {
-      maxWidth: '900px',
-      margin: '24px auto',
-      padding: '24px',
-      background: '#f9fafb',
-      borderRadius: 12,
+      width: '210mm',
+      minHeight: 'auto',
+      margin: '20px auto',
+      padding: '26px',
+      background: '#f9f9f9',
+      borderRadius: '15px',
       boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
       fontFamily: "'Poppins', sans-serif",
       color: '#111827',
+      boxSizing: 'border-box',
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '18px',
+      paddingBottom: '10px',
+      borderBottom: `3px solid ${selectedColor}`,
     },
     section: {
-      background: '#ffffff',
-      borderRadius: 8,
-      padding: 16,
-      marginBottom: 16,
-      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.08)',
+      marginBottom: '14px',
+      padding: '16px',
+      background: '#fff',
+      borderRadius: '10px',
+      boxShadow: '0 5px 15px rgba(0, 0, 0, 0.06)',
     },
     sectionTitle: {
-      fontSize: 16,
-      fontWeight: 600,
-      marginBottom: 8,
+      fontSize: '16px',
+      fontWeight: 700,
+      marginBottom: '10px',
+      color: selectedColor,
       borderBottom: '1px solid #e5e7eb',
-      paddingBottom: 6,
+      paddingBottom: '6px',
     },
     row: {
       display: 'flex',
       justifyContent: 'space-between',
+      gap: '12px',
       marginBottom: 6,
       fontSize: 13,
     },
     label: {
-      fontWeight: 500,
+      fontWeight: 600,
       color: '#6b7280',
+      minWidth: 160,
     },
     value: {
-      fontWeight: 500,
+      fontWeight: 600,
       color: '#111827',
+      textAlign: 'right',
     },
     table: {
       width: '100%',
       borderCollapse: 'collapse',
-      fontSize: 13,
+      marginTop: 8,
     },
     th: {
-      padding: '8px 10px',
-      background: '#f3f4f6',
-      borderBottom: '1px solid #e5e7eb',
+      padding: '12px',
+      backgroundColor: selectedColor,
+      color: '#fff',
       textAlign: 'left',
+      fontWeight: 700,
+      fontSize: 13,
     },
     td: {
-      padding: '8px 10px',
-      borderBottom: '1px solid #f3f4f6',
+      padding: '10px 12px',
+      textAlign: 'left',
+      backgroundColor: '#fafafa',
+      borderBottom: '1px solid #eee',
+      color: '#111827',
+      fontSize: 13,
+    },
+    totalRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      fontWeight: 800,
+      fontSize: 14,
+      paddingTop: 8,
+    },
+    footer: {
+      marginTop: '14px',
+      paddingTop: '10px',
+      borderTop: `3px solid ${selectedColor}`,
+      textAlign: 'center',
+      fontSize: '12px',
+      color: '#6b7280',
     },
   };
 
-  // Determine if there is any pricing object to show
-  const hasPricing = !!pricing && Object.keys(pricing).length > 0;
-
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 16,
-        }}
-      >
-        <h2 style={{ margin: 0 }}>Sale Invoice</h2>
-        <div style={{ textAlign: 'right', fontSize: 13 }}>
+      {/* Header (Shop details first) */}
+      <header style={styles.header}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt="logo"
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '3px solid #fff',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.18)',
+              }}
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+            />
+          )}
           <div>
-            <strong>Invoice #:</strong> {invoice.invoiceNumber || '—'}
-          </div>
-          <div>
-            <strong>Date:</strong>{' '}
-            {invoice.saleDate ? dateFormatter(invoice.saleDate) : '—'}
+            <div
+              style={{ fontSize: 22, fontWeight: 800, color: selectedColor }}
+            >
+              {shop?.shopName || 'Shop'}
+            </div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>
+              {shop?.address || '—'}
+            </div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>
+              {Array.isArray(shop?.contactNumber)
+                ? shop.contactNumber.join(' | ')
+                : shop?.contactNumber || '—'}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Customer & Payment */}
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 20, fontWeight: 900, color: selectedColor }}>
+            INVOICE
+          </div>
+          <div style={{ fontSize: 13, color: '#111827', fontWeight: 700 }}>
+            Invoice #: {invoice?.invoiceNumber || '—'}
+          </div>
+          <div style={{ fontSize: 12, color: '#6b7280' }}>
+            Date: {invoice?.saleDate ? dateFormatter(invoice.saleDate) : '—'}
+          </div>
+        </div>
+      </header>
+
+      {/* Customer details */}
       <div style={styles.section}>
-        <div style={styles.sectionTitle}>Customer & Payment</div>
+        <div style={styles.sectionTitle}>Customer Details</div>
         <div style={styles.row}>
           <span style={styles.label}>Customer Name</span>
-          <span style={styles.value}>{invoice.customerName || '—'}</span>
+          <span style={styles.value}>{invoice?.customerName || '—'}</span>
         </div>
         <div style={styles.row}>
           <span style={styles.label}>Customer Number</span>
-          <span style={styles.value}>{invoice.customerNumber || '—'}</span>
+          <span style={styles.value}>{invoice?.customerNumber || '—'}</span>
         </div>
         <div style={styles.row}>
           <span style={styles.label}>Sale Type</span>
-          <span style={styles.value}>{invoice.saleType || '—'}</span>
+          <span style={styles.value}>{invoice?.saleType || '—'}</span>
         </div>
-        <div style={styles.row}>
-          <span style={styles.label}>Payment Type</span>
-          <span style={styles.value}>
-            {payment.sellingPaymentType || 'Cash'}
-          </span>
-        </div>
-        {(payment.bankName || payment.bankAccountUsed?.bankName) && (
+        {(entityData?.name || entityCore?.name) && (
           <div style={styles.row}>
-            <span style={styles.label}>Bank</span>
+            <span style={styles.label}>Entity</span>
             <span style={styles.value}>
-              {payment.bankName || payment.bankAccountUsed?.bankName}
-            </span>
-          </div>
-        )}
-        {(payment.payableAmountNow != null || payment.accountCash != null) && (
-          <div style={styles.row}>
-            <span style={styles.label}>Paid Now</span>
-            <span style={styles.value}>
-              {Number(
-                payment.payableAmountNow ?? payment.accountCash ?? 0
-              ).toLocaleString()}
-            </span>
-          </div>
-        )}
-        {(payment.payableAmountLater != null || payment.pocketCash != null) && (
-          <div style={styles.row}>
-            <span style={styles.label}>Payable Later</span>
-            <span style={styles.value}>
-              {Number(
-                payment.payableAmountLater ?? payment.pocketCash ?? 0
-              ).toLocaleString()}
+              {(entityData?.name || entityCore?.name || '—') +
+                (entityData?.number || entityCore?.number
+                  ? ` (${entityData?.number || entityCore?.number})`
+                  : '')}
             </span>
           </div>
         )}
       </div>
 
-      {/* Phone Details */}
+      {/* Phone Summary (one row if same model) */}
       <div style={styles.section}>
-        <div style={styles.sectionTitle}>Phone Details</div>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Company</th>
-              <th style={styles.th}>Model</th>
-              <th style={styles.th}>IMEI 1</th>
-              <th style={styles.th}>IMEI 2</th>
-              <th style={styles.th}>RAM</th>
-              <th style={styles.th}>Color</th>
-              <th style={styles.th}>Condition</th>
-              <th style={styles.th}>Warranty</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={styles.td}>{phoneDetails.companyName || '—'}</td>
-              <td style={styles.td}>{phoneDetails.modelName || '—'}</td>
-              <td style={styles.td}>
-                {(() => {
-                  const raw =
-                    phoneDetails.imei1 ??
-                    phoneDetails.imei ??
-                    phoneDetails.imeis;
-                  if (Array.isArray(raw)) {
-                    return raw.join(', ');
-                  }
-                  return raw || '—';
-                })()}
-              </td>
-              <td style={styles.td}>
-                {(() => {
-                  const raw = phoneDetails.imei2;
-                  if (Array.isArray(raw)) {
-                    return raw.join(', ');
-                  }
-                  return raw || '—';
-                })()}
-              </td>
-              <td style={styles.td}>{phoneDetails.ramMemory || '—'}</td>
-              <td style={styles.td}>{phoneDetails.color || '—'}</td>
-              <td style={styles.td}>{phoneDetails.phoneCondition || '—'}</td>
-              <td style={styles.td}>{phoneDetails.warranty || '—'}</td>
-            </tr>
-          </tbody>
-        </table>
-        {phoneDetails.specifications && (
-          <div style={{ marginTop: 8, fontSize: 13 }}>
-            <strong>Specifications:</strong> {phoneDetails.specifications}
-          </div>
+        <div style={styles.sectionTitle}>Phones</div>
+
+        {phones.length === 0 ? (
+          <div style={{ fontSize: 13, color: '#6b7280' }}>No phone data</div>
+        ) : (
+          <>
+            {allSameModel && (
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Company</th>
+                    <th style={styles.th}>Model</th>
+                    <th style={styles.th}>Quantity</th>
+                    <th style={styles.th}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={styles.td}>{phones[0].companyName || '—'}</td>
+                    <td style={styles.td}>{phones[0].modelName || '—'}</td>
+                    <td style={styles.td}>{phones.length}</td>
+                    <td style={styles.td}>{phonesTotal.toLocaleString()}</td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
+
+            {/* Per-phone details (company/model per phone with sale price) */}
+            <table style={{ ...styles.table, marginTop: 12 }}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Company</th>
+                  <th style={styles.th}>Model</th>
+                  <th style={styles.th}>IMEI</th>
+                  <th style={styles.th}>Sale Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {phones.map((p, idx) => (
+                  <tr key={`${p.imei || 'row'}-${idx}`}>
+                    <td style={styles.td}>{p.companyName || '—'}</td>
+                    <td style={styles.td}>{p.modelName || '—'}</td>
+                    <td style={styles.td}>
+                      {p.imei || '—'}
+                      {p.imei2 ? ` / ${p.imei2}` : ''}
+                    </td>
+                    <td style={styles.td}>
+                      {toNumber(p.salePrice)
+                        ? toNumber(p.salePrice).toLocaleString()
+                        : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
 
@@ -256,7 +551,7 @@ const SaleInvoiceDetail = () => {
             </thead>
             <tbody>
               {accessories.map((acc, idx) => {
-                const rawName = acc.name || acc.accessoryName;
+                const rawName = acc?.name || acc?.accessoryName;
                 const resolvedName =
                   typeof rawName === 'string'
                     ? rawName
@@ -264,24 +559,23 @@ const SaleInvoiceDetail = () => {
                       rawName?.name ||
                       rawName?._id ||
                       '—';
-
-                const unitPrice =
-                  acc.price != null
-                    ? Number(acc.price)
-                    : acc.perPiecePrice != null
-                      ? Number(acc.perPiecePrice)
+                const unit =
+                  acc?.price != null
+                    ? toNumber(acc.price)
+                    : acc?.perPiecePrice != null
+                      ? toNumber(acc.perPiecePrice)
                       : 0;
-                const qty = Number(acc.quantity || 1);
+                const qty = toNumber(acc?.quantity || 1);
                 const total =
-                  acc.totalPrice != null
-                    ? Number(acc.totalPrice)
-                    : unitPrice * qty;
+                  acc?.totalPrice != null
+                    ? toNumber(acc.totalPrice)
+                    : unit * qty;
 
                 return (
                   <tr key={idx}>
                     <td style={styles.td}>{resolvedName}</td>
                     <td style={styles.td}>{qty}</td>
-                    <td style={styles.td}>{unitPrice.toLocaleString()}</td>
+                    <td style={styles.td}>{unit.toLocaleString()}</td>
                     <td style={styles.td}>{total.toLocaleString()}</td>
                   </tr>
                 );
@@ -291,140 +585,66 @@ const SaleInvoiceDetail = () => {
         </div>
       )}
 
-      {/* Pricing Summary (only if has meaningful values) */}
-      {hasPricing && (
+      {/* Totals */}
+      <div style={styles.section}>
+        <div style={styles.sectionTitle}>Totals</div>
+        <div style={styles.row}>
+          <span style={styles.label}>Phones Total</span>
+          <span style={styles.value}>{phonesTotal.toLocaleString()}</span>
+        </div>
+        <div style={styles.row}>
+          <span style={styles.label}>Accessories Total</span>
+          <span style={styles.value}>
+            {accessoriesTotalComputed.toLocaleString()}
+          </span>
+        </div>
+        <div style={{ ...styles.totalRow, marginTop: 6 }}>
+          <span>Total Invoice</span>
+          <span>{grandTotal.toLocaleString()}</span>
+        </div>
+      </div>
+
+      {/* Payment / Credit section (only for credit scenario) */}
+      {isCredit && (
         <div style={styles.section}>
-          <div style={styles.sectionTitle}>Pricing Summary</div>
-          {pricing.purchasePrice != null && (
-            <div style={styles.row}>
-              <span style={styles.label}>Purchase Price</span>
-              <span style={styles.value}>
-                {Number(pricing.purchasePrice).toLocaleString()}
-              </span>
-            </div>
-          )}
-          {pricing.salePrice != null && (
-            <div style={styles.row}>
-              <span style={styles.label}>Sale Price</span>
-              <span style={styles.value}>
-                {Number(pricing.salePrice).toLocaleString()}
-              </span>
-            </div>
-          )}
-          {pricing.finalPrice != null && (
-            <div style={styles.row}>
-              <span style={styles.label}>Final Price</span>
-              <span style={styles.value}>
-                {Number(pricing.finalPrice).toLocaleString()}
-              </span>
-            </div>
-          )}
-          {pricing.totalInvoice != null && (
-            <div style={styles.row}>
-              <span style={styles.label}>Total Invoice</span>
-              <span style={styles.value}>
-                {Number(pricing.totalInvoice).toLocaleString()}
-              </span>
-            </div>
-          )}
-          {pricing.profit != null && (
-            <div style={styles.row}>
-              <span style={styles.label}>Profit</span>
-              <span style={styles.value}>
-                {Number(pricing.profit).toLocaleString()}
-              </span>
+          <div style={styles.sectionTitle}>Credit Summary</div>
+
+          <div style={styles.row}>
+            <span style={styles.label}>Person to pay before invoice</span>
+            <span style={styles.value}>
+              {previousBalanceFinal.toLocaleString()}
+            </span>
+          </div>
+
+          <div style={styles.row}>
+            <span style={styles.label}>Now Paid Amount</span>
+            <span style={styles.value}>{paidNow.toLocaleString()}</span>
+          </div>
+
+          <div style={styles.row}>
+            <span style={styles.label}>Credit after sale (this invoice)</span>
+            <span style={styles.value}>{creditAfterSale.toLocaleString()}</span>
+          </div>
+
+          <div style={{ ...styles.totalRow, marginTop: 6 }}>
+            <span>Remaining</span>
+            <span>{remainingAfterSaleFinal.toLocaleString()}</span>
+          </div>
+
+          {dueDate && (
+            <div style={{ marginTop: 10, fontSize: 12, color: '#6b7280' }}>
+              Due Date: {dueDate}
             </div>
           )}
         </div>
       )}
 
-      {/* Entity / Customer Account Details (from entityData) */}
-      {entityData && Object.keys(entityData).length > 0 && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>Customer Account Summary</div>
-          <div style={styles.row}>
-            <span style={styles.label}>Entity Name</span>
-            <span style={styles.value}>
-              {entityData.name || entityCore.name || '—'}
-            </span>
-          </div>
-          <div style={styles.row}>
-            <span style={styles.label}>Entity Number</span>
-            <span style={styles.value}>
-              {entityData.number || entityCore.number || '—'}
-            </span>
-          </div>
-          {(entityCore.status || entityCore.reference) && (
-            <>
-              {entityCore.status && (
-                <div style={styles.row}>
-                  <span style={styles.label}>Status</span>
-                  <span style={styles.value}>{entityCore.status}</span>
-                </div>
-              )}
-              {entityCore.reference && (
-                <div style={styles.row}>
-                  <span style={styles.label}>Reference</span>
-                  <span style={styles.value}>{entityCore.reference}</span>
-                </div>
-              )}
-            </>
-          )}
-          {(entityCore.takingCredit != null ||
-            entityCore.givingCredit != null) && (
-            <>
-              {entityCore.takingCredit != null && (
-                <div style={styles.row}>
-                  <span style={styles.label}>Taking Credit</span>
-                  <span style={styles.value}>
-                    {Number(entityCore.takingCredit).toLocaleString()}
-                  </span>
-                </div>
-              )}
-              {entityCore.givingCredit != null && (
-                <div style={styles.row}>
-                  <span style={styles.label}>Giving Credit</span>
-                  <span style={styles.value}>
-                    {Number(entityCore.givingCredit).toLocaleString()}
-                  </span>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* IMEI-wise Phone Pricing from metadata */}
-      {imeiPrices.length > 0 && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>IMEI-wise Phone Prices</div>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>IMEI</th>
-                <th style={styles.th}>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {imeiPrices.map((row, idx) => (
-                <tr key={idx}>
-                  <td style={styles.td}>{row.imei || '—'}</td>
-                  <td style={styles.td}>
-                    {row.price != null
-                      ? Number(row.price).toLocaleString()
-                      : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {metadata.notes && (
-            <div style={{ marginTop: 8, fontSize: 13 }}>
-              <strong>Notes:</strong> {metadata.notes}
-            </div>
-          )}
-        </div>
-      )}
+      <footer style={styles.footer}>
+        {shop?.shopName || 'Shop'} | {shop?.address || '—'} |{' '}
+        {Array.isArray(shop?.contactNumber)
+          ? shop.contactNumber.join(' | ')
+          : shop?.contactNumber || '—'}
+      </footer>
     </div>
   );
 };

@@ -1,10 +1,14 @@
 import { api } from '../../../api/api';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Row, Col, Card, Table, Tabs, Tab } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import avatar1 from '../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../assets/images/user/avatar-3.jpg';
+import Modal from 'components/Modal/Modal';
+import CustomSelect from 'components/CustomSelect';
+import html2pdf from 'html2pdf.js';
+import { toast } from 'react-toastify';
 
 const DashDefault = () => {
   const tabContent = (
@@ -136,6 +140,387 @@ const DashDefault = () => {
   const [showPayables, setShowPayables] = useState(false);
   const [showActiveAccounts, setShowActiveAccounts] = useState(false);
   const avatarsArr = [avatar1, avatar2, avatar3];
+
+  // Print Company Data modal state
+  const [showPrintCompanyModal, setShowPrintCompanyModal] = useState(false);
+  const [companyReportType, setCompanyReportType] = useState(''); // 'sale' | 'purchase'
+  const [companyReportCompany, setCompanyReportCompany] = useState('');
+  const [companyReportModel, setCompanyReportModel] = useState('');
+  const [companyReportPartyId, setCompanyReportPartyId] = useState('');
+  const [companyReportStartDate, setCompanyReportStartDate] = useState('');
+  const [companyReportEndDate, setCompanyReportEndDate] = useState('');
+  const [companyReportParties, setCompanyReportParties] = useState([]);
+  const [companyReportLoading, setCompanyReportLoading] = useState(false);
+  const [companyReportMobileRows, setCompanyReportMobileRows] = useState([]);
+  const [companyReportAccessoryRows, setCompanyReportAccessoryRows] = useState([]);
+  const reportRef = useRef(null);
+
+  const safeNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const toISODateOnly = (raw) => {
+    if (!raw) return '';
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
+  };
+
+  const isWithinRange = (dateIso, startIso, endIso) => {
+    if (!dateIso) return false;
+    if (startIso && dateIso < startIso) return false;
+    if (endIso && dateIso > endIso) return false;
+    return true;
+  };
+
+  const normalizePartyName = (p) =>
+    String(p?.partyName || p?.name || p?.personName || '').trim();
+
+  // Load parties when modal opens
+  useEffect(() => {
+    if (!showPrintCompanyModal) return;
+    (async () => {
+      try {
+        const res = await api.get('/api/partyLedger/partyNameAndId');
+        setCompanyReportParties(res?.data?.data || []);
+      } catch (e) {
+        setCompanyReportParties([]);
+      }
+    })();
+  }, [showPrintCompanyModal]);
+
+  const companyOptions = useMemo(() => {
+    const set = new Set();
+    companyReportMobileRows.forEach((r) => {
+      const c = String(r.companyName || '').trim();
+      if (c) set.add(c);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [companyReportMobileRows]);
+
+  const modelOptions = useMemo(() => {
+    const set = new Set();
+    companyReportMobileRows.forEach((r) => {
+      const c = String(r.companyName || '').trim();
+      const m = String(r.modelName || '').trim();
+      if (!m) return;
+      if (companyReportCompany && c !== companyReportCompany) return;
+      set.add(m);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [companyReportMobileRows, companyReportCompany]);
+
+  const selectedParty = useMemo(() => {
+    if (!companyReportPartyId) return null;
+    return (
+      companyReportParties.find((p) => p?._id === companyReportPartyId) || null
+    );
+  }, [companyReportPartyId, companyReportParties]);
+
+  const partyOptions = useMemo(() => {
+    return (companyReportParties || []).map((p) => ({
+      value: p?._id,
+      label: `${normalizePartyName(p) || 'Party'}${p?.number ? ` || ${p.number}` : ''}`,
+    }));
+  }, [companyReportParties]);
+
+  const fetchCompanyReportData = async (type) => {
+    if (!type) return;
+    setCompanyReportLoading(true);
+    try {
+      if (type === 'sale') {
+        const [bulkSalesRes, singleSalesRes, accessoryRes] = await Promise.all([
+          api.get('api/Purchase/all-sales'),
+          api.get('api/Purchase/sold-single-phones'),
+          api.get('api/accessory/accessoryRecord'),
+        ]);
+
+        const bulkSales = bulkSalesRes?.data?.data || [];
+        const singleSales = singleSalesRes?.data?.soldPhones || [];
+        const allAccessories = accessoryRes?.data || [];
+        const accessorySales = Array.isArray(allAccessories)
+          ? allAccessories.filter((r) => r?.type === 'sale')
+          : [];
+
+        const mobileRows = [];
+
+        // Bulk sales
+        bulkSales.forEach((sale) => {
+          const dateIso =
+            toISODateOnly(sale?.saleDate || sale?.dateSold || sale?.date || sale?.createdAt) ||
+            '';
+          const invoiceNumber = sale?.invoiceNumber || sale?._id || '';
+          const partyId =
+            sale?.personId?._id || sale?.personId || sale?.entityData?._id || '';
+          const partyName =
+            sale?.personName ||
+            sale?.personId?.name ||
+            sale?.entityData?.name ||
+            sale?.customerName ||
+            '';
+
+          const ramSimDetails = Array.isArray(sale?.ramSimDetails)
+            ? sale.ramSimDetails
+            : [];
+          if (ramSimDetails.length > 0) {
+            ramSimDetails.forEach((d) => {
+              const companyName = d?.companyName || sale?.companyName || '';
+              const modelName = d?.modelName || sale?.modelName || '';
+              const imeis = Array.isArray(d?.imeiNumbers) ? d.imeiNumbers : [];
+              const qty = imeis.length || safeNumber(d?.totalQuantity) || 0;
+
+              // price calculation
+              const imeisWithPrices = sale?.imeisWithPrices || sale?.imeiPrices || null;
+              let total = 0;
+              if (imeisWithPrices && typeof imeisWithPrices === 'object') {
+                total = imeis.reduce((sum, x) => {
+                  const imei1 = x?.imei1 ? String(x.imei1) : '';
+                  return sum + (imei1 ? safeNumber(imeisWithPrices[imei1]) : 0);
+                }, 0);
+              }
+              if (!total) {
+                const perOne = safeNumber(d?.priceOfOne || d?.salePrice || d?.price || 0);
+                total = perOne && qty ? perOne * qty : 0;
+              }
+              if (!total) {
+                total =
+                  safeNumber(sale?.totalInvoice) ||
+                  safeNumber(sale?.finalPrice) ||
+                  safeNumber(sale?.salePrice) ||
+                  0;
+              }
+
+              mobileRows.push({
+                source: 'bulk-sale',
+                dateIso,
+                invoiceNumber,
+                partyId,
+                partyName,
+                companyName,
+                modelName,
+                qty: qty || 1,
+                total,
+              });
+            });
+          } else {
+            // Fallback single-row if structure differs
+            mobileRows.push({
+              source: 'bulk-sale',
+              dateIso,
+              invoiceNumber,
+              partyId,
+              partyName,
+              companyName: sale?.companyName || '',
+              modelName: sale?.modelName || sale?.modelSpecifications || '',
+              qty: safeNumber(sale?.totalQuantity) || 1,
+              total:
+                safeNumber(sale?.totalInvoice) ||
+                safeNumber(sale?.finalPrice) ||
+                safeNumber(sale?.salePrice) ||
+                0,
+            });
+          }
+        });
+
+        // Single sales
+        singleSales.forEach((s) => {
+          mobileRows.push({
+            source: 'single-sale',
+            dateIso: toISODateOnly(s?.saleDate || s?.dateSold || s?.date || s?.createdAt) || '',
+            invoiceNumber: s?.invoiceNumber || s?._id || '',
+            partyId: s?.personId?._id || s?.personId || s?.entityData?._id || '',
+            partyName:
+              s?.personName ||
+              s?.personId?.name ||
+              s?.entityData?.name ||
+              s?.customerName ||
+              '',
+            companyName: s?.companyName || s?.mobileCompany || '',
+            modelName: s?.modelName || s?.mobileName || '',
+            qty: 1,
+            total: safeNumber(s?.salePrice || s?.finalPrice || s?.totalInvoice || 0),
+          });
+        });
+
+        const accessoryRows = accessorySales.map((r) => ({
+          source: 'accessory-sale',
+          dateIso: toISODateOnly(r?.date || r?.createdAt) || '',
+          invoiceNumber: r?._id || '',
+          partyId: r?.personId?._id || r?.personId || '',
+          partyName: r?.personId?.name || r?.personName || '',
+          itemName: r?.accessoryName || r?.name || 'Accessory',
+          qty: safeNumber(r?.quantity || 1),
+          total: safeNumber(r?.totalPrice || 0) || safeNumber(r?.price || 0) * safeNumber(r?.quantity || 1),
+        }));
+
+        setCompanyReportMobileRows(mobileRows.filter((x) => x.dateIso));
+        setCompanyReportAccessoryRows(accessoryRows.filter((x) => x.dateIso));
+      } else {
+        // purchase
+        const [purchasePhonesRes, accessoryPurchaseRes] = await Promise.all([
+          api.get('api/Purchase/all-purchase-phone'),
+          api.get('api/accessory/accessoryRecord/purchase'),
+        ]);
+
+        const purchaseData = purchasePhonesRes?.data?.data || {};
+        const singlePhones = Array.isArray(purchaseData?.singlePhones)
+          ? purchaseData.singlePhones
+          : [];
+        const bulkPhones = Array.isArray(purchaseData?.bulkPhones)
+          ? purchaseData.bulkPhones
+          : [];
+
+        const mobileRows = [];
+
+        singlePhones.forEach((p) => {
+          mobileRows.push({
+            source: 'single-purchase',
+            dateIso: toISODateOnly(p?.date || p?.createdAt) || '',
+            invoiceNumber: p?._id || '',
+            partyId: p?.personId?._id || p?.personId || '',
+            partyName: p?.personId?.name || p?.name || '',
+            companyName: p?.companyName || '',
+            modelName: p?.modelName || '',
+            qty: 1,
+            total:
+              safeNumber(p?.price?.finalPrice) ||
+              safeNumber(p?.prices?.buyingPrice) ||
+              safeNumber(p?.purchasePrice) ||
+              0,
+          });
+        });
+
+        bulkPhones.forEach((b) => {
+          mobileRows.push({
+            source: 'bulk-purchase',
+            dateIso: toISODateOnly(b?.date || b?.createdAt) || '',
+            invoiceNumber: b?._id || '',
+            partyId: b?.personId?._id || b?.personId || '',
+            partyName: b?.personId?.name || b?.partyName || '',
+            companyName: b?.companyName || '',
+            modelName: b?.modelName || '',
+            qty: safeNumber(b?.totalQuantity) || (Array.isArray(b?.ramSimDetails) ? b.ramSimDetails.reduce((sum, d) => sum + (d?.imeiNumbers?.length || 0), 0) : 0) || 1,
+            total: safeNumber(b?.prices?.buyingPrice) || safeNumber(b?.totalPrice) || 0,
+          });
+        });
+
+        const accessoryRowsRaw = accessoryPurchaseRes?.data || [];
+        const accessoryRows = Array.isArray(accessoryRowsRaw)
+          ? accessoryRowsRaw.map((r) => ({
+              source: 'accessory-purchase',
+              dateIso: toISODateOnly(r?.date || r?.createdAt) || '',
+              invoiceNumber: r?._id || '',
+              partyId: r?.personId?._id || r?.personId || '',
+              partyName: r?.personId?.name || r?.personName || '',
+              itemName: r?.accessoryName || r?.name || 'Accessory',
+              qty: safeNumber(r?.quantity || 1),
+              total:
+                safeNumber(r?.totalPrice || 0) ||
+                safeNumber(r?.price || r?.perPiecePrice || 0) *
+                  safeNumber(r?.quantity || 1),
+            }))
+          : [];
+
+        setCompanyReportMobileRows(mobileRows.filter((x) => x.dateIso));
+        setCompanyReportAccessoryRows(accessoryRows.filter((x) => x.dateIso));
+      }
+    } catch (e) {
+      console.error('Error fetching company report data:', e);
+      toast.error('Failed to load report data');
+      setCompanyReportMobileRows([]);
+      setCompanyReportAccessoryRows([]);
+    } finally {
+      setCompanyReportLoading(false);
+    }
+  };
+
+  // Fetch report data when type changes (required field)
+  useEffect(() => {
+    if (!showPrintCompanyModal) return;
+    if (!companyReportType) return;
+    // Reset dependent selections
+    setCompanyReportCompany('');
+    setCompanyReportModel('');
+    // keep party/date selection as user may already set them
+    fetchCompanyReportData(companyReportType);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyReportType, showPrintCompanyModal]);
+
+  const filteredMobileRows = useMemo(() => {
+    const startIso = companyReportStartDate || '';
+    const endIso = companyReportEndDate || '';
+    return companyReportMobileRows.filter((r) => {
+      if (!isWithinRange(r.dateIso, startIso, endIso)) return false;
+      if (companyReportCompany && String(r.companyName || '').trim() !== companyReportCompany)
+        return false;
+      if (companyReportModel && String(r.modelName || '').trim() !== companyReportModel)
+        return false;
+      if (selectedParty) {
+        const matchId = String(r.partyId || '') === String(selectedParty._id || '');
+        const matchName =
+          normalizePartyName({ name: r.partyName }) &&
+          normalizePartyName({ name: r.partyName }) === normalizePartyName(selectedParty);
+        if (!matchId && !matchName) return false;
+      }
+      return true;
+    });
+  }, [
+    companyReportMobileRows,
+    companyReportCompany,
+    companyReportModel,
+    companyReportStartDate,
+    companyReportEndDate,
+    selectedParty,
+  ]);
+
+  const filteredAccessoryRows = useMemo(() => {
+    const startIso = companyReportStartDate || '';
+    const endIso = companyReportEndDate || '';
+    return companyReportAccessoryRows.filter((r) => {
+      if (!isWithinRange(r.dateIso, startIso, endIso)) return false;
+      if (selectedParty) {
+        const matchId = String(r.partyId || '') === String(selectedParty._id || '');
+        const matchName =
+          normalizePartyName({ name: r.partyName }) &&
+          normalizePartyName({ name: r.partyName }) === normalizePartyName(selectedParty);
+        if (!matchId && !matchName) return false;
+      }
+      return true;
+    });
+  }, [
+    companyReportAccessoryRows,
+    companyReportStartDate,
+    companyReportEndDate,
+    selectedParty,
+  ]);
+
+  const handleDownloadCompanyReportPdf = async () => {
+    if (!companyReportType) {
+      toast.error('Please select Sale / Purchase');
+      return;
+    }
+    if (!reportRef.current) {
+      toast.error('Nothing to print');
+      return;
+    }
+    const fileName = `company-data-${companyReportType}-${new Date().toISOString().slice(0, 10)}.pdf`;
+    try {
+      await html2pdf()
+        .from(reportRef.current)
+        .set({
+          margin: 10,
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        })
+        .save();
+    } catch (e) {
+      console.error('PDF export failed:', e);
+      toast.error('Failed to generate PDF');
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -647,6 +1032,82 @@ const DashDefault = () => {
               </div>
             </div>
           </Link>
+
+          {/* Print Company Data */}
+          <div
+            className="quick-action-item"
+            role="button"
+            tabIndex={0}
+            onClick={() => setShowPrintCompanyModal(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') setShowPrintCompanyModal(true);
+            }}
+            style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
+          >
+            <div
+              style={{
+                background: 'white',
+                borderRadius: '15px',
+                padding: '25px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow =
+                  '0 12px 30px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+              }}
+            >
+              <div
+                className="quick-action-icon"
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '15px',
+                  background:
+                    'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <i
+                  className="fa fa-print"
+                  style={{ fontSize: '24px', color: 'white' }}
+                ></i>
+              </div>
+              <div>
+                <div
+                  className="quick-action-title"
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#2d3748',
+                    marginBottom: '5px',
+                  }}
+                >
+                  Print Company Data
+                </div>
+                <div
+                  className="quick-action-desc"
+                  style={{ fontSize: '14px', color: '#718096' }}
+                >
+                  Sale/Purchase record (mobiles + accessories) in PDF
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1409,6 +1870,297 @@ const DashDefault = () => {
           </div>
         </Col>
       </Row>
+
+      {/* Print Company Data Modal */}
+      <Modal
+        size="lg"
+        show={showPrintCompanyModal}
+        toggleModal={() => setShowPrintCompanyModal(false)}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <h3 style={{ margin: 0, fontWeight: 800 }}>Print Company Data</h3>
+          <button
+            type="button"
+            onClick={() => setShowPrintCompanyModal(false)}
+            style={{
+              border: '1px solid #e5e7eb',
+              background: '#fff',
+              borderRadius: 8,
+              padding: '6px 10px',
+              cursor: 'pointer',
+            }}
+          >
+            Close
+          </button>
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>
+                Sale / Purchase <span style={{ color: '#dc2626' }}>*</span>
+              </label>
+              <select
+                value={companyReportType}
+                onChange={(e) => setCompanyReportType(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: 8,
+                  marginTop: 6,
+                  outline: 'none',
+                }}
+                required
+              >
+                <option value="">Select</option>
+                <option value="sale">Sale</option>
+                <option value="purchase">Purchase</option>
+              </select>
+              <div style={{ fontSize: 12, color: '#6b7280', marginTop: 6 }}>
+                Only this field is required.
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>Party (Optional)</label>
+              <div style={{ marginTop: 6 }}>
+                <CustomSelect
+                  value={companyReportPartyId}
+                  onChange={(opt) => setCompanyReportPartyId(opt?.value || '')}
+                  options={partyOptions}
+                  placeholder="Select Party"
+                  noOptionsMessage="No parties found"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>Company (Optional)</label>
+              <div style={{ marginTop: 6 }}>
+                <CustomSelect
+                  value={companyReportCompany}
+                  onChange={(opt) => {
+                    const v = opt?.value || '';
+                    setCompanyReportCompany(v);
+                    setCompanyReportModel('');
+                  }}
+                  options={companyOptions.map((c) => ({ value: c, label: c }))}
+                  placeholder="Select Company"
+                  noOptionsMessage={companyReportType ? 'No companies found' : 'Select type first'}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>Model (Optional)</label>
+              <div style={{ marginTop: 6 }}>
+                <CustomSelect
+                  value={companyReportModel}
+                  onChange={(opt) => setCompanyReportModel(opt?.value || '')}
+                  options={modelOptions.map((m) => ({ value: m, label: m }))}
+                  placeholder="Select Model"
+                  noOptionsMessage={companyReportCompany ? 'No models found' : 'Select company first (optional)'}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>Start Date (Optional)</label>
+              <input
+                type="date"
+                value={companyReportStartDate}
+                onChange={(e) => setCompanyReportStartDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: 8,
+                  marginTop: 6,
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>End Date (Optional)</label>
+              <input
+                type="date"
+                value={companyReportEndDate}
+                onChange={(e) => setCompanyReportEndDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: 8,
+                  marginTop: 6,
+                  outline: 'none',
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
+            <button
+              type="button"
+              onClick={() => {
+                if (!companyReportType) {
+                  toast.error('Please select Sale / Purchase');
+                  return;
+                }
+                fetchCompanyReportData(companyReportType);
+              }}
+              style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid #e5e7eb',
+                background: '#fff',
+                cursor: 'pointer',
+                fontWeight: 700,
+              }}
+              disabled={!companyReportType || companyReportLoading}
+            >
+              {companyReportLoading ? 'Loading…' : 'Refresh Data'}
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadCompanyReportPdf}
+              style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: 'none',
+                background: '#111827',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: 800,
+              }}
+              disabled={companyReportLoading}
+            >
+              Download PDF
+            </button>
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <div
+              ref={reportRef}
+              style={{
+                padding: 18,
+                background: '#fff',
+                border: '1px solid #e5e7eb',
+                borderRadius: 12,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 900 }}>Company Data Report</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>
+                    Type: <b>{companyReportType || '—'}</b>
+                    {companyReportCompany ? ` | Company: ${companyReportCompany}` : ''}
+                    {companyReportModel ? ` | Model: ${companyReportModel}` : ''}
+                    {selectedParty ? ` | Party: ${normalizePartyName(selectedParty)}` : ''}
+                    {(companyReportStartDate || companyReportEndDate) ? ` | Dates: ${companyReportStartDate || '…'} to ${companyReportEndDate || '…'}` : ''}
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', textAlign: 'right' }}>
+                  Generated: {new Date().toLocaleString()}
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontWeight: 800, marginBottom: 8 }}>Mobiles</div>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Date</th>
+                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Company</th>
+                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Model</th>
+                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Qty</th>
+                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMobileRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: 10, color: '#6b7280' }}>
+                          {companyReportType ? 'No mobile records for selected filters' : 'Select Sale/Purchase to load data'}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredMobileRows.map((r, idx) => (
+                        <tr key={`${r.invoiceNumber}-${idx}`}>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.dateIso}</td>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.companyName || '—'}</td>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.modelName || '—'}</td>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.qty).toLocaleString()}</td>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.total).toLocaleString()}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 18, marginTop: 8, fontWeight: 900 }}>
+                  <div>
+                    Mobiles Total:{' '}
+                    {filteredMobileRows
+                      .reduce((sum, r) => sum + safeNumber(r.total), 0)
+                      .toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 18 }}>
+                <div style={{ fontWeight: 800, marginBottom: 8 }}>Accessories</div>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Date</th>
+                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Name</th>
+                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Qty</th>
+                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAccessoryRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} style={{ padding: 10, color: '#6b7280' }}>
+                          {companyReportType ? 'No accessory records for selected filters' : 'Select Sale/Purchase to load data'}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredAccessoryRows.map((r, idx) => (
+                        <tr key={`${r.invoiceNumber}-${idx}`}>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.dateIso}</td>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.itemName || '—'}</td>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.qty).toLocaleString()}</td>
+                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.total).toLocaleString()}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 18, marginTop: 8, fontWeight: 900 }}>
+                  <div>
+                    Accessories Total:{' '}
+                    {filteredAccessoryRows
+                      .reduce((sum, r) => sum + safeNumber(r.total), 0)
+                      .toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14, borderTop: '1px dashed #e5e7eb', paddingTop: 10, display: 'flex', justifyContent: 'flex-end', fontWeight: 900 }}>
+                Grand Total:{' '}
+                {(
+                  filteredMobileRows.reduce((sum, r) => sum + safeNumber(r.total), 0) +
+                  filteredAccessoryRows.reduce((sum, r) => sum + safeNumber(r.total), 0)
+                ).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </React.Fragment>
   );
 };
