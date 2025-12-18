@@ -152,7 +152,9 @@ const DashDefault = () => {
   const [companyReportParties, setCompanyReportParties] = useState([]);
   const [companyReportLoading, setCompanyReportLoading] = useState(false);
   const [companyReportMobileRows, setCompanyReportMobileRows] = useState([]);
-  const [companyReportAccessoryRows, setCompanyReportAccessoryRows] = useState([]);
+  const [companyReportAccessoryRows, setCompanyReportAccessoryRows] = useState(
+    []
+  );
   const reportRef = useRef(null);
 
   const safeNumber = (v) => {
@@ -168,7 +170,10 @@ const DashDefault = () => {
   };
 
   const isWithinRange = (dateIso, startIso, endIso) => {
-    if (!dateIso) return false;
+    // If record has no date, include it when user has NOT applied a date filter
+    if (!dateIso) {
+      return !startIso && !endIso;
+    }
     if (startIso && dateIso < startIso) return false;
     if (endIso && dateIso > endIso) return false;
     return true;
@@ -182,8 +187,10 @@ const DashDefault = () => {
     if (!showPrintCompanyModal) return;
     (async () => {
       try {
-        const res = await api.get('/api/partyLedger/partyNameAndId');
-        setCompanyReportParties(res?.data?.data || []);
+        // Use same entities source as other entity sections
+        const res = await api.get('/api/person/nameAndId');
+        // In entities section we expect plain array: [{ _id, name, number, ... }]
+        setCompanyReportParties(res?.data || []);
       } catch (e) {
         setCompanyReportParties([]);
       }
@@ -219,11 +226,41 @@ const DashDefault = () => {
   }, [companyReportPartyId, companyReportParties]);
 
   const partyOptions = useMemo(() => {
-    return (companyReportParties || []).map((p) => ({
-      value: p?._id,
-      label: `${normalizePartyName(p) || 'Party'}${p?.number ? ` || ${p.number}` : ''}`,
-    }));
-  }, [companyReportParties]);
+    const optionsMap = new Map();
+
+    // From party ledger
+    (companyReportParties || []).forEach((p) => {
+      const id = p?._id ? String(p._id) : normalizePartyName(p);
+      if (!id) return;
+      if (optionsMap.has(id)) return;
+      optionsMap.set(id, {
+        value: p?._id || id,
+        label: `${normalizePartyName(p) || 'Party'}${
+          p?.number ? ` || ${p.number}` : ''
+        }`,
+        _id: p?._id,
+      });
+    });
+
+    // From sale/purchase rows (in case some parties are not in ledger API)
+    [...companyReportMobileRows, ...companyReportAccessoryRows].forEach((r) => {
+      const name = normalizePartyName({ partyName: r.partyName });
+      const id = r.partyId ? String(r.partyId) : name;
+      if (!id) return;
+      if (optionsMap.has(id)) return;
+      optionsMap.set(id, {
+        value: r.partyId || id,
+        label: name || 'Party',
+        _id: r.partyId || undefined,
+      });
+    });
+
+    return Array.from(optionsMap.values());
+  }, [
+    companyReportParties,
+    companyReportMobileRows,
+    companyReportAccessoryRows,
+  ]);
 
   const fetchCompanyReportData = async (type) => {
     if (!type) return;
@@ -248,11 +285,15 @@ const DashDefault = () => {
         // Bulk sales
         bulkSales.forEach((sale) => {
           const dateIso =
-            toISODateOnly(sale?.saleDate || sale?.dateSold || sale?.date || sale?.createdAt) ||
-            '';
+            toISODateOnly(
+              sale?.saleDate || sale?.dateSold || sale?.date || sale?.createdAt
+            ) || '';
           const invoiceNumber = sale?.invoiceNumber || sale?._id || '';
           const partyId =
-            sale?.personId?._id || sale?.personId || sale?.entityData?._id || '';
+            sale?.personId?._id ||
+            sale?.personId ||
+            sale?.entityData?._id ||
+            '';
           const partyName =
             sale?.personName ||
             sale?.personId?.name ||
@@ -271,7 +312,8 @@ const DashDefault = () => {
               const qty = imeis.length || safeNumber(d?.totalQuantity) || 0;
 
               // price calculation
-              const imeisWithPrices = sale?.imeisWithPrices || sale?.imeiPrices || null;
+              const imeisWithPrices =
+                sale?.imeisWithPrices || sale?.imeiPrices || null;
               let total = 0;
               if (imeisWithPrices && typeof imeisWithPrices === 'object') {
                 total = imeis.reduce((sum, x) => {
@@ -280,7 +322,9 @@ const DashDefault = () => {
                 }, 0);
               }
               if (!total) {
-                const perOne = safeNumber(d?.priceOfOne || d?.salePrice || d?.price || 0);
+                const perOne = safeNumber(
+                  d?.priceOfOne || d?.salePrice || d?.price || 0
+                );
                 total = perOne && qty ? perOne * qty : 0;
               }
               if (!total) {
@@ -327,9 +371,13 @@ const DashDefault = () => {
         singleSales.forEach((s) => {
           mobileRows.push({
             source: 'single-sale',
-            dateIso: toISODateOnly(s?.saleDate || s?.dateSold || s?.date || s?.createdAt) || '',
+            dateIso:
+              toISODateOnly(
+                s?.saleDate || s?.dateSold || s?.date || s?.createdAt
+              ) || '',
             invoiceNumber: s?.invoiceNumber || s?._id || '',
-            partyId: s?.personId?._id || s?.personId || s?.entityData?._id || '',
+            partyId:
+              s?.personId?._id || s?.personId || s?.entityData?._id || '',
             partyName:
               s?.personName ||
               s?.personId?.name ||
@@ -339,7 +387,9 @@ const DashDefault = () => {
             companyName: s?.companyName || s?.mobileCompany || '',
             modelName: s?.modelName || s?.mobileName || '',
             qty: 1,
-            total: safeNumber(s?.salePrice || s?.finalPrice || s?.totalInvoice || 0),
+            total: safeNumber(
+              s?.salePrice || s?.finalPrice || s?.totalInvoice || 0
+            ),
           });
         });
 
@@ -351,11 +401,13 @@ const DashDefault = () => {
           partyName: r?.personId?.name || r?.personName || '',
           itemName: r?.accessoryName || r?.name || 'Accessory',
           qty: safeNumber(r?.quantity || 1),
-          total: safeNumber(r?.totalPrice || 0) || safeNumber(r?.price || 0) * safeNumber(r?.quantity || 1),
+          total:
+            safeNumber(r?.totalPrice || 0) ||
+            safeNumber(r?.price || 0) * safeNumber(r?.quantity || 1),
         }));
 
-        setCompanyReportMobileRows(mobileRows.filter((x) => x.dateIso));
-        setCompanyReportAccessoryRows(accessoryRows.filter((x) => x.dateIso));
+        setCompanyReportMobileRows(mobileRows);
+        setCompanyReportAccessoryRows(accessoryRows);
       } else {
         // purchase
         const [purchasePhonesRes, accessoryPurchaseRes] = await Promise.all([
@@ -400,8 +452,19 @@ const DashDefault = () => {
             partyName: b?.personId?.name || b?.partyName || '',
             companyName: b?.companyName || '',
             modelName: b?.modelName || '',
-            qty: safeNumber(b?.totalQuantity) || (Array.isArray(b?.ramSimDetails) ? b.ramSimDetails.reduce((sum, d) => sum + (d?.imeiNumbers?.length || 0), 0) : 0) || 1,
-            total: safeNumber(b?.prices?.buyingPrice) || safeNumber(b?.totalPrice) || 0,
+            qty:
+              safeNumber(b?.totalQuantity) ||
+              (Array.isArray(b?.ramSimDetails)
+                ? b.ramSimDetails.reduce(
+                    (sum, d) => sum + (d?.imeiNumbers?.length || 0),
+                    0
+                  )
+                : 0) ||
+              1,
+            total:
+              safeNumber(b?.prices?.buyingPrice) ||
+              safeNumber(b?.totalPrice) ||
+              0,
           });
         });
 
@@ -422,8 +485,8 @@ const DashDefault = () => {
             }))
           : [];
 
-        setCompanyReportMobileRows(mobileRows.filter((x) => x.dateIso));
-        setCompanyReportAccessoryRows(accessoryRows.filter((x) => x.dateIso));
+        setCompanyReportMobileRows(mobileRows);
+        setCompanyReportAccessoryRows(accessoryRows);
       }
     } catch (e) {
       console.error('Error fetching company report data:', e);
@@ -452,15 +515,23 @@ const DashDefault = () => {
     const endIso = companyReportEndDate || '';
     return companyReportMobileRows.filter((r) => {
       if (!isWithinRange(r.dateIso, startIso, endIso)) return false;
-      if (companyReportCompany && String(r.companyName || '').trim() !== companyReportCompany)
+      if (
+        companyReportCompany &&
+        String(r.companyName || '').trim() !== companyReportCompany
+      )
         return false;
-      if (companyReportModel && String(r.modelName || '').trim() !== companyReportModel)
+      if (
+        companyReportModel &&
+        String(r.modelName || '').trim() !== companyReportModel
+      )
         return false;
       if (selectedParty) {
-        const matchId = String(r.partyId || '') === String(selectedParty._id || '');
+        const matchId =
+          String(r.partyId || '') === String(selectedParty._id || '');
         const matchName =
           normalizePartyName({ name: r.partyName }) &&
-          normalizePartyName({ name: r.partyName }) === normalizePartyName(selectedParty);
+          normalizePartyName({ name: r.partyName }) ===
+            normalizePartyName(selectedParty);
         if (!matchId && !matchName) return false;
       }
       return true;
@@ -480,10 +551,12 @@ const DashDefault = () => {
     return companyReportAccessoryRows.filter((r) => {
       if (!isWithinRange(r.dateIso, startIso, endIso)) return false;
       if (selectedParty) {
-        const matchId = String(r.partyId || '') === String(selectedParty._id || '');
+        const matchId =
+          String(r.partyId || '') === String(selectedParty._id || '');
         const matchName =
           normalizePartyName({ name: r.partyName }) &&
-          normalizePartyName({ name: r.partyName }) === normalizePartyName(selectedParty);
+          normalizePartyName({ name: r.partyName }) ===
+            normalizePartyName(selectedParty);
         if (!matchId && !matchName) return false;
       }
       return true;
@@ -1040,7 +1113,8 @@ const DashDefault = () => {
             tabIndex={0}
             onClick={() => setShowPrintCompanyModal(true)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') setShowPrintCompanyModal(true);
+              if (e.key === 'Enter' || e.key === ' ')
+                setShowPrintCompanyModal(true);
             }}
             style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
           >
@@ -1895,7 +1969,9 @@ const DashDefault = () => {
         </div>
 
         <div style={{ marginTop: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
+          >
             <div>
               <label style={{ fontWeight: 700, fontSize: 13 }}>
                 Sale / Purchase <span style={{ color: '#dc2626' }}>*</span>
@@ -1923,7 +1999,9 @@ const DashDefault = () => {
             </div>
 
             <div>
-              <label style={{ fontWeight: 700, fontSize: 13 }}>Party (Optional)</label>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>
+                Party (Optional)
+              </label>
               <div style={{ marginTop: 6 }}>
                 <CustomSelect
                   value={companyReportPartyId}
@@ -1936,7 +2014,9 @@ const DashDefault = () => {
             </div>
 
             <div>
-              <label style={{ fontWeight: 700, fontSize: 13 }}>Company (Optional)</label>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>
+                Company (Optional)
+              </label>
               <div style={{ marginTop: 6 }}>
                 <CustomSelect
                   value={companyReportCompany}
@@ -1947,26 +2027,38 @@ const DashDefault = () => {
                   }}
                   options={companyOptions.map((c) => ({ value: c, label: c }))}
                   placeholder="Select Company"
-                  noOptionsMessage={companyReportType ? 'No companies found' : 'Select type first'}
+                  noOptionsMessage={
+                    companyReportType
+                      ? 'No companies found'
+                      : 'Select type first'
+                  }
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontWeight: 700, fontSize: 13 }}>Model (Optional)</label>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>
+                Model (Optional)
+              </label>
               <div style={{ marginTop: 6 }}>
                 <CustomSelect
                   value={companyReportModel}
                   onChange={(opt) => setCompanyReportModel(opt?.value || '')}
                   options={modelOptions.map((m) => ({ value: m, label: m }))}
                   placeholder="Select Model"
-                  noOptionsMessage={companyReportCompany ? 'No models found' : 'Select company first (optional)'}
+                  noOptionsMessage={
+                    companyReportCompany
+                      ? 'No models found'
+                      : 'Select company first (optional)'
+                  }
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontWeight: 700, fontSize: 13 }}>Start Date (Optional)</label>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>
+                Start Date (Optional)
+              </label>
               <input
                 type="date"
                 value={companyReportStartDate}
@@ -1983,7 +2075,9 @@ const DashDefault = () => {
             </div>
 
             <div>
-              <label style={{ fontWeight: 700, fontSize: 13 }}>End Date (Optional)</label>
+              <label style={{ fontWeight: 700, fontSize: 13 }}>
+                End Date (Optional)
+              </label>
               <input
                 type="date"
                 value={companyReportEndDate}
@@ -2000,7 +2094,14 @@ const DashDefault = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
+              justifyContent: 'flex-end',
+              marginTop: 14,
+            }}
+          >
             <button
               type="button"
               onClick={() => {
@@ -2050,18 +2151,36 @@ const DashDefault = () => {
                 borderRadius: 12,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                }}
+              >
                 <div>
-                  <div style={{ fontSize: 18, fontWeight: 900 }}>Company Data Report</div>
+                  <div style={{ fontSize: 18, fontWeight: 900 }}>
+                    Company Data Report
+                  </div>
                   <div style={{ fontSize: 12, color: '#6b7280' }}>
                     Type: <b>{companyReportType || '—'}</b>
-                    {companyReportCompany ? ` | Company: ${companyReportCompany}` : ''}
-                    {companyReportModel ? ` | Model: ${companyReportModel}` : ''}
-                    {selectedParty ? ` | Party: ${normalizePartyName(selectedParty)}` : ''}
-                    {(companyReportStartDate || companyReportEndDate) ? ` | Dates: ${companyReportStartDate || '…'} to ${companyReportEndDate || '…'}` : ''}
+                    {companyReportCompany
+                      ? ` | Company: ${companyReportCompany}`
+                      : ''}
+                    {companyReportModel
+                      ? ` | Model: ${companyReportModel}`
+                      : ''}
+                    {selectedParty
+                      ? ` | Party: ${normalizePartyName(selectedParty)}`
+                      : ''}
+                    {companyReportStartDate || companyReportEndDate
+                      ? ` | Dates: ${companyReportStartDate || '…'} to ${companyReportEndDate || '…'}`
+                      : ''}
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280', textAlign: 'right' }}>
+                <div
+                  style={{ fontSize: 12, color: '#6b7280', textAlign: 'right' }}
+                >
                   Generated: {new Date().toLocaleString()}
                 </div>
               </div>
@@ -2071,35 +2190,125 @@ const DashDefault = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Date</th>
-                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Company</th>
-                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Model</th>
-                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Qty</th>
-                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Total</th>
+                      <th
+                        style={{
+                          textAlign: 'left',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Date
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'left',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Company
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'left',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Model
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'right',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Qty
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'right',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Total
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredMobileRows.length === 0 ? (
                       <tr>
-                        <td colSpan={5} style={{ padding: 10, color: '#6b7280' }}>
-                          {companyReportType ? 'No mobile records for selected filters' : 'Select Sale/Purchase to load data'}
+                        <td
+                          colSpan={5}
+                          style={{ padding: 10, color: '#6b7280' }}
+                        >
+                          {companyReportType
+                            ? 'No mobile records for selected filters'
+                            : 'Select Sale/Purchase to load data'}
                         </td>
                       </tr>
                     ) : (
                       filteredMobileRows.map((r, idx) => (
                         <tr key={`${r.invoiceNumber}-${idx}`}>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.dateIso}</td>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.companyName || '—'}</td>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.modelName || '—'}</td>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.qty).toLocaleString()}</td>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.total).toLocaleString()}</td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                            }}
+                          >
+                            {r.dateIso}
+                          </td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                            }}
+                          >
+                            {r.companyName || '—'}
+                          </td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                            }}
+                          >
+                            {r.modelName || '—'}
+                          </td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                              textAlign: 'right',
+                            }}
+                          >
+                            {safeNumber(r.qty).toLocaleString()}
+                          </td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                              textAlign: 'right',
+                            }}
+                          >
+                            {safeNumber(r.total).toLocaleString()}
+                          </td>
                         </tr>
                       ))
                     )}
                   </tbody>
                 </table>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 18, marginTop: 8, fontWeight: 900 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: 18,
+                    marginTop: 8,
+                    fontWeight: 900,
+                  }}
+                >
                   <div>
                     Mobiles Total:{' '}
                     {filteredMobileRows
@@ -2110,37 +2319,114 @@ const DashDefault = () => {
               </div>
 
               <div style={{ marginTop: 18 }}>
-                <div style={{ fontWeight: 800, marginBottom: 8 }}>Accessories</div>
+                <div style={{ fontWeight: 800, marginBottom: 8 }}>
+                  Accessories
+                </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Date</th>
-                      <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Name</th>
-                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Qty</th>
-                      <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e5e7eb' }}>Total</th>
+                      <th
+                        style={{
+                          textAlign: 'left',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Date
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'left',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Name
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'right',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Qty
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'right',
+                          padding: 8,
+                          borderBottom: '1px solid #e5e7eb',
+                        }}
+                      >
+                        Total
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredAccessoryRows.length === 0 ? (
                       <tr>
-                        <td colSpan={4} style={{ padding: 10, color: '#6b7280' }}>
-                          {companyReportType ? 'No accessory records for selected filters' : 'Select Sale/Purchase to load data'}
+                        <td
+                          colSpan={4}
+                          style={{ padding: 10, color: '#6b7280' }}
+                        >
+                          {companyReportType
+                            ? 'No accessory records for selected filters'
+                            : 'Select Sale/Purchase to load data'}
                         </td>
                       </tr>
                     ) : (
                       filteredAccessoryRows.map((r, idx) => (
                         <tr key={`${r.invoiceNumber}-${idx}`}>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.dateIso}</td>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6' }}>{r.itemName || '—'}</td>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.qty).toLocaleString()}</td>
-                          <td style={{ padding: 8, borderBottom: '1px solid #f3f4f6', textAlign: 'right' }}>{safeNumber(r.total).toLocaleString()}</td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                            }}
+                          >
+                            {r.dateIso}
+                          </td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                            }}
+                          >
+                            {r.itemName || '—'}
+                          </td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                              textAlign: 'right',
+                            }}
+                          >
+                            {safeNumber(r.qty).toLocaleString()}
+                          </td>
+                          <td
+                            style={{
+                              padding: 8,
+                              borderBottom: '1px solid #f3f4f6',
+                              textAlign: 'right',
+                            }}
+                          >
+                            {safeNumber(r.total).toLocaleString()}
+                          </td>
                         </tr>
                       ))
                     )}
                   </tbody>
                 </table>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 18, marginTop: 8, fontWeight: 900 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: 18,
+                    marginTop: 8,
+                    fontWeight: 900,
+                  }}
+                >
                   <div>
                     Accessories Total:{' '}
                     {filteredAccessoryRows
@@ -2150,11 +2436,26 @@ const DashDefault = () => {
                 </div>
               </div>
 
-              <div style={{ marginTop: 14, borderTop: '1px dashed #e5e7eb', paddingTop: 10, display: 'flex', justifyContent: 'flex-end', fontWeight: 900 }}>
+              <div
+                style={{
+                  marginTop: 14,
+                  borderTop: '1px dashed #e5e7eb',
+                  paddingTop: 10,
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  fontWeight: 900,
+                }}
+              >
                 Grand Total:{' '}
                 {(
-                  filteredMobileRows.reduce((sum, r) => sum + safeNumber(r.total), 0) +
-                  filteredAccessoryRows.reduce((sum, r) => sum + safeNumber(r.total), 0)
+                  filteredMobileRows.reduce(
+                    (sum, r) => sum + safeNumber(r.total),
+                    0
+                  ) +
+                  filteredAccessoryRows.reduce(
+                    (sum, r) => sum + safeNumber(r.total),
+                    0
+                  )
                 ).toLocaleString()}
               </div>
             </div>

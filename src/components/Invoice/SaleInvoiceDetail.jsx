@@ -504,14 +504,13 @@ const SaleInvoiceDetail = () => {
               </table>
             )}
 
-            {/* Per-phone details (company/model per phone with sale price) */}
+            {/* Per-phone details (company / model / IMEIs only – no per-phone total) */}
             <table style={{ ...styles.table, marginTop: 12 }}>
               <thead>
                 <tr>
                   <th style={styles.th}>Company</th>
                   <th style={styles.th}>Model</th>
                   <th style={styles.th}>IMEI</th>
-                  <th style={styles.th}>Sale Price</th>
                 </tr>
               </thead>
               <tbody>
@@ -522,11 +521,6 @@ const SaleInvoiceDetail = () => {
                     <td style={styles.td}>
                       {p.imei || '—'}
                       {p.imei2 ? ` / ${p.imei2}` : ''}
-                    </td>
-                    <td style={styles.td}>
-                      {toNumber(p.salePrice)
-                        ? toNumber(p.salePrice).toLocaleString()
-                        : '—'}
                     </td>
                   </tr>
                 ))}
