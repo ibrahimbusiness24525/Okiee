@@ -2498,6 +2498,153 @@ const AddAccessory = () => {
                 />
               </Form.Group>
 
+              {/* Entity Selection - Moved before Payment Type to match purchase mobile flow */}
+              <div style={{ marginBottom: '24px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px',
+                  }}
+                >
+                  <label style={{ fontWeight: '600', fontSize: '16px' }}>
+                    Entity *
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewEntityFormForStock(false)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        background: !showNewEntityFormForStock
+                          ? '#e5e7eb'
+                          : 'transparent',
+                        border: '1px solid #d1d5db',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Select Existing
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewEntityFormForStock(true)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        background: showNewEntityFormForStock
+                          ? '#e5e7eb'
+                          : 'transparent',
+                        border: '1px solid #d1d5db',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Create New
+                    </button>
+                  </div>
+                </div>
+
+                {showNewEntityFormForStock ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '12px',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                          color: '#4b5563',
+                        }}
+                      >
+                        Entity Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={newEntityForStock.name}
+                        onChange={(e) =>
+                          setNewEntityForStock({
+                            ...newEntityForStock,
+                            name: e.target.value,
+                          })
+                        }
+                        placeholder="Enter entity name"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          border: '2px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                          color: '#4b5563',
+                        }}
+                      >
+                        Entity Number *
+                      </label>
+                      <input
+                        type="text"
+                        value={newEntityForStock.number}
+                        onChange={(e) =>
+                          setNewEntityForStock({
+                            ...newEntityForStock,
+                            number: e.target.value,
+                          })
+                        }
+                        placeholder="Enter entity number"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          border: '2px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '16px' }}>
+                    <CustomSelect
+                      value={addStockEntityData._id}
+                      onChange={(selectedOption) => {
+                        const selectedEntity = getAllEntities.find(
+                          (entity) => entity._id === selectedOption?.value
+                        );
+                        setAddStockEntityData(
+                          selectedEntity || { name: '', number: '', _id: '' }
+                        );
+                      }}
+                      options={getAllEntities.map((entity) => ({
+                        value: entity._id,
+                        label: `${entity.name} || ${entity.number}`,
+                      }))}
+                      placeholder="Select Entity"
+                      noOptionsMessage="No entities found"
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Payment Type Selection */}
               <div style={{ marginBottom: '24px' }}>
                 <label
@@ -2505,9 +2652,10 @@ const AddAccessory = () => {
                     display: 'block',
                     marginBottom: '8px',
                     fontWeight: '600',
+                    fontSize: '16px',
                   }}
                 >
-                  Select Payment Type *
+                  Payment Type *
                 </label>
                 <select
                   value={addStockPaymentData.paymentType}
@@ -2532,153 +2680,6 @@ const AddAccessory = () => {
                   <option value="credit">Credit</option>
                 </select>
               </div>
-
-              {/* Entity Selection */}
-              {addStockPaymentData.paymentType && (
-                <div style={{ marginBottom: '24px' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                    }}
-                  >
-                    <label style={{ fontWeight: '600' }}>Entity *</label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setShowNewEntityFormForStock(false)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '6px',
-                          background: !showNewEntityFormForStock
-                            ? '#e5e7eb'
-                            : 'transparent',
-                          border: '1px solid #d1d5db',
-                          fontWeight: '500',
-                          fontSize: '14px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Select Existing
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowNewEntityFormForStock(true)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '6px',
-                          background: showNewEntityFormForStock
-                            ? '#e5e7eb'
-                            : 'transparent',
-                          border: '1px solid #d1d5db',
-                          fontWeight: '500',
-                          fontSize: '14px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Create New
-                      </button>
-                    </div>
-                  </div>
-
-                  {showNewEntityFormForStock ? (
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '12px',
-                        marginBottom: '16px',
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <label
-                          style={{
-                            display: 'block',
-                            marginBottom: '8px',
-                            fontSize: '14px',
-                            color: '#4b5563',
-                          }}
-                        >
-                          Entity Name *
-                        </label>
-                        <input
-                          type="text"
-                          value={newEntityForStock.name}
-                          onChange={(e) =>
-                            setNewEntityForStock({
-                              ...newEntityForStock,
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="Enter entity name"
-                          required
-                          style={{
-                            width: '100%',
-                            padding: '12px',
-                            border: '2px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '14px',
-                            outline: 'none',
-                          }}
-                        />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <label
-                          style={{
-                            display: 'block',
-                            marginBottom: '8px',
-                            fontSize: '14px',
-                            color: '#4b5563',
-                          }}
-                        >
-                          Entity Number *
-                        </label>
-                        <input
-                          type="text"
-                          value={newEntityForStock.number}
-                          onChange={(e) =>
-                            setNewEntityForStock({
-                              ...newEntityForStock,
-                              number: e.target.value,
-                            })
-                          }
-                          placeholder="Enter entity number"
-                          required
-                          style={{
-                            width: '100%',
-                            padding: '12px',
-                            border: '2px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '14px',
-                            outline: 'none',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ marginBottom: '16px' }}>
-                      <CustomSelect
-                        value={addStockEntityData._id}
-                        onChange={(selectedOption) => {
-                          const selectedEntity = getAllEntities.find(
-                            (entity) => entity._id === selectedOption?.value
-                          );
-                          setAddStockEntityData(
-                            selectedEntity || { name: '', number: '', _id: '' }
-                          );
-                        }}
-                        options={getAllEntities.map((entity) => ({
-                          value: entity._id,
-                          label: `${entity.name} || ${entity.number}`,
-                        }))}
-                        placeholder="Select Entity"
-                        noOptionsMessage="No entities found"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Credit Payment Fields */}
               {addStockPaymentData.paymentType === 'credit' && (
@@ -2778,12 +2779,12 @@ const AddAccessory = () => {
                 </div>
               )}
 
-              {/* Proceed To Pay Button */}
+              {/* Proceed To Give Payment Button - Matches purchase mobile flow */}
               {addStockPaymentData.paymentType && (
                 <Button
                   variant="secondary"
                   onClick={() => setShowPayForStockModal(!showPayForStockModal)}
-                  style={{ marginBottom: '10px' }}
+                  style={{ marginTop: '20px', marginBottom: '10px' }}
                 >
                   Proceed To Give Payment
                 </Button>

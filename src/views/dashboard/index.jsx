@@ -7,6 +7,7 @@ import avatar2 from '../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../assets/images/user/avatar-3.jpg';
 import Modal from 'components/Modal/Modal';
 import CustomSelect from 'components/CustomSelect';
+import Select from 'react-select';
 import html2pdf from 'html2pdf.js';
 import { toast } from 'react-toastify';
 
@@ -139,6 +140,12 @@ const DashDefault = () => {
   const [showReceivables, setShowReceivables] = useState(false);
   const [showPayables, setShowPayables] = useState(false);
   const [showActiveAccounts, setShowActiveAccounts] = useState(false);
+  const [showInvoiceSearchModal, setShowInvoiceSearchModal] = useState(false);
+  const [invoiceSearchNumber, setInvoiceSearchNumber] = useState('');
+  const [searchedInvoiceData, setSearchedInvoiceData] = useState(null);
+  const [isSearchingInvoice, setIsSearchingInvoice] = useState(false);
+  const [allInvoices, setAllInvoices] = useState([]);
+  const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
   const avatarsArr = [avatar1, avatar2, avatar3];
 
   // Print Company Data modal state
@@ -225,6 +232,19 @@ const DashDefault = () => {
     );
   }, [companyReportPartyId, companyReportParties]);
 
+  const invoiceOptions = useMemo(() => {
+    return allInvoices.map((invoice) => {
+      // Ensure the value is always a string
+      const invoiceNumber = invoice.invoiceNumber || String(invoice._id);
+
+      return {
+        value: invoiceNumber,
+        label: `${invoiceNumber} - ${invoice.customerName || 'Unknown'} - Rs. ${(invoice.totalInvoice || invoice.finalPrice || 0).toLocaleString()}`,
+        invoice: invoice,
+      };
+    });
+  }, [allInvoices]);
+
   const partyOptions = useMemo(() => {
     const optionsMap = new Map();
 
@@ -304,12 +324,39 @@ const DashDefault = () => {
           const ramSimDetails = Array.isArray(sale?.ramSimDetails)
             ? sale.ramSimDetails
             : [];
+
+          // Always process bulk sales - even if ramSimDetails is empty
           if (ramSimDetails.length > 0) {
             ramSimDetails.forEach((d) => {
-              const companyName = d?.companyName || sale?.companyName || '';
-              const modelName = d?.modelName || sale?.modelName || '';
+              // Get company and model from multiple possible sources
+              const companyName = String(
+                d?.companyName ||
+                  sale?.companyName ||
+                  d?.mobileCompany ||
+                  sale?.mobileCompany ||
+                  ''
+              ).trim();
+              const modelName = String(
+                d?.modelName ||
+                  sale?.modelName ||
+                  d?.modelSpecifications ||
+                  sale?.modelSpecifications ||
+                  d?.mobileName ||
+                  sale?.mobileName ||
+                  ''
+              ).trim();
+
+              // Skip rows without valid company or model name
+              if (!companyName && !modelName) {
+                return;
+              }
+
               const imeis = Array.isArray(d?.imeiNumbers) ? d.imeiNumbers : [];
-              const qty = imeis.length || safeNumber(d?.totalQuantity) || 0;
+              const qty =
+                imeis.length ||
+                safeNumber(d?.totalQuantity) ||
+                safeNumber(d?.quantity) ||
+                1;
 
               // price calculation
               const imeisWithPrices =
@@ -317,8 +364,16 @@ const DashDefault = () => {
               let total = 0;
               if (imeisWithPrices && typeof imeisWithPrices === 'object') {
                 total = imeis.reduce((sum, x) => {
-                  const imei1 = x?.imei1 ? String(x.imei1) : '';
-                  return sum + (imei1 ? safeNumber(imeisWithPrices[imei1]) : 0);
+                  // Handle both string IMEIs and object IMEIs
+                  const imeiKey =
+                    typeof x === 'string'
+                      ? x
+                      : x?.imei1
+                        ? String(x.imei1)
+                        : String(x || '');
+                  return (
+                    sum + (imeiKey ? safeNumber(imeisWithPrices[imeiKey]) : 0)
+                  );
                 }, 0);
               }
               if (!total) {
@@ -328,11 +383,17 @@ const DashDefault = () => {
                 total = perOne && qty ? perOne * qty : 0;
               }
               if (!total) {
-                total =
+                // Distribute total invoice across ramSimDetails if available
+                const totalInvoice =
                   safeNumber(sale?.totalInvoice) ||
                   safeNumber(sale?.finalPrice) ||
                   safeNumber(sale?.salePrice) ||
+                  safeNumber(sale?.pricing?.totalInvoice) ||
                   0;
+                total =
+                  ramSimDetails.length > 0
+                    ? totalInvoice / ramSimDetails.length
+                    : totalInvoice;
               }
 
               mobileRows.push({
@@ -348,20 +409,44 @@ const DashDefault = () => {
               });
             });
           } else {
-            // Fallback single-row if structure differs
+            // Fallback: Only include bulk sale if it has company or model
+            const companyName = String(
+              sale?.companyName || sale?.mobileCompany || ''
+            ).trim();
+            const modelName = String(
+              sale?.modelName ||
+                sale?.modelSpecifications ||
+                sale?.mobileName ||
+                ''
+            ).trim();
+
+            // Skip rows without valid company or model name
+            if (!companyName && !modelName) {
+              return;
+            }
+
+            // Try to get quantity from various possible fields
+            const qty =
+              safeNumber(sale?.totalQuantity) ||
+              safeNumber(sale?.quantity) ||
+              (Array.isArray(sale?.imei1) ? sale.imei1.length : 0) ||
+              (Array.isArray(sale?.imeis) ? sale.imeis.length : 0) ||
+              1;
+
             mobileRows.push({
               source: 'bulk-sale',
               dateIso,
               invoiceNumber,
               partyId,
               partyName,
-              companyName: sale?.companyName || '',
-              modelName: sale?.modelName || sale?.modelSpecifications || '',
-              qty: safeNumber(sale?.totalQuantity) || 1,
+              companyName,
+              modelName,
+              qty: qty,
               total:
                 safeNumber(sale?.totalInvoice) ||
                 safeNumber(sale?.finalPrice) ||
                 safeNumber(sale?.salePrice) ||
+                safeNumber(sale?.pricing?.totalInvoice) ||
                 0,
             });
           }
@@ -369,6 +454,19 @@ const DashDefault = () => {
 
         // Single sales
         singleSales.forEach((s) => {
+          // Get company and model from multiple possible sources
+          const companyName = String(
+            s?.companyName || s?.mobileCompany || ''
+          ).trim();
+          const modelName = String(
+            s?.modelName || s?.mobileName || s?.modelSpecifications || ''
+          ).trim();
+
+          // Skip rows without valid company or model name
+          if (!companyName && !modelName) {
+            return;
+          }
+
           mobileRows.push({
             source: 'single-sale',
             dateIso:
@@ -384,8 +482,8 @@ const DashDefault = () => {
               s?.entityData?.name ||
               s?.customerName ||
               '',
-            companyName: s?.companyName || s?.mobileCompany || '',
-            modelName: s?.modelName || s?.mobileName || '',
+            companyName,
+            modelName,
             qty: 1,
             total: safeNumber(
               s?.salePrice || s?.finalPrice || s?.totalInvoice || 0
@@ -426,14 +524,27 @@ const DashDefault = () => {
         const mobileRows = [];
 
         singlePhones.forEach((p) => {
+          // Get company and model from multiple possible sources
+          const companyName = String(
+            p?.companyName || p?.mobileCompany || ''
+          ).trim();
+          const modelName = String(
+            p?.modelName || p?.mobileName || p?.modelSpecifications || ''
+          ).trim();
+
+          // Skip rows without valid company or model name
+          if (!companyName && !modelName) {
+            return;
+          }
+
           mobileRows.push({
             source: 'single-purchase',
             dateIso: toISODateOnly(p?.date || p?.createdAt) || '',
             invoiceNumber: p?._id || '',
             partyId: p?.personId?._id || p?.personId || '',
             partyName: p?.personId?.name || p?.name || '',
-            companyName: p?.companyName || '',
-            modelName: p?.modelName || '',
+            companyName,
+            modelName,
             qty: 1,
             total:
               safeNumber(p?.price?.finalPrice) ||
@@ -444,28 +555,107 @@ const DashDefault = () => {
         });
 
         bulkPhones.forEach((b) => {
-          mobileRows.push({
-            source: 'bulk-purchase',
-            dateIso: toISODateOnly(b?.date || b?.createdAt) || '',
-            invoiceNumber: b?._id || '',
-            partyId: b?.personId?._id || b?.personId || '',
-            partyName: b?.personId?.name || b?.partyName || '',
-            companyName: b?.companyName || '',
-            modelName: b?.modelName || '',
-            qty:
+          const ramSimDetails = Array.isArray(b?.ramSimDetails)
+            ? b.ramSimDetails
+            : [];
+
+          // Process bulk purchases similar to bulk sales - break down by ramSimDetails
+          if (ramSimDetails.length > 0) {
+            ramSimDetails.forEach((d) => {
+              // Get company and model from multiple possible sources
+              const companyName = String(
+                d?.companyName ||
+                  b?.companyName ||
+                  d?.mobileCompany ||
+                  b?.mobileCompany ||
+                  ''
+              ).trim();
+              const modelName = String(
+                d?.modelName ||
+                  b?.modelName ||
+                  d?.modelSpecifications ||
+                  b?.modelSpecifications ||
+                  d?.mobileName ||
+                  b?.mobileName ||
+                  ''
+              ).trim();
+
+              // Skip rows without valid company or model name
+              if (!companyName && !modelName) {
+                return;
+              }
+
+              const imeis = Array.isArray(d?.imeiNumbers) ? d.imeiNumbers : [];
+              const qty =
+                imeis.length ||
+                safeNumber(d?.totalQuantity) ||
+                safeNumber(d?.quantity) ||
+                0;
+
+              // Calculate price per item
+              const totalInvoice =
+                safeNumber(b?.prices?.buyingPrice) ||
+                safeNumber(b?.totalPrice) ||
+                0;
+              const perItem =
+                ramSimDetails.length > 0
+                  ? totalInvoice / ramSimDetails.length
+                  : totalInvoice;
+              const total =
+                perItem && qty
+                  ? perItem * qty
+                  : d?.priceOfOne
+                    ? safeNumber(d.priceOfOne) * qty
+                    : perItem;
+
+              mobileRows.push({
+                source: 'bulk-purchase',
+                dateIso: toISODateOnly(b?.date || b?.createdAt) || '',
+                invoiceNumber: b?._id || '',
+                partyId: b?.personId?._id || b?.personId || '',
+                partyName: b?.personId?.name || b?.partyName || '',
+                companyName,
+                modelName,
+                qty: qty || 1,
+                total: total || perItem || 0,
+              });
+            });
+          } else {
+            // Fallback: Only include bulk purchase if it has company or model
+            const companyName = String(
+              b?.companyName || b?.mobileCompany || ''
+            ).trim();
+            const modelName = String(
+              b?.modelName || b?.modelSpecifications || b?.mobileName || ''
+            ).trim();
+
+            // Skip rows without valid company or model name
+            if (!companyName && !modelName) {
+              return;
+            }
+
+            const qty =
               safeNumber(b?.totalQuantity) ||
-              (Array.isArray(b?.ramSimDetails)
-                ? b.ramSimDetails.reduce(
-                    (sum, d) => sum + (d?.imeiNumbers?.length || 0),
-                    0
-                  )
-                : 0) ||
-              1,
-            total:
-              safeNumber(b?.prices?.buyingPrice) ||
-              safeNumber(b?.totalPrice) ||
-              0,
-          });
+              safeNumber(b?.quantity) ||
+              (Array.isArray(b?.imeiNumbers) ? b.imeiNumbers.length : 0) ||
+              1;
+
+            mobileRows.push({
+              source: 'bulk-purchase',
+              dateIso: toISODateOnly(b?.date || b?.createdAt) || '',
+              invoiceNumber: b?._id || '',
+              partyId: b?.personId?._id || b?.personId || '',
+              partyName: b?.personId?.name || b?.partyName || '',
+              companyName,
+              modelName,
+              qty: qty,
+              total:
+                safeNumber(b?.prices?.buyingPrice) ||
+                safeNumber(b?.totalPrice) ||
+                safeNumber(b?.prices?.finalPrice) ||
+                0,
+            });
+          }
         });
 
         const accessoryRowsRaw = accessoryPurchaseRes?.data || [];
@@ -514,17 +704,16 @@ const DashDefault = () => {
     const startIso = companyReportStartDate || '';
     const endIso = companyReportEndDate || '';
     return companyReportMobileRows.filter((r) => {
+      // Filter out rows with empty/dashed company and model
+      const companyName = String(r.companyName || '').trim();
+      const modelName = String(r.modelName || '').trim();
+      if (!companyName && !modelName) return false;
+      if (companyName === '—' && modelName === '—') return false;
+
       if (!isWithinRange(r.dateIso, startIso, endIso)) return false;
-      if (
-        companyReportCompany &&
-        String(r.companyName || '').trim() !== companyReportCompany
-      )
+      if (companyReportCompany && companyName !== companyReportCompany)
         return false;
-      if (
-        companyReportModel &&
-        String(r.modelName || '').trim() !== companyReportModel
-      )
-        return false;
+      if (companyReportModel && modelName !== companyReportModel) return false;
       if (selectedParty) {
         const matchId =
           String(r.partyId || '') === String(selectedParty._id || '');
@@ -633,9 +822,111 @@ const DashDefault = () => {
     0
   );
 
+  const handleInvoiceSearch = async (invoiceNumber = null) => {
+    const searchNumber = invoiceNumber || invoiceSearchNumber.trim();
+
+    if (!searchNumber) {
+      alert('Please enter an invoice number');
+      return;
+    }
+
+    setIsSearchingInvoice(true);
+    setSearchedInvoiceData(null);
+
+    try {
+      const response = await api.get(
+        `/api/sale-invoice/phone-details/${searchNumber}`
+      );
+      if (response.data.success) {
+        const { invoice, phoneDetails } = response.data.data;
+
+        // Transform the data to maintain compatibility with existing display logic
+        // while providing access to the richer phoneDetails
+        const transformedData = {
+          ...invoice,
+          phoneDetails: phoneDetails,
+          // Keep backward compatibility
+          customerName:
+            phoneDetails?.saleInfo?.customerName || invoice.customerName,
+          customerNumber:
+            phoneDetails?.saleInfo?.customerNumber || invoice.customerNumber,
+          saleDate: phoneDetails?.saleInfo?.saleDate || invoice.saleDate,
+          totalInvoice:
+            phoneDetails?.saleInfo?.totalInvoice ||
+            phoneDetails?.pricing?.totalInvoice,
+          salePrice:
+            phoneDetails?.saleInfo?.salePrice ||
+            phoneDetails?.pricing?.salePrice,
+        };
+
+        setSearchedInvoiceData(transformedData);
+      } else {
+        alert('Invoice not found');
+      }
+    } catch (error) {
+      console.error('Error searching invoice:', error);
+      alert(error?.response?.data?.message || 'Error searching invoice');
+    } finally {
+      setIsSearchingInvoice(false);
+    }
+  };
+
+  const clearInvoiceSearch = () => {
+    setInvoiceSearchNumber('');
+    setSearchedInvoiceData(null);
+  };
+
+  const fetchAllInvoices = async () => {
+    setIsLoadingInvoices(true);
+    try {
+      // Try without limit first to get all invoices
+      const response = await api.get('/api/sale-invoice/');
+      if (response.data.success) {
+        const invoices = response.data.data.invoices || [];
+        setAllInvoices(invoices);
+      } else {
+        setAllInvoices([]);
+      }
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      // If the API has issues with no limit, try with a very high limit
+      try {
+        const response = await api.get('/api/sale-invoice/', {
+          params: {
+            page: 1,
+            limit: 5000, // Try a higher limit
+          },
+        });
+        if (response.data.success) {
+          const invoices = response.data.data.invoices || [];
+          setAllInvoices(invoices);
+        } else {
+          setAllInvoices([]);
+        }
+      } catch (secondError) {
+        console.error('Error with high limit too:', secondError);
+        setAllInvoices([]);
+      }
+    } finally {
+      setIsLoadingInvoices(false);
+    }
+  };
+
+  const openInvoiceSearchModal = () => {
+    setShowInvoiceSearchModal(true);
+    setInvoiceSearchNumber('');
+    setSearchedInvoiceData(null);
+    fetchAllInvoices();
+  };
+
   return (
     <React.Fragment>
       <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
           .quick-actions-container {
             flex-direction: column !important;
@@ -1178,6 +1469,82 @@ const DashDefault = () => {
                   style={{ fontSize: '14px', color: '#718096' }}
                 >
                   Sale/Purchase record (mobiles + accessories) in PDF
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Find Invoice */}
+          <div
+            className="quick-action-item"
+            role="button"
+            tabIndex={0}
+            onClick={openInvoiceSearchModal}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') openInvoiceSearchModal();
+            }}
+            style={{ textDecoration: 'none', flex: '1', minWidth: '300px' }}
+          >
+            <div
+              style={{
+                background: 'white',
+                borderRadius: '15px',
+                padding: '25px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow =
+                  '0 12px 30px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+              }}
+            >
+              <div
+                className="quick-action-icon"
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '15px',
+                  background:
+                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <i
+                  className="fa fa-search"
+                  style={{ fontSize: '24px', color: 'white' }}
+                ></i>
+              </div>
+              <div>
+                <div
+                  className="quick-action-title"
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#2d3748',
+                    marginBottom: '5px',
+                  }}
+                >
+                  Find Invoice
+                </div>
+                <div
+                  className="quick-action-desc"
+                  style={{ fontSize: '14px', color: '#718096' }}
+                >
+                  Search and view invoice details
                 </div>
               </div>
             </div>
@@ -2462,6 +2829,862 @@ const DashDefault = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Invoice Search Modal */}
+      {showInvoiceSearchModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '15px',
+              padding: '30px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '25px',
+                borderBottom: '1px solid #e9ecef',
+                paddingBottom: '15px',
+              }}
+            >
+              <h3
+                style={{
+                  margin: 0,
+                  color: '#2d3748',
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <i className="fa fa-search" style={{ color: '#667eea' }}></i>
+                Find Invoice
+              </h3>
+              <button
+                onClick={() => setShowInvoiceSearchModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#6c757d',
+                  padding: '5px',
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '25px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '8px',
+                }}
+              >
+                Search Invoice
+              </label>
+
+              {/* Invoice Dropdown */}
+              <div style={{ marginBottom: '15px' }}>
+                <Select
+                  value={
+                    invoiceSearchNumber
+                      ? invoiceOptions.find(
+                          (opt) => opt.value === invoiceSearchNumber
+                        ) || null
+                      : null
+                  }
+                  onChange={(option) => {
+                    if (option) {
+                      setInvoiceSearchNumber(option.value);
+                      // If we have the full invoice data, we can directly show it
+                      if (option.invoice) {
+                        setSearchedInvoiceData(option.invoice);
+                      } else {
+                        // Otherwise, trigger a search
+                        handleInvoiceSearch(option.value);
+                      }
+                    } else {
+                      setInvoiceSearchNumber('');
+                      setSearchedInvoiceData(null);
+                    }
+                  }}
+                  options={invoiceOptions}
+                  placeholder={
+                    isLoadingInvoices
+                      ? 'Loading invoices...'
+                      : 'Select from all invoices (search by number, customer, or amount)'
+                  }
+                  noOptionsMessage={() => 'No invoices found'}
+                  isLoading={isLoadingInvoices}
+                  isClearable
+                  isSearchable
+                  menuPortalTarget={document.body}
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    control: (base, state) => ({
+                      ...base,
+                      border: '2px solid #e9ecef',
+                      borderRadius: '8px',
+                      minHeight: '48px',
+                      boxShadow: state.isFocused ? '0 0 0 1px #667eea' : 'none',
+                      '&:hover': {
+                        borderColor: '#667eea',
+                      },
+                    }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isSelected
+                        ? '#667eea'
+                        : state.isFocused
+                          ? '#f8f9fa'
+                          : 'white',
+                      color: state.isSelected ? 'white' : '#495057',
+                      cursor: 'pointer',
+                      '&:active': {
+                        backgroundColor: state.isSelected
+                          ? '#667eea'
+                          : '#e9ecef',
+                      },
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: '#495057',
+                    }),
+                    placeholder: (base) => ({
+                      ...base,
+                      color: '#6c757d',
+                    }),
+                  }}
+                  formatOptionLabel={(option, { context }) => {
+                    if (context === 'menu') {
+                      // For menu display, show full details
+                      return (
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                          }}
+                        >
+                          <div style={{ fontWeight: '600', color: '#667eea' }}>
+                            {option.label.split(' - ')[0]}
+                          </div>
+                          <div style={{ color: '#6c757d', fontSize: '14px' }}>
+                            {option.label.split(' - ').slice(1).join(' - ')}
+                          </div>
+                        </div>
+                      );
+                    }
+                    // For selected value display, show just the invoice number
+                    return option.label.split(' - ')[0];
+                  }}
+                />
+              </div>
+
+              {/* Manual Input */}
+              <div style={{ marginBottom: '10px' }}>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: '#6c757d',
+                    marginBottom: '8px',
+                    textAlign: 'center',
+                  }}
+                >
+                  — OR —
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    type="text"
+                    placeholder="Enter invoice number manually (e.g., INV-123456)"
+                    value={invoiceSearchNumber}
+                    onChange={(e) => setInvoiceSearchNumber(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleInvoiceSearch();
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      border: '2px solid #e9ecef',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      outline: 'none',
+                      transition: 'border-color 0.3s ease',
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = '#667eea')}
+                    onBlur={(e) => (e.target.style.borderColor = '#e9ecef')}
+                  />
+                  <button
+                    onClick={handleInvoiceSearch}
+                    disabled={isSearchingInvoice || !invoiceSearchNumber.trim()}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor:
+                        isSearchingInvoice || !invoiceSearchNumber.trim()
+                          ? '#6c757d'
+                          : '#667eea',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor:
+                        isSearchingInvoice || !invoiceSearchNumber.trim()
+                          ? 'not-allowed'
+                          : 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'background-color 0.3s ease',
+                    }}
+                  >
+                    {isSearchingInvoice ? (
+                      <>
+                        <div
+                          style={{
+                            width: '20px',
+                            height: '20px',
+                            border: '2px solid #ffffff',
+                            borderTop: '2px solid transparent',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite',
+                          }}
+                        ></div>
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa fa-search"></i>
+                        Search
+                      </>
+                    )}
+                  </button>
+                  {invoiceSearchNumber && (
+                    <button
+                      onClick={clearInvoiceSearch}
+                      style={{
+                        padding: '12px 16px',
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Search Results */}
+            {searchedInvoiceData && (
+              <div
+                style={{
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  border: '1px solid #e9ecef',
+                }}
+              >
+                <h4
+                  style={{
+                    margin: '0 0 15px 0',
+                    color: '#28a745',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <i className="fa fa-check-circle"></i>
+                  Invoice Found
+                </h4>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '15px',
+                    marginBottom: '20px',
+                  }}
+                >
+                  {/* Basic Invoice Info */}
+                  <div>
+                    <strong style={{ color: '#495057' }}>
+                      Invoice Number:
+                    </strong>
+                    <div
+                      style={{
+                        color: '#667eea',
+                        fontWeight: '600',
+                        marginTop: '4px',
+                      }}
+                    >
+                      {searchedInvoiceData.invoiceNumber || 'N/A'}
+                    </div>
+                  </div>
+                  <div>
+                    <strong style={{ color: '#495057' }}>Sale Type:</strong>
+                    <div style={{ color: '#495057', marginTop: '4px' }}>
+                      {searchedInvoiceData.phoneDetails?.saleType
+                        ? searchedInvoiceData.phoneDetails.saleType
+                            .charAt(0)
+                            .toUpperCase() +
+                          searchedInvoiceData.phoneDetails.saleType.slice(1)
+                        : 'N/A'}
+                    </div>
+                  </div>
+                  <div>
+                    <strong style={{ color: '#495057' }}>Customer:</strong>
+                    <div style={{ color: '#495057', marginTop: '4px' }}>
+                      {searchedInvoiceData.customerName || 'N/A'}
+                      {searchedInvoiceData.customerNumber && (
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            marginTop: '2px',
+                          }}
+                        >
+                          {searchedInvoiceData.customerNumber}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <strong style={{ color: '#495057' }}>Sale Date:</strong>
+                    <div style={{ color: '#495057', marginTop: '4px' }}>
+                      {searchedInvoiceData.saleDate
+                        ? new Date(
+                            searchedInvoiceData.saleDate
+                          ).toLocaleDateString()
+                        : 'N/A'}
+                    </div>
+                  </div>
+
+                  {/* Phone Details */}
+                  {searchedInvoiceData.phoneDetails?.phoneInfo && (
+                    <>
+                      <div>
+                        <strong style={{ color: '#495057' }}>Phone:</strong>
+                        <div style={{ color: '#495057', marginTop: '4px' }}>
+                          {
+                            searchedInvoiceData.phoneDetails.phoneInfo
+                              .companyName
+                          }{' '}
+                          {searchedInvoiceData.phoneDetails.phoneInfo.modelName}
+                          {searchedInvoiceData.phoneDetails.phoneInfo.color && (
+                            <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                              Color:{' '}
+                              {searchedInvoiceData.phoneDetails.phoneInfo.color}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <strong style={{ color: '#495057' }}>
+                          Specifications:
+                        </strong>
+                        <div
+                          style={{
+                            color: '#495057',
+                            marginTop: '4px',
+                            fontSize: '12px',
+                          }}
+                        >
+                          {searchedInvoiceData.phoneDetails.phoneInfo
+                            .ramMemory && (
+                            <div>
+                              RAM:{' '}
+                              {
+                                searchedInvoiceData.phoneDetails.phoneInfo
+                                  .ramMemory
+                              }
+                            </div>
+                          )}
+                          {searchedInvoiceData.phoneDetails.phoneInfo
+                            .specifications && (
+                            <div>
+                              Storage:{' '}
+                              {
+                                searchedInvoiceData.phoneDetails.phoneInfo
+                                  .specifications
+                              }
+                            </div>
+                          )}
+                          {searchedInvoiceData.phoneDetails.phoneInfo
+                            .batteryHealth && (
+                            <div>
+                              Battery:{' '}
+                              {
+                                searchedInvoiceData.phoneDetails.phoneInfo
+                                  .batteryHealth
+                              }
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* IMEI Information */}
+                  {(searchedInvoiceData.phoneDetails?.phoneInfo?.imei1 ||
+                    searchedInvoiceData.phoneDetails?.phoneInfo
+                      ?.imeiDetails) && (
+                    <div>
+                      <strong style={{ color: '#495057' }}>IMEI:</strong>
+                      <div
+                        style={{
+                          color: '#495057',
+                          marginTop: '4px',
+                          fontSize: '12px',
+                        }}
+                      >
+                        {searchedInvoiceData.phoneDetails.phoneInfo
+                          .imeiDetails ? (
+                          // Bulk sale - multiple IMEIs
+                          searchedInvoiceData.phoneDetails.phoneInfo.imeiDetails.map(
+                            (imei, idx) => (
+                              <div key={idx} style={{ marginBottom: '4px' }}>
+                                {imei.imei1}
+                                {imei.imei2 && ` / ${imei.imei2}`}
+                              </div>
+                            )
+                          )
+                        ) : (
+                          // Single sale - one IMEI
+                          <div>
+                            {searchedInvoiceData.phoneDetails.phoneInfo.imei1}
+                            {searchedInvoiceData.phoneDetails.phoneInfo.imei2 &&
+                              ` / ${searchedInvoiceData.phoneDetails.phoneInfo.imei2}`}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Financial Information */}
+                  <div>
+                    <strong style={{ color: '#495057' }}>Sale Price:</strong>
+                    <div
+                      style={{
+                        color: '#28a745',
+                        fontWeight: '600',
+                        marginTop: '4px',
+                      }}
+                    >
+                      Rs.{' '}
+                      {(
+                        searchedInvoiceData.salePrice ||
+                        searchedInvoiceData.phoneDetails?.pricing?.salePrice ||
+                        0
+                      ).toLocaleString()}
+                    </div>
+                  </div>
+                  <div>
+                    <strong style={{ color: '#495057' }}>Total Invoice:</strong>
+                    <div
+                      style={{
+                        color: '#28a745',
+                        fontWeight: '600',
+                        marginTop: '4px',
+                      }}
+                    >
+                      Rs.{' '}
+                      {(
+                        searchedInvoiceData.totalInvoice ||
+                        searchedInvoiceData.phoneDetails?.pricing
+                          ?.totalInvoice ||
+                        0
+                      ).toLocaleString()}
+                    </div>
+                  </div>
+
+                  {/* Profit Information */}
+                  {searchedInvoiceData.phoneDetails?.saleInfo?.profit && (
+                    <div>
+                      <strong style={{ color: '#495057' }}>Profit:</strong>
+                      <div
+                        style={{
+                          color:
+                            searchedInvoiceData.phoneDetails.saleInfo.profit >=
+                            0
+                              ? '#28a745'
+                              : '#dc3545',
+                          fontWeight: '600',
+                          marginTop: '4px',
+                        }}
+                      >
+                        Rs.{' '}
+                        {searchedInvoiceData.phoneDetails.saleInfo.profit.toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status */}
+                  <div>
+                    <strong style={{ color: '#495057' }}>Status:</strong>
+                    <div style={{ marginTop: '4px' }}>
+                      <span
+                        style={{
+                          backgroundColor: searchedInvoiceData.isReturned
+                            ? '#dc3545'
+                            : '#28a745',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                        }}
+                      >
+                        {searchedInvoiceData.isReturned ? 'Returned' : 'Active'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Purchase Information (if available) */}
+                {searchedInvoiceData.phoneDetails?.purchaseInfo && (
+                  <div
+                    style={{
+                      marginTop: '20px',
+                      paddingTop: '15px',
+                      borderTop: '1px solid #e9ecef',
+                    }}
+                  >
+                    <h5 style={{ color: '#495057', marginBottom: '10px' }}>
+                      <i
+                        className="fa fa-shopping-cart"
+                        style={{ marginRight: '8px' }}
+                      ></i>
+                      Purchase Information
+                    </h5>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(180px, 1fr))',
+                        gap: '10px',
+                        fontSize: '13px',
+                      }}
+                    >
+                      {searchedInvoiceData.phoneDetails.purchaseInfo
+                        .purchaseDate && (
+                        <div>
+                          <strong>Purchase Date:</strong>
+                          <div style={{ marginTop: '2px' }}>
+                            {new Date(
+                              searchedInvoiceData.phoneDetails.purchaseInfo.purchaseDate
+                            ).toLocaleDateString()}
+                          </div>
+                        </div>
+                      )}
+                      {searchedInvoiceData.phoneDetails.purchaseInfo
+                        .purchasePrice && (
+                        <div>
+                          <strong>Purchase Price:</strong>
+                          <div style={{ marginTop: '2px', color: '#dc3545' }}>
+                            Rs.{' '}
+                            {searchedInvoiceData.phoneDetails.purchaseInfo.purchasePrice.toLocaleString()}
+                          </div>
+                        </div>
+                      )}
+                      {searchedInvoiceData.phoneDetails.purchaseInfo
+                        .fatherName && (
+                        <div>
+                          <strong>Supplier:</strong>
+                          <div style={{ marginTop: '2px' }}>
+                            {
+                              searchedInvoiceData.phoneDetails.purchaseInfo
+                                .fatherName
+                            }
+                          </div>
+                        </div>
+                      )}
+                      {searchedInvoiceData.phoneDetails.purchaseInfo
+                        .mobileNumber && (
+                        <div>
+                          <strong>Supplier Contact:</strong>
+                          <div style={{ marginTop: '2px' }}>
+                            {
+                              searchedInvoiceData.phoneDetails.purchaseInfo
+                                .mobileNumber
+                            }
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Accessories (if any) */}
+                {searchedInvoiceData.phoneDetails?.accessories &&
+                  searchedInvoiceData.phoneDetails.accessories.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: '20px',
+                        paddingTop: '15px',
+                        borderTop: '1px solid #e9ecef',
+                      }}
+                    >
+                      <h5 style={{ color: '#495057', marginBottom: '10px' }}>
+                        <i
+                          className="fa fa-plug"
+                          style={{ marginRight: '8px' }}
+                        ></i>
+                        Accessories Sold (
+                        {searchedInvoiceData.phoneDetails.accessories.length})
+                      </h5>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gap: '8px',
+                          fontSize: '13px',
+                        }}
+                      >
+                        {searchedInvoiceData.phoneDetails.accessories.map(
+                          (accessory, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '8px',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '6px',
+                              }}
+                            >
+                              <div>
+                                <strong>
+                                  {accessory.accessoryName ||
+                                    accessory.name ||
+                                    'Accessory'}
+                                </strong>
+                                {accessory.quantity && (
+                                  <span> (Qty: {accessory.quantity})</span>
+                                )}
+                              </div>
+                              {accessory.perPiecePrice && (
+                                <div
+                                  style={{
+                                    color: '#28a745',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  Rs. {accessory.perPiecePrice.toLocaleString()}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => {
+                      // Navigate to sales page
+                      window.location.href = '/sales/sales';
+                      setShowInvoiceSearchModal(false);
+                    }}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#667eea',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <i className="fa fa-eye"></i>
+                    View Full Details
+                  </button>
+
+                  {/* Show phone picture if available */}
+                  {searchedInvoiceData.phoneDetails?.phoneInfo
+                    ?.phonePicture && (
+                    <button
+                      onClick={() => {
+                        window.open(
+                          searchedInvoiceData.phoneDetails.phoneInfo
+                            .phonePicture,
+                          '_blank'
+                        );
+                      }}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#17a2b8',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <i className="fa fa-image"></i>
+                      View Phone Image
+                    </button>
+                  )}
+
+                  {/* Show CNIC images if available */}
+                  {(searchedInvoiceData.phoneDetails?.saleInfo?.cnicFrontPic ||
+                    searchedInvoiceData.phoneDetails?.saleInfo
+                      ?.cnicBackPic) && (
+                    <button
+                      onClick={() => {
+                        const frontPic =
+                          searchedInvoiceData.phoneDetails.saleInfo
+                            .cnicFrontPic;
+                        const backPic =
+                          searchedInvoiceData.phoneDetails.saleInfo.cnicBackPic;
+                        if (frontPic) window.open(frontPic, '_blank');
+                        if (backPic)
+                          setTimeout(() => window.open(backPic, '_blank'), 500);
+                      }}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <i className="fa fa-id-card"></i>
+                      View CNIC
+                    </button>
+                  )}
+
+                  {!searchedInvoiceData.isReturned && (
+                    <button
+                      onClick={() => {
+                        // You could implement return functionality here or navigate to sales page
+                        alert(
+                          'Return functionality can be implemented in the sales page'
+                        );
+                      }}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <i className="fa fa-undo"></i>
+                      Return Invoice
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Help Text */}
+            <div
+              style={{
+                marginTop: '20px',
+                padding: '15px',
+                backgroundColor: '#e7f3ff',
+                borderRadius: '8px',
+                border: '1px solid #b3d9ff',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '14px',
+                  color: '#495057',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                }}
+              >
+                <i
+                  className="fa fa-info-circle"
+                  style={{ marginRight: '8px' }}
+                ></i>
+                How to Search
+              </div>
+              <div style={{ fontSize: '13px', color: '#6c757d' }}>
+                <div style={{ marginBottom: '6px' }}>
+                  <strong>Option 1:</strong> Search and select from all invoices
+                  in the dropdown above (shows invoice number, customer, and
+                  amount)
+                </div>
+                <div style={{ marginBottom: '6px' }}>
+                  <strong>Option 2:</strong> Enter invoice number manually below
+                  (e.g., INV-123456)
+                </div>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: '#28a745',
+                    fontWeight: '500',
+                  }}
+                >
+                  <i
+                    className="fa fa-lightbulb-o"
+                    style={{ marginRight: '5px' }}
+                  ></i>
+                  Get complete phone details, purchase history, IMEI info, and
+                  images!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </React.Fragment>
   );
 };
