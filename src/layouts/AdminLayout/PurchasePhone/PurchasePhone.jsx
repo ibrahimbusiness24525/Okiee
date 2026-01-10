@@ -145,6 +145,32 @@ const PurchasePhone = ({
         demandPrice: editMobile.price?.demandPrice || '', // Matches `price.demandPrice`
         isApprovedFromEgadgets: editMobile.isApprovedFromEgadgets || false, // Matches `isApprovedFromEgadgets`
         // eGadgetStatusPicture: editMobile.eGadgetStatusPicture || '', // Matches `eGadgetStatusPicture`
+        // Payment related fields
+        bankAccountUsed: editMobile.bankAccountUsed || editMobile.purchasePaymentData?.bankAccountUsed || '',
+        amountFromBank: editMobile.accountCash || editMobile.purchasePaymentData?.amountFromBank || editMobile.amountFromBank || '',
+        amountFromPocket: editMobile.pocketCash || editMobile.purchasePaymentData?.amountFromPocket || editMobile.amountFromPocket || '',
+        paymentType: (() => {
+          const paymentType = editMobile.purchasePaymentType || editMobile.paymentType || '';
+          // Normalize payment type to match dropdown options
+          if (!paymentType) return '';
+          const normalized = paymentType.toLowerCase().trim();
+          if (normalized === 'full-payment' || normalized === 'full' || normalized === 'full payment') {
+            return 'full-payment';
+          }
+          if (normalized === 'credit') {
+            return 'credit';
+          }
+          return paymentType; // Return original if doesn't match known values
+        })(),
+        payableAmountNow: editMobile.creditPaymentData?.payableAmountNow || editMobile.payableAmountNow || '',
+        payableAmountLater: editMobile.creditPaymentData?.payableAmountLater || editMobile.payableAmountLater || '',
+        paymentDate: editMobile.creditPaymentData?.dateOfPayment || editMobile.paymentDate || '',
+        // Entity data
+        entityData: editMobile.entityData || (editMobile.name || editMobile.mobileNumber ? {
+          name: editMobile.name || '',
+          number: editMobile.mobileNumber || '',
+          _id: editMobile.entityData?._id || ''
+        } : null),
       });
     }
     if (editMobile && bulkEdit) {
@@ -158,11 +184,27 @@ const PurchasePhone = ({
         activation: editMobile.prices?.activation || '',
         dealerPrice: editMobile.prices?.dealerPrice || '',
         buyingPrice: editMobile.prices?.buyingPrice || '',
-        paymentType: editMobile.purchasePaymentType || '',
+        paymentType: (() => {
+          const paymentType = editMobile.purchasePaymentType || editMobile.paymentType || '';
+          // Normalize payment type to match dropdown options
+          if (!paymentType) return '';
+          const normalized = paymentType.toLowerCase().trim();
+          if (normalized === 'full-payment' || normalized === 'full' || normalized === 'full payment') {
+            return 'full-payment';
+          }
+          if (normalized === 'credit') {
+            return 'credit';
+          }
+          return paymentType; // Return original if doesn't match known values
+        })(),
         payableAmountNow: editMobile.creditPaymentData?.payableAmountNow || '',
         payableAmountLater:
           editMobile.creditPaymentData?.payableAmountLater || '',
         paymentDate: editMobile.creditPaymentData?.dateOfPayment || '',
+        // Payment related fields
+        bankAccountUsed: editMobile.bankAccountUsed || editMobile.purchasePaymentData?.bankAccountUsed || '',
+        amountFromBank: editMobile.accountCash || editMobile.purchasePaymentData?.amountFromBank || editMobile.amountFromBank || '',
+        amountFromPocket: editMobile.pocketCash || editMobile.purchasePaymentData?.amountFromPocket || editMobile.amountFromPocket || '',
         quantity: editMobile.ramSimDetails?.length || 0,
         ramSimDetails:
           editMobile.ramSimDetails?.map((detail) => ({

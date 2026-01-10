@@ -234,8 +234,29 @@ const DashDefault = () => {
 
   const invoiceOptions = useMemo(() => {
     return allInvoices.map((invoice) => {
-      // Ensure the value is always a string
-      const invoiceNumber = invoice.invoiceNumber || String(invoice._id);
+      // Debug logging to see invoice structure
+      console.log('Processing invoice:', {
+        invoice,
+        invoiceNumber: invoice.invoiceNumber,
+        typeOfInvoiceNumber: typeof invoice.invoiceNumber,
+        _id: invoice._id,
+      });
+
+      // Simplified invoice number extraction
+      let invoiceNumber = '';
+      if (typeof invoice.invoiceNumber === 'string') {
+        invoiceNumber = invoice.invoiceNumber;
+      } else if (
+        typeof invoice.invoiceNumber === 'object' &&
+        invoice.invoiceNumber
+      ) {
+        invoiceNumber =
+          invoice.invoiceNumber.value || invoice.invoiceNumber.number || '';
+      } else {
+        invoiceNumber = String(invoice._id || '');
+      }
+
+      console.log('Final invoiceNumber for option:', invoiceNumber);
 
       return {
         value: invoiceNumber,
@@ -823,19 +844,120 @@ const DashDefault = () => {
   );
 
   const handleInvoiceSearch = async (invoiceNumber = null) => {
-    const searchNumber = invoiceNumber || invoiceSearchNumber.trim();
+    // Check if we should be disabled (extra safety)
+    if (!invoiceNumber && !invoiceSearchNumber.trim()) {
+      alert('Please enter an invoice number first');
+      return;
+    }
 
+    // Immediate debug alert to see what's in the input
+    alert(
+      `Debug: invoiceSearchNumber="${invoiceSearchNumber}", trimmed="${invoiceSearchNumber.trim()}", length=${invoiceSearchNumber.length}`
+    );
+
+    console.log('Right before searchNumber assignment:', {
+      invoiceNumber,
+      invoiceSearchNumber,
+    });
+    const searchNumber = invoiceNumber || invoiceSearchNumber.trim();
+    console.log('Right after searchNumber assignment:', {
+      searchNumber,
+      typeofSearchNumber: typeof searchNumber,
+    });
+
+    // Debug logging to identify the issue
+    console.log('handleInvoiceSearch called with:', {
+      invoiceNumber,
+      invoiceSearchNumber,
+      invoiceSearchNumberTrimmed: invoiceSearchNumber.trim(),
+      searchNumber,
+      typeOfSearchNumber: typeof searchNumber,
+      isObject: typeof searchNumber === 'object',
+      searchNumberLength: searchNumber ? searchNumber.length : 0,
+    });
+
+    console.log('Before second validation:', {
+      searchNumber,
+      typeofSearchNumber: typeof searchNumber,
+      isFalsy: !searchNumber,
+    });
     if (!searchNumber) {
+      console.error('SECOND VALIDATION FAILED: searchNumber is falsy');
       alert('Please enter an invoice number');
       return;
     }
+
+    // Simplified string extraction
+    let searchString = '';
+    if (typeof searchNumber === 'string') {
+      searchString = searchNumber.trim();
+    } else if (typeof searchNumber === 'object' && searchNumber) {
+      // Extract string value from object properties
+      searchString =
+        searchNumber.invoiceNumber ||
+        searchNumber.value ||
+        searchNumber.number ||
+        searchNumber._id ||
+        '';
+      // Ensure it's a string
+      searchString = String(searchString).trim();
+    } else {
+      searchString = String(searchNumber || '').trim();
+    }
+
+    console.log(
+      'Final searchString:',
+      searchString,
+      'Length:',
+      searchString.length,
+      'Trimmed:',
+      searchString.trim(),
+      'Trimmed length:',
+      searchString.trim().length
+    );
+
+    // Log the search string for debugging but allow the search to proceed
+    console.log('Search string:', searchString, 'Type:', typeof searchString);
+
+    // Check the validation conditions
+    const isEmpty = !searchString;
+    const isEmptyAfterTrim = searchString.trim() === '';
+    console.log(
+      'Validation check - isEmpty:',
+      isEmpty,
+      'isEmptyAfterTrim:',
+      isEmptyAfterTrim
+    );
+
+    if (!searchString || searchString.trim() === '') {
+      console.error(
+        'BLOCKED: Empty search string - searchString:',
+        `"${searchString}"`,
+        'trimmed:',
+        `"${searchString.trim()}"`
+      );
+      alert(
+        `Please enter an invoice number. Debug: got "${searchString}" (length: ${searchString.length})`
+      );
+      return;
+    }
+
+    // Warn about object strings but don't block
+    if (searchString === '[object Object]') {
+      console.warn('WARNING: Search string is still [object Object]');
+    }
+
+    // Show what we're searching for
+    console.log(
+      `Making API call to: /api/sale-invoice/phone-details/${searchString}`
+    );
 
     setIsSearchingInvoice(true);
     setSearchedInvoiceData(null);
 
     try {
       const response = await api.get(
-        `/api/sale-invoice/phone-details/${searchNumber}`
+        `/api/sale-invoice/phone-details/${searchString}`
       );
       if (response.data.success) {
         const { invoice, phoneDetails } = response.data.data;
@@ -3599,33 +3721,6 @@ const DashDefault = () => {
                     >
                       <i className="fa fa-id-card"></i>
                       View CNIC
-                    </button>
-                  )}
-
-                  {!searchedInvoiceData.isReturned && (
-                    <button
-                      onClick={() => {
-                        // You could implement return functionality here or navigate to sales page
-                        alert(
-                          'Return functionality can be implemented in the sales page'
-                        );
-                      }}
-                      style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#dc3545',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                      }}
-                    >
-                      <i className="fa fa-undo"></i>
-                      Return Invoice
                     </button>
                   )}
                 </div>

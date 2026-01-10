@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'https://api.okiiee.com',
-  // baseURL: 'http://localhost:8000',
+  // baseURL: 'https://api.okiiee.com',
+  baseURL: 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -99,3 +99,11 @@ export const returnAccessoryPurchase = (id, data) =>
 // Return sold accessory endpoint: POST /api/accessory/accessoryRecord/sale/return/:id
 export const returnSoldAccessory = (id, data) =>
   api.post(`/api/accessory/accessoryRecord/sale/return/${id}`, data);
+
+// Credit transaction details endpoint: GET /api/person/credit-transaction/:id
+export const getCreditTransactionDetails = (id) =>
+  api.get(`/api/person/credit-transaction/${id}`);
+
+// Return sale invoice endpoint: POST /api/sale-invoice/:id/return
+export const returnSaleInvoice = (id, data) =>
+  api.post(`/api/sale-invoice/${id}/return`, data);

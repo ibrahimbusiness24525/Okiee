@@ -10,7 +10,7 @@ import WalletTransactionModal from 'components/WalletTransaction/WalletTransacti
 import CustomSelect from 'components/CustomSelect';
 
 const SingalPurchaseModal = ({
-  loading= false,
+  loading = false,
   handleSinglePhoneModalclose,
   type = 'purchase',
   setSinglePurchase,
@@ -34,7 +34,11 @@ const SingalPurchaseModal = ({
   // const [loading, setLoading] = useState(false);
   const [showNewEntityForm, setShowNewEntityForm] = useState(false);
   const [getAllEntities, setGetAllEntities] = useState([]);
-  const [localEntityData, setLocalEntityData] = useState({ name: '', number: '', _id: '' });
+  const [localEntityData, setLocalEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
   const [newEntity, setNewEntity] = useState({ name: '', number: '' });
   // const todayDate = new Date().toISOString().split("T")[0];
   const getAllBanks = async () => {
@@ -66,6 +70,9 @@ const SingalPurchaseModal = ({
   };
   useEffect(() => {
     const fetchModels = async () => {
+      if (!selectedCompanyId) {
+        return;
+      }
       try {
         const response = await api.get(
           `/api/company/models/${selectedCompanyId}`
@@ -76,7 +83,7 @@ const SingalPurchaseModal = ({
       }
     };
     fetchModels();
-  }, [singlePurchase.companyName]);
+  }, [selectedCompanyId]);
   console.log('models', models);
 
   console.log('companies', companies);
@@ -85,6 +92,61 @@ const SingalPurchaseModal = ({
     getAllBanks(); // Fetch all banks when the component mounts
     getAllEnityNameAndId();
   }, []);
+
+  // Set selectedCompanyId when editing and companyName is available
+  useEffect(() => {
+    if (singlePurchase.companyName && companies.length > 0) {
+      const company = companies.find(
+        (c) => c.name === singlePurchase.companyName
+      );
+      if (company) {
+        setSelectedCompanyId(company._id);
+      }
+    }
+  }, [singlePurchase.companyName, companies]);
+
+  // Set localEntityData when editing and entityData is available
+  useEffect(() => {
+    if (singlePurchase.entityData && getAllEntities.length > 0) {
+      if (singlePurchase.entityData._id) {
+        // Find the entity in the list
+        const entity = getAllEntities.find(
+          (e) => e._id === singlePurchase.entityData._id
+        );
+        if (entity) {
+          setLocalEntityData(entity);
+          setShowNewEntityForm(false);
+        } else {
+          // Entity not found in list, show as new entity
+          setLocalEntityData({
+            name: singlePurchase.entityData.name || '',
+            number: singlePurchase.entityData.number || '',
+            _id: singlePurchase.entityData._id || '',
+          });
+          setNewEntity({
+            name: singlePurchase.entityData.name || '',
+            number: singlePurchase.entityData.number || '',
+          });
+          setShowNewEntityForm(true);
+        }
+      } else if (
+        singlePurchase.entityData.name ||
+        singlePurchase.entityData.number
+      ) {
+        // Entity data exists but no _id, treat as new entity
+        setLocalEntityData({
+          name: singlePurchase.entityData.name || '',
+          number: singlePurchase.entityData.number || '',
+          _id: '',
+        });
+        setNewEntity({
+          name: singlePurchase.entityData.name || '',
+          number: singlePurchase.entityData.number || '',
+        });
+        setShowNewEntityForm(true);
+      }
+    }
+  }, [singlePurchase.entityData, getAllEntities]);
 
   return (
     <>
@@ -111,7 +173,9 @@ const SingalPurchaseModal = ({
                   marginBottom: '8px',
                 }}
               >
-                <Form.Label style={{ fontWeight: 'bold', fontSize: '16px' }}>Entity</Form.Label>
+                <Form.Label style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                  Entity
+                </Form.Label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     type="button"
@@ -119,7 +183,9 @@ const SingalPurchaseModal = ({
                     style={{
                       padding: '6px 12px',
                       borderRadius: '6px',
-                      background: !showNewEntityForm ? '#e5e7eb' : 'transparent',
+                      background: !showNewEntityForm
+                        ? '#e5e7eb'
+                        : 'transparent',
                       border: '1px solid #d1d5db',
                       fontWeight: 500,
                       fontSize: '14px',
@@ -157,8 +223,18 @@ const SingalPurchaseModal = ({
                       onChange={(e) => {
                         const updated = { ...newEntity, name: e.target.value };
                         setNewEntity(updated);
-                        setLocalEntityData({ name: updated.name, number: updated.number, _id: '' });
-                        setSinglePurchase({ ...singlePurchase, entityData: { name: updated.name, number: updated.number } });
+                        setLocalEntityData({
+                          name: updated.name,
+                          number: updated.number,
+                          _id: '',
+                        });
+                        setSinglePurchase({
+                          ...singlePurchase,
+                          entityData: {
+                            name: updated.name,
+                            number: updated.number,
+                          },
+                        });
                       }}
                       placeholder="Enter entity name"
                       required
@@ -171,10 +247,23 @@ const SingalPurchaseModal = ({
                       name="number"
                       value={newEntity.number}
                       onChange={(e) => {
-                        const updated = { ...newEntity, number: e.target.value };
+                        const updated = {
+                          ...newEntity,
+                          number: e.target.value,
+                        };
                         setNewEntity(updated);
-                        setLocalEntityData({ name: updated.name, number: updated.number, _id: '' });
-                        setSinglePurchase({ ...singlePurchase, entityData: { name: updated.name, number: updated.number } });
+                        setLocalEntityData({
+                          name: updated.name,
+                          number: updated.number,
+                          _id: '',
+                        });
+                        setSinglePurchase({
+                          ...singlePurchase,
+                          entityData: {
+                            name: updated.name,
+                            number: updated.number,
+                          },
+                        });
                       }}
                       placeholder="Enter entity number"
                       required
@@ -185,14 +274,27 @@ const SingalPurchaseModal = ({
                 <CustomSelect
                   value={localEntityData._id}
                   onChange={(selectedOption) => {
-                    const selectedEntity = getAllEntities.find((entity) => entity._id === selectedOption?.value);
-                    const entityPayload = selectedEntity || { name: '', number: '', _id: '' };
+                    const selectedEntity = getAllEntities.find(
+                      (entity) => entity._id === selectedOption?.value
+                    );
+                    const entityPayload = selectedEntity || {
+                      name: '',
+                      number: '',
+                      _id: '',
+                    };
                     setLocalEntityData(entityPayload);
                     setSinglePurchase({
                       ...singlePurchase,
                       entityData: entityPayload?._id
-                        ? { _id: entityPayload._id, name: entityPayload.name, number: entityPayload.number }
-                        : { name: entityPayload.name, number: entityPayload.number },
+                        ? {
+                            _id: entityPayload._id,
+                            name: entityPayload.name,
+                            number: entityPayload.number,
+                          }
+                        : {
+                            name: entityPayload.name,
+                            number: entityPayload.number,
+                          },
                     });
                   }}
                   options={(getAllEntities || []).map((entity) => ({
@@ -219,8 +321,6 @@ const SingalPurchaseModal = ({
                   required
                 />
               </Form.Group> */}
-
-             
             </div>
 
             <div
@@ -329,7 +429,7 @@ const SingalPurchaseModal = ({
                   placeholder="Enter Battery Health"
                 />
               </Form.Group>
-               <Form.Group
+              <Form.Group
                 controlId="purchasePhoneDate"
                 style={{ width: '48%' }}
               >
@@ -349,7 +449,6 @@ const SingalPurchaseModal = ({
                   required
                 />
               </Form.Group>
-
             </div>
             {/* Accessories Section */}
             <div style={{ marginTop: '10px' }}>
@@ -668,7 +767,6 @@ const SingalPurchaseModal = ({
                   required
                 />
               </Form.Group> */}
-           
             </div>
             <div
               style={{
@@ -865,7 +963,11 @@ const SingalPurchaseModal = ({
             />
 
             <Modal.Footer>
-              <Button variant="secondary" onClick={handleSinglePhoneModalclose} disabled={loading}>
+              <Button
+                variant="secondary"
+                onClick={handleSinglePhoneModalclose}
+                disabled={loading}
+              >
                 Cancel
               </Button>
               <Button variant="primary" type="submit" disabled={loading}>
@@ -1040,7 +1142,7 @@ const SingalPurchaseModal = ({
             <Button
               variant="primary"
               size="sm"
-                  onClick={() => setShowPocketCashModal(false)}
+              onClick={() => setShowPocketCashModal(false)}
               disabled={loading}
               style={{
                 minWidth: '100px',
