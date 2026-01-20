@@ -109,6 +109,11 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/app/dashboard/repairing',
+        element: lazy(() => import('./views/repairing/Repairing')),
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/getCustomerRecord',
         element: lazy(() => import('./components/mobileCards/CustomerRecord')), // Mobile List
       },
@@ -127,6 +132,12 @@ const routes = [
       {
         exact: 'true',
         path: '/app/dashboard/availablePhones',
+        element: lazy(
+          () => import('./components/mobileCards/DispachMobileList')
+        ), // Available Phones
+      },
+      {
+        exact: 'true',
         path: '/app/dashboard/DispachmobileList',
         element: lazy(
           () => import('./components/mobileCards/DispachMobileList')
@@ -352,13 +363,18 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/invoice/sale-invoice/:id',
+        element: lazy(() => import('./components/Invoice/SaleInvoiceDetail')),
+      },
+      {
+        exact: 'true',
         path: '/invoice/accessory',
         element: lazy(() => import('./components/Invoice/AccessoryInvoice')),
       },
       {
         path: '*',
         exact: 'true',
-        element: () => <Navigate to={BASE_URL} />,
+        element: () => <Navigate to={'/'} />,
       },
     ],
   },

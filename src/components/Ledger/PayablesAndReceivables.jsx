@@ -9,13 +9,17 @@ import {
   FaArrowDown,
   FaEye,
   FaStickyNote,
+  FaEdit,
 } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import { api } from '../../../api/api';
 import { useNavigate } from 'react-router-dom';
 import Modal from 'components/Modal/Modal';
 import { FaEyeSlash } from 'react-icons/fa';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
-import { Button } from 'react-bootstrap';
+import { Button, Toast } from 'react-bootstrap';
+import { Favorite } from '@mui/icons-material';
+import { toast } from 'react-toastify';
 // Types
 
 const PayablesAndReceivables = () => {
@@ -23,6 +27,14 @@ const PayablesAndReceivables = () => {
   const [persons, setPersons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editPersonData, setEditPersonData] = useState({
+    id: '',
+    name: '',
+    number: '',
+    reference: '',
+  });
+  const [isVerifying, setIsVerifying] = useState(false);
   const [showGiveCreditModal, setShowGiveCreditModal] = useState(false);
   const [showGiveCreditChildModal, setShowGiveCreditChildModal] =
     useState(false);
@@ -44,6 +56,40 @@ const PayablesAndReceivables = () => {
     (acc, person) => acc + person.givingCredit,
     0
   );
+  const [deletePersonId, setDeletePersonId] = useState('');
+  const [showVerifyByPasswordModal, setShowVerifyByPasswordModal] = useState(false);
+  const [password, setPassword] = useState('');
+
+
+  const handleVerifyByPassword = async (e) => {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (!password) {
+      toast.error('Please enter your password');
+      return;
+    }
+    try {
+      setIsVerifying(true);
+      const response = await api.post('/api/person/verify-password', { password });
+      const ok = response?.data === true || response?.data?.success === true || response?.data?.valid === true;
+      if (ok) {
+        // toast.success('Password verified');
+        setShowVerifyByPasswordModal(false);
+        api.delete(`/api/person/${deletePersonId}`)
+        fetchPersons();
+        setPassword('');
+        toast.success('Person deleted successfully!');
+      } else {
+        toast.error('Invalid password');
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Error verifying password');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+  const handleCancelVerifyByPassword = () =>{
+    setShowVerifyByPasswordModal(false);
+  }
   const fetchPersons = async () => {
     try {
       setIsLoading(true);
@@ -51,12 +97,13 @@ const PayablesAndReceivables = () => {
       setPersons(data?.data || []);
       setFilteredPersons(data?.data || []);
     } catch (error) {
-      console.error('Error fetching persons:', error);
       alert('Error fetching data. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+  console.log('Persons:', persons);
+
   const handleSearch = (searchTerm) => {
     const filtered = persons.filter(
       (person) =>
@@ -89,13 +136,6 @@ const PayablesAndReceivables = () => {
     description: '',
   });
 
-  // API call helper
-
-  // Fetch all persons
-
-  console.log('====================================');
-  console.log('Persons:', persons);
-  console.log('====================================');
   // Create person
   const handleCreatePerson = async (e) => {
     e.preventDefault();
@@ -122,7 +162,8 @@ const PayablesAndReceivables = () => {
       alert('Person created successfully!');
     } catch (error) {
       console.error('Error creating person:', error);
-      alert('Error creating person. Please try again.');
+      toast.error(error?.response?.data?.message || error?.message || error?.data?.message || "Error creating person");
+
     } finally {
       setIsSubmitting(false);
     }
@@ -226,16 +267,167 @@ const PayablesAndReceivables = () => {
 
   //     return { totalPayable, totalReceivable, netAmount }
   //   }
+  const handlePrint = () => {
+    // Calculate totals
+    const totalPayable = persons.reduce((sum, p) => sum + (p.takingCredit || 0), 0);
+    const totalReceivable = persons.reduce((sum, p) => sum + (p.givingCredit || 0), 0);
 
+    // Payables: persons with takingCredit > givingCredit
+    const payables = persons.filter(p => (p.takingCredit || 0) > (p.givingCredit || 0));
+    // Receivables: persons with givingCredit > takingCredit
+    const receivables = persons.filter(p => (p.givingCredit || 0) > (p.takingCredit || 0));
+
+    // Table rows for payables with numbering
+    const payablesRows = payables.map((p, idx) => `
+      <tr>
+        <td style='border:1px solid #ccc;padding:6px;'>${idx + 1}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>${p.name}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>Rs. ${(p.takingCredit - p.givingCredit).toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    // Table rows for receivables with numbering
+    const receivablesRows = receivables.map((p, idx) => `
+      <tr>
+        <td style='border:1px solid #ccc;padding:6px;'>${idx + 1}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>${p.name}</td>
+        <td style='border:1px solid #ccc;padding:6px;'>Rs. ${(p.givingCredit - p.takingCredit).toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    // Print window HTML
+    const printWindow = window.open('', '', 'width=900,height=700');
+    if (!printWindow) {
+      alert('Popup blocked! Please allow popups for this site to print.');
+      return;
+    }
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Payables & Receivables Print</title>
+          <style>
+            @media print {
+              @page { size: A4 portrait; margin: 20mm; }
+              html, body { width: 210mm; height: 297mm; font-size: 18px !important; }
+              body { margin: 0; font-size: 18px !important; }
+              h2, .summary, .section-title, th, td, table { font-size: 18px !important; }
+            }
+            body { font-family: sans-serif; margin: 24px; font-size: 18px; }
+            h2 { margin-bottom: 12px; font-size: 28px; }
+            table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+            th, td { border: 1px solid #ccc; padding: 10px 7px; text-align: left; font-size: 18px; }
+            th { background: #f3f4f6; font-size: 19px; }
+            .summary { font-size: 20px; margin-bottom: 24px; }
+            .section-title { margin: 18px 0 8px 0; font-size: 17px; color: #1d4ed8; }
+          </style>
+        </head>
+        <body>
+          <h2>Payables & Receivables Summary</h2>
+          <div class='summary'>
+            <strong>Total Payable:</strong> Rs. ${totalPayable.toLocaleString()}<br/>
+            <strong>Total Receivable:</strong> Rs. ${totalReceivable.toLocaleString()}
+          </div>
+          <div class='section-title'>Payables (You have to pay)</div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Person Name</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              ${payablesRows || `<tr><td colspan='3'>No payables</td></tr>`}
+            </tbody>
+          </table>
+          <div class='section-title'>Receivables (You have to receive)</div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Person Name</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              ${receivablesRows || `<tr><td colspan='3'>No receivables</td></tr>`}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  }
   useEffect(() => {
     fetchPersons();
   }, []);
-
+  const confirmDelete = (id) => {
+    // if (window.confirm('Are you sure you want to delete this person?')) {
+    //   api
+    //     .delete(`/api/person/${id}`)
+    //     .then(() => {
+    //       fetchPersons();
+    //       alert('Person deleted successfully!');
+    //     })
+    //     .catch((error) => {
+    //       console.error('Error deleting person:', error);
+    //       alert('Error deleting person. Please try again.');
+    //     });
+    // }
+    setDeletePersonId(id);
+    setShowVerifyByPasswordModal(true);
+  };
   //   const { totalPayable, totalReceivable, netAmount } = calculateTotals()
+  const toggleFavorite = async (id) => {
+    try {
+      await api.patch(`/api/person/${id}`);
+      toast.success('Favorite status updated successfully!');
+      fetchPersons();
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error('Error updating favorite status. Please try again.');
+    }
+  };
 
+  const editPerson = (person) => {
+    setEditPersonData({
+      id: person._id,
+      name: person.name,
+      number: person.number,
+      reference: person.reference,
+    });
+    setShowEditModal(true);
+  };
+  const handleEditPerson = async (e) => {
+    e.preventDefault();
+    if (
+      !editPersonData.name ||
+      !editPersonData.number ||
+      !editPersonData.reference
+    ) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.put(`/api/person/update/${editPersonData.id}`, {
+        name: editPersonData.name,
+        number: Number.parseInt(editPersonData.number),
+        reference: editPersonData.reference,
+      });
+
+      setShowEditModal(false);
+      setEditPersonData({ name: '', number: '', reference: '' });
+      fetchPersons();
+      toast.success('Person updated successfully!');
+    } catch (error) {
+      console.error('Error updating person:', error);
+      toast.error('Error updating person. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
-    <div style={{ backgroundColor: '#f8fafc', padding: '24px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ backgroundColor: '#f8fafc' }}>
+      <div style={{ margin: '0 auto' }}>
         {/* Header */}
         <div
           style={{
@@ -327,7 +519,8 @@ const PayablesAndReceivables = () => {
                   (e.currentTarget.style.backgroundColor = '#10b981')
                 }
               >
-                <FaArrowUp /> Give Credit
+                <FaArrowUp /> GIVING CREDIT
+                {/* <FaArrowUp /> Give Credit */}
               </button>
 
               <button
@@ -353,7 +546,8 @@ const PayablesAndReceivables = () => {
                   (e.currentTarget.style.backgroundColor = '#f59e0b')
                 }
               >
-                <FaArrowDown /> Take Credit
+                <FaArrowDown /> TAKING CREDIT
+                {/* <FaArrowDown /> Take Credit */}
               </button>
             </div>
           </div>
@@ -436,7 +630,7 @@ const PayablesAndReceivables = () => {
                         marginBottom: '4px',
                       }}
                     >
-                      Taking Credit
+                      TAKING CREDIT
                     </div>
                     <div
                       style={{
@@ -518,7 +712,7 @@ const PayablesAndReceivables = () => {
                         marginBottom: '4px',
                       }}
                     >
-                      Giving Credit
+                      GIVING CREDIT
                     </div>
                     <div
                       style={{
@@ -660,6 +854,25 @@ const PayablesAndReceivables = () => {
                   Payable
                 </button>
               </div>
+              <button
+                style={{
+                  alignSelf: "center",
+                  maxWidth: "15rem",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "10px 24px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                  background: "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
+                  boxShadow: "0 2px 8px rgba(59,130,246,0.08)"
+                }}
+                onClick={handlePrint}
+              >
+                Print
+              </button>
             </div>
           </div>
         </div>
@@ -827,14 +1040,343 @@ const PayablesAndReceivables = () => {
               </p>
             </div>
           ) : (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                gap: '20px',
-              }}
-            >
-              {filteredPersons.map((person, index) => (
+            <div style={{ width: '100%' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: '20px',
+                  width: '100%',
+                  '@media (min-width: 1200px)': {
+                    gridTemplateColumns: 'repeat(5, 1fr)', // 5 columns on large screens
+                  },
+                  '@media (min-width: 768px) and (max-width: 1199px)': {
+                    gridTemplateColumns: 'repeat(2, 1fr)', // 2 columns on medium screens
+                  },
+                  '@media (max-width: 767px)': {
+                    gridTemplateColumns: '1fr', // 1 column on small screens
+                  },
+                }}
+              >
+                {filteredPersons.map((person, index) => (
+                  <div
+                    key={person._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    style={{
+                      backgroundColor: getStatusBgColor(person.status),
+                      border: `2px solid ${getStatusColor(person.status)}20`,
+                      borderRadius: '12px',
+                      padding: '20px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      minHeight: '220px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    }}
+                    whileHover={{
+                      y: -4,
+                      boxShadow: '0 8px 25px -8px rgba(0, 0, 0, 0.2)',
+                    }}
+                  >
+                    {/* Status Badge - Responsive positioning */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          // position: 'absolute',
+                          top: '16px',
+                          right: '16px',
+                          backgroundColor: getStatusColor(person.status),
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: 'clamp(10px, 2vw, 12px)',
+                          fontWeight: '500',
+                          zIndex: 1,
+                        }}
+                      >
+                        {person.status}
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '12px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Favorite
+                          onClick={() => toggleFavorite(person._id)}
+                          style={{
+                            color: person.favourite ? '#e53935' : '#6b7280',
+                            cursor: 'pointer',
+                            fontSize: '1.25rem',
+                          }}
+                        />
+                        <FaTrash
+                          onClick={() => confirmDelete(person._id)}
+                          style={{
+                            color: '#e53935',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                        />
+                        <FaEdit
+                          onClick={() => editPerson(person)}
+                          style={{
+                            color: '#3b82f6',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {/* Person Info Section */}
+                    <div style={{ marginBottom: '16px', zIndex: 1 }}>
+                      <h3
+                        style={{
+                          margin: '0 0 8px 0',
+                          fontSize: 'clamp(16px, 4vw, 18px)',
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          paddingRight: '60px',
+                          lineHeight: '1.3',
+                        }}
+                      >
+                        {person.name}
+                      </h3>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}
+                        >
+                          <FaPhone
+                            style={{
+                              fontSize: '14px',
+                              color: '#6b7280',
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: 'clamp(12px, 3vw, 14px)',
+                              color: '#6b7280',
+                            }}
+                          >
+                            {person.number}
+                          </span>
+                        </div>
+
+                        {person.reference && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                            }}
+                          >
+                            <FaFileAlt
+                              style={{
+                                fontSize: '14px',
+                                color: '#6b7280',
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: 'clamp(12px, 3vw, 14px)',
+                                color: '#6b7280',
+                              }}
+                            >
+                              {person.reference}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Credit Cards - Responsive grid */}
+                    {/* <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(120px, 1fr))',
+                        gap: '12px',
+                        marginBottom: '16px',
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          textAlign: 'center',
+                          minWidth: '120px',
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: '0 0 4px 0',
+                            fontSize: 'clamp(10px, 2.5vw, 12px)',
+                            color: '#6b7280',
+                          }}
+                        >
+                          Taking Credit
+                        </p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 'clamp(14px, 3.5vw, 16px)',
+                            fontWeight: 'bold',
+                            color: '#ef4444',
+                          }}
+                        >
+                          {person.takingCredit.toLocaleString()} PKR
+                        </p>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          textAlign: 'center',
+                          minWidth: '120px',
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: '0 0 4px 0',
+                            fontSize: 'clamp(10px, 2.5vw, 12px)',
+                            color: '#6b7280',
+                          }}
+                        >
+                          Giving Credit
+                        </p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 'clamp(14px, 3.5vw, 16px)',
+                            fontWeight: 'bold',
+                            color: '#22c55e',
+                          }}
+                        >
+                          {person.givingCredit.toLocaleString()} PKR
+                        </p>
+                      </div>
+                    </div> */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        marginBottom: '16px',
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor:
+                            person.takingCredit > person.givingCredit
+                              ? 'rgba(239, 68, 68, 0.1)'
+                              : person.givingCredit > person.takingCredit
+                                ? 'rgba(34, 197, 94, 0.1)'
+                                : 'rgba(156, 163, 175, 0.1)',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          textAlign: 'center',
+                          minWidth: '120px',
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: '0 0 4px 0',
+                            fontSize: 'clamp(10px, 2.5vw, 12px)',
+                            color: '#6b7280',
+                          }}
+                        ></p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 'clamp(14px, 3.5vw, 16px)',
+                            fontWeight: 'bold',
+                            color:
+                              person.takingCredit > person.givingCredit
+                                ? '#ef4444'
+                                : person.givingCredit > person.takingCredit
+                                  ? '#22c55e'
+                                  : '#6b7280',
+                          }}
+                        >
+                          {Math.abs(
+                            person.takingCredit - person.givingCredit
+                          ).toLocaleString()}{' '}
+                          PKR
+                        </p>
+                      </div>
+                    </div>
+                    {/* View Details Footer */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        paddingTop: '12px',
+                        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        onClick={() => handlePersonClick(person._id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          color: getStatusColor(person.status),
+                          fontSize: 'clamp(12px, 3vw, 14px)',
+                          fontWeight: '500',
+                        }}
+                      >
+                        <FaEye />
+                        View Details
+                      </div>
+                    </div>
+
+                    {/* Background pattern for better visual */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        right: 0,
+                        width: '100px',
+                        height: '100px',
+                        background: `linear-gradient(135deg, ${getStatusColor(person.status)}10 0%, transparent 70%)`,
+                        borderRadius: '50% 0 0 0',
+                        opacity: 0.6,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* {filteredPersons.map((person, index) => (
                 <div
                   key={person._id}
                   initial={{ opacity: 0, y: 20 }}
@@ -956,93 +1498,7 @@ const PayablesAndReceivables = () => {
                         {person.takingCredit.toLocaleString()} PKR
                       </p>
                     </div>
-                    {/* {person.takingCredit === 0 && person.givingCredit === 0 ? (
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '12px',
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: '16px',
-                      }}>
-                      <p>Settled</p>
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '12px',
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: '16px',
-                      }}
-                    >
-                      {person.takingCredit !== 0 && (
-                        <div
-                          style={{
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <p
-                            style={{
-                              margin: '0 0 4px 0',
-                              fontSize: '12px',
-                              color: '#6b7280',
-                            }}
-                          >
-                            Taking Credit
-                          </p>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              color: '#ef4444',
-                            }}
-                          >
-                            {person.takingCredit.toLocaleString()} PKR
-                          </p>
-                        </div>
-                      )}
-                      {person.givingCredit !== 0 && (
-                        <div
-                          style={{
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <p
-                            style={{
-                              margin: '0 0 4px 0',
-                              fontSize: '12px',
-                              color: '#6b7280',
-                            }}
-                          >
-                            Giving Credit
-                          </p>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              color: '#22c55e',
-                            }}
-                          >
-                            {person.givingCredit.toLocaleString()} PKR
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )} */}
+
                     <div
                       style={{
                         backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -1096,13 +1552,14 @@ const PayablesAndReceivables = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
           )}
         </div>
 
         {/* Create Person Modal */}
         <Modal
+          toggleModal={() => setShowCreateModal(false)}
           show={showCreateModal}
           size="sm"
           onClick={() => setShowCreateModal(false)}
@@ -1327,6 +1784,232 @@ const PayablesAndReceivables = () => {
             </div>
           </form>
         </Modal>
+        <Modal
+          toggleModal={() => setShowEditModal(false)}
+          show={showEditModal}
+          size="sm"
+          onClick={() => setShowEditModal(false)}
+        >
+          <h2
+            style={{
+              margin: '0 0 24px 0',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#1f2937',
+            }}
+          >
+            Edit Person
+          </h2>
+
+          <form onSubmit={handleEditPerson}>
+            <div style={{ marginBottom: '20px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                }}
+              >
+                Name *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <FaUser
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '16px',
+                  }}
+                />
+                <input
+                  type="text"
+                  value={editPersonData.name}
+                  onChange={(e) =>
+                    setEditPersonData({
+                      ...editPersonData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Enter person name"
+                  style={{
+                    width: '100%',
+                    padding: '12px 12px 12px 40px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                }}
+              >
+                Phone Number *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <FaPhone
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '16px',
+                  }}
+                />
+                <input
+                  type="tel"
+                  value={editPersonData.number}
+                  onChange={(e) =>
+                    setEditPersonData({
+                      ...editPersonData,
+                      number: e.target.value,
+                    })
+                  }
+                  placeholder="Enter phone number"
+                  style={{
+                    width: '100%',
+                    padding: '12px 12px 12px 40px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '32px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                }}
+              >
+                Reference *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <FaFileAlt
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '16px',
+                  }}
+                />
+                <input
+                  type="text"
+                  value={editPersonData.reference}
+                  onChange={(e) =>
+                    setEditPersonData({
+                      ...editPersonData,
+                      reference: e.target.value,
+                    })
+                  }
+                  placeholder="Enter reference"
+                  style={{
+                    width: '100%',
+                    padding: '12px 12px 12px 40px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  required
+                />
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  padding: '12px 24px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  color: '#6b7280',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = '#f9fafb')
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = 'white')
+                }
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  backgroundColor: isSubmitting ? '#9ca3af' : '#3b82f6',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => {
+                  if (!isSubmitting)
+                    e.currentTarget.style.backgroundColor = '#2563eb';
+                }}
+                onMouseOut={(e) => {
+                  if (!isSubmitting)
+                    e.currentTarget.style.backgroundColor = '#3b82f6';
+                }}
+              >
+                {isSubmitting ? 'Updating...' : 'Update Person'}
+              </button>
+            </div>
+          </form>
+        </Modal>
 
         {/* Give Credit Modal */}
 
@@ -1380,11 +2063,15 @@ const PayablesAndReceivables = () => {
                 required
               >
                 <option value="">Select a person</option>
-                {persons.map((person) => (
-                  <option key={person._id} value={person._id}>
-                    {person.name} - {person.number}
-                  </option>
-                ))}
+                {[...persons]
+                  .sort(
+                    (a, b) => (b.favourite === true) - (a.favourite === true)
+                  )
+                  .map((person) => (
+                    <option key={person._id} value={person._id}>
+                      {person.name} - {person.number}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -1561,7 +2248,6 @@ const PayablesAndReceivables = () => {
           </form>
         </Modal>
 
-        {/* Take Credit Modal */}
         <Modal
           size="sm"
           show={showTakeCreditModal}
@@ -1612,11 +2298,20 @@ const PayablesAndReceivables = () => {
                 required
               >
                 <option value="">Select a person</option>
-                {persons.map((person) => (
+                {/* {persons.map((person) => (
                   <option key={person._id} value={person._id}>
                     {person.name} - {person.number}
                   </option>
-                ))}
+                ))} */}
+                {[...persons]
+                  .sort(
+                    (a, b) => (b.favourite === true) - (a.favourite === true)
+                  )
+                  .map((person) => (
+                    <option key={person._id} value={person._id}>
+                      {person.name} - {person.number}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -1790,6 +2485,77 @@ const PayablesAndReceivables = () => {
               </button>
             </div>
           </form>
+        </Modal>
+        <Modal
+          size="sm"
+          show={showVerifyByPasswordModal}
+          toggleModal={() => setShowVerifyByPasswordModal(false)}
+        >
+          <h2 style={{ margin: '0 0 12px 0', fontSize: '20px', fontWeight: 'bold', color: '#111827' }}>
+            Verify Password
+          </h2>
+          <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280' }}>
+            Enter your account password to continue.
+          </p>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: '#374151', fontWeight: 600 }}>
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
+              onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+              autoFocus
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={() => setShowVerifyByPasswordModal(false)}
+              disabled={isVerifying}
+              style={{
+                padding: '10px 16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                color: '#6b7280',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={(e) => handleVerifyByPassword(e)}
+              disabled={isVerifying}
+              style={{
+                padding: '10px 16px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: isVerifying ? '#9ca3af' : '#3b82f6',
+                color: 'white',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: isVerifying ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {isVerifying ? 'Verifying…' : 'Verify'}
+            </button>
+          </div>
         </Modal>
       </div>
     </div>

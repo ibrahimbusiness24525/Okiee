@@ -369,6 +369,9 @@ import avatar1 from '../../../../assets/images/user/avatar-1.jpg';
 import avatar2 from '../../../../assets/images/user/avatar-2.jpg';
 import avatar3 from '../../../../assets/images/user/avatar-3.jpg';
 import avatar4 from '../../../../assets/images/user/avatar-4.jpg';
+import Modal from 'components/Modal/Modal';
+import { toast } from 'react-toastify';
+import { api } from '../../../../../api/api';
 
 const NavRight = () => {
   const [listOpen, setListOpen] = useState(false);
@@ -376,7 +379,39 @@ const NavRight = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+  const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
+  const [password, setPassword] = useState({
+    previousPassword: '',
+    newPassword: '',
+  });
+  const editPassword = () => {
+    setShowEditPasswordModal(true);
+  };
 
+  const handleConfirmEditPassword = async () => {
+    try {
+      const response = await api.patch('/api/password/edit', {
+        previousPassword: password.previousPassword,
+        newPassword: password.newPassword,
+      });
+      if (response) {
+        toast.success('Password edited successfully');
+        setPassword({
+          previousPassword: '',
+          newPassword: '',
+        });
+        setShowEditPasswordModal(false);
+      }
+    } catch (error) {
+      console.error('Error editing password:', error);
+      toast.error(
+        error.response.data.message ||
+          error.message ||
+          error.data.message ||
+          'Error editing password'
+      );
+    }
+  };
   const logout = () => {
     navigate('/login');
     localStorage.removeItem('token');
@@ -444,42 +479,510 @@ const NavRight = () => {
 
   return (
     <React.Fragment>
+      <style>{`
+        .navbar-right-container {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .stock-list-item {
+          display: flex;
+          align-items: center;
+        }
+        .stock-list-btn-mobile {
+          background: linear-gradient(to right, #FFA726, #FB8C00);
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          padding: 12px 24px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          width: 200px;
+          height: 50px;
+          transition: background 0.3s ease;
+          margin-right: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+        }
+        .stock-list-btn-mobile:hover {
+          background: linear-gradient(to right, #F57C00, #EF6C00);
+        }
+        .notification-badge {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          font-size: 10px;
+        }
+        .drp-notification .dropdown-toggle {
+          position: relative;
+        }
+        .notification-dropdown {
+          width: 350px;
+          padding: 0;
+        }
+        .noti-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 15px;
+          border-bottom: 1px solid #f1f1f1;
+        }
+        .noti-body {
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        .noti-footer {
+          text-align: center;
+          padding: 10px;
+          border-top: 1px solid #f1f1f1;
+        }
+        .unread {
+          background-color: #f8f9fa;
+        }
+        .status-indicator {
+          margin-left: 10px;
+        }
+        .status-dot {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+        }
+        /* Enhanced Modal Styles */
+        .enhanced-modal .modal-dialog {
+          max-width: 600px;
+        }
+        .modal-title-enhanced {
+          font-size: 24px !important;
+          font-weight: 700 !important;
+          color: #1f2937 !important;
+          margin: 0 !important;
+        }
+        .modal-body-enhanced {
+          padding: 30px !important;
+        }
+        .form-group-enhanced {
+          margin-bottom: 25px;
+        }
+        .form-label-enhanced {
+          display: block;
+          font-size: 15px;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 10px;
+        }
+        .form-input-enhanced {
+          width: 100%;
+          padding: 14px 16px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          box-sizing: border-box;
+          background-color: #fff;
+        }
+        .form-input-enhanced:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form-input-enhanced::placeholder {
+          color: #9ca3af;
+        }
+        .modal-actions-enhanced {
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #e5e7eb;
+        }
+        .btn-cancel-enhanced {
+          padding: 12px 24px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          background-color: white;
+          color: #6b7280;
+          font-size: 15px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .btn-cancel-enhanced:hover {
+          background-color: #f9fafb;
+          border-color: #d1d5db;
+          color: #374151;
+        }
+        .btn-submit-enhanced {
+          padding: 12px 24px;
+          border: none;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #4CAF50, #45a049);
+          color: white;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+        }
+        .btn-submit-enhanced:hover:not(:disabled) {
+          background: linear-gradient(135deg, #45a049, #3d8b40);
+          box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+          transform: translateY(-1px);
+        }
+        .btn-submit-enhanced:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .btn-submit-enhanced:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        @media (max-width: 768px) {
+          .enhanced-modal .modal-dialog {
+            max-width: calc(100% - 20px) !important;
+          }
+          .modal-body-enhanced {
+            padding: 20px !important;
+          }
+          .modal-title-enhanced {
+            font-size: 20px !important;
+          }
+          .form-group-enhanced {
+            margin-bottom: 20px;
+          }
+          .form-input-enhanced {
+            padding: 12px 14px;
+            font-size: 15px;
+          }
+          .modal-actions-enhanced {
+            flex-direction: column;
+            margin-top: 20px;
+          }
+          .btn-cancel-enhanced,
+          .btn-submit-enhanced {
+            width: 100%;
+            padding: 12px 20px;
+          }
+        }
+        @media (max-width: 768px) {
+          .navbar-right-container {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 8px !important;
+          }
+          .stock-list-item {
+            width: 100% !important;
+            display: block !important;
+          }
+          .stock-list-btn-mobile {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-right: 0 !important;
+            margin-bottom: 0 !important;
+            padding: 10px 16px !important;
+            font-size: 14px !important;
+            height: auto !important;
+            display: block !important;
+          }
+          #navbar-right {
+            flex-direction: column !important;
+            width: 100% !important;
+          }
+          #navbar-right > li {
+            width: 100% !important;
+            margin-bottom: 8px !important;
+          }
+          .notification-dropdown {
+            width: 100% !important;
+            max-width: 100vw !important;
+            left: 0 !important;
+            right: 0 !important;
+            margin-left: 0 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+            margin-top: 10px !important;
+          }
+          .profile-notification {
+            width: 100% !important;
+            max-width: 100vw !important;
+            left: 0 !important;
+            right: 0 !important;
+            margin-left: 0 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+            margin-top: 10px !important;
+          }
+          .pro-head {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 12px !important;
+            padding: 18px 20px !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 12px 12px 0 0 !important;
+            color: white !important;
+          }
+          .pro-head > div {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            flex: 1 !important;
+          }
+          .pro-head img {
+            width: 50px !important;
+            height: 50px !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+          }
+          .pro-head span {
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            color: white !important;
+          }
+          .pro-head button {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            width: auto !important;
+            height: auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.3s ease !important;
+          }
+          .pro-head button:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: scale(1.05) !important;
+          }
+          .pro-head button i {
+            color: white !important;
+            font-size: 18px !important;
+          }
+          .pro-body {
+            padding: 8px !important;
+            background: white !important;
+          }
+          .pro-body .dropdown-item {
+            padding: 16px 20px !important;
+            font-size: 15px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            border-radius: 8px !important;
+            margin: 4px 8px !important;
+            transition: all 0.2s ease !important;
+            color: #374151 !important;
+            text-decoration: none !important;
+          }
+          .pro-body .dropdown-item:hover {
+            background: #f3f4f6 !important;
+            transform: translateX(4px) !important;
+            color: #667eea !important;
+          }
+          .pro-body .dropdown-item i {
+            font-size: 18px !important;
+            width: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #667eea !important;
+          }
+          .noti-header {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            padding: 16px 18px !important;
+            background: #f8f9fa !important;
+            border-bottom: 2px solid #e5e7eb !important;
+          }
+          .noti-header h6 {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            color: #1f2937 !important;
+            margin: 0 !important;
+          }
+          .noti-header button {
+            font-size: 13px !important;
+            padding: 6px 12px !important;
+            border-radius: 6px !important;
+            background: #667eea !important;
+            color: white !important;
+            border: none !important;
+            font-weight: 500 !important;
+          }
+          .noti-body {
+            max-height: 250px !important;
+            padding: 8px !important;
+          }
+          .noti-body li {
+            padding: 14px 16px !important;
+            border-radius: 8px !important;
+            margin: 4px 8px !important;
+            transition: all 0.2s ease !important;
+          }
+          .noti-body li:hover {
+            background: #f3f4f6 !important;
+          }
+          .noti-body img {
+            width: 45px !important;
+            height: 45px !important;
+            border-radius: 50% !important;
+            border: 2px solid #e5e7eb !important;
+          }
+          .noti-body h6 {
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            margin-bottom: 4px !important;
+          }
+          .noti-body p {
+            font-size: 13px !important;
+            color: #6b7280 !important;
+            margin-bottom: 4px !important;
+          }
+          .noti-body small {
+            font-size: 12px !important;
+            color: #9ca3af !important;
+          }
+          .password-modal-content {
+            padding: 25px !important;
+          }
+          .password-modal-content h2 {
+            font-size: 24px !important;
+          }
+          .password-modal-content input {
+            padding: 14px 18px !important;
+          }
+        }
+        @media (max-width: 576px) {
+          .stock-list-btn-mobile {
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+          }
+          .notification-dropdown {
+            width: calc(100vw - 20px) !important;
+            margin: 0 10px !important;
+            border-radius: 10px !important;
+          }
+          .noti-header {
+            padding: 14px 16px !important;
+          }
+          .noti-header h6 {
+            font-size: 16px !important;
+          }
+          .noti-header button {
+            font-size: 12px !important;
+            padding: 5px 10px !important;
+          }
+          .noti-body li {
+            padding: 12px 14px !important;
+            margin: 3px 6px !important;
+          }
+          .noti-body img {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .noti-body h6 {
+            font-size: 14px !important;
+          }
+          .noti-body p {
+            font-size: 12px !important;
+          }
+          .profile-notification {
+            width: calc(100vw - 20px) !important;
+            margin: 0 10px !important;
+            border-radius: 10px !important;
+          }
+          .pro-head {
+            padding: 15px 18px !important;
+            border-radius: 10px 10px 0 0 !important;
+            gap: 10px !important;
+          }
+          .pro-head img {
+            width: 45px !important;
+            height: 45px !important;
+          }
+          .pro-head span {
+            font-size: 15px !important;
+          }
+          .pro-head button {
+            padding: 6px 10px !important;
+          }
+          .pro-head button i {
+            font-size: 16px !important;
+          }
+          .pro-body {
+            padding: 6px !important;
+          }
+          .pro-body .dropdown-item {
+            padding: 14px 18px !important;
+            font-size: 14px !important;
+            margin: 3px 6px !important;
+            gap: 10px !important;
+          }
+          .pro-body .dropdown-item i {
+            font-size: 16px !important;
+            width: 22px !important;
+          }
+          .noti-header {
+            padding: 10px !important;
+          }
+          .noti-body {
+            max-height: 200px !important;
+          }
+          .password-modal-content {
+            padding: 20px !important;
+          }
+          .password-modal-content h2 {
+            font-size: 22px !important;
+            margin-bottom: 20px !important;
+          }
+          .password-modal-content p {
+            font-size: 13px !important;
+          }
+          .password-modal-content input {
+            padding: 12px 16px !important;
+            font-size: 14px !important;
+          }
+          .password-modal-content button {
+            padding: 10px 20px !important;
+            font-size: 14px !important;
+            min-width: 100px !important;
+          }
+          .password-modal-content > div:last-child {
+            flex-direction: column !important;
+            gap: 10px !important;
+          }
+          .password-modal-content > div:last-child button {
+            width: 100% !important;
+          }
+        }
+      `}</style>
       <ListGroup
         as="ul"
         bsPrefix=" "
-        className="navbar-nav ml-auto"
+        className="navbar-nav ml-auto navbar-right-container"
         id="navbar-right"
       >
-        {/* Notification Dropdown */}
-        <button
-          style={{
-            background: 'linear-gradient(to right, #FFA726, #FB8C00)', // orange gradient
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            width: '200px',
-            height: '50px',
-            transition: 'background 0.3s ease',
-            marginRight: '10px',
-          }}
-          onMouseEnter={
-            (e) =>
-              (e.target.style.background =
-                'linear-gradient(to right, #F57C00, #EF6C00)') // darker orange
-          }
-          onClick={() => navigate('/stocklist')}
-          onMouseLeave={(e) =>
-            (e.target.style.background =
-              'linear-gradient(to right, #FFA726, #FB8C00)')
-          }
+        {/* Show Stock List Button */}
+        <ListGroup.Item
+          as="li"
+          bsPrefix=" "
+          className="nav-item stock-list-item"
         >
-          Show Stock List
-        </button>
+          <button
+            className="stock-list-btn-mobile"
+            onClick={() => navigate('/stocklist')}
+          >
+            Show Stock List
+          </button>
+        </ListGroup.Item>
 
+        {/* Notification Dropdown */}
         <ListGroup.Item as="li" bsPrefix=" " className="nav-item">
           <Dropdown align="end" className="drp-notification">
             <Dropdown.Toggle
@@ -604,56 +1107,128 @@ const NavRight = () => {
                     <i className="feather icon-user" /> For Support
                   </Link>
                 </ListGroup.Item>
+                <ListGroup.Item as="li" bsPrefix=" " onClick={editPassword}>
+                  <Link to="/help/forsupport" className="dropdown-item">
+                    <i className="feather icon-user" /> Change Password
+                  </Link>
+                </ListGroup.Item>
               </ListGroup>
             </Dropdown.Menu>
           </Dropdown>
         </ListGroup.Item>
       </ListGroup>
-      <ChatList listOpen={listOpen} closed={() => setListOpen(false)} />
+      <Modal
+        show={showEditPasswordModal}
+        toggleModal={() => setShowEditPasswordModal(false)}
+        onHide={() => setShowEditPasswordModal(false)}
+      >
+        <div
+          className="password-modal-content enhanced-modal-content"
+          style={{
+            padding: '30px',
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+            width: '100%',
+            margin: '0 auto',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '30px',
+              paddingBottom: '20px',
+              borderBottom: '1px solid #e5e7eb',
+            }}
+          >
+            <h2 className="modal-title-enhanced" style={{ margin: 0 }}>
+              Change Password
+            </h2>
+            <button
+              onClick={() => setShowEditPasswordModal(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#6b7280',
+                padding: '0',
+                width: '30px',
+                height: '30px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ×
+            </button>
+          </div>
 
-      <style jsx>{`
-        .notification-badge {
-          position: absolute;
-          top: -5px;
-          right: -5px;
-          font-size: 10px;
-        }
-        .drp-notification .dropdown-toggle {
-          position: relative;
-        }
-        .notification-dropdown {
-          width: 350px;
-          padding: 0;
-        }
-        .noti-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 15px;
-          border-bottom: 1px solid #f1f1f1;
-        }
-        .noti-body {
-          max-height: 300px;
-          overflow-y: auto;
-        }
-        .noti-footer {
-          text-align: center;
-          padding: 10px;
-          border-top: 1px solid #f1f1f1;
-        }
-        .unread {
-          background-color: #f8f9fa;
-        }
-        .status-indicator {
-          margin-left: 10px;
-        }
-        .status-dot {
-          display: inline-block;
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-        }
-      `}</style>
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: '30px',
+            }}
+          >
+            <p
+              style={{
+                color: '#7f8c8d',
+                fontSize: '15px',
+                margin: '0',
+              }}
+            >
+              Enter your new password below
+            </p>
+          </div>
+
+          <div className="form-group-enhanced">
+            <label className="form-label-enhanced">Current Password</label>
+            <input
+              type="password"
+              placeholder="Enter your current password"
+              value={password.previousPassword}
+              onChange={(e) =>
+                setPassword({ ...password, previousPassword: e.target.value })
+              }
+              className="form-input-enhanced"
+            />
+          </div>
+          <div className="form-group-enhanced">
+            <label className="form-label-enhanced">New Password</label>
+            <input
+              type="password"
+              placeholder="Enter new password"
+              value={password.newPassword}
+              onChange={(e) =>
+                setPassword({ ...password, newPassword: e.target.value })
+              }
+              className="form-input-enhanced"
+            />
+          </div>
+
+          <div className="modal-actions-enhanced">
+            <button
+              type="button"
+              onClick={() => setShowEditPasswordModal(false)}
+              className="btn-cancel-enhanced"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmEditPassword}
+              className="btn-submit-enhanced"
+              style={{
+                background: 'linear-gradient(135deg, #3498db, #2980b9)',
+              }}
+            >
+              Update Password
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <ChatList listOpen={listOpen} closed={() => setListOpen(false)} />
     </React.Fragment>
   );
 };

@@ -40,21 +40,30 @@ const Wallet = () => {
   };
   const [addPocketCashModal, setAddPocketCashModal] = useState(false);
   const [removePocketCashModal, setRemovePocketCashModal] = useState(false);
+  const [isRemovingCash, setIsRemovingCash] = useState(false);
   const handleTransaction = async (type) => {
+    if (type === 'deduct' && isRemovingCash) return; // Prevent multiple clicks
+
     try {
+      if (type === 'deduct') setIsRemovingCash(true);
+
       const endpoint =
         type === 'add' ? '/api/pocketCash/add' : '/api/pocketCash/deduct';
       await api.post(endpoint, {
         amount: Number(formData.accountCash),
         ...(type === 'add'
           ? { sourceOfAmountAddition: formData.sourceOfAmountAddition }
-          : { sourceOfAmountDeduction: formData.sourceOfAmountDeduction }),
+          : { reasonOfAmountDeduction: formData.sourceOfAmountDeduction }),
       });
+      setAddPocketCashModal(false);
+      setRemovePocketCashModal(false);
       toast.success('transaction is successful!');
       fetchTotalCash();
     } catch (error) {
       toast.error('Error in making transaction!');
       console.error(`Failed to ${type} cash:`, error);
+    } finally {
+      if (type === 'deduct') setIsRemovingCash(false);
     }
   };
 
@@ -108,6 +117,7 @@ const Wallet = () => {
       );
       toast.success('Cash added successfully!');
       getAllBanks();
+      setShowModal(false);
     } catch (error) {
       console.error('Error adding cash:', error);
       toast.error('Error adding cash!');
@@ -127,6 +137,7 @@ const Wallet = () => {
       );
       toast.success('Cash removed successfully!');
       getAllBanks();
+      setShowRemovalModal(false);
     } catch (error) {
       console.error('Error removed cash:', error);
       toast.error('Error removed cash!');
@@ -651,8 +662,9 @@ const Wallet = () => {
                 variant="danger"
                 onClick={() => handleTransaction('deduct')}
                 style={{ padding: '6px 16px' }}
+                disabled={isRemovingCash}
               >
-                Submit
+                {isRemovingCash ? 'Processing...' : 'Submit'}
               </Button>
             </div>
           </div>

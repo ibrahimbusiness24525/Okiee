@@ -28,19 +28,31 @@ const TodayBook = () => {
   const [todayBookData, setTodayBookData] = useState([]);
   const [bankData, setBankData] = useState([]);
   const [date, setDate] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [totalCash, setTotalCash] = useState(0);
   const [showProfitModal, setShowProfitModal] = useState(false);
   const [accessoryTransactions, setAccessoryTransactions] = useState([]); // Load your accessory data here
 
   const getTodayBook = async () => {
     try {
-      const response = await api.get(`/api/dayBook/todayBook`, {
-        params: { date },
+      // Build query params per range rules
+      const params = {};
+      if (startDate && endDate) {
+        params.startDate = startDate; // YYYY-MM-DD
+        params.endDate = endDate; // YYYY-MM-DD
+      } else if (date) {
+        params.date = date; // single day
+      }
+
+      const response = await api.get('/api/dayBook/todayBook', {
+        params,
       });
 
       setTodayBookData(response?.data?.data || []);
-    } catch (error) { }
+    } catch (error) {}
   };
+  console.log('todayBookData', todayBookData);
   const fetchTotalCash = async () => {
     try {
       const res = await api.get('/api/pocketCash/total');
@@ -86,11 +98,11 @@ const TodayBook = () => {
 
   const uniqueSoldBulkPhones = todayBookData?.soldBulkPhone
     ? Object.values(
-      todayBookData.soldBulkPhone.reduce((acc, phone) => {
-        acc[phone.bulkPhonePurchaseId] = phone; // override duplicates
-        return acc;
-      }, {})
-    )
+        todayBookData.soldBulkPhone.reduce((acc, phone) => {
+          acc[phone.bulkPhonePurchaseId] = phone; // override duplicates
+          return acc;
+        }, {})
+      )
     : [];
 
   const totalPurchasePrice =
@@ -287,7 +299,7 @@ const TodayBook = () => {
   // Calculate opening balance from banks
   const openingBalance =
     bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) +
-    totalCash || 0 + totalCash;
+      totalCash || 0 + totalCash;
   const bankTotalBalance =
     bankData?.reduce((acc, bank) => acc + (Number(bank.accountCash) || 0), 0) ||
     0;
@@ -347,7 +359,11 @@ const TodayBook = () => {
     },
     {
       title: 'Accessories Profit',
-      value: formatCurrency(todayBookData?.totalAccessoriesProfit && todayBookData?.totalAccessoriesProfit.toFixed(0), false),
+      value: formatCurrency(
+        todayBookData?.totalAccessoriesProfit &&
+          todayBookData?.totalAccessoriesProfit.toFixed(0),
+        false
+      ),
       icon: Package,
       color: '#7c3aed', // purple-600
       bgColor: '#f5f3ff', // purple-50
@@ -397,7 +413,7 @@ const TodayBook = () => {
 
     {
       title: 'Sale Track',
-      icon: ShoppingBag, // 🛍️ For tracking sales
+      icon: ShoppingBag, // 🛍 For tracking sales
       color: '#059669', // emerald-600
       bgColor: '#ecfdf5', // emerald-50
       route: '/reports/total',
@@ -452,7 +468,11 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.totalStockAmount && todayBookData?.totalStockAmount?.toFixed(0) || 0),
+      value: formatCurrency(
+        (todayBookData?.totalStockAmount &&
+          todayBookData?.totalStockAmount?.toFixed(0)) ||
+          0
+      ),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -461,7 +481,9 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.creditSummary?.totalPayable.toFixed(0) || 0),
+      value: formatCurrency(
+        todayBookData?.creditSummary?.totalPayable.toFixed(0) || 0
+      ),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -470,7 +492,9 @@ const TodayBook = () => {
       icon: Wallet, // 👛 For total financial value of the stock
       color: '#059669',
       // value: formatCurrency(totalPurchasePrice),
-      value: formatCurrency(todayBookData?.creditSummary?.totalReceivable.toFixed(0) || 0),
+      value: formatCurrency(
+        todayBookData?.creditSummary?.totalReceivable.toFixed(0) || 0
+      ),
       bgColor: '#ecfdf5',
       route: '/reports/total',
     },
@@ -635,7 +659,9 @@ const TodayBook = () => {
                     color: '#374151',
                   }}
                 >
-                  <span style={{ fontWeight: '600' }}>{accessory.accessoryName}</span>
+                  <span style={{ fontWeight: '600' }}>
+                    {accessory.accessoryName}
+                  </span>
                   <span style={{ color: '#10b981', fontWeight: '500' }}>
                     Profit {accessory.profit}PKR
                   </span>
@@ -1017,6 +1043,46 @@ const TodayBook = () => {
         </h1>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {/* Range mode: provide start and end dates. If both filled, range overrides single date */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <label style={{ color: '#555', fontSize: '12px' }}>Start</label>
+            <input
+              onChange={(e) => setStartDate(e.target.value)}
+              type="date"
+              value={startDate}
+              name="startDate"
+              style={{
+                padding: '8px 12px',
+                fontSize: '14px',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                outline: 'none',
+                backgroundColor: '#fff',
+                color: '#333',
+                cursor: 'pointer',
+                minWidth: '140px',
+              }}
+            />
+            <label style={{ color: '#555', fontSize: '12px' }}>End</label>
+            <input
+              onChange={(e) => setEndDate(e.target.value)}
+              type="date"
+              value={endDate}
+              name="endDate"
+              style={{
+                padding: '8px 12px',
+                fontSize: '14px',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                outline: 'none',
+                backgroundColor: '#fff',
+                color: '#333',
+                cursor: 'pointer',
+                minWidth: '140px',
+              }}
+            />
+          </div>
+          <span style={{ color: '#888', fontSize: '12px' }}>or</span>
           <input
             onChange={(e) => setDate(e.target.value)}
             type="date"
@@ -1258,15 +1324,15 @@ const TodayBook = () => {
             },
           },
         ]}
-      // extraColumns={[
-      //     () => {
-      //         return (
-      //             <MdEdit
+        // extraColumns={[
+        //     () => {
+        //         return (
+        //             <MdEdit
 
-      //                 className="text-[#ccccc] text-[1.3rem]" />
-      //         );
-      //     },
-      // ]}
+        //                 className="text-[#ccccc] text-[1.3rem]" />
+        //         );
+        //     },
+        // ]}
       />
       <div style={{ marginTop: '50px' }}></div>
       <StyledHeading>Today Purchased Single Phones</StyledHeading>
@@ -1351,7 +1417,9 @@ const TodayBook = () => {
 
             return (
               <p>
-                {profitOrLoss < 0 ? `Loss of ${-profitOrLoss}` : profitOrLoss}
+                {profitOrLoss < 0
+                  ? `Loss of ${-profitOrLoss}`
+                  : `Profit of ${profitOrLoss}`}
               </p>
             );
           },

@@ -19,6 +19,7 @@ const PurchasePhone = ({
 }) => {
   const today = new Date().toISOString().split('T')[0];
   const [banks, setBanks] = useState([]);
+  const[loading, setLoading] = useState(false);
   // const [entitiyData, setEntitiyData] = useState();
   const [bulkData, setBulkData] = useState({
     // partyName: '',
@@ -54,7 +55,7 @@ const PurchasePhone = ({
   const [showSingleModal, setShowSingleModal] = useState(false); // For Single Phone Purchase Modal
   const [showBulkModal, setShowBulkModal] = useState(false); // For Bulk Purchase Modal
   const [showWarranty, setShowWarranty] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [singlePurchase, setSinglePurchase] = useState({
     name: '', // Matches `name` from the backend
     bankAccountUsed: '',
@@ -91,6 +92,8 @@ const PurchasePhone = ({
     },
     isApprovedFromEgadgets: true, // Matches `isApprovedFromEgadgets`
     eGadgetStatusPicture: '', // Matches `eGadgetStatusPicture`
+    cnicFrontPic: null, // NEW: For CNIC front photo
+    cnicBackPic: null,
   });
 
   const handleAddIMEI = (imei) => {
@@ -142,6 +145,32 @@ const PurchasePhone = ({
         demandPrice: editMobile.price?.demandPrice || '', // Matches `price.demandPrice`
         isApprovedFromEgadgets: editMobile.isApprovedFromEgadgets || false, // Matches `isApprovedFromEgadgets`
         // eGadgetStatusPicture: editMobile.eGadgetStatusPicture || '', // Matches `eGadgetStatusPicture`
+        // Payment related fields
+        bankAccountUsed: editMobile.bankAccountUsed || editMobile.purchasePaymentData?.bankAccountUsed || '',
+        amountFromBank: editMobile.accountCash || editMobile.purchasePaymentData?.amountFromBank || editMobile.amountFromBank || '',
+        amountFromPocket: editMobile.pocketCash || editMobile.purchasePaymentData?.amountFromPocket || editMobile.amountFromPocket || '',
+        paymentType: (() => {
+          const paymentType = editMobile.purchasePaymentType || editMobile.paymentType || '';
+          // Normalize payment type to match dropdown options
+          if (!paymentType) return '';
+          const normalized = paymentType.toLowerCase().trim();
+          if (normalized === 'full-payment' || normalized === 'full' || normalized === 'full payment') {
+            return 'full-payment';
+          }
+          if (normalized === 'credit') {
+            return 'credit';
+          }
+          return paymentType; // Return original if doesn't match known values
+        })(),
+        payableAmountNow: editMobile.creditPaymentData?.payableAmountNow || editMobile.payableAmountNow || '',
+        payableAmountLater: editMobile.creditPaymentData?.payableAmountLater || editMobile.payableAmountLater || '',
+        paymentDate: editMobile.creditPaymentData?.dateOfPayment || editMobile.paymentDate || '',
+        // Entity data
+        entityData: editMobile.entityData || (editMobile.name || editMobile.mobileNumber ? {
+          name: editMobile.name || '',
+          number: editMobile.mobileNumber || '',
+          _id: editMobile.entityData?._id || ''
+        } : null),
       });
     }
     if (editMobile && bulkEdit) {
@@ -155,11 +184,27 @@ const PurchasePhone = ({
         activation: editMobile.prices?.activation || '',
         dealerPrice: editMobile.prices?.dealerPrice || '',
         buyingPrice: editMobile.prices?.buyingPrice || '',
-        paymentType: editMobile.purchasePaymentType || '',
+        paymentType: (() => {
+          const paymentType = editMobile.purchasePaymentType || editMobile.paymentType || '';
+          // Normalize payment type to match dropdown options
+          if (!paymentType) return '';
+          const normalized = paymentType.toLowerCase().trim();
+          if (normalized === 'full-payment' || normalized === 'full' || normalized === 'full payment') {
+            return 'full-payment';
+          }
+          if (normalized === 'credit') {
+            return 'credit';
+          }
+          return paymentType; // Return original if doesn't match known values
+        })(),
         payableAmountNow: editMobile.creditPaymentData?.payableAmountNow || '',
         payableAmountLater:
           editMobile.creditPaymentData?.payableAmountLater || '',
         paymentDate: editMobile.creditPaymentData?.dateOfPayment || '',
+        // Payment related fields
+        bankAccountUsed: editMobile.bankAccountUsed || editMobile.purchasePaymentData?.bankAccountUsed || '',
+        amountFromBank: editMobile.accountCash || editMobile.purchasePaymentData?.amountFromBank || editMobile.amountFromBank || '',
+        amountFromPocket: editMobile.pocketCash || editMobile.purchasePaymentData?.amountFromPocket || editMobile.amountFromPocket || '',
         quantity: editMobile.ramSimDetails?.length || 0,
         ramSimDetails:
           editMobile.ramSimDetails?.map((detail) => ({
@@ -260,22 +305,38 @@ const PurchasePhone = ({
     formData.append('imei1', singlePurchase.imei1); // Use correct field name
     formData.append('imei2', singlePurchase.imei2);
     formData.append('color', singlePurchase.color);
-    formData.append('name', singlePurchase.name);
+    formData.append('name',singlePurchase.entityData.name);
+    // formData.append('name', singlePurchase.name);
     formData.append('fatherName', singlePurchase.fatherName);
     formData.append('date', singlePurchase.date);
     formData.append('cnic', singlePurchase.cnic);
     formData.append('warranty', singlePurchase.warranty);
-    formData.append('paymentType', singlePurchase.paymentType);
-    formData.append('payableAmountNow', singlePurchase.payableAmountNow);
-    formData.append('payableAmountLater', singlePurchase.payableAmountLater);
-    formData.append('paymentDate', singlePurchase.paymentDate);
-
+    // Mirror bulk purchase semantics
+    formData.append('purchasePaymentType', singlePurchase.paymentType);
+    if (singlePurchase.paymentType === 'credit') {
+      formData.append(
+        'creditPaymentData',
+        JSON.stringify({
+          payableAmountNow: Number(singlePurchase.payableAmountNow || 0),
+          payableAmountLater: Number(singlePurchase.payableAmountLater || 0),
+          dateOfPayment: singlePurchase.paymentDate || '',
+        })
+      );
+    }
+// Append CNIC photos
+if (singlePurchase.cnicFrontPic) {
+  formData.append('cnicFrontPic', singlePurchase.cnicFrontPic);
+}
+if (singlePurchase.cnicBackPic) {
+  formData.append('cnicBackPic', singlePurchase.cnicBackPic);
+}
     // Convert accessories to JSON string to maintain its array format
     formData.append('accessories', JSON.stringify(singlePurchase.accessories));
 
     formData.append('phoneCondition', singlePurchase.phoneCondition);
     formData.append('ramMemory', singlePurchase.ramMemory);
-    formData.append('mobileNumber', singlePurchase.mobileNumber);
+    // formData.append('mobileNumber', singlePurchase.mobileNumber);
+    formData.append('mobileNumber', singlePurchase.entityData.number);
 
     // Append approval status
     formData.append(
@@ -285,6 +346,11 @@ const PurchasePhone = ({
 
     // Include shop ID from the logged-in user
     formData.append('shopid', user._id);
+
+    // Include entityData if provided
+    if (singlePurchase?.entityData) {
+      formData.append('entityData', JSON.stringify(singlePurchase.entityData));
+    }
 
     // Append image fields (ensure they are valid File objects)
     if (singlePurchase.phonePicture) {
@@ -302,7 +368,7 @@ const PurchasePhone = ({
     if (editMobile && !bulkEdit) {
       try {
         console.log('Editing mobile record:', editMobile);
-
+        setLoading(true);
         const response = await api.put(
           `/api/Purchase/single-purchase-phone/${editMobile._id}`,
           formData
@@ -312,10 +378,11 @@ const PurchasePhone = ({
           handleSinglePhoneModalclose();
           handleModalClose();
           resetForm();
+          setLoading(false);
         }
       } catch (error) {
         console.error(error);
-
+        setLoading(false);
         toast('Something went wrong');
       } finally {
         setLoading(false);
@@ -330,6 +397,7 @@ const PurchasePhone = ({
         //     headers: { "Content-Type": "multipart/form-data" },
         //   }
         // );
+        setLoading(true);
         const response = await api.post(
           `/api/Purchase/purchase-phone`,
           formData
@@ -339,9 +407,11 @@ const PurchasePhone = ({
           toast('Purchase Phone Record Added Successfully');
           handleSinglePhoneModalclose();
           handleModalClose();
+          setLoading(false);
           // resetForm();
         }
       } catch (error) {
+        setLoading(false);
         toast('Something went wrong');
       } finally {
         setLoading(false);
@@ -435,6 +505,7 @@ const PurchasePhone = ({
   }, [bulkData.ramSimDetails]);
 
   const handleBulkRecordSubmit = async (finalData) => {
+    setLoading(true);
     if (bulkEdit) {
       try {
         const payload = {
@@ -481,10 +552,11 @@ const PurchasePhone = ({
           toast('Purchase bulk Record is updated Successfully');
           handleBulkPhoneModalclose();
           handleModalClose();
+          setLoading(false);
         }
       } catch (error) {
         console.error(error);
-
+        setLoading(false);  
         toast(
           error?.response?.data?.message ||
             error?.message ||
@@ -531,7 +603,7 @@ const PurchasePhone = ({
           entityData: finalData.entityData,
         };
         console.log('Payload for bulk purchase:', payload);
-
+        setLoading(true);
         const response = await api.post(
           `/api/Purchase/bulk-phone-purchase`,
           payload
@@ -541,9 +613,11 @@ const PurchasePhone = ({
           toast('Purchase bulk Record Added Successfully');
           handleBulkPhoneModalclose();
           handleModalClose();
+          setLoading(false);
         }
       } catch (error) {
         console.error(error);
+        setLoading(false);
 
         toast(
           error?.response?.data?.message ||
@@ -616,6 +690,7 @@ const PurchasePhone = ({
 
       <BulkPurchaseModal
         type
+        loading={loading}
         handleBulkPhoneModalclose={handleBulkPhoneModalclose}
         handleSubmit={handleBulkRecordSubmit}
         showBulkModal={showBulkModal}
@@ -625,6 +700,7 @@ const PurchasePhone = ({
         editMobile={editMobile}
       />
       <SingalPurchaseModal
+        loading={loading}
         type={type}
         handleAccessoriesCheck={handleAccessoriesCheck}
         handleSinglePhoneModalclose={handleSinglePhoneModalclose}

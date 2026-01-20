@@ -7,9 +7,11 @@ import { InvoiceComponent } from 'components/InvoiceComponent';
 import { toast } from 'react-toastify';
 import Modal from 'components/Modal/Modal';
 import { SmallInvoiceComponent } from 'components/SmallInvoiceComponent';
+import { BASE_URL } from 'config/constant';
 import { StockListComponent } from 'components/StockInvoice';
 const SoldInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
+  const [logoUrl, setLogoUrl] = useState(null);
   const [displayHalfP4, setDisplayHalfP4] = useState(false);
   const [showSmallInvoice, setShowSmallInvoice] = useState(false);
   const [originalInvoice, setOriginalInvoice] = useState(true);
@@ -149,8 +151,58 @@ const SoldInvoice = () => {
     },
   };
 
+  // Fetch logo from API once
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLogo = async () => {
+      try {
+        console.log('🔍 Fetching logo from API...');
+        const res = await api.get('/api/shop/logo');
+        console.log('📡 Logo API response:', res?.data);
+
+        if (isMounted && res?.data?.success && res?.data?.logo) {
+          const path = String(res.data.logo);
+          console.log('🛤️ Logo path from API:', path);
+
+          if (
+            path &&
+            path !== '{}' &&
+            path !== 'null' &&
+            path !== 'undefined'
+          ) {
+            const full = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+            console.log('🔗 Full logo URL:', full);
+            setLogoUrl(full);
+          } else {
+            console.log('❌ Invalid logo path:', path);
+          }
+        } else {
+          console.log('❌ No logo data in response or API failed');
+        }
+      } catch (error) {
+        console.error('❌ Error fetching logo:', error);
+      }
+    };
+
+    fetchLogo();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const location = useLocation();
   const dataReceived = location?.state ?? {};
+
+  // Debug: Log dataReceived to see what we're working with
+  useEffect(() => {
+    console.log('📋 dataReceived on component load:', dataReceived);
+    console.log('🆔 Available ID fields:', {
+      id: dataReceived.id,
+      _id: dataReceived._id,
+      bulkSoldId: dataReceived.bulkSoldId,
+      bulkPhonePurchaseId: dataReceived.bulkPhonePurchaseId,
+    });
+  }, []);
   const getValidDate = (inputDate) => {
     const date = new Date(inputDate);
     return isNaN(date.getTime())
@@ -171,9 +223,6 @@ const SoldInvoice = () => {
       dataReceived?.invoice?.invoiceNumber ?? dataReceived.invoice
         ? dataReceived.invoice?.invoiceNumber
         : `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    // invoiceDate: dataReceived?.invoice
-    // ? new Date(dataReceived?.invoice?.invoiceDate).toISOString().split('T')[0]
-    // : new Date().toISOString().split('T')[0],
     invoiceDate: getValidDate(dataReceived?.invoice?.invoiceDate),
 
     items: dataReceived.invoice ? dataReceived.invoice?.items : [],
@@ -253,8 +302,8 @@ const SoldInvoice = () => {
   function formatPhoneNumber(number) {
     if (!number) return null;
 
-    // Remove all non-digit characters first
-    const digitsOnly = number.replace(/\D/g, '');
+    // Ensure number is a string before replacing
+    const digitsOnly = String(number).replace(/\D/g, '');
 
     // If number is in international format (+923057903867)
     if (digitsOnly.startsWith('92')) {
@@ -273,12 +322,17 @@ const SoldInvoice = () => {
     (dataReceived?.addedImeis?.length !== 0 &&
       dataReceived?.addedImeis?.map((imei) => imei.split(' / ')[0])) ||
     [];
+
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (type) => {
+    setLoading(true);
     if (
       dataReceived?.prices?.buyingPrice ||
       dataReceived?.bulkPhonePurchaseId
     ) {
       const payload = {
+        imeisWithPrices: dataReceived?.imeisWithPrices,
+        entityData: dataReceived?.entityData,
         bankAccountUsed: dataReceived?.walletTransaction?.bankAccountUsed,
         accountCash: Number(dataReceived?.walletTransaction?.amountFromBank),
         pocketCash: Number(dataReceived?.walletTransaction?.amountFromPocket),
@@ -329,8 +383,10 @@ const SoldInvoice = () => {
 
         if (response) {
           alert('Bulk invoice submitted successfully');
+          setLoading(false);
         }
       } catch (error) {
+        setLoading(false);
         alert('Error in submitting bulk invoice: ' + error.message);
       }
     } else {
@@ -446,8 +502,10 @@ const SoldInvoice = () => {
     try {
       const payload = {
         // imeis: dataReceived.imei,
-        customerName: dataReceived.customerName,
-        customerNumber: dataReceived.customerNumber,
+        entityData: dataReceived?.entityData,
+        customerName: dataReceived?.customerName,
+        customerNumber: dataReceived?.customerNumber,
+        imeiPrices: dataReceived?.imeiPrices || [], // Array of {imei: '', price: ''} objects
         warranty: dataReceived.warranty,
         saleDate: dataReceived.saleDate,
         finalPrice: dataReceived.finalPrice,
@@ -461,8 +519,8 @@ const SoldInvoice = () => {
         exchangePhoneDetail: dataReceived.exchangePhoneDetail,
         cnicFrontPic: dataReceived.cnicFrontPic,
         cnicBackPic: dataReceived.cnicBackPic,
-        payableAmountNow: dataReceived.payableAmountNow,
-        payableAmountLater: dataReceived.payableAmountLater,
+        payableAmountNow: Number(dataReceived.payableAmountNow) || 0,
+        payableAmountLater: Number(dataReceived.payableAmountLater) || 0,
         payableAmountLaterDate: dataReceived.payableAmountLaterDate,
         bankName: dataReceived.bankName,
         salePrice: dataReceived.finalPrice,
@@ -471,7 +529,7 @@ const SoldInvoice = () => {
         mobileNumber: dataReceived.customerNumber,
         // ...any other fields you want
       };
-
+      console.log('payload', payload);
       const response = await api.post(
         '/api/purchase/general-mobile-sale',
         payload
@@ -479,7 +537,14 @@ const SoldInvoice = () => {
       toast.success('Sold Successfully');
       console.log('✅ Sold successfully', response.data);
     } catch (error) {
-      toast.error('something went wrong');
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          error?.response?.data?.error ||
+          error?.response?.data?.errors ||
+          error?.response ||
+          'something went wrong'
+      );
       console.error(
         '❌ Error selling phone:',
         error.response?.data || error.message
@@ -494,10 +559,11 @@ const SoldInvoice = () => {
     companyName: dataReceived.companyName || '',
     modelName: dataReceived.modelName || '',
     warranty: dataReceived.warranty || '',
-    saleDate: dataReceived.saleDate || '',
-    sellingType: dataReceived.sellingType || '',
+    saleDate: dataReceived.saleDate || dataReceived.dateSold || '', // Handle both saleDate and dateSold
+    sellingType:
+      dataReceived.sellingType || dataReceived.sellingPaymentType || '', // Handle both sellingType and sellingPaymentType
     bankName: dataReceived.bankName || '',
-    finalPrice: dataReceived.finalPrice || '',
+    finalPrice: dataReceived.finalPrice || dataReceived.salePrice || '', // Handle both finalPrice and salePrice
     // payableAmountNow: dataReceived.payableAmountNow || '',
     // payableAmountLater: dataReceived.payableAmountLater || '',
     // payableAmountLaterDate: dataReceived.payableAmountLaterDate || '',
@@ -505,18 +571,51 @@ const SoldInvoice = () => {
     cnicFrontPic: dataReceived.cnicFrontPic || '',
     cnicBackPic: dataReceived.cnicBackPic || '',
     accessories: dataReceived.accessories || [],
-    imei1: dataReceived.imei1 || '',
+    imei1:
+      dataReceived.imei1 ||
+      (Array.isArray(dataReceived.imei1) ? dataReceived.imei1[0] : '') ||
+      '', // Handle array IMEI
     // Add more fields as needed
   });
 
   // Modal state for editing invoice
   const [invoiceModal, setInvoiceModal] = useState(false);
 
+  // Update editInvoiceFields when modal opens
+  useEffect(() => {
+    if (invoiceModal) {
+      setEditInvoiceFields({
+        customerName: dataReceived.customerName || '',
+        customerNumber: dataReceived.customerNumber || '',
+        companyName: dataReceived.companyName || '',
+        modelName: dataReceived.modelName || '',
+        warranty: dataReceived.warranty || '',
+        saleDate: dataReceived.saleDate || dataReceived.dateSold || '', // Handle both saleDate and dateSold
+        sellingType:
+          dataReceived.sellingType || dataReceived.sellingPaymentType || '', // Handle both sellingType and sellingPaymentType
+        bankName: dataReceived.bankName || '',
+        finalPrice: dataReceived.finalPrice || dataReceived.salePrice || '', // Handle both finalPrice and salePrice
+        cnicFrontPic: dataReceived.cnicFrontPic || '',
+        cnicBackPic: dataReceived.cnicBackPic || '',
+        accessories: dataReceived.accessories || [],
+        imei1:
+          dataReceived.imei1 ||
+          (Array.isArray(dataReceived.imei1) ? dataReceived.imei1[0] : '') ||
+          '', // Handle array IMEI
+      });
+    }
+  }, [invoiceModal]);
+
   // Update invoice data function (for edit/save)
   const updateInvoiceData = async () => {
     try {
+      const invoiceId = dataReceived.id || dataReceived._id;
+      if (!invoiceId) {
+        toast.error('Invoice ID not found');
+        return;
+      }
       const response = await api.put(
-        `/update-sold-phone/${dataReceived.id}`,
+        `/api/Purchase/update-sold-phone/${invoiceId}`,
         editInvoiceFields
       );
       toast.success('Invoice data updated successfully');
@@ -528,6 +627,161 @@ const SoldInvoice = () => {
   };
   console.log('termsAndConditions', shop);
 
+  // const smallInvoiceData = {
+  //   termsAndConditions:
+  //     shop?.termsCondition || 'No terms and conditions provided',
+  //   shopInfo: shop?.address || 'Shop Address Not Mentioned',
+  //   title: 'INVOICE',
+  //   subtitle:
+  //     dataReceived?.sellingType || phoneDetail?.sellingType || 'Counter Sale',
+  //   date:
+  //     dataReceived?.saleDate || phoneDetail?.saleDate
+  //       ? new Date(
+  //         dataReceived?.saleDate || phoneDetail?.saleDate
+  //       ).toLocaleDateString('en-GB')
+  //       : 'N/A',
+  //   invoiceNumber:
+  //     (dataReceived?._id || phoneDetail?._id)?.slice(-6).toUpperCase() ||
+  //     '000000',
+  //   customer: {
+  //     name:
+  //       dataReceived?.customerName ||
+  //       phoneDetail?.customerName ||
+  //       'Customer Name Not Provided',
+  //     phone:
+  //       dataReceived?.customerNumber ||
+  //       phoneDetail?.customerNumber ||
+  //       '____________________',
+  //   },
+  //   items: [
+  //     // Handle both ramSimDetails (bulk) and single phone cases
+  //     ...(dataReceived?.ramSimDetails?.flatMap((ramSim, index) => {
+  //       return ramSim?.imeiNumbers?.map((imeiItem, subIndex) => ({
+  //         no: index * 2 + subIndex + 1,
+  //         name: `${ramSim.companyName || phoneDetail?.companyName || 'Brand'} ${ramSim.modelName || phoneDetail?.modelName || 'Model'} ${ramSim.ramMemory || phoneDetail?.ramMemory || ''}`,
+  //         code:
+  //           imeiItem.imei1 || dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+  //         qty: 1,
+  //         rate: String(
+  //           ramSim.priceOfOne ||
+  //           dataReceived?.finalPrice ||
+  //           phoneDetail?.finalPrice ||
+  //           0
+  //         ),
+  //         amount: String(
+  //           ramSim.priceOfOne ||
+  //           dataReceived?.finalPrice ||
+  //           phoneDetail?.finalPrice ||
+  //           0
+  //         ),
+  //       }));
+  //     }) || []),
+
+  //     // Fallback to single phone if no ramSimDetails
+  //     ...(!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
+  //       ? [
+  //         {
+  //           no: 1,
+  //           name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+  //           code: dataReceived?.addedImei1s||dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+  //           qty: 1,
+  //           rate: String(
+  //             dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+  //           ),
+  //           amount: String(
+  //             dataReceived?.totalInvoice ||
+  //             phoneDetail?.totalInvoice ||
+  //             dataReceived?.finalPrice ||
+  //             phoneDetail?.finalPrice ||
+  //             0
+  //           ),
+  //         },
+  //       ]
+  //       : []),
+
+  //     // Handle accessories from either source
+  //     ...((dataReceived?.accessories || phoneDetail?.accessories)?.map(
+  //       (item, index) => ({
+  //         no:
+  //           (dataReceived?.ramSimDetails?.length ||
+  //             phoneDetail?.ramSimDetails?.length ||
+  //             0) +
+  //           index +
+  //           1,
+  //         name: `Accessory: ${item.name || 'Unknown'}`,
+  //         code: item.name || '-',
+  //         qty: Number(item.quantity) || 1,
+  //         rate: String(item.price || 0),
+  //         amount: String(Number(item.price || 0) * Number(item.quantity || 1)),
+  //       })
+  //     ) || []),
+  //   ],
+  //   summary: {
+  //     items:
+  //       (dataReceived?.ramSimDetails?.reduce(
+  //         (sum, ramSim) => sum + (ramSim.imeiNumbers?.length || 0),
+  //         0
+  //       ) || 0) +
+  //       (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
+  //       (dataReceived?.accessories?.length ||
+  //         phoneDetail?.accessories?.length ||
+  //         0),
+
+  //     cashReturn: '–',
+  //     bankReturn: '–',
+  //     freight: '–',
+  //     subTotal: String(
+  //       Number(
+  //         dataReceived?.prices?.buyingPrice || phoneDetail?.purchasePrice || 0
+  //       ) +
+  //       ((dataReceived?.accessories || phoneDetail?.accessories)?.reduce(
+  //         (sum, acc) =>
+  //           sum + Number(acc.price || 0) * Number(acc.quantity || 0),
+  //         0
+  //       ) || 0)
+  //     ),
+  //     discount: '–',
+  //     netTotal: String(
+  //       dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+  //     ),
+  //     previousBal: '–',
+  //     total: String(
+  //       dataReceived?.totalInvoice ||
+  //       phoneDetail?.totalInvoice ||
+  //       dataReceived?.finalPrice ||
+  //       phoneDetail?.finalPrice ||
+  //       0
+  //     ),
+  //     bankDeposit:
+  //       dataReceived?.walletTransaction?.amountFromBank ||
+  //       phoneDetail?.walletTransaction?.amountFromBank ||
+  //       '–',
+  //     currentTotal: '–',
+  //   },
+  //   operator: 'admin',
+  //   timestamp: new Date().toLocaleString('en-GB', {
+  //     dateStyle: 'medium',
+  //     timeStyle: 'short',
+  //   }),
+  //   pending: [
+  //     // Only add pending items if this is a credit sale
+  //     ...(dataReceived?.sellingPaymentType === 'Credit' ||
+  //       phoneDetail?.sellingPaymentType === 'Credit'
+  //       ? [
+  //         {
+  //           no: 1,
+  //           name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
+  //           qty: 1,
+  //         },
+  //       ]
+  //       : []),
+  //   ],
+  //   social: {
+  //     url: 'http://www.conceptmobiles.net',
+  //     text: 'www.conceptmobiles.net',
+  //   },
+  //   qr: 'qr-code.png',
+  // };
   const smallInvoiceData = {
     termsAndConditions:
       shop?.termsCondition || 'No terms and conditions provided',
@@ -555,22 +809,28 @@ const SoldInvoice = () => {
         '____________________',
     },
     items: [
-      // Handle both ramSimDetails (bulk) and single phone cases
+      // Handle ramSimDetails with addedImeis filter
       ...(dataReceived?.ramSimDetails?.flatMap((ramSim, index) => {
-        return ramSim?.imeiNumbers?.map((imeiItem, subIndex) => ({
+        const filteredImeis =
+          ramSim?.imeiNumbers?.filter((imeiItem) =>
+            dataReceived.addedImeis?.includes(imeiItem.imei1)
+          ) || [];
+
+        return filteredImeis.map((imeiItem, subIndex) => ({
           no: index * 2 + subIndex + 1,
           name: `${ramSim.companyName || phoneDetail?.companyName || 'Brand'} ${ramSim.modelName || phoneDetail?.modelName || 'Model'} ${ramSim.ramMemory || phoneDetail?.ramMemory || ''}`,
-          code:
-            imeiItem.imei1 || dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+          code: imeiItem.imei1 || '-',
           qty: 1,
           rate: String(
-            ramSim.priceOfOne ||
+            dataReceived.imeisWithPrices?.[imeiItem.imei1] ||
+              ramSim.priceOfOne ||
               dataReceived?.finalPrice ||
               phoneDetail?.finalPrice ||
               0
           ),
           amount: String(
-            ramSim.priceOfOne ||
+            dataReceived.imeisWithPrices?.[imeiItem.imei1] ||
+              ramSim.priceOfOne ||
               dataReceived?.finalPrice ||
               phoneDetail?.finalPrice ||
               0
@@ -584,13 +844,25 @@ const SoldInvoice = () => {
             {
               no: 1,
               name: `${dataReceived?.companyName || phoneDetail?.companyName || 'Brand'} ${dataReceived?.modelName || phoneDetail?.modelName || 'Model'}`,
-              code: dataReceived?.imei1 || phoneDetail?.imei1 || '-',
+              code:
+                dataReceived?.addedImeis?.[0] ||
+                dataReceived?.imei1 ||
+                phoneDetail?.imei1 ||
+                '-',
               qty: 1,
               rate: String(
-                dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
+                dataReceived?.imeisWithPrices?.[
+                  dataReceived?.addedImeis?.[0]
+                ] ||
+                  dataReceived?.finalPrice ||
+                  phoneDetail?.finalPrice ||
+                  0
               ),
               amount: String(
-                dataReceived?.totalInvoice ||
+                dataReceived?.imeisWithPrices?.[
+                  dataReceived?.addedImeis?.[0]
+                ] ||
+                  dataReceived?.totalInvoice ||
                   phoneDetail?.totalInvoice ||
                   dataReceived?.finalPrice ||
                   phoneDetail?.finalPrice ||
@@ -604,9 +876,17 @@ const SoldInvoice = () => {
       ...((dataReceived?.accessories || phoneDetail?.accessories)?.map(
         (item, index) => ({
           no:
-            (dataReceived?.ramSimDetails?.length ||
-              phoneDetail?.ramSimDetails?.length ||
-              0) +
+            (dataReceived?.ramSimDetails?.reduce(
+              (sum, ramSim) =>
+                sum +
+                (ramSim.imeiNumbers?.filter((imeiItem) =>
+                  dataReceived.addedImeis?.includes(imeiItem.imei1)
+                )?.length || 0),
+              0
+            ) || 0) +
+            (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails
+              ? 1
+              : 0) +
             index +
             1,
           name: `Accessory: ${item.name || 'Unknown'}`,
@@ -620,7 +900,11 @@ const SoldInvoice = () => {
     summary: {
       items:
         (dataReceived?.ramSimDetails?.reduce(
-          (sum, ramSim) => sum + (ramSim.imeiNumbers?.length || 0),
+          (sum, ramSim) =>
+            sum +
+            (ramSim.imeiNumbers?.filter((imeiItem) =>
+              dataReceived.addedImeis?.includes(imeiItem.imei1)
+            )?.length || 0),
           0
         ) || 0) +
         (!dataReceived?.ramSimDetails && !phoneDetail?.ramSimDetails ? 1 : 0) +
@@ -645,7 +929,23 @@ const SoldInvoice = () => {
       netTotal: String(
         dataReceived?.finalPrice || phoneDetail?.finalPrice || 0
       ),
-      previousBal: '–',
+      previousBal: (() => {
+        const entityData = dataReceived?.entityData || phoneDetail?.entityData;
+        const prevBal =
+          dataReceived?.previousBalance || phoneDetail?.previousBalance;
+        const givingCredit = entityData?.givingCredit || 0;
+        const takingCredit = entityData?.takingCredit || 0;
+        if (prevBal !== undefined && prevBal !== null) {
+          return String(prevBal);
+        }
+        const netBalance = givingCredit - takingCredit;
+        if (netBalance !== 0) {
+          return netBalance > 0
+            ? `Receiving: ${netBalance.toLocaleString()}`
+            : `Giving: ${Math.abs(netBalance).toLocaleString()}`;
+        }
+        return '–';
+      })(),
       total: String(
         dataReceived?.totalInvoice ||
           phoneDetail?.totalInvoice ||
@@ -665,7 +965,6 @@ const SoldInvoice = () => {
       timeStyle: 'short',
     }),
     pending: [
-      // Only add pending items if this is a credit sale
       ...(dataReceived?.sellingPaymentType === 'Credit' ||
       phoneDetail?.sellingPaymentType === 'Credit'
         ? [
@@ -682,6 +981,8 @@ const SoldInvoice = () => {
       text: 'www.conceptmobiles.net',
     },
     qr: 'qr-code.png',
+    dataReceived: dataReceived,
+    phoneDetail: phoneDetail,
   };
   // {
   //   shopInfo: shop?.address || 'Shop info not available',
@@ -958,14 +1259,22 @@ const SoldInvoice = () => {
         </button>
         {!dataReceived?.invoice && !dataReceived.manual && (
           <button
-            style={{ ...styles.button, ...styles.submitBtn }}
+            style={{
+              ...styles.button,
+              ...styles.submitBtn,
+              backgroundColor: loading
+                ? '#ccc'
+                : styles.submitBtn.backgroundColor,
+              color: loading ? '#666' : styles.submitBtn.color,
+            }}
             onMouseEnter={(e) =>
               (e.target.style.transform = 'translateY(-2px)')
             }
             onMouseLeave={(e) => (e.target.style.transform = 'none')}
             onClick={handleSubmit}
+            disabled={loading}
           >
-            Submit Invoice
+            {loading ? 'Submitting...' : 'Submit Invoice'}
           </button>
         )}
         {dataReceived.manual && (
@@ -990,14 +1299,39 @@ const SoldInvoice = () => {
             <div id="invoice" style={styles.container}>
               {/* <h1>Bulk Mobile Invoice</h1> */}
               <header style={styles.header}>
-                <div>
-                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                  <p>
-                    {shop?.contactNumber?.join(' | ') ??
-                      'Contact number not available'}
-                  </p>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                >
+                  {logoUrl && (
+                    <img
+                      src={logoUrl}
+                      alt="logo"
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '3px solid #fff',
+                        boxShadow:
+                          '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
+                        marginBottom: '10px',
+                      }}
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  )}
+                  <div>
+                    <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                    <p>
+                      {shop?.contactNumber?.join(' | ') ??
+                        'Contact number not available'}
+                    </p>
+                  </div>
                 </div>
-                <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
+                <div>
+                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>
+                    Okiiee
+                  </h2>
+                </div>
               </header>
 
               <section
@@ -1058,7 +1392,7 @@ const SoldInvoice = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {dataReceived.addedImeis.length > 0 ? (
+                  {/* {dataReceived.addedImeis.length > 0 ? (
                     <>
                       {dataReceived?.ramSimDetails
                         ?.filter((detail) =>
@@ -1082,7 +1416,6 @@ const SoldInvoice = () => {
                               {detail?.simOption ?? 'Not Available'}
                             </td>
 
-                            {/* Count of matched IMEIs */}
                             <td style={styles.td}>
                               {
                                 detail.imeiNumbers.filter((imeiObj) =>
@@ -1097,13 +1430,68 @@ const SoldInvoice = () => {
                                 : dataReceived?.finalPrice ?? 'Not Available'}
                             </td>
 
-                            {/* <td style={styles.td}>
-                       {dataReceived?.invoice?.items
-                         ? dataReceived.invoice.items[0]?.warranty
-                         : dataReceived?.warranty ?? 'Not Available'}
-                     </td> */}
+            
                           </tr>
                         ))}
+                    </> */}
+                  {dataReceived.addedImeis.length > 0 ? (
+                    <>
+                      {dataReceived?.ramSimDetails
+                        ?.filter((detail) =>
+                          detail.imeiNumbers.some((imeiObj) =>
+                            addedImei1s.includes(imeiObj.imei1)
+                          )
+                        )
+                        .map((detail, index) => {
+                          // Get matched IMEIs for this detail
+                          const matchedImeis = detail.imeiNumbers.filter(
+                            (imeiObj) => addedImei1s.includes(imeiObj.imei1)
+                          );
+
+                          // Format prices for display (only prices, no IMEIs)
+                          const imeiPricesDisplay = matchedImeis
+                            .map(
+                              (imeiObj) =>
+                                dataReceived.imeisWithPrices[imeiObj.imei1] ||
+                                'N/A'
+                            )
+                            .join(', ');
+
+                          return (
+                            <tr key={index} style={styles.stripedRow}>
+                              <td style={styles.td}>
+                                {detail?.companyName ?? 'Not Available'}
+                              </td>
+
+                              <td style={styles.td}>
+                                {detail?.modelName ?? 'Not Available'}
+                              </td>
+                              <td style={styles.td}>
+                                {detail?.ramMemory ?? 'Not Available'}
+                              </td>
+                              <td style={styles.td}>
+                                {detail?.simOption ?? 'Not Available'}
+                              </td>
+
+                              {/* Count of matched IMEIs */}
+                              <td style={styles.td}>{matchedImeis.length}</td>
+
+                              {/* Column for prices only */}
+                              <td style={styles.td}>
+                                {imeiPricesDisplay || 'Not Available'}
+                              </td>
+
+                              {!imeiPricesDisplay && (
+                                <td style={styles.td}>
+                                  {dataReceived?.invoice
+                                    ? dataReceived.invoice.totalAmount
+                                    : dataReceived?.finalPrice ??
+                                      'Not Available'}
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
                     </>
                   ) : (
                     <>
@@ -1467,14 +1855,38 @@ const SoldInvoice = () => {
           <>
             <div id="invoice" style={styles.container}>
               <header style={styles.header}>
-                <div>
-                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                  <p>
-                    {shop?.contactNumber?.join(' | ') ??
-                      'Contact number not available'}
-                  </p>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                >
+                  {logoUrl && (
+                    <img
+                      src={logoUrl}
+                      alt="logo"
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '3px solid #fff',
+                        boxShadow:
+                          '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
+                      }}
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  )}
+                  <div>
+                    <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                    <p>
+                      {shop?.contactNumber?.join(' | ') ??
+                        'Contact number not available'}
+                    </p>
+                  </div>
                 </div>
-                <h2 style={{ color: `${selectedColor}` }}>Okiiee</h2>
+                <div>
+                  <h2 style={{ color: `${selectedColor}`, margin: 0 }}>
+                    Okiiee
+                  </h2>
+                </div>
               </header>
 
               <section
@@ -1536,20 +1948,25 @@ const SoldInvoice = () => {
                       )}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
-                      phoneDetail[0]?.batteryHealth && (
-                        <th style={styles.th}>Battery Health</th>
-                      )}
+                      phoneDetail.some(
+                        (item) =>
+                          item?.batteryHealth &&
+                          String(item.batteryHealth).trim() !== ''
+                      ) && <th style={styles.th}>Battery Health</th>}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
-                      phoneDetail[0]?.color && <th style={styles.th}>Color</th>}
+                      phoneDetail.some(
+                        (item) =>
+                          item?.color && String(item.color).trim() !== ''
+                      ) && <th style={styles.th}>Color</th>}
                     {Array.isArray(phoneDetail) &&
                       phoneDetail.length > 0 &&
                       phoneDetail[0]?.simOption && (
                         <th style={styles.th}>Sim Option</th>
                       )}
-                    {dataReceived?.modelName && (
+                    {/* {dataReceived?.modelName && (
                       <th style={styles.th}>Ram Memory</th>
-                    )}
+                    )} */}
                     {dataReceived?.batteryHealth && (
                       <th style={styles.th}>Battery Health</th>
                     )}
@@ -1619,70 +2036,113 @@ const SoldInvoice = () => {
                     </td>
 
                     {/* RAM */}
-                    <td
-                      style={{
-                        padding: '8px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.ramMemory ? (
-                        <div>
-                          {phoneDetail.map((item, i) => (
-                            <div key={i}>{item.ramMemory || 'N/A'}</div>
-                          ))}
-                        </div>
-                      ) : dataReceived?.ramMemory ? (
-                        <span>{dataReceived.ramMemory}</span>
-                      ) : (
-                        'Not Available'
-                      )}
-                    </td>
+                    {Array.isArray(phoneDetail) && (
+                      <>
+                        <td
+                          style={{
+                            padding: '8px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            textAlign: 'center',
+                          }}
+                        >
+                          {Array.isArray(phoneDetail) &&
+                          phoneDetail.some(
+                            (item) =>
+                              item?.ramMemory &&
+                              String(item.ramMemory).trim() !== ''
+                          ) ? (
+                            <div>
+                              {phoneDetail.map((item, i) => (
+                                <div key={i}>{item.ramMemory || 'N/A'}</div>
+                              ))}
+                            </div>
+                          ) : dataReceived?.ramMemory ? (
+                            <span>{dataReceived.ramMemory}</span>
+                          ) : (
+                            'Not Available'
+                          )}
+                        </td>
+                      </>
+                    )}
 
                     {/* Battery Health */}
-                    <td
-                      style={{
-                        padding: '8px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {Array.isArray(phoneDetail) &&
-                      phoneDetail[0]?.batteryHealth ? (
-                        <div>
-                          {phoneDetail.map((item, i) => (
-                            <div key={i}>{item.batteryHealth || 'N/A'}</div>
-                          ))}
-                        </div>
-                      ) : dataReceived?.batteryHealth ? (
-                        <span>{dataReceived.batteryHealth}</span>
-                      ) : (
-                        'Not Available'
+                    {Array.isArray(phoneDetail) &&
+                      phoneDetail[0]?.batteryHealth && (
+                        <>
+                          <td
+                            style={{
+                              padding: '8px',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              textAlign: 'center',
+                            }}
+                          >
+                            {Array.isArray(phoneDetail) &&
+                            phoneDetail[0]?.batteryHealth ? (
+                              <div>
+                                {phoneDetail.map((item, i) => (
+                                  <div key={i}>
+                                    {item.batteryHealth || 'N/A'}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : dataReceived?.batteryHealth ? (
+                              <span>{dataReceived.batteryHealth}</span>
+                            ) : Array.isArray(phoneDetail) &&
+                              phoneDetail.some(
+                                (item) =>
+                                  item?.batteryHealth &&
+                                  String(item.batteryHealth).trim() !== ''
+                              ) ? (
+                              <span>
+                                {phoneDetail.map((item, i) => (
+                                  <div key={i}>
+                                    {item.batteryHealth || 'N/A'}
+                                  </div>
+                                ))}
+                              </span>
+                            ) : (
+                              'Not Available'
+                            )}
+                          </td>
+                        </>
                       )}
-                    </td>
 
                     {/* Color */}
-                    <td
-                      style={{
-                        padding: '8px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {Array.isArray(phoneDetail) && phoneDetail[0]?.color ? (
-                        <div>
-                          {phoneDetail.map((item, i) => (
-                            <div key={i}>{item.color || 'N/A'}</div>
-                          ))}
-                        </div>
-                      ) : (
-                        'Not Available'
-                      )}
-                    </td>
+                    {Array.isArray(phoneDetail) && (
+                      <>
+                        <td
+                          style={{
+                            padding: '8px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            textAlign: 'center',
+                          }}
+                        >
+                          {Array.isArray(phoneDetail) &&
+                          phoneDetail[0]?.color ? (
+                            <div>
+                              {phoneDetail.map((item, i) => (
+                                <div key={i}>{item.color || 'N/A'}</div>
+                              ))}
+                            </div>
+                          ) : Array.isArray(phoneDetail) &&
+                            phoneDetail.some(
+                              (item) =>
+                                item?.color && String(item.color).trim() !== ''
+                            ) ? (
+                            <span>
+                              {phoneDetail.map((item, i) => (
+                                <div key={i}>{item.color || 'N/A'}</div>
+                              ))}
+                            </span>
+                          ) : (
+                            'Not Available'
+                          )}
+                        </td>
+                      </>
+                    )}
 
                     {/* SIM Option */}
                     {Array.isArray(phoneDetail) &&
@@ -1743,6 +2203,11 @@ const SoldInvoice = () => {
                     )}
 
                     {/* Price */}
+                    {/* { dataReceived?.invoice?.totalAmount
+                        ? `${dataReceived.invoice.totalAmount.toLocaleString()}`
+                        : dataReceived?.finalPrice
+                          ? `${dataReceived.finalPrice.toLocaleString()}`
+                          : 'Not Available'} */}
                     <td
                       style={{
                         padding: '8px',
@@ -1751,14 +2216,49 @@ const SoldInvoice = () => {
                         textAlign: 'right',
                       }}
                     >
-                      {dataReceived?.invoice?.totalAmount
-                        ? `${dataReceived.invoice.totalAmount.toLocaleString()}`
-                        : dataReceived?.finalPrice
-                          ? `${dataReceived.finalPrice.toLocaleString()}`
-                          : 'Not Available'}
+                      {Array.isArray(dataReceived?.imeiPrices) &&
+                      dataReceived.imeiPrices.length > 0 ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
+                            alignItems: 'flex-end',
+                          }}
+                        >
+                          {dataReceived.imeiPrices.map((item, idx) => (
+                            <div
+                              key={`${item.imei}-${idx}`}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '4px 8px',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '4px',
+                                maxWidth: '100%',
+                              }}
+                            >
+                              <span
+                                style={{ fontSize: '12px', fontWeight: 600 }}
+                              >
+                                {' '}
+                                {Number(item.price || 0).toLocaleString()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : dataReceived?.invoice?.totalAmount ? (
+                        `${Number(dataReceived.invoice.totalAmount).toLocaleString()}`
+                      ) : dataReceived?.finalPrice ? (
+                        `${Number(dataReceived.finalPrice).toLocaleString()}`
+                      ) : (
+                        'Not Available'
+                      )}
                     </td>
 
                     {/* Warranty */}
+
                     {dataReceived.writtenImeis?.length <= 1 && (
                       <td
                         style={{
@@ -1774,136 +2274,6 @@ const SoldInvoice = () => {
                       </td>
                     )}
                   </tr>
-
-                  {/* <tr style={styles.stripedRow}>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileCompany
-                        : dataReceived?.companyName ??
-                        phoneDetail?.companyName ?? phoneDetail?.map((item) => {
-                          return <>
-                            {item.companyName}
-                            <br />
-                          </>;
-                        }) ??
-                        phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
-                          .companyName ??
-                        'Not Available'}
-                    </td>
-                    <td style={styles.td}>
-                      {dataReceived?.invoice?.items
-                        ? dataReceived?.invoice?.items[0]?.mobileName
-                        : dataReceived?.modelSpecifications ??
-                        dataReceived.modelName ??
-                        phoneDetail?.modelName ?? phoneDetail?.map((item) => {
-                          return <>
-                            {item.modelName}
-                            <br />
-                          </>;
-                        })
-                        ??
-                        phoneDetail?.modelName ??
-                        phoneDetail?.bulkPhonePurchase?.ramSimDetails[0]
-                          .modelName ??
-                        'Not Available'}
-                    </td>
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.ramMemory && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.ramMemory
-                          ? phoneDetail.map((item) => item.ramMemory).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.batteryHealth && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.batteryHealth
-                          ? phoneDetail.map((item) => item.batteryHealth).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.color && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.color
-                          ? phoneDetail.map((item) => item.color).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {Array.isArray(phoneDetail) && phoneDetail.length > 0 && phoneDetail[0]?.simOption && (
-                      <td style={styles.td}>
-                        {phoneDetail[0]?.simOption
-                          ? phoneDetail.map((item) => item.simOption).join(', ')
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {dataReceived?.ramMemory && (
-                      <td style={styles.td}>
-                        {dataReceived?.ramMemory
-                          ? dataReceived?.ramMemory
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {dataReceived?.batteryHealth && (
-                      <td style={styles.td}>
-                        {dataReceived?.batteryHealth
-                          ? dataReceived?.batteryHealth
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {phoneDetail?.specifications && (
-                      <td style={styles.td}>
-                        {phoneDetail?.specifications
-                          ? phoneDetail?.specifications
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {dataReceived?.specifications && (
-                      <td style={styles.td}>
-                        {dataReceived?.specifications
-                          ? dataReceived?.specifications
-                          : 'Not Available'}
-                      </td>
-                    )}
-                    {!dataReceived.manual ? (
-                      <td style={styles.td}>
-                        {dataReceived?.invoice?.items
-                          ? dataReceived?.invoice?.items[0]?.imei
-                          : dataReceived?.imei1 ?? 'Not Available'}
-                      </td>
-                    ) : (
-                      <td style={styles.td}>
-                        {dataReceived?.writtenImeis?.map((items) => {
-                          return <>
-                            {items}
-                            <br />
-                          </>;
-                        })}
-                      </td>
-                    )}
-
-                    {dataReceived.imei2 && (
-                      <td style={styles.td}>
-                        {dataReceived?.invoice?.items
-                          ? dataReceived?.invoice?.items[0]?.imei2
-                          : dataReceived.imei2 ?? 'Not Available'}
-                      </td>
-                    )}
-                    <td style={styles.td}>
-                      {dataReceived?.invoice
-                        ? dataReceived?.invoice?.totalAmount
-                        : dataReceived?.finalPrice ?? 'Not Available'}
-                    </td>
-                    {
-                      dataReceived.writtenImeis.length <= 1 && (
-                        <td style={styles.td}>
-                          {dataReceived?.invoice?.items
-                            ? dataReceived?.invoice?.items[0]?.warranty
-                            : dataReceived?.warranty ??
-                            phoneDetail?.warranty ??
-                            'Not Available'}
-                        </td>
-                      )
-                    }
-                  </tr> */}
                 </tbody>
               </table>
               {dataReceived.accessoryName && (
@@ -1932,10 +2302,7 @@ const SoldInvoice = () => {
                   </div>
                 </div>
               )}
-              {/* <div style={styles.totalSection}>
-                <p>{dataReceived?.accessories?.quan}</p>
-                <h3>Total:{totalInvoice}Rs</h3>
-              </div> */}
+
               <div
                 style={{
                   ...styles.totalSection,
@@ -1948,7 +2315,6 @@ const SoldInvoice = () => {
                   borderTop: '1px solid #ddd',
                 }}
               >
-                {/* Left side - 60% width */}
                 <div style={{ width: '60%' }}>
                   {dataReceived?.accessories?.map((acc, index) => (
                     <p
@@ -1968,7 +2334,6 @@ const SoldInvoice = () => {
                   ))}
                 </div>
 
-                {/* Right side - 40% width - Total */}
                 <div
                   style={{
                     width: '40%',
@@ -1989,7 +2354,6 @@ const SoldInvoice = () => {
               </div>
 
               <div style={styles.termsSection}>
-                {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
                 <div style={styles.termsHeading}>Terms and conditions</div>
                 <div style={styles.termsText}>
                   {shop?.termsCondition.map((item, index) => (
@@ -2025,14 +2389,38 @@ const SoldInvoice = () => {
           <div id="invoice" style={styles.container}>
             {/* Header */}
             <header style={styles.header}>
-              <div>
-                <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                <p>
-                  {shop?.contactNumber?.join(' | ') ??
-                    'Contact number not available'}
-                </p>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+              >
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    alt="logo"
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '3px solid #fff',
+                      boxShadow:
+                        '0 8px 25px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
+                    }}
+                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                  />
+                )}
+                <div>
+                  <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                  <p>
+                    {shop?.contactNumber?.join(' | ') ??
+                      'Contact number not available'}
+                  </p>
+                </div>
               </div>
-              <h2 style={{ color: selectedColor || '#4a6baf' }}>Invoice</h2>
+              <div>
+                <h2 style={{ color: selectedColor || '#4a6baf', margin: 0 }}>
+                  Invoice
+                </h2>
+              </div>
             </header>
 
             {/* Info Section */}
@@ -2045,37 +2433,54 @@ const SoldInvoice = () => {
               }}
             >
               {/* Left */}
-              <div>
-                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                  <strong>Invoice No:</strong> {dataReceived.invoiceNumber}
-                </p>
-                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                  <strong>Date:</strong>{' '}
-                  {new Date(dataReceived.dateSold).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
+                >
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Invoice No:</strong> {dataReceived.invoiceNumber}
+                  </p>
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Date of sale:</strong>{' '}
+                    {new Date(dataReceived.dateSold).toLocaleDateString(
+                      'en-IN',
+                      {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      }
+                    )}
+                  </p>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
+                >
+                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
+                    <strong>Customer Name:</strong> {dataReceived.customerName}
+                  </p>
 
-              {/* Right */}
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                  <strong>Customer Name:</strong> {dataReceived.customerName}
-                </p>
-                {dataReceived.customerNumber && (
                   <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
                     <strong>Customer Number:</strong>{' '}
                     {dataReceived.customerNumber}
                   </p>
-                )}
-                {dataReceived.customerCNIC && (
-                  <p style={{ fontSize: '15px', fontWeight: 'bold' }}>
-                    <strong>Customer CNIC:</strong> {dataReceived?.customerCNIC}
-                  </p>
-                )}
+                </div>
               </div>
+              {/* Right */}
             </section>
 
             {/* Table */}
@@ -2102,16 +2507,60 @@ const SoldInvoice = () => {
                       fontWeight: 'bold',
                     }}
                   >
-                    IMEI
+                    Imeis
+                  </th>
+                  <th
+                    style={{
+                      padding: '15px',
+                      backgroundColor: `${selectedColor}`,
+                      color: '#fff',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Selling Payment Type
                   </th>
                   <th style={styles.th}>Warranty</th>
                   <th style={styles.th}>Price PKR</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody
+                style={{
+                  backgroundColor: '#fafafa',
+                }}
+              >
                 <tr style={styles.stripedRow}>
-                  <td style={styles.td}>Mobile Device</td>
-                  <td style={styles.td}>{dataReceived.imei1}</td>
+                  <td style={styles.td}>{dataReceived?.type}</td>
+                  <td
+                    style={{
+                      display: 'flex',
+                      maxWidth: '220px',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      gap: '10px',
+                      justifyContent: 'center',
+                      padding: '12px',
+                      backgroundColor: '#fafafa',
+                      borderBottom: '1px solid #eee',
+                      color: '#333',
+                    }}
+                  >
+                    {dataReceived?.imei1?.map((imei) => {
+                      return (
+                        <span
+                          style={{
+                            background: '#f0f0f0',
+                            padding: '3px 5px',
+                            fontSize: '12px',
+                            borderRadius: '10px',
+                          }}
+                        >
+                          {imei}
+                        </span>
+                      );
+                    })}
+                  </td>
+                  <td style={styles.td}>{dataReceived.sellingPaymentType}</td>
                   <td style={styles.td}>
                     {dataReceived.warranty ?? 'Not Available'}
                   </td>
@@ -2135,117 +2584,120 @@ const SoldInvoice = () => {
             </div>
 
             {/* Footer */}
-            <div
-              style={{
-                paddingTop: '10px',
-                textAlign: 'center',
-                fontSize: '13px',
-                color: '#555',
-              }}
-            >
-              <p style={{ margin: 0 }}>Thank you for your business!</p>
-              <p style={{ margin: 0 }}>
-                For any queries, contact {shop?.contactNumber?.[0] ?? 'Support'}
-              </p>
+
+            <div style={styles.termsSection}>
+              {/* <div style={styles.termsHeading}>Sold Type Details</div> */}
+              <div style={styles.termsHeading}>Terms & conditions</div>
+              <div style={styles.termsText}>
+                {shop?.termsCondition.map((item, index) => (
+                  <p key={index}>
+                    <strong
+                      style={{
+                        fontSize: '1.0rem',
+                        fontWeight: '600',
+                        color: '#333',
+                        width: '100%',
+                      }}
+                    >
+                      {index + 1}.
+                    </strong>{' '}
+                    {item}
+                  </p>
+                ))}
+              </div>
             </div>
+            <footer style={styles.footer}>
+              <p>
+                {shop?.shopName ?? 'Shop Name'} |{' '}
+                {shop?.address ?? 'Address not available'} |{' '}
+                {shop?.contactNumber?.join(' | ') ??
+                  'Contact number not available'}
+              </p>
+            </footer>
           </div>
         )}
         {/* <StockListComponent /> */}
         {showSmallInvoice && (
-          <SmallInvoiceComponent invoiceData={smallInvoiceData} />
+          <SmallInvoiceComponent
+            invoiceData={dataReceived}
+            shopData={shop}
+            logoUrl={logoUrl}
+            phoneDetail={phoneDetail}
+          />
         )}
         <InvoiceComponent
-          invoiceNumber={invoiceData.invoiceNumber}
+          dataReceived={dataReceived}
+          invoiceNumber={
+            invoiceData.invoiceNumber ?? dataReceived?.invoiceNumber
+          }
+          imeiPrices={dataReceived?.imeiPrices}
           companyName={
             dataReceived?.companyName ??
             phoneDetail?.companyName ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.companyName}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.companyName) ??
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].companyName ??
+            dataReceived?.type ??
             ''
           }
           modelName={
             dataReceived?.modelName ??
             phoneDetail?.modelName ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.modelName}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.modelName) ??
             phoneDetail?.bulkPhonePurchase?.ramSimDetails[0].modelName ??
+            dataReceived?.type ??
             ''
           }
           batteryHealth={
             dataReceived?.batteryHealth ??
             phoneDetail?.batteryHealth ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.batteryHealth}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.batteryHealth) ??
             ''
           }
           ramMemory={
             dataReceived?.ramMemory ??
             phoneDetail?.ramMemory ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.ramMemory}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.ramMemory) ??
             ''
           }
           color={
             dataReceived?.color ??
             phoneDetail?.color ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.color}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.color) ??
             ''
           }
           simOption={
             dataReceived?.simOption ??
             phoneDetail?.simOption ??
-            phoneDetail?.map((item) => {
-              return (
-                <>
-                  {item.simOption}
-                  <br />
-                </>
-              );
-            }) ??
+            phoneDetail?.map((item) => item.simOption) ??
             ''
           }
           type={
             dataReceived?.specifications ?? phoneDetail?.specifications ?? ''
           }
-          warranty={
-            phoneDetail?.warranty ??
-            // dataReceived?.warranty ??
-            null
-          }
+          warranty={phoneDetail?.warranty ?? dataReceived?.warranty ?? null}
           display={displayHalfP4}
-          saleData={dataReceived}
+          saleData={{
+            ...dataReceived,
+            // Merge balance information from phoneDetail if not in dataReceived
+            entityData:
+              dataReceived?.entityData ||
+              phoneDetail?.entityData ||
+              (phoneDetail && !Array.isArray(phoneDetail)
+                ? phoneDetail?.entityData
+                : undefined),
+            previousBalance:
+              dataReceived?.previousBalance !== undefined &&
+              dataReceived?.previousBalance !== null
+                ? dataReceived?.previousBalance
+                : phoneDetail && !Array.isArray(phoneDetail)
+                  ? phoneDetail?.previousBalance
+                  : undefined,
+            cashReceived:
+              dataReceived?.cashReceived ||
+              (phoneDetail && !Array.isArray(phoneDetail)
+                ? phoneDetail?.cashReceived
+                : undefined),
+          }}
           shopName={shop?.shopName ?? ''}
           number={shop?.contactNumber?.[0] ?? ''}
           address={shop?.address ?? 'Address not available'}
@@ -2536,15 +2988,68 @@ const SoldInvoice = () => {
         <button
           onClick={async () => {
             try {
+              // Try multiple possible ID fields
+              let invoiceId =
+                dataReceived.id ||
+                dataReceived._id ||
+                dataReceived.bulkSoldId ||
+                (dataReceived.bulkPhonePurchaseId &&
+                typeof dataReceived.bulkPhonePurchaseId === 'string'
+                  ? dataReceived.bulkPhonePurchaseId
+                  : null);
+
+              console.log('dataReceived for update:', dataReceived);
+              console.log('Attempting to use invoiceId:', invoiceId);
+
+              // If no ID found but we have invoiceNumber, try to fetch the invoice by invoice number
+              if (!invoiceId && dataReceived.invoiceNumber) {
+                try {
+                  console.log(
+                    '🔍 No ID found, attempting to fetch by invoice number:',
+                    dataReceived.invoiceNumber
+                  );
+                  const fetchResponse = await api.get(`api/Purchase/all-sales`);
+                  const allSales = fetchResponse?.data?.data || [];
+                  const foundInvoice = allSales.find(
+                    (sale) => sale.invoiceNumber === dataReceived.invoiceNumber
+                  );
+                  if (foundInvoice && foundInvoice._id) {
+                    invoiceId = foundInvoice._id;
+                    console.log(
+                      '✅ Found invoice ID by invoice number:',
+                      invoiceId
+                    );
+                  }
+                } catch (fetchError) {
+                  console.error(
+                    'Error fetching invoice by invoice number:',
+                    fetchError
+                  );
+                }
+              }
+
+              if (!invoiceId) {
+                console.error(
+                  'No invoice ID found. dataReceived:',
+                  JSON.stringify(dataReceived, null, 2)
+                );
+                toast.error(
+                  'Invoice ID not found. Cannot update invoice without ID. Please contact support.'
+                );
+                return;
+              }
               await api.put(
-                `/api/Purchase/update-sold-phone/${dataReceived.id}`,
+                `/api/Purchase/update-sold-phone/${invoiceId}`,
                 editInvoiceFields
               );
               toast.success('Invoice updated successfully');
               setInvoiceModal(false);
             } catch (error) {
               console.error('Error updating invoice:', error);
-              toast.error('Failed to update invoice');
+              console.error('Error response:', error.response);
+              toast.error(
+                error?.response?.data?.message || 'Failed to update invoice'
+              );
             }
           }}
           style={{

@@ -7,8 +7,10 @@ import { BASE_URL } from 'config/constant';
 import { FaBarcode } from 'react-icons/fa';
 import { api } from '../../../../api/api';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import CustomSelect from 'components/CustomSelect';
 
 const SingalPurchaseModal = ({
+  loading = false,
   handleSinglePhoneModalclose,
   type = 'purchase',
   setSinglePurchase,
@@ -29,7 +31,15 @@ const SingalPurchaseModal = ({
   const [showBankModal, setShowBankModal] = useState(false);
   const [showPocketCashModal, setShowPocketCashModal] = useState(false);
   const [showWarranty, setShowWarranty] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  const [showNewEntityForm, setShowNewEntityForm] = useState(false);
+  const [getAllEntities, setGetAllEntities] = useState([]);
+  const [localEntityData, setLocalEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
+  const [newEntity, setNewEntity] = useState({ name: '', number: '' });
   // const todayDate = new Date().toISOString().split("T")[0];
   const getAllBanks = async () => {
     try {
@@ -43,6 +53,12 @@ const SingalPurchaseModal = ({
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [models, setModels] = useState([]);
+  const getAllEnityNameAndId = async () => {
+    try {
+      const response = await api.get('/api/person/nameAndId');
+      setGetAllEntities(response?.data || []);
+    } catch (error) {}
+  };
 
   const fetchCompanies = async () => {
     try {
@@ -54,6 +70,9 @@ const SingalPurchaseModal = ({
   };
   useEffect(() => {
     const fetchModels = async () => {
+      if (!selectedCompanyId) {
+        return;
+      }
       try {
         const response = await api.get(
           `/api/company/models/${selectedCompanyId}`
@@ -64,14 +83,70 @@ const SingalPurchaseModal = ({
       }
     };
     fetchModels();
-  }, [singlePurchase.companyName]);
+  }, [selectedCompanyId]);
   console.log('models', models);
 
   console.log('companies', companies);
   useEffect(() => {
     fetchCompanies();
     getAllBanks(); // Fetch all banks when the component mounts
+    getAllEnityNameAndId();
   }, []);
+
+  // Set selectedCompanyId when editing and companyName is available
+  useEffect(() => {
+    if (singlePurchase.companyName && companies.length > 0) {
+      const company = companies.find(
+        (c) => c.name === singlePurchase.companyName
+      );
+      if (company) {
+        setSelectedCompanyId(company._id);
+      }
+    }
+  }, [singlePurchase.companyName, companies]);
+
+  // Set localEntityData when editing and entityData is available
+  useEffect(() => {
+    if (singlePurchase.entityData && getAllEntities.length > 0) {
+      if (singlePurchase.entityData._id) {
+        // Find the entity in the list
+        const entity = getAllEntities.find(
+          (e) => e._id === singlePurchase.entityData._id
+        );
+        if (entity) {
+          setLocalEntityData(entity);
+          setShowNewEntityForm(false);
+        } else {
+          // Entity not found in list, show as new entity
+          setLocalEntityData({
+            name: singlePurchase.entityData.name || '',
+            number: singlePurchase.entityData.number || '',
+            _id: singlePurchase.entityData._id || '',
+          });
+          setNewEntity({
+            name: singlePurchase.entityData.name || '',
+            number: singlePurchase.entityData.number || '',
+          });
+          setShowNewEntityForm(true);
+        }
+      } else if (
+        singlePurchase.entityData.name ||
+        singlePurchase.entityData.number
+      ) {
+        // Entity data exists but no _id, treat as new entity
+        setLocalEntityData({
+          name: singlePurchase.entityData.name || '',
+          number: singlePurchase.entityData.number || '',
+          _id: '',
+        });
+        setNewEntity({
+          name: singlePurchase.entityData.name || '',
+          number: singlePurchase.entityData.number || '',
+        });
+        setShowNewEntityForm(true);
+      }
+    }
+  }, [singlePurchase.entityData, getAllEntities]);
 
   return (
     <>
@@ -88,8 +163,149 @@ const SingalPurchaseModal = ({
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
+            {/* Entity selection (existing or new) */}
+            <div style={{ marginBottom: '12px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '8px',
+                }}
+              >
+                <Form.Label style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                  Entity
+                </Form.Label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewEntityForm(false)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      background: !showNewEntityForm
+                        ? '#e5e7eb'
+                        : 'transparent',
+                      border: '1px solid #d1d5db',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Select Existing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewEntityForm(true)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      background: showNewEntityForm ? '#e5e7eb' : 'transparent',
+                      border: '1px solid #d1d5db',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Create New
+                  </button>
+                </div>
+              </div>
+
+              {showNewEntityForm ? (
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <Form.Label>Entity Name *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="name"
+                      value={newEntity.name}
+                      onChange={(e) => {
+                        const updated = { ...newEntity, name: e.target.value };
+                        setNewEntity(updated);
+                        setLocalEntityData({
+                          name: updated.name,
+                          number: updated.number,
+                          _id: '',
+                        });
+                        setSinglePurchase({
+                          ...singlePurchase,
+                          entityData: {
+                            name: updated.name,
+                            number: updated.number,
+                          },
+                        });
+                      }}
+                      placeholder="Enter entity name"
+                      required
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Form.Label>Entity Number *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="number"
+                      value={newEntity.number}
+                      onChange={(e) => {
+                        const updated = {
+                          ...newEntity,
+                          number: e.target.value,
+                        };
+                        setNewEntity(updated);
+                        setLocalEntityData({
+                          name: updated.name,
+                          number: updated.number,
+                          _id: '',
+                        });
+                        setSinglePurchase({
+                          ...singlePurchase,
+                          entityData: {
+                            name: updated.name,
+                            number: updated.number,
+                          },
+                        });
+                      }}
+                      placeholder="Enter entity number"
+                      required
+                    />
+                  </div>
+                </div>
+              ) : (
+                <CustomSelect
+                  value={localEntityData._id}
+                  onChange={(selectedOption) => {
+                    const selectedEntity = getAllEntities.find(
+                      (entity) => entity._id === selectedOption?.value
+                    );
+                    const entityPayload = selectedEntity || {
+                      name: '',
+                      number: '',
+                      _id: '',
+                    };
+                    setLocalEntityData(entityPayload);
+                    setSinglePurchase({
+                      ...singlePurchase,
+                      entityData: entityPayload?._id
+                        ? {
+                            _id: entityPayload._id,
+                            name: entityPayload.name,
+                            number: entityPayload.number,
+                          }
+                        : {
+                            name: entityPayload.name,
+                            number: entityPayload.number,
+                          },
+                    });
+                  }}
+                  options={(getAllEntities || []).map((entity) => ({
+                    value: entity._id,
+                    label: `${entity.name} || ${entity.number}`,
+                  }))}
+                />
+              )}
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Form.Group
+              {/* <Form.Group
                 controlId="purchasePhoneName"
                 style={{ width: '48%' }}
               >
@@ -104,28 +320,7 @@ const SingalPurchaseModal = ({
                   onChange={handleChange}
                   required
                 />
-              </Form.Group>
-
-              <Form.Group
-                controlId="purchasePhoneDate"
-                style={{ width: '48%' }}
-              >
-                <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
-                  Date
-                </Form.Label>
-                <Form.Control
-                  type="date"
-                  defaultValue={singlePurchase.date}
-                  value={singlePurchase.date}
-                  //  defaultValue={todayDate}
-                  //  value={todayDate}
-                  // readOnly
-
-                  name="date"
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
+              </Form.Group> */}
             </div>
 
             <div
@@ -200,8 +395,25 @@ const SingalPurchaseModal = ({
                 display: 'flex',
                 justifyContent: 'space-between',
                 marginTop: '10px',
+                gap: '10px',
               }}
             >
+              <Form.Group
+                controlId="purchasePhoneCNIC"
+                style={{ width: '48%' }}
+              >
+                <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                  CNIC No#
+                </Form.Label>
+                <Form.Control
+                  value={singlePurchase.cnic}
+                  name="cnic"
+                  onChange={handleChange}
+                  type="text"
+                  placeholder="---- ---- ---- ----"
+                  required
+                />
+              </Form.Group>
               <Form.Group
                 controlId="purchasePhoneModel"
                 style={{ width: '48%' }}
@@ -217,20 +429,23 @@ const SingalPurchaseModal = ({
                   placeholder="Enter Battery Health"
                 />
               </Form.Group>
-
               <Form.Group
-                controlId="purchasePhoneCNIC"
+                controlId="purchasePhoneDate"
                 style={{ width: '48%' }}
               >
                 <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
-                  CNIC No#
+                  Date
                 </Form.Label>
                 <Form.Control
-                  value={singlePurchase.cnic}
-                  name="cnic"
+                  type="date"
+                  defaultValue={singlePurchase.date}
+                  value={singlePurchase.date}
+                  //  defaultValue={todayDate}
+                  //  value={todayDate}
+                  // readOnly
+
+                  name="date"
                   onChange={handleChange}
-                  type="text"
-                  placeholder="---- ---- ---- ----"
                   required
                 />
               </Form.Group>
@@ -402,6 +617,7 @@ const SingalPurchaseModal = ({
                 display: 'flex',
                 justifyContent: 'space-between',
                 marginTop: '10px',
+                gap: '10px',
               }}
             >
               <Form.Group
@@ -436,6 +652,22 @@ const SingalPurchaseModal = ({
                   placeholder="Enter IMEI #2"
                 />
               </Form.Group>
+              <Form.Group
+                controlId="purchasePhonePrice"
+                style={{ width: '48%' }}
+              >
+                <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                  Purchase Price
+                </Form.Label>
+                <Form.Control
+                  value={singlePurchase.purchasePrice}
+                  name="purchasePrice"
+                  onChange={handleChange}
+                  type="number"
+                  placeholder="Enter Purchase Price"
+                  required
+                />
+              </Form.Group>
             </div>
             <div
               style={{
@@ -445,7 +677,7 @@ const SingalPurchaseModal = ({
               }}
             >
               {/* Phone Pic Field */}
-              <Form.Group controlId="purchasePhonePic" style={{ width: '48%' }}>
+              {/* <Form.Group controlId="purchasePhonePic" style={{ width: '48%' }}>
                 <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
                   Phone Picture (optional)
                 </Form.Label>
@@ -468,9 +700,9 @@ const SingalPurchaseModal = ({
                     />
                   </div>
                 )}
-              </Form.Group>
+              </Form.Group> */}
 
-              <Form.Group
+              {/* <Form.Group
                 controlId="purchasePersonPic"
                 style={{ width: '48%' }}
               >
@@ -496,7 +728,7 @@ const SingalPurchaseModal = ({
                     />
                   </div>
                 )}
-              </Form.Group>
+              </Form.Group> */}
             </div>
             {/* <div style={{ marginTop: '15px', lineHeight: '2.0' }}>
               <p style={{ fontSize: '17px' }}>
@@ -519,7 +751,7 @@ const SingalPurchaseModal = ({
                 marginTop: '15px',
               }}
             >
-              <Form.Group
+              {/* <Form.Group
                 controlId="purchasePhoneMobileNumber"
                 style={{ width: '48%' }}
               >
@@ -534,23 +766,7 @@ const SingalPurchaseModal = ({
                   placeholder="Enter Mobile Number"
                   required
                 />
-              </Form.Group>
-              <Form.Group
-                controlId="purchasePhonePrice"
-                style={{ width: '48%' }}
-              >
-                <Form.Label style={{ fontWeight: 'bold', fontSize: '18px' }}>
-                  Purchase Price
-                </Form.Label>
-                <Form.Control
-                  value={singlePurchase.purchasePrice}
-                  name="purchasePrice"
-                  onChange={handleChange}
-                  type="number"
-                  placeholder="Enter Purchase Price"
-                  required
-                />
-              </Form.Group>
+              </Form.Group> */}
             </div>
             <div
               style={{
@@ -559,7 +775,7 @@ const SingalPurchaseModal = ({
                 marginTop: '15px',
               }}
             >
-              <Form.Check
+              {/* <Form.Check
                 type="checkbox"
                 id="approvedByEgadget"
                 label="Approved from E-gadget"
@@ -599,7 +815,7 @@ const SingalPurchaseModal = ({
                     />
                   </div>
                 )}
-              </Form.Group>
+              </Form.Group> */}
             </div>
 
             <div style={{ marginTop: '15px' }}>
@@ -747,7 +963,11 @@ const SingalPurchaseModal = ({
             />
 
             <Modal.Footer>
-              <Button variant="secondary" onClick={handleSinglePhoneModalclose}>
+              <Button
+                variant="secondary"
+                onClick={handleSinglePhoneModalclose}
+                disabled={loading}
+              >
                 Cancel
               </Button>
               <Button variant="primary" type="submit" disabled={loading}>
@@ -840,6 +1060,7 @@ const SingalPurchaseModal = ({
               variant="primary"
               size="sm"
               onClick={() => setShowBankModal(false)}
+              disabled={loading}
               style={{
                 minWidth: '100px',
                 padding: '8px 0',
@@ -866,6 +1087,7 @@ const SingalPurchaseModal = ({
                 fontSize: '14px',
                 borderRadius: '6px',
               }}
+              disabled={loading}
             >
               Cancel
             </Button>
@@ -921,6 +1143,7 @@ const SingalPurchaseModal = ({
               variant="primary"
               size="sm"
               onClick={() => setShowPocketCashModal(false)}
+              disabled={loading}
               style={{
                 minWidth: '100px',
                 padding: '8px 0',
@@ -946,6 +1169,7 @@ const SingalPurchaseModal = ({
                 fontSize: '14px',
                 borderRadius: '6px',
               }}
+              disabled={loading}
             >
               Cancel
             </Button>

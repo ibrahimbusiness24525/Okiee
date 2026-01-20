@@ -33,6 +33,8 @@ import { MoonLoader } from 'react-spinners';
 import { useGetAccessories } from 'hooks/accessory';
 import { Eye, EyeOff } from 'lucide-react';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
+import CustomSelect from 'components/CustomSelect';
+import { set } from 'immutable';
 const NewMobilesList = () => {
   const [showAmount, setShowAmount] = useState(false);
   const { data } = useGetAccessories();
@@ -54,6 +56,30 @@ const NewMobilesList = () => {
   const [accessories, setAccessories] = useState([
     { id: '', name: '', quantity: 1, price: '' },
   ]);
+  const [addedImeis, setAddedImeis] = useState([]);
+  const [imeiPrices, setImeiPrices] = useState({}); // Use object to store IMEI-price pairs
+  const handleAddedImei = (newImei) => {
+    setAddedImeis((prev) => [...prev, newImei]);
+    setImeiPrices((prev) => ({ ...prev, [newImei]: '' }));
+  };
+
+  const handleImeiPriceChange = (imei, price) => {
+    setImeiPrices((prev) => ({
+      ...prev,
+      [imei]: price,
+    }));
+  };
+
+  const handleRemoveAddedImei = (imeiToRemove) => {
+    setAddedImeis((prev) => prev.filter((imei) => imei !== imeiToRemove));
+    setImeiPrices((prev) => {
+      const newPrices = { ...prev };
+      delete newPrices[imeiToRemove];
+      return newPrices;
+    });
+  };
+  console.log('addedImeis:', addedImeis);
+  console.log('imeiPrices:', imeiPrices);
   const [showWalletTransactionModal, setShowWalletTransactionModal] =
     useState(false);
   const [walletTransaction, setWalletTransaction] = useState({
@@ -70,7 +96,7 @@ const NewMobilesList = () => {
   const [soldMobile, setSoldMobile] = useState(null);
   const [saleDate, setSaleDate] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [finalPrice, setFinalPrice] = useState('');
+  const [finalPrice, setFinalPrice] = useState(0);
   const [warranty, setWarranty] = useState('12 months');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteMobileId, setDeleteMobileId] = useState(null);
@@ -80,9 +106,21 @@ const NewMobilesList = () => {
   const [id, setId] = useState('');
   const [personName, setPersonName] = useState('');
   const [imeiInput, setImeiInput] = useState(''); // Input field for new IMEI
-  const [addedImeis, setAddedImeis] = useState([]);
   const [bulkData, setBulkData] = useState([]);
   const [list, setList] = useState(true);
+  const [includeSold, setIncludeSold] = useState(false);
+  const [entityData, setEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
+  const [showNewEntityForm, setShowNewEntityForm] = useState(false);
+  const [getAllEntities, setGetAllEntities] = useState([]);
+  const [newEntity, setNewEntity] = useState({
+    name: '',
+    number: '',
+  });
+
   const navigate = useNavigate();
 
   const handleAddImei = () => {
@@ -95,10 +133,23 @@ const NewMobilesList = () => {
   const handleRemoveImei = (imeiToRemove) => {
     setAddedImeis(imeis.filter((imei) => imei !== imeiToRemove));
   };
+  const getAllEnityNameAndId = async () => {
+    try {
+      const response = await api.get('/api/person/nameAndId');
+      setGetAllEntities(response?.data || []);
+      console.log('Entity data:', response);
+    } catch (error) {
+      console.error('Error fetching entity names and ids:', error);
+    }
+  };
+  console.log('getAllEntities:', getAllEntities);
+  console.log('entityData:', entityData);
 
   useEffect(() => {
+    getAllEnityNameAndId();
     getMobiles();
   }, []);
+  console.log('accessory', data);
 
   const getMobiles = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -209,35 +260,92 @@ const NewMobilesList = () => {
     try {
       const response = await api.get('/api/Purchase/bulk-phone-purchase');
       setBulkData(response.data);
+      // Helper: compute if a record is fully sold
+      const isFullySold = (record) => {
+        const allImeis = (record?.ramSimDetails || []).flatMap(
+          (r) => r?.imeiNumbers || []
+        );
+        if (allImeis.length === 0) return false;
+        const soldCount = allImeis.filter((i) => i?.status === 'Sold').length;
+        return soldCount === allImeis.length;
+      };
+
+      // Filter: match search AND exclude fully sold records
       setBulkMobiles(
-        response.data.filter((item) =>
-          item.ramSimDetails?.some((ramSim) =>
-            ramSim.imeiNumbers?.some(
-              (imei) =>
-                imei.imei1?.includes(searchTerm) ||
-                imei.imei2?.includes(searchTerm)
-            )
-          )
-        )
+        response.data
+          .filter((item) => {
+            if (!searchTerm) return true;
+            const searchLower = searchTerm.toLowerCase();
+            // Search by IMEI
+            const matchesImei = item.ramSimDetails?.some((ramSim) =>
+              ramSim.imeiNumbers?.some(
+                (imei) =>
+                  imei.imei1?.toLowerCase().includes(searchLower) ||
+                  imei.imei2?.toLowerCase().includes(searchLower)
+              )
+            );
+            // Search by modelName
+            const matchesModel = item.ramSimDetails?.some(
+              (ramSim) =>
+                ramSim.modelName?.toLowerCase().includes(searchLower) ||
+                item.modelName?.toLowerCase().includes(searchLower)
+            );
+            // Search by companyName
+            const matchesCompany = item.ramSimDetails?.some(
+              (ramSim) =>
+                ramSim.companyName?.toLowerCase().includes(searchLower) ||
+                item.companyName?.toLowerCase().includes(searchLower)
+            );
+            return matchesImei || matchesModel || matchesCompany;
+          })
+          .filter((item) => !isFullySold(item))
       );
     } catch (error) {
       console.error('error in getting bulk mobiles', error);
     }
   };
-  useEffect(() => {
-    setBulkMobiles(
-      bulkData.filter((item) =>
-        item.ramSimDetails?.some((ramSim) =>
-          ramSim.imeiNumbers?.some(
-            (imei) =>
-              imei.imei1?.includes(searchTerm) ||
-              imei.imei2?.includes(searchTerm)
-          )
-        )
-      )
-    );
-  }, [searchTerm]);
 
+  useEffect(() => {
+    const isFullySold = (record) => {
+      const allImeis = (record?.ramSimDetails || []).flatMap(
+        (r) => r?.imeiNumbers || []
+      );
+      if (allImeis.length === 0) return false;
+      const soldCount = allImeis.filter((i) => i?.status === 'Sold').length;
+      return soldCount === allImeis.length;
+    };
+
+    setBulkMobiles(
+      bulkData
+        .filter((item) => {
+          if (!searchTerm) return true;
+          const searchLower = searchTerm.toLowerCase();
+          // Search by IMEI
+          const matchesImei = item.ramSimDetails?.some((ramSim) =>
+            ramSim.imeiNumbers?.some(
+              (imei) =>
+                imei.imei1?.toLowerCase().includes(searchLower) ||
+                imei.imei2?.toLowerCase().includes(searchLower)
+            )
+          );
+          // Search by modelName
+          const matchesModel = item.ramSimDetails?.some(
+            (ramSim) =>
+              ramSim.modelName?.toLowerCase().includes(searchLower) ||
+              item.modelName?.toLowerCase().includes(searchLower)
+          );
+          // Search by companyName
+          const matchesCompany = item.ramSimDetails?.some(
+            (ramSim) =>
+              ramSim.companyName?.toLowerCase().includes(searchLower) ||
+              item.companyName?.toLowerCase().includes(searchLower)
+          );
+          return matchesImei || matchesModel || matchesCompany;
+        })
+        .filter((item) => !isFullySold(item))
+    );
+  }, [searchTerm, bulkData]);
+  console.log('bulkMobile:', bulkMobile);
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -259,7 +367,7 @@ const NewMobilesList = () => {
               .map(
                 (imei) =>
                   imei.imei2
-                    ? `${imei.imei1} / ${imei.imei2}` // Show both if imei2 exists
+                    ? `${imei.imei1} / ${imei.imei2} ` // Show both if imei2 exists
                     : imei.imei1 // Otherwise, just imei1
               );
           }) || [];
@@ -269,17 +377,27 @@ const NewMobilesList = () => {
     if (type === 'single') {
       setType('single');
     }
-
     setSoldMobile(mobile);
     setShowSoldModal(true);
   };
 
+  const groupedByPerson = bulkMobile.reduce((acc, mobile) => {
+    const personId = mobile.personId?._id || 'unknown';
+    if (!acc[personId]) {
+      acc[personId] = [];
+    }
+    acc[personId].push(mobile);
+    return acc;
+  }, {});
+  console.log('finalprice:', finalPrice);
   const handleSoldSubmit = async () => {
+    console.log(finalPrice, warranty, saleDate, sellingType);
+
     if (
       !finalPrice ||
       !warranty ||
-      !customerName ||
-      !customerNumber ||
+      // !customerName ||
+      // !customerNumber ||
       !saleDate ||
       sellingType === ''
     ) {
@@ -291,20 +409,23 @@ const NewMobilesList = () => {
       ...soldMobile,
       walletTransaction,
       finalPrice,
+      entityData: showNewEntityForm ? newEntity : entityData,
+      customerNumber:
+        entityData.number || newEntity.number || customerNumber || '',
+      customerName: entityData.name || newEntity.name || customerName || '',
       sellingType,
       warranty,
       saleDate,
       addedImeis,
       cnicBackPic,
       cnicFrontPic,
-      customerName,
       accessories,
       bankName,
       payableAmountNow,
       payableAmountLater,
       payableAmountLaterDate,
       exchangePhoneDetail,
-      customerNumber,
+      imeisWithPrices: imeiPrices,
     };
 
     navigate('/invoice/shop', { state: updatedMobile });
@@ -446,6 +567,8 @@ const NewMobilesList = () => {
   }, []);
   const [showPrices, setShowPrices] = useState(false);
   const [selectedMobile, setSelectedMobile] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
   const [imeis, setImeis] = useState([]);
   const [scanning, setScanning] = useState(false);
   const handleScan = (err, result) => {
@@ -471,6 +594,14 @@ const NewMobilesList = () => {
     setShowPrices(false);
     setSelectedMobile(null);
   };
+  const handleOpenDetails = (record) => {
+    setSelectedRecord(record);
+    setShowDetails(true);
+  };
+  const handleCloseDetails = () => {
+    setSelectedRecord(null);
+    setShowDetails(false);
+  };
   const handleBulkDelete = (id) => {
     setDeleteMobileId(id);
     setType('bulk');
@@ -481,7 +612,7 @@ const NewMobilesList = () => {
     updatedAccessories[index][field] = value;
     setAccessories(updatedAccessories);
   };
-
+  console.log('sold record', selectedRecord);
   // Add New Accessory
   const addAccessory = () => {
     setAccessories([...accessories, { name: '', quantity: 1, price: '' }]);
@@ -492,10 +623,59 @@ const NewMobilesList = () => {
     const updatedAccessories = accessories.filter((_, i) => i !== index);
     setAccessories(updatedAccessories);
   };
-  const totalBulkStockAmount = bulkMobile.reduce(
-    (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
-    0
-  );
+  // Previous logic (commented): summed buyingPrice only, which ignores IMEI counts per RAM/SIM
+  // const totalBulkStockAmount = bulkMobile.reduce(
+  //   (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
+  //   0
+  // );
+
+  // New logic: sum quantity by IMEI count per ramSimDetails multiplied by priceOfOne
+  // Mirrors:
+  // let totalBulkPhones = 0;
+  // let totalBulkAmount = 0;
+  // allBulkPhones.forEach((bulk) => {
+  //   if (!bulk.ramSimDetails) return;
+  //   bulk.ramSimDetails.forEach((ramSim) => {
+  //     const imeiCount = ramSim.imeiNumbers?.length || 0;
+  //     const priceOfOne = parseFloat(ramSim.priceOfOne) || 0;
+  //     totalBulkPhones += imeiCount;
+  //     totalBulkAmount += imeiCount * priceOfOne;
+  //   });
+  // });
+  // const totalBulkStockAmount = bulkMobile.reduce(
+  //   (total, mobile) => total + (Number(mobile?.prices?.buyingPrice) || 0),
+  //   0
+  // );
+  const totalBulkStockAmount = (bulkMobile || []).reduce((outerTotal, bulk) => {
+    if (!Array.isArray(bulk?.ramSimDetails)) return outerTotal;
+    const bulkAmount = bulk.ramSimDetails.reduce((innerTotal, ramSim) => {
+      const imeiCount = Array.isArray(ramSim?.imeiNumbers)
+        ? ramSim.imeiNumbers.filter((imei) => imei.status !== 'Sold').length
+        : 0;
+      const priceOfOne = parseFloat(ramSim?.priceOfOne) || 0;
+      return innerTotal + imeiCount * priceOfOne;
+    }, 0);
+    return outerTotal + bulkAmount;
+  }, 0);
+
+  // Calculate total available phones quantity
+  const totalAvailablePhones = (bulkMobile || []).reduce((total, bulk) => {
+    if (!Array.isArray(bulk?.ramSimDetails)) return total;
+    return (
+      total +
+      bulk.ramSimDetails.reduce((innerTotal, ramSim) => {
+        if (!Array.isArray(ramSim?.imeiNumbers)) return innerTotal;
+        return (
+          innerTotal +
+          ramSim.imeiNumbers.filter(
+            (imei) => imei.status !== 'Sold' && !imei.isDispatched
+          ).length
+        );
+      }, 0)
+    );
+  }, 0);
+  console.log('bulkMobile', bulkMobile);
+
   const handleChange = (event) => {
     const selectedImeis = event.target.value;
     setImei(selectedImeis);
@@ -537,7 +717,15 @@ const NewMobilesList = () => {
 
     return { now, later };
   };
+  useEffect(() => {
+    const total = Object.values(imeiPrices).reduce(
+      (sum, price) => sum + (Number(price) || 0),
+      0
+    );
+    setFinalPrice(total); // Auto-update when imeiPrices change
+  }, [imeiPrices, addedImeis, imeiList, imei]);
 
+  console.log('bulk mobile', bulkMobile);
   return (
     <>
       <InputGroup className="mb-3">
@@ -546,10 +734,28 @@ const NewMobilesList = () => {
         </InputGroup.Text>
         <Form.Control
           type="text"
-          placeholder="Search by name or company"
+          placeholder="Search by IMEI, model name, or company"
           value={searchTerm}
           onChange={handleSearch}
         />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginLeft: '12px',
+          }}
+        >
+          <input
+            id="includeSoldBulk"
+            type="checkbox"
+            checked={includeSold}
+            onChange={(e) => setIncludeSold(e.target.checked)}
+          />
+          <label htmlFor="includeSoldBulk" style={{ userSelect: 'none' }}>
+            Include Sold
+          </label>
+        </div>
       </InputGroup>
       {/* Search bar */}
 
@@ -574,31 +780,83 @@ const NewMobilesList = () => {
             borderRadius: '12px',
             boxShadow: '0 4px 15px rgba(0,123,255,0.1)',
             border: '2px solid #e3f2fd',
-            minWidth: '350px',
+            minWidth: '450px',
+            flexWrap: 'wrap',
           }}
         >
-          <div>
-            <h5
+          <div style={{ flex: 1, minWidth: 300 }}>
+            <div
               style={{
-                fontSize: 28,
-                margin: 0,
-                color: '#2c3e50',
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flexWrap: 'wrap',
               }}
             >
-              Total Stock Amount :
-              <span
+              <div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: '#6b7280',
+                    fontWeight: 500,
+                    marginBottom: 4,
+                  }}
+                >
+                  Available Phones
+                </div>
+                <div
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 'bold',
+                    color: '#16a34a',
+                    textShadow: '0 2px 4px rgba(22,163,74,0.2)',
+                  }}
+                >
+                  {totalAvailablePhones}
+                </div>
+              </div>
+              <div
                 style={{
-                  fontWeight: 'bold',
-                  color: '#007bff',
-                  fontSize: 32,
-                  marginLeft: '8px',
-                  textShadow: '0 2px 4px rgba(0,123,255,0.2)',
+                  width: '2px',
+                  height: '50px',
+                  background: '#e5e7eb',
+                  margin: '0 8px',
                 }}
-              >
-                {showAmount ? totalBulkStockAmount : '••••••'}
-              </span>
-            </h5>
+              />
+              <div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: '#6b7280',
+                    fontWeight: 500,
+                    marginBottom: 4,
+                  }}
+                >
+                  Total Stock Amount
+                </div>
+                <h5
+                  style={{
+                    fontSize: 28,
+                    margin: 0,
+                    color: '#2c3e50',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 'bold',
+                      color: '#007bff',
+                      fontSize: 32,
+                      textShadow: '0 2px 4px rgba(0,123,255,0.2)',
+                    }}
+                  >
+                    {showAmount
+                      ? `${totalBulkStockAmount.toLocaleString()} PKR`
+                      : '••••••'}
+                  </span>
+                </h5>
+              </div>
+            </div>
           </div>
           <button
             onClick={() => setShowAmount(!showAmount)}
@@ -616,6 +874,7 @@ const NewMobilesList = () => {
               boxShadow: '0 4px 12px rgba(0,123,255,0.3)',
               width: '45px',
               height: '45px',
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               e.target.style.background =
@@ -765,7 +1024,7 @@ const NewMobilesList = () => {
       <h3 style={{ marginTop: 'rem', marginBottom: '1rem' }}>
         New Bulk Phones
       </h3>
-      {!bulkMobile.length > 0 ? (
+      {/* {!bulkMobile.length > 0 ? (
         <div className="w-full h-full flex items-center justify-center">
           <MoonLoader size={60} color="#4f46e5" />
         </div>
@@ -812,7 +1071,7 @@ const NewMobilesList = () => {
                 <Table
                   routes={['/app/dashboard/bulkPhoneDetail']}
                   array={partyData.filter(
-                    (record) => record.dispatch === false
+                    (record) => includeSold ? true : record.dispatch === false
                   )}
                   keysToDisplay={[
                     'partyName',
@@ -981,7 +1240,7 @@ const NewMobilesList = () => {
           <Row xs={1} md={2} lg={3} className="g-4">
             {bulkMobile.length > 0 ? (
               bulkMobile
-                .filter((record) => record.dispatch === false)
+                .filter((record) => includeSold ? true : record.dispatch === false)
                 .map((mobile) => (
                   <Col key={mobile._id}>
                     <Card
@@ -1015,22 +1274,7 @@ const NewMobilesList = () => {
                         }}
                       />
 
-                      {/* Image handling */}
-                      {/* {mobile?.images?.[0] ? (
-                <Card.Img
-                  variant="top"
-                  src={bulkMobileImage}
-                  alt={`${mobile?.companyName} ${mobile?.modelName}`}
-                  style={{ height: '350px', objectFit: 'cover', borderRadius: '10px' }}
-                />
-              ) : (
-                <Card.Img
-                  variant="top"
-                  src={bulkMobileImage}  // Replace with your default image path
-                  alt={bulkMobileImage}
-                  style={{ height: '350px', objectFit: 'cover', borderRadius: '10px' }}
-                />
-              )} */}
+                   
 
                       <Card.Body
                         style={{
@@ -1049,11 +1293,10 @@ const NewMobilesList = () => {
                             color: '#333',
                           }}
                         >
-                          {mobile?.companyName || 'No Company Name'}{' '}
-                          {mobile?.modelName || 'No Model Name'}
+                          {(mobile?.companyName || mobile?.ramSimDetails?.[0]?.companyName || mobile?.phoneDetails?.[0]?.companyName || 'No Company Name')}{' '}
+                          {(mobile?.modelName || mobile?.ramSimDetails?.[0]?.modelName || mobile?.phoneDetails?.[0]?.modelName || 'No Model Name')}
                         </Card.Title>
 
-                        {/* Bulk Mobile Details */}
                         <Card.Text
                           style={{
                             fontSize: '1rem',
@@ -1100,7 +1343,6 @@ const NewMobilesList = () => {
                             </strong>
                             <p>
                               Total Buying Price :{mobile.prices?.buyingPrice}
-                              {/* {getActualPrice(mobile?.prices)} */}
                             </p>
                             <Button
                               onClick={() => handleShowPrices(mobile)}
@@ -1118,11 +1360,34 @@ const NewMobilesList = () => {
                                 margin: '5px', // Slight margin to separate buttons
                               }}
                             >
-                              View All Prices
+                              View Buying Price
                             </Button>
                           </div>
 
-                          {/* RAM & SIM Options - Dropdowns */}
+                          <div style={{ marginTop: '8px' }}>
+                            <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Payment:</strong>
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ backgroundColor: '#eef2ff', color: '#3730a3', padding: '4px 10px', borderRadius: '12px' }}>
+                                Status: {mobile.purchasePaymentStatus || 'N/A'}
+                              </span>
+                              <span style={{ backgroundColor: '#ecfeff', color: '#155e75', padding: '4px 10px', borderRadius: '12px' }}>
+                                Type: {mobile.purchasePaymentType || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {mobile?.phoneStatistics && (
+                            <div style={{ marginTop: '8px' }}>
+                              <strong style={{ color: '#333', fontSize: '1.1rem', fontWeight: '600' }}>Stats:</strong>
+                              <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                                <span style={{ background:'#e0f2fe', color:'#0369a1', padding:'4px 10px', borderRadius:'12px' }}>T: {mobile.phoneStatistics.totalPhones || 0}</span>
+                                <span style={{ background:'#dcfce7', color:'#166534', padding:'4px 10px', borderRadius:'12px' }}>A: {mobile.phoneStatistics.availablePhones || 0}</span>
+                                <span style={{ background:'#fee2e2', color:'#991b1b', padding:'4px 10px', borderRadius:'12px' }}>D: {mobile.phoneStatistics.dispatchedPhones || 0}</span>
+                                <span style={{ background:'#fef9c3', color:'#854d0e', padding:'4px 10px', borderRadius:'12px' }}>S: {mobile.phoneStatistics.soldPhones || 0}</span>
+                              </div>
+                            </div>
+                          )}
+
                           {mobile?.ramSimDetails?.length > 0 ? (
                             <div>
                               <div style={{ marginBottom: '20px' }}></div>
@@ -1224,7 +1489,6 @@ const NewMobilesList = () => {
                           )}
                         </Card.Text>
 
-                        {/* Action Buttons */}
                       </Card.Body>
                       <div
                         style={{
@@ -1276,13 +1540,10 @@ const NewMobilesList = () => {
               </Col>
             )}
 
-            {/* Modal for Prices */}
+   
             <Modal show={showPrices} onHide={handleClosePrices}>
               <Modal.Header closeButton>
-                <Modal.Title>
-                  Prices for {selectedMobile?.companyName}{' '}
-                  {selectedMobile?.modelName}
-                </Modal.Title>
+                <Modal.Title>Buying Price</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <ul>
@@ -1290,25 +1551,922 @@ const NewMobilesList = () => {
                     <strong>Buying Price:</strong>{' '}
                     {selectedMobile?.prices?.buyingPrice || 'Not Available'}
                   </li>
-                  <li>
-                    <strong>Dealer Price:</strong>{' '}
-                    {selectedMobile?.prices?.dealerPrice || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>LP:</strong>{' '}
-                    {selectedMobile?.prices?.lp || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>Lifting:</strong>{' '}
-                    {selectedMobile?.prices?.lifting || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>Promo:</strong>{' '}
-                    {selectedMobile?.prices?.promo || 'Not Available'}
-                  </li>
-                  <li>
-                    <strong>Activation:</strong>{' '}
-                    {selectedMobile?.prices?.activation || 'Not Available'}
+                </ul>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleClosePrices}>
+                  Close
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </Row>
+        </>
+      )} */}
+      {!bulkMobile.length > 0 ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <MoonLoader size={60} color="#4f46e5" />
+        </div>
+      ) : list ? (
+        <>
+          {Object.entries(groupedByPerson).map(([personId, personData]) => {
+            const personName =
+              personData[0]?.personId?.name || 'Unknown Person';
+            const personNumber = personData[0]?.personId?.number || 'No Number';
+            const { now, later } = calculatePayables(personData);
+
+            const totalCredit = personData.reduce((acc, curr) => {
+              const taking = Number(curr.personId?.takingCredit) || 0;
+              const giving = Number(curr.personId?.givingCredit) || 0;
+              return acc + (taking - giving);
+            }, 0);
+
+            return (
+              <div key={personId} style={{ marginBottom: '2rem' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}
+                >
+                  <StyledHeading>{personName}</StyledHeading>
+                  <span
+                    style={{
+                      backgroundColor: '#e0e7ff',
+                      color: '#4f46e5',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {personNumber}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    margin: '0 0 1.5rem 0',
+                    color: '#444',
+                    fontSize: '1.1rem',
+                    lineHeight: '1.6',
+                    display: 'flex',
+                    gap: '2rem',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span>
+                    <strong style={{ fontSize: '1.2rem' }}>Net Credit:</strong>{' '}
+                    <span
+                      style={{
+                        color:
+                          totalCredit < 0
+                            ? 'green'
+                            : totalCredit > 0
+                              ? 'red'
+                              : '#333',
+                        fontWeight: '700',
+                        fontSize: '1.2rem',
+                      }}
+                    >
+                      {Math.abs(totalCredit).toLocaleString()} PKR{' '}
+                      {totalCredit < 0
+                        ? '(Receiveable)'
+                        : totalCredit > 0
+                          ? '(Payable)'
+                          : ''}
+                    </span>
+                  </span>
+                </div>
+
+                <Table
+                  routes={['/app/dashboard/bulkPhoneDetail']}
+                  array={personData
+                    .filter((record) =>
+                      includeSold ? true : record.dispatch === false
+                    )
+                    .filter((record) => {
+                      // Exclude fully sold records in table
+                      const allImeis = (record?.ramSimDetails || []).flatMap(
+                        (r) => r?.imeiNumbers || []
+                      );
+                      if (allImeis.length === 0) return true;
+                      const soldCount = allImeis.filter(
+                        (i) => i?.status === 'Sold'
+                      ).length;
+                      return soldCount !== allImeis.length;
+                    })
+                    .map((record) => {
+                      // Compute fresh stats for display
+                      const imeis = (record?.ramSimDetails || []).flatMap(
+                        (r) => r?.imeiNumbers || []
+                      );
+                      const total = imeis.length;
+                      const sold = imeis.filter(
+                        (i) => i?.status === 'Sold'
+                      ).length;
+                      const dispatched = imeis.filter(
+                        (i) => i?.isDispatched === true
+                      ).length;
+                      const available = Math.max(total - sold - dispatched, 0);
+                      return {
+                        ...record,
+                        phoneStatistics: {
+                          totalPhones: total,
+                          dispatchedPhones: dispatched,
+                          availablePhones: available,
+                          soldPhones: sold,
+                        },
+                      };
+                    })}
+                  keysToDisplay={[
+                    'ramSimDetails',
+                    'date',
+                    'prices',
+                    'creditPaymentData',
+                    'phoneStatistics',
+                    'phoneDetails',
+                    'status',
+                    'purchasePaymentType',
+                  ]}
+                  label={[
+                    'Model Name',
+                    'Date',
+                    'Buying Price',
+                    'Remaining',
+                    'Stats',
+                    'Model/Specs',
+                    'Status',
+                    'Payment Type',
+                    'Actions',
+                  ]}
+                  customBlocks={[
+                    {
+                      index: 0,
+                      component: (ramSimDetails, fullRecord) => {
+                        // Collect all unique model names from ramSimDetails
+                        const modelNamesSet = new Set();
+                        if (Array.isArray(ramSimDetails)) {
+                          ramSimDetails.forEach((ramSim) => {
+                            if (ramSim?.modelName) {
+                              modelNamesSet.add(ramSim.modelName);
+                            }
+                          });
+                        }
+                        // Also check fullRecord for modelName
+                        if (fullRecord?.modelName) {
+                          modelNamesSet.add(fullRecord.modelName);
+                        }
+                        // Also check phoneDetails
+                        if (Array.isArray(fullRecord?.phoneDetails)) {
+                          fullRecord.phoneDetails.forEach((phone) => {
+                            if (phone?.modelName) {
+                              modelNamesSet.add(phone.modelName);
+                            }
+                          });
+                        }
+
+                        const modelNames = Array.from(modelNamesSet).filter(
+                          (name) => name && name.trim()
+                        );
+
+                        if (modelNames.length === 0) {
+                          return <span style={{ color: '#9ca3af' }}>N/A</span>;
+                        }
+
+                        // If 1-2 models, show with slashes
+                        if (modelNames.length <= 2) {
+                          return (
+                            <span style={{ fontWeight: 500 }}>
+                              {modelNames.join(' / ')}
+                            </span>
+                          );
+                        }
+
+                        // If more than 2, show in dropdown
+                        return (
+                          <Select
+                            value={modelNames[0]}
+                            displayEmpty
+                            size="small"
+                            sx={{
+                              minWidth: 150,
+                              '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#d1d5db',
+                              },
+                              '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#9ca3af',
+                              },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline':
+                                {
+                                  borderColor: '#4f46e5',
+                                },
+                            }}
+                          >
+                            {modelNames.map((modelName, idx) => (
+                              <MenuItem key={idx} value={modelName}>
+                                {modelName}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        );
+                      },
+                    },
+                    {
+                      index: 1,
+                      component: (date) => (
+                        <span>
+                          {date ? new Date(date).toLocaleDateString() : 'N/A'}
+                        </span>
+                      ),
+                    },
+                    {
+                      index: 2,
+                      component: (prices) => (
+                        <span
+                          style={{
+                            backgroundColor: '#d1fae5',
+                            color: '#065f46',
+                            padding: '4px 12px',
+                            borderRadius: '8px',
+                            fontWeight: '500',
+                            fontSize: '14px',
+                            display: 'inline-block',
+                          }}
+                        >
+                          {prices?.buyingPrice
+                            ? `${prices.buyingPrice} PKR`
+                            : 'N/A'}
+                        </span>
+                      ),
+                    },
+                    {
+                      index: 3,
+                      component: (creditPaymentData) => {
+                        const amt = creditPaymentData?.payableAmountLater;
+                        const style = {
+                          backgroundColor: amt ? '#fee2e2' : '#d1fae5',
+                          color: amt ? '#991b1b' : '#065f46',
+                          padding: '4px 12px',
+                          borderRadius: '8px',
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          display: 'inline-block',
+                        };
+                        return (
+                          <span style={style}>
+                            {amt ? `${amt} PKR` : 'Paid'}
+                          </span>
+                        );
+                      },
+                    },
+                    {
+                      index: 4,
+                      component: (stats) => (
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '6px',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <span
+                            style={{
+                              background: '#e0f2fe',
+                              color: '#0369a1',
+                              padding: '2px 8px',
+                              borderRadius: '8px',
+                            }}
+                          >
+                            T: {stats?.totalPhones || 0}
+                          </span>
+                          <span
+                            style={{
+                              background: '#dcfce7',
+                              color: '#166534',
+                              padding: '2px 8px',
+                              borderRadius: '8px',
+                            }}
+                          >
+                            A: {stats?.availablePhones || 0}
+                          </span>
+                          {/* <span style={{ background:'#fef9c3', color:'#854d0e', padding:'2px 8px', borderRadius:'8px' }}>S: {stats?.soldPhones || 0}</span> */}
+                        </div>
+                      ),
+                    },
+                    {
+                      index: 5,
+                      component: (phoneDetails, fullRecord) => {
+                        // Prefer structured phoneDetails if present; else derive from ramSimDetails
+                        const details = Array.isArray(phoneDetails)
+                          ? phoneDetails
+                          : [];
+                        const primary = details[0] || {};
+                        let companyName =
+                          primary.companyName || fullRecord?.companyName || '';
+                        let modelName =
+                          primary.modelName || fullRecord?.modelName || '';
+                        // Collect RAM variants and colors from either phoneDetails or ramSimDetails
+                        const ramSet = new Set();
+                        const colorSet = new Set();
+
+                        if (details.length > 0) {
+                          details.forEach((d) => {
+                            if (d?.ramMemory) ramSet.add(String(d.ramMemory));
+                            if (Array.isArray(d?.imeiDetails)) {
+                              d.imeiDetails.forEach((i) => {
+                                if (i?.color) colorSet.add(String(i.color));
+                              });
+                            }
+                          });
+                        } else if (Array.isArray(fullRecord?.ramSimDetails)) {
+                          fullRecord.ramSimDetails.forEach((r) => {
+                            if (r?.companyName && !companyName)
+                              companyName = r.companyName;
+                            if (r?.modelName && !modelName)
+                              modelName = r.modelName;
+                            if (r?.ramMemory) ramSet.add(String(r.ramMemory));
+                            if (Array.isArray(r?.imeiNumbers)) {
+                              r.imeiNumbers.forEach((i) => {
+                                if (i?.color) colorSet.add(String(i.color));
+                              });
+                            }
+                          });
+                        }
+
+                        const rams = Array.from(ramSet);
+                        const colors = Array.from(colorSet);
+                        const ramText =
+                          rams.length > 0 ? `${rams.join('/')}GB` : 'N/A';
+                        const colorText =
+                          colors.length > 0 ? colors.join(', ') : 'N/A';
+
+                        return (
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px',
+                            }}
+                          >
+                            <span
+                              style={{ fontWeight: 600 }}
+                            >{`${companyName || 'Brand'} ${modelName || 'Model'}`}</span>
+                            <div
+                              style={{
+                                display: 'flex',
+                                gap: '8px',
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  background: '#eef2ff',
+                                  color: '#3730a3',
+                                  padding: '2px 8px',
+                                  borderRadius: '8px',
+                                }}
+                              >
+                                RAM: {ramText}
+                              </span>
+                              <span
+                                style={{
+                                  background: '#ecfeff',
+                                  color: '#155e75',
+                                  padding: '2px 8px',
+                                  borderRadius: '8px',
+                                }}
+                              >
+                                Color: {colorText}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      },
+                    },
+                    {
+                      index: 7,
+                      component: (purchasePaymentType) => (
+                        <span style={{ fontWeight: 600, fontSize: '1rem' }}>
+                          {purchasePaymentType === 'full-payment' ? (
+                            <span
+                              style={{
+                                color: 'green',
+                                backgroundColor: '#dcfce7',
+                                padding: '4px 12px',
+                                borderRadius: '8px',
+                                display: 'inline-block',
+                              }}
+                            >
+                              Full Payment
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                color: '#ea580c',
+                                backgroundColor: '#ffedd5',
+                                padding: '4px 12px',
+                                borderRadius: '8px',
+                                display: 'inline-block',
+                              }}
+                            >
+                              Partial Payment
+                            </span>
+                          )}
+                        </span>
+                      ),
+                    },
+                  ]}
+                  extraColumns={[
+                    (obj) => (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <Button
+                          onClick={() => handleOpenDetails(obj)}
+                          style={{
+                            backgroundColor: '#111827',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          onClick={() => handleSoldClick(obj, 'bulk')}
+                          style={{
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Sold
+                        </Button>
+                        <Button
+                          onClick={() => handleEdit(obj)}
+                          style={{
+                            backgroundColor: '#3b82f6',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => handleDispatchClick(obj)}
+                          style={{
+                            backgroundColor: '#FFD000',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Dispatch
+                        </Button>
+                      </div>
+                    ),
+                  ]}
+                />
+              </div>
+            );
+          })}
+        </>
+      ) : (
+        <>
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {bulkMobile.length > 0 ? (
+              bulkMobile
+                .filter((record) =>
+                  includeSold ? true : record.dispatch === false
+                )
+                .filter((record) => {
+                  const allImeis = (record?.ramSimDetails || []).flatMap(
+                    (r) => r?.imeiNumbers || []
+                  );
+                  if (allImeis.length === 0) return true;
+                  const soldCount = allImeis.filter(
+                    (i) => i?.status === 'Sold'
+                  ).length;
+                  return soldCount !== allImeis.length;
+                })
+                .map((mobile) => (
+                  <Col key={mobile._id}>
+                    <Card
+                      className="h-100 shadow border-0"
+                      style={{
+                        borderRadius: '15px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                      }}
+                    >
+                      <FaEdit
+                        onClick={() => handleEdit(mobile)}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '50px',
+                          color: '#28a745',
+                          cursor: 'pointer',
+                          fontSize: '1.5rem',
+                        }}
+                      />
+                      <FaTrash
+                        onClick={() => handleBulkDelete(mobile._id)}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          color: 'red',
+                          cursor: 'pointer',
+                          fontSize: '1.5rem',
+                        }}
+                      />
+
+                      <Card.Body
+                        style={{
+                          padding: '1.5rem',
+                          display: 'flex',
+                          justifyContent: 'left',
+                          alignItems: 'start',
+                          flexDirection: 'column',
+                          width: '100%',
+                        }}
+                      >
+                        <Card.Text
+                          style={{
+                            fontSize: '1rem',
+                            color: '#666',
+                            lineHeight: '1.6',
+                          }}
+                        >
+                          <div>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Person:
+                            </strong>{' '}
+                            {mobile?.personId?.name || 'Not Available'}
+                            {mobile?.personId?.number && (
+                              <span
+                                style={{
+                                  marginLeft: '8px',
+                                  backgroundColor: '#e0e7ff',
+                                  color: '#4f46e5',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                                {mobile.personId.number}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Date:
+                            </strong>{' '}
+                            {mobile?.date
+                              ? new Date(mobile?.date).toLocaleDateString()
+                              : 'Not Available'}
+                          </div>
+
+                          <div>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Price:
+                            </strong>
+                            <p>
+                              Total Buying Price:{' '}
+                              {mobile.prices?.buyingPrice || 'N/A'} PKR
+                            </p>
+                            <Button
+                              onClick={() => handleShowPrices(mobile)}
+                              style={{
+                                backgroundColor: '#3f4d67',
+                                color: '#fff',
+                                border: 'none',
+                                width: '100%',
+                                padding: '6px 14px',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                fontSize: '0.9rem',
+                                transition: 'background-color 0.3s ease',
+                                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+                                margin: '5px',
+                              }}
+                            >
+                              View Buying Price
+                            </Button>
+                          </div>
+
+                          <div style={{ marginTop: '8px' }}>
+                            <strong
+                              style={{
+                                color: '#333',
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              Payment:
+                            </strong>
+                            <div
+                              style={{
+                                display: 'flex',
+                                gap: '8px',
+                                marginTop: '6px',
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  background: '#eef2ff',
+                                  color: '#3730a3',
+                                  padding: '4px 10px',
+                                  borderRadius: '12px',
+                                }}
+                              >
+                                Status: {mobile.purchasePaymentStatus || 'N/A'}
+                              </span>
+                              <span
+                                style={{
+                                  background: '#ecfeff',
+                                  color: '#155e75',
+                                  padding: '4px 10px',
+                                  borderRadius: '12px',
+                                }}
+                              >
+                                Type: {mobile.purchasePaymentType || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {mobile?.ramSimDetails && (
+                            <div style={{ marginTop: '8px' }}>
+                              <strong
+                                style={{
+                                  color: '#333',
+                                  fontSize: '1.1rem',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                Stats:
+                              </strong>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  gap: '8px',
+                                  marginTop: '6px',
+                                  flexWrap: 'wrap',
+                                }}
+                              >
+                                {(() => {
+                                  const imeis = (
+                                    mobile?.ramSimDetails || []
+                                  ).flatMap((r) => r?.imeiNumbers || []);
+                                  const total = imeis.length;
+                                  const sold = imeis.filter(
+                                    (i) => i?.status === 'Sold'
+                                  ).length;
+                                  const dispatched = imeis.filter(
+                                    (i) => i?.isDispatched === true
+                                  ).length;
+                                  const available = Math.max(
+                                    total - sold - dispatched,
+                                    0
+                                  );
+                                  return (
+                                    <>
+                                      <span
+                                        style={{
+                                          background: '#e0f2fe',
+                                          color: '#0369a1',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        T: {total}
+                                      </span>
+                                      <span
+                                        style={{
+                                          background: '#dcfce7',
+                                          color: '#166534',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        A: {available}
+                                      </span>
+                                      <span
+                                        style={{
+                                          background: '#fee2e2',
+                                          color: '#991b1b',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        D: {dispatched}
+                                      </span>
+                                      <span
+                                        style={{
+                                          background: '#fef9c3',
+                                          color: '#854d0e',
+                                          padding: '4px 10px',
+                                          borderRadius: '12px',
+                                        }}
+                                      >
+                                        S: {sold}
+                                      </span>
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                            </div>
+                          )}
+
+                          {mobile?.ramSimDetails?.length > 0 ? (
+                            <div>
+                              <div style={{ marginBottom: '20px' }}></div>
+                              <strong
+                                style={{
+                                  color: '#333',
+                                  fontSize: '1.1rem',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                RAM and SIM Options:
+                              </strong>
+                              <div style={{ marginBottom: '10px' }}></div>
+                              {mobile?.ramSimDetails?.map((ramSim) => (
+                                <div
+                                  key={ramSim._id}
+                                  style={{
+                                    border: '1px solid #ddd',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    marginBottom: '20px',
+                                    backgroundColor: '#f9f9f9',
+                                    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.1)',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      fontSize: '16px',
+                                      fontWeight: 'bold',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    RAM Memory: {ramSim?.ramMemory || 'N/A'} GB
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      fontSize: '14px',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    <strong>SIM Option:</strong>{' '}
+                                    {ramSim?.simOption || 'N/A'}
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      fontSize: '14px',
+                                      marginBottom: '5px',
+                                    }}
+                                  >
+                                    <strong style={{ marginRight: '5px' }}>
+                                      Quantity:
+                                    </strong>
+                                    <span>
+                                      {ramSim?.imeiNumbers?.length > 0
+                                        ? `${ramSim.imeiNumbers.length}`
+                                        : 'No stock'}
+                                    </span>
+                                  </div>
+
+                                  {ramSim.priceOfOne && (
+                                    <>
+                                      <div
+                                        style={{
+                                          fontSize: '14px',
+                                          fontWeight: 'bold',
+                                          color: '#333',
+                                        }}
+                                      >
+                                        Per Piece:{' '}
+                                        <span style={{ color: '#007bff' }}>
+                                          {ramSim.priceOfOne} PKR
+                                        </span>
+                                      </div>
+                                      <div
+                                        style={{
+                                          fontSize: '14px',
+                                          fontWeight: 'bold',
+                                          color: '#333',
+                                        }}
+                                      >
+                                        Total:{' '}
+                                        <span style={{ color: '#007bff' }}>
+                                          {ramSim.priceOfOne *
+                                            ramSim.imeiNumbers.length}{' '}
+                                          PKR
+                                        </span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div>RAM and SIM Options: Not Available</div>
+                          )}
+                        </Card.Text>
+                      </Card.Body>
+                      <div
+                        style={{
+                          textAlign: 'right',
+                          width: '100%',
+                          padding: '1.5rem',
+                        }}
+                      >
+                        <Button
+                          onClick={() => handleDispatchClick(mobile)}
+                          style={{
+                            backgroundColor: '#FFD000',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            marginRight: '5px',
+                          }}
+                        >
+                          Dispatch
+                        </Button>
+                        <Button
+                          onClick={() => handleSoldClick(mobile, 'bulk')}
+                          style={{
+                            backgroundColor: '#28a745',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          Sold
+                        </Button>
+                      </div>
+                    </Card>
+                  </Col>
+                ))
+            ) : (
+              <Col>
+                <Card className="text-center">
+                  <Card.Body>
+                    <Card.Text>No mobiles found</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            )}
+
+            <Modal show={showPrices} onHide={handleClosePrices}>
+              <Modal.Header closeButton>
+                <Modal.Title>Buying Price</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  <li style={{ padding: '8px 0' }}>
+                    <strong>Buying Price:</strong>{' '}
+                    {selectedMobile?.prices?.buyingPrice || 'N/A'} PKR
                   </li>
                 </ul>
               </Modal.Body>
@@ -1321,6 +2479,300 @@ const NewMobilesList = () => {
           </Row>
         </>
       )}
+
+      {/* Details Modal */}
+      <Modal size="lg" show={showDetails} onHide={handleCloseDetails}>
+        <Modal.Header closeButton>
+          <Modal.Title>Bulk Purchase Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedRecord && (
+            <div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                  marginBottom: '16px',
+                }}
+              >
+                <div>
+                  <strong>Supplier:</strong>{' '}
+                  {selectedRecord.personId?.name || 'N/A'}
+                </div>
+                <div>
+                  <strong>Number:</strong>{' '}
+                  {selectedRecord.personId?.number || 'N/A'}
+                </div>
+                <div>
+                  <strong>Date:</strong>{' '}
+                  {selectedRecord.date
+                    ? new Date(selectedRecord.date).toLocaleDateString()
+                    : 'N/A'}
+                </div>
+                <div>
+                  <strong>Buying Price:</strong>{' '}
+                  {selectedRecord.prices?.buyingPrice || 'N/A'} PKR
+                </div>
+                <div>
+                  <strong>Payment Status:</strong>{' '}
+                  {selectedRecord.purchasePaymentStatus || 'N/A'}
+                </div>
+                <div>
+                  <strong>Payment Type:</strong>{' '}
+                  {selectedRecord.purchasePaymentType || 'N/A'}
+                </div>
+                <div>
+                  <strong>Status:</strong> {selectedRecord.status || 'N/A'}
+                </div>
+                <div>
+                  <strong>Dispatch:</strong>{' '}
+                  {selectedRecord.dispatch ? 'Yes' : 'No'}
+                </div>
+              </div>
+
+              {selectedRecord.creditPaymentData && (
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Credit Payment:</strong>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '12px',
+                      marginTop: '6px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: '#fef9c3',
+                        color: '#854d0e',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      Pay Now:{' '}
+                      {selectedRecord.creditPaymentData.payableAmountNow || '0'}{' '}
+                      PKR
+                    </span>
+                    <span
+                      style={{
+                        background: '#fee2e2',
+                        color: '#991b1b',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      Pay Later:{' '}
+                      {selectedRecord.creditPaymentData.payableAmountLater ||
+                        '0'}{' '}
+                      PKR
+                    </span>
+                    <span
+                      style={{
+                        background: '#e0f2fe',
+                        color: '#0369a1',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      Due:{' '}
+                      {selectedRecord.creditPaymentData.dateOfPayment
+                        ? new Date(
+                            selectedRecord.creditPaymentData.dateOfPayment
+                          ).toLocaleDateString()
+                        : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.phoneStatistics && (
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Stats:</strong>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      marginTop: '6px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: '#e0f2fe',
+                        color: '#0369a1',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      T: {selectedRecord.phoneStatistics.totalPhones || 0}
+                    </span>
+                    <span
+                      style={{
+                        background: '#dcfce7',
+                        color: '#166534',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      A: {selectedRecord.phoneStatistics.availablePhones || 0}
+                    </span>
+                    <span
+                      style={{
+                        background: '#fee2e2',
+                        color: '#991b1b',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      D: {selectedRecord.phoneStatistics.dispatchedPhones || 0}
+                    </span>
+                    <span
+                      style={{
+                        background: '#fef9c3',
+                        color: '#854d0e',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      S: {selectedRecord.phoneStatistics.soldPhones || 0}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Device Details - Grouped by RAM and Price */}
+              <div>
+                <strong>Devices</strong>
+                {Array.isArray(selectedRecord.phoneDetails) &&
+                selectedRecord.phoneDetails.length > 0 ? (
+                  <div style={{ marginTop: '8px' }}>
+                    {(() => {
+                      // Group phones by common RAM and price
+                      const groupedPhones = selectedRecord.phoneDetails.reduce(
+                        (acc, phone) => {
+                          const key = `${phone.companyName || 'Unknown'}-${phone.modelName || 'Unknown'}-${phone.ramMemory || 'Unknown'}-${phone.simOption || 'Unknown'}-${phone.priceOfOne || 'Unknown'}`;
+
+                          if (!acc[key]) {
+                            acc[key] = {
+                              companyName: phone.companyName || 'N/A',
+                              modelName: phone.modelName || 'N/A',
+                              ramMemory: phone.ramMemory || 'N/A',
+                              simOption: phone.simOption || 'N/A',
+                              priceOfOne: phone.priceOfOne || 'N/A',
+                              count: 0,
+                              totalImeis: 0,
+                            };
+                          }
+
+                          acc[key].count += 1;
+                          if (Array.isArray(phone.imeiDetails)) {
+                            acc[key].totalImeis += phone.imeiDetails.length;
+                          }
+
+                          return acc;
+                        },
+                        {}
+                      );
+
+                      return Object.values(groupedPhones).map((group, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            marginBottom: '10px',
+                            background: '#fafafa',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                              gap: '8px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            <div>
+                              <strong>Company:</strong> {group.companyName}
+                            </div>
+                            <div>
+                              <strong>Model:</strong> {group.modelName}
+                            </div>
+                            <div>
+                              <strong>RAM:</strong> {group.ramMemory}
+                            </div>
+                            <div>
+                              <strong>SIM:</strong> {group.simOption}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              flexWrap: 'wrap',
+                              gap: '8px',
+                            }}
+                          >
+                            <div>
+                              <strong>Price:</strong> {group.priceOfOne}
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                gap: '12px',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  background: '#dbeafe',
+                                  color: '#1e40af',
+                                  padding: '4px 12px',
+                                  borderRadius: '16px',
+                                  fontWeight: '600',
+                                  fontSize: '14px',
+                                }}
+                              >
+                                {group.totalImeis} phones
+                                {/* {group.count}{' '}
+                                {group.count === 1 ? 'Phone' : 'Phones'} */}
+                              </span>
+                              {group.totalImeis > 0 && (
+                                <span
+                                  style={{
+                                    background: '#f0f9ff',
+                                    color: '#0369a1',
+                                    padding: '4px 12px',
+                                    borderRadius: '16px',
+                                    fontWeight: '500',
+                                    fontSize: '13px',
+                                  }}
+                                >
+                                  {/* {group.totalImeis} IMEIs */}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '6px' }}>No device details</div>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDetails}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* <AddPhone modal={showModal} editMobile={editMobile} handleModalClose={() => setShowModal(false)} /> */}
       <PurchasePhone
@@ -1410,14 +2862,197 @@ const NewMobilesList = () => {
       </Modal>
 
       {/* Sold Modal */}
-      <Modal show={showSoldModal} onHide={() => setShowSoldModal(false)}>
+      <Modal
+        size="lg"
+        show={showSoldModal}
+        onHide={() => setShowSoldModal(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Sell Mobile</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <div>
-              <Form.Group className="mb-3">
+              <Form.Group controlId="bulkPayment">
+                <Form.Label>Payment Type</Form.Label>
+                <Form.Select
+                  value={sellingType}
+                  onChange={(e) => setSellingType(e.target.value)}
+                  required
+                >
+                  <option value="">Select Payment Type</option>
+                  <option value="Full Payment">Full Payment</option>
+                  <option value="Credit">Credit</option>
+                </Form.Select>
+              </Form.Group>
+              <Row style={{ marginTop: '10px', marginBottom: '10px' }}>
+                <Col>
+                  {sellingType !== 'none' && (
+                    <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <label style={{ fontWeight: '600' }}>Entity *</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={() => setShowNewEntityForm(false)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: !showNewEntityForm
+                                ? '#e5e7eb'
+                                : 'transparent',
+                              border: '1px solid #d1d5db',
+                              fontWeight: '500',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Select Existing
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowNewEntityForm(true)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: showNewEntityForm
+                                ? '#e5e7eb'
+                                : 'transparent',
+                              border: '1px solid #d1d5db',
+                              fontWeight: '500',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            New Customer
+                          </button>
+                        </div>
+                      </div>
+
+                      {showNewEntityForm ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '12px',
+                            marginBottom: '16px',
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <label
+                              style={{
+                                display: 'block',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                color: '#4b5563',
+                              }}
+                            >
+                              Entity Name *
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              value={newEntity.name}
+                              onChange={(e) =>
+                                setNewEntity({
+                                  ...newEntity,
+                                  name: e.target.value,
+                                })
+                              }
+                              placeholder="Enter entity name"
+                              required
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '2px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none',
+                              }}
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label
+                              style={{
+                                display: 'block',
+                                marginBottom: '8px',
+                                fontSize: '14px',
+                                color: '#4b5563',
+                              }}
+                            >
+                              Entity Number *
+                            </label>
+                            <input
+                              name="number"
+                              type="text"
+                              value={newEntity.number}
+                              onChange={(e) =>
+                                setNewEntity({
+                                  ...newEntity,
+                                  number: e.target.value,
+                                })
+                              }
+                              placeholder="Enter entity number"
+                              required
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '2px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <CustomSelect
+                            value={entityData._id}
+                            onChange={(selectedOption) => {
+                              const selectedEntity = getAllEntities.find(
+                                (entity) => entity._id === selectedOption?.value
+                              );
+                              setEntityData(
+                                selectedEntity || {
+                                  name: '',
+                                  number: '',
+                                  _id: '',
+                                }
+                              );
+                            }}
+                            options={getAllEntities.map((entity) => ({
+                              value: entity._id,
+                              label: `${entity.name} || ${entity.number}`,
+                            }))}
+                          />
+                        </>
+                      )}
+                    </div>
+                  )}
+                </Col>
+
+                <Col>
+                  <Form.Group controlId="saleDate">
+                    <Form.Label>Sale Date</Form.Label>
+                    <Form.Control
+                      type="Date"
+                      style={{ marginTop: '20px' }}
+                      placeholder="Enter Sale Date"
+                      value={saleDate}
+                      onChange={(e) => setSaleDate(e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              {/* <Form.Group className="mb-3">
                 <Form.Label>Customer Name</Form.Label>
                 <Form.Control
                   type="text"
@@ -1434,36 +3069,7 @@ const NewMobilesList = () => {
                   onChange={(e) => setCustomerNumber(e.target.value)}
                   placeholder="Enter number in +923XXXXXXXXX format"
                 />
-              </Form.Group>
-
-              <Form.Group controlId="saleDate">
-                <Form.Label>Sale Date</Form.Label>
-                <Form.Control
-                  type="Date"
-                  placeholder="Enter Sale Date"
-                  value={saleDate}
-                  onChange={(e) => setSaleDate(e.target.value)}
-                  required
-                />
-              </Form.Group>
-              {/* CNIC Front Picture */}
-              {/* <Form.Group className="mb-3">
-                  <Form.Label>CNIC Front Picture</Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setCnicFrontPic(e.target.files[0]?.name)}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>CNIC Back Picture</Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setCnicBackPic(e.target.files[0])?.name}
-                  />
-                </Form.Group> */}
+              </Form.Group> */}
 
               <div>
                 <div>
@@ -1490,11 +3096,14 @@ const NewMobilesList = () => {
                           }}
                         >
                           <option value="">Select accessory</option>
-                          {data?.data?.map((item) => (
-                            <option key={item._id} value={item._id}>
-                              {item.accessoryName}
-                            </option>
-                          ))}
+                          {data?.data
+                            ?.filter((item) => item.quantity > 0)
+                            .map((item) => (
+                              <option key={item._id} value={item._id}>
+                                {item.accessoryName} | Qty: {item.quantity} |
+                                Unit Price: {item.perPiecePrice}
+                              </option>
+                            ))}
                         </Form.Select>
                       </Form.Group>
 
@@ -1554,28 +3163,20 @@ const NewMobilesList = () => {
                   </Button>
                 </div>
 
+                {/* <InputLabel
+                  style={{
+                    background:
+                      'linear-gradient(90deg, #fef9c3 0%, #fde68a 100%)',
+                    border: '2px solid #f59e42',
+                    borderRadius: '12px',
+                    padding: '24px 18px',
+                    margin: '24px 0',
+                    boxShadow: '0 4px 18px rgba(245, 158, 66, 0.15)',
+                  }}
+                >
+                  Select Imei is compulsory
+                </InputLabel> */}
                 <FormControl fullWidth variant="outlined" className="mb-3">
-                  {/* Search Field Inside Dropdown */}
-                  {/* <MenuItem onMouseDown={(e) => e.stopPropagation()}>
-        <TextField
-          value={search}
-          placeholder="Search IMEI..."
-          size="small"
-          fullWidth
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </MenuItem> */}
-
-                  {/* Filtered IMEI Options */}
-                  {/* {imeiList
-        .filter((item) =>
-          item.toLowerCase().includes(search.toLowerCase())
-        )
-        .map((item, index) => (
-          <MenuItem key={index} value={item}>
-            {item}
-          </MenuItem>
-        ))} */}
                   <InputLabel>IMEI</InputLabel>
                   <Select
                     value={imei}
@@ -1595,23 +3196,7 @@ const NewMobilesList = () => {
                   </Select>
                 </FormControl>
               </div>
-              <Form.Group>
-                <Form.Label>Selling Type</Form.Label>
-                <Form.Select
-                  as="select"
-                  value={sellingType}
-                  onChange={(e) => setSellingType(e.target.value)}
-                >
-                  <option value="">Select Selling Type</option>
-                  {/* <option value="Bank">Bank</option> */}
-                  <option value="Exchange">Exchange</option>
-                  <option value="Full Payment">Full Payment</option>
-                  {/* <option value="Cash">Cash</option> */}
-                  <option value="Credit">Credit</option>
-                </Form.Select>
-              </Form.Group>
 
-              {/* Conditional Fields Based on Selling Type */}
               {sellingType === 'Bank' && (
                 <Form.Group>
                   <Form.Label>Bank Name</Form.Label>
@@ -1677,19 +3262,29 @@ const NewMobilesList = () => {
                 <Form.Label>Sold Price</Form.Label>
                 <Form.Control
                   type="number"
+                  // hidden={true}
                   value={finalPrice}
                   onChange={(e) => setFinalPrice(e.target.value)}
                   placeholder="Enter Sold price"
                 />
               </Form.Group>
             </div>
-
+            {/* <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '14px',
+                  color: '#4b5563',
+                }}
+                htmlFor=""
+              >
+                Select Imei Mobiles Model
+              </label>
+              <span>{}</span>
+            </div> */}
             {type === 'bulk' && (
               <>
-                {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", }}>
-                <BarcodeReader />
-              </div> */}
-
                 <Form.Group className="mb-3">
                   <Form.Label>IMEI Number</Form.Label>
 
@@ -1702,7 +3297,7 @@ const NewMobilesList = () => {
                     />
                     <Button
                       variant="success"
-                      onClick={handleAddImei}
+                      onClick={() => handleAddedImei(imeiInput)}
                       backgroundColor="linear-gradient(to right, #50b5f4, #b8bee2)"
                       className="ms-2"
                     >
@@ -1711,8 +3306,7 @@ const NewMobilesList = () => {
                   </div>
                 </Form.Group>
 
-                {/* Display added IMEIs */}
-                {addedImeis.length > 0 && (
+                {/* {addedImeis.length > 0 && (
                   <div className="mt-3">
                     <h6>Added IMEIs:</h6>
                     <ul className="list-group">
@@ -1722,6 +3316,21 @@ const NewMobilesList = () => {
                           className="list-group-item d-flex justify-content-between align-items-center"
                         >
                           {imei}
+                          <input
+                            type="number"
+                            value={imeiPrices[imei] || ''}
+                            onChange={(e) =>
+                              handleImeiPriceChange(imei, e.target.value)
+                            }
+                            placeholder="Price"
+                            style={{
+                              width: '100px',
+                              marginRight: '10px',
+                              borderRadius: '4px',
+                              border: '1px solid #ccc',
+                              padding: '5px',
+                            }}
+                          />
                           <Button
                             variant="danger"
                             size="sm"
@@ -1729,6 +3338,153 @@ const NewMobilesList = () => {
                           >
                             Remove
                           </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )} */}
+
+                {addedImeis.length > 0 && (
+                  <div className="mt-3">
+                    <h6>Added IMEIs:</h6>
+                    <ul
+                      style={{
+                        listStyle: 'none',
+                        padding: 0,
+                        margin: 0,
+                        maxHeight: '400px',
+                        overflowY: 'auto',
+                      }}
+                    >
+                      {addedImeis.map((imei, index) => (
+                        <li
+                          key={index}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '12px 15px',
+                            borderBottom: '1px solid #e0e0e0',
+                            backgroundColor: '#fff',
+                            transition: 'background-color 0.2s',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: 'monospace',
+                              fontSize: '14px',
+                              color: '#333',
+                            }}
+                          >
+                            {imei}
+                          </span>
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '15px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px',
+                              }}
+                            >
+                              <label
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  marginBottom: '2px',
+                                }}
+                              >
+                                Purchase Price
+                              </label>
+                              <input
+                                type="text"
+                                value={
+                                  bulkData.reduce((price, bulkItem) => {
+                                    for (const detail of bulkItem.ramSimDetails) {
+                                      const hasImei = detail.imeiNumbers.some(
+                                        (imeiObj) => imeiObj.imei1 === imei
+                                      );
+                                      if (hasImei) return detail.priceOfOne;
+                                    }
+                                    return price;
+                                  }, '') || ''
+                                }
+                                style={{
+                                  width: '120px',
+                                  padding: '6px 8px',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  fontSize: '13px',
+                                }}
+                                readOnly
+                              />
+                            </div>
+
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px',
+                              }}
+                            >
+                              <label
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  marginBottom: '2px',
+                                }}
+                              >
+                                Selling Price
+                              </label>
+                              <input
+                                type="number"
+                                value={imeiPrices[imei] || ''}
+                                onChange={(e) =>
+                                  handleImeiPriceChange(imei, e.target.value)
+                                }
+                                placeholder="Enter price"
+                                style={{
+                                  width: '120px',
+                                  padding: '6px 8px',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  fontSize: '13px',
+                                }}
+                              />
+                            </div>
+
+                            <button
+                              onClick={() => handleRemoveAddedImei(imei)}
+                              style={{
+                                backgroundColor: '#dc3545',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s',
+                                height: '32px',
+                                alignSelf: 'flex-end',
+                              }}
+                              onMouseOver={(e) =>
+                                (e.currentTarget.style.backgroundColor =
+                                  '#c82333')
+                              }
+                              onMouseOut={(e) =>
+                                (e.currentTarget.style.backgroundColor =
+                                  '#dc3545')
+                              }
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>

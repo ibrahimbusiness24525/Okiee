@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios, { all } from 'axios';
-import { FaPrint } from 'react-icons/fa';
+import { FaBackward, FaPrint } from 'react-icons/fa';
 import { BASE_URL } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
 import { dateFormatter } from 'utils/dateFormatter';
@@ -9,10 +9,20 @@ import BarcodeReader from 'components/BarcodeReader/BarcodeReader';
 import { api } from '../../../api/api';
 import BarcodePrinter from 'components/BarcodePrinter/BarcodePrinter';
 import { Button } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import Modal from 'components/Modal/Modal';
+import SaleInvoiceTable from './SaleInvoiceTable';
 
 const TodaySales = () => {
   const [allInvoices, setAllInvoices] = useState([]);
   const [allbulkSales, setAllBulkSales] = useState([]);
+  const [showUpdateReturnModal, setShowUpdateReturnModal] = useState(false);
+  const [returningPhoneDetail, setReturningPhoneDetail] = useState({
+    soldPhoneBuyingPrice: '',
+    newBuyingPrice: '',
+    remainingWarranty: '',
+    soldPhoneId: '',
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -104,19 +114,42 @@ const TodaySales = () => {
     navigate('/invoice/shop', { state: formattedInvoice });
   };
   const handlePrintBulkClick = (invoice) => {
-    console.log(invoice);
+    console.log('📦 Bulk invoice object:', invoice);
+    console.log('🆔 Invoice ID fields:', {
+      id: invoice.id,
+      _id: invoice._id,
+      bulkSoldId: invoice.bulkSoldId,
+    });
+
+    // Ensure we have an ID - bulk invoices should have _id
+    const invoiceId = invoice._id || invoice.id || invoice.bulkSoldId;
+
+    if (!invoiceId) {
+      console.error('❌ No ID found in invoice:', invoice);
+      toast.error('Invoice ID not found. Cannot open invoice.');
+      return;
+    }
 
     const formattedInvoice = {
+      showInvoice: true,
       editing: true,
-      id: invoice._id,
+      id: invoiceId, // Use the found ID
+      _id: invoiceId, // Keep both for compatibility
       invoiceNumber: invoice.invoiceNumber,
       customerName: invoice.customerName,
+      customerNumber: invoice.customerNumber,
       salePrice: invoice.salePrice,
+      finalPrice: invoice.salePrice || invoice.finalPrice, // Map salePrice to finalPrice
+      profit: invoice.profit,
       totalInvoice: invoice.totalInvoice,
       sellingPaymentType: invoice.sellingPaymentType,
+      sellingType: invoice.sellingPaymentType || invoice.sellingType, // Map sellingPaymentType to sellingType
       warranty: invoice.warranty,
+      accessoriesList: invoice.accessories || [],
       dateSold: invoice.dateSold,
+      saleDate: invoice.dateSold || invoice.saleDate, // Map dateSold to saleDate
       imei1: invoice.imei1,
+      createdAt: invoice.createdAt,
       imei2: invoice.imei2,
       cnicFrontPic: invoice.cnicFrontPic,
       cnicBackPic: invoice.cnicBackPic,
@@ -124,26 +157,51 @@ const TodaySales = () => {
       addedImeis: invoice.addedImeis || [],
       type: invoice.type,
       bulkPhonePurchaseId: invoice.bulkPhonePurchaseId,
+      companyName: invoice.companyName || '', // Add companyName
+      modelName: invoice.modelName || '', // Add modelName
+      bankName: invoice.bankName || '', // Add bankName
     };
-    //     const formattedInvoice = {
-    //   ...invoice,
-    //   finalPrice: invoice.salePrice,
-    //   sellingType: invoice.sellingPaymentType,
-    //   warranty: invoice.warranty,
-    //   saleDate: invoice.dateSold,
-    //   addedImeis: invoice.addedImeis || [],
-    //   cnicBackPic: invoice.cnicBackPic,
-    //   cnicFrontPic: invoice.cnicFrontPic,
-    //   customerName: invoice.customerName,
-    //   accessories: invoice.accessories || [],
-    //   bankName: invoice.bankName || '',
-    //   payableAmountNow: invoice.payableAmountNow || 0,
-    //   payableAmountLater: invoice.payableAmountLater || 0,
-    //   payableAmountLaterDate: invoice.payableAmountLaterDate || null,
-    //   exchangePhoneDetail: invoice.exchangePhoneDetail || null,
-    //   customerNumber: invoice.customerNumber,
-    // };
+    console.log('✅ Formatted invoice for navigation:', formattedInvoice);
     navigate('/invoice/shop', { state: formattedInvoice });
+  };
+  console.log('allBulkInvoice', allbulkSales);
+  const handleReturnSinglePhone = async (invoice) => {
+    setShowUpdateReturnModal(true);
+    setReturningPhoneDetail({
+      soldPhoneBuyingPrice: invoice.salePrice,
+      soldPhoneId: invoice._id,
+    });
+    console.log('invoice', invoice);
+    console.log('returningPhoneDetail', returningPhoneDetail);
+  };
+  console.log('returningPhoneDetail', returningPhoneDetail);
+
+  const handleConfirmReturnSinglePhone = async () => {
+    try {
+      console.log('payload', {
+        newBuyingPrice: returningPhoneDetail.newBuyingPrice,
+        remainingWarranty: returningPhoneDetail.remainingWarranty,
+      });
+      await api.post(
+        `api/Purchase/return-single-sold-phone/${returningPhoneDetail.soldPhoneId}`,
+        {
+          newBuyingPrice: returningPhoneDetail.newBuyingPrice,
+          remainingWarranty: returningPhoneDetail.remainingWarranty,
+        }
+      );
+      setShowUpdateReturnModal(false);
+      setReturningPhoneDetail({
+        soldPhoneBuyingPrice: '',
+        newBuyingPrice: '',
+        remainingWarranty: '',
+        soldPhoneId: '',
+      });
+      toast.success('Phone returned successfully');
+      getInvoices(); // Refresh the invoices list after returning
+    } catch (error) {
+      toast.error('Error returning phone');
+      console.error('Error handling return:', error);
+    }
   };
   const styles = {
     container: {
@@ -200,6 +258,7 @@ const TodaySales = () => {
     setScannedBarcodeValue(value);
   };
   console.log('allInvoices', allInvoices);
+
   return (
     <div style={styles.container}>
       <h2 style={{ width: '100%' }}>Today Sales Invoices</h2>
@@ -267,43 +326,80 @@ const TodaySales = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    backgroundColor: obj.profit < 0 ? '#ffe6e6' : '#e6ffe6',
-                    color: obj.profit < 0 ? '#cc0000' : '#006600',
-                    fontWeight: 'bold',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                    width: '300px', // You can adjust this value as needed
+                    gap: '8px',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    backgroundColor: obj.profit < 0 ? '#fff0f0' : '#f0fff0',
+                    color: obj.profit < 0 ? '#d32f2f' : '#388e3c',
+                    fontWeight: '500',
+                    width: '100%',
                     justifyContent: 'space-between',
+                    fontSize: '13px',
+                    lineHeight: '1.2',
                   }}
                 >
-                  <p
+                  <span
                     style={{
-                      margin: 0,
+                      flex: '0 1 auto',
+                      minWidth: '60px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
+                      padding: '4px 0',
                     }}
                   >
-                    {obj.profit < 0
-                      ? `Loss of ${-obj.profit}`
-                      : `Profit of ${obj.profit}`}
-                  </p>
-                  <Button
-                    onClick={() => handlePrintClick(obj)}
-                    style={{
-                      backgroundColor: '#007bff',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <FaPrint style={{ marginRight: '8px' }} />
-                    Get Invoice
-                  </Button>
+                    {obj.profit < 0 ? `▼ ${-obj.profit}` : `▲ ${obj.profit}`}
+                  </span>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <Button
+                      onClick={() => handlePrintClick(obj)}
+                      size="small"
+                      style={{
+                        backgroundColor: '#007bff',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '12px',
+                        height: '24px',
+                        minWidth: '70px',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <FaPrint
+                        style={{ marginRight: '4px', fontSize: '10px' }}
+                      />
+                      <span>Invoice</span>
+                    </Button>
+
+                    <Button
+                      onClick={() => handleReturnSinglePhone(obj)}
+                      size="small"
+                      style={{
+                        backgroundColor: '#d32f2f',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '12px',
+                        height: '24px',
+                        minWidth: '70px',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <FaBackward
+                        style={{ marginRight: '4px', fontSize: '10px' }}
+                      />
+                      <span>Return</span>
+                    </Button>
+                  </div>
                 </div>
               );
             },
@@ -328,26 +424,36 @@ const TodaySales = () => {
         search={'imei1'}
         keysToDisplay={[
           'type',
-          'purchasePrice',
+          'imei1',
+          // 'purchasePrice',
           'salePrice',
           'sellingPaymentType',
+          'customerName',
           'warranty',
           'dateSold',
         ]}
         label={[
           'Type of Sale',
-          'Purchase Price',
+          // 'Purchase Price',
+          'IMEI',
           'Sale Price',
           'Selling Payment Type',
+          'Customer Name',
           'Warranty',
           'Invoice Date',
           // "Barcode Generator"
         ]}
         customBlocks={[
+          // {
+          //   index: 1,
+          //   component: (purchasePrice) => {
+          //     return purchasePrice === 0 ? 'Not mentioned' : purchasePrice;
+          //   },
+          // },
           {
             index: 1,
-            component: (purchasePrice) => {
-              return purchasePrice === 0 ? 'Not mentioned' : purchasePrice;
+            component: (imei1) => {
+              return imei1 ? imei1.join(',') : 'Not mentioned';
             },
           },
           {
@@ -357,7 +463,7 @@ const TodaySales = () => {
             },
           },
           {
-            index: 5,
+            index: 6,
             component: (date) => {
               return dateFormatter(date);
             },
@@ -412,6 +518,20 @@ const TodaySales = () => {
           },
         ]}
       />
+      {/* New unified sale-invoice table using /api/sale-invoice/ */}
+      <div>
+        <h3
+          style={{
+            textAlign: 'start',
+            marginBottom: '16px',
+            fontWeight: '700',
+            marginTop: '2rem',
+          }}
+        >
+          Sale Invoices (From /api/sale-invoice)
+        </h3>
+      </div>
+      <SaleInvoiceTable mode="today" />
       <h3
         style={{
           textAlign: 'start',
@@ -423,12 +543,12 @@ const TodaySales = () => {
         Accessory Record
       </h3>
       <Table
-        array={accessoriesRecords}
+        array={accessoriesRecords.reverse()}
         search="accessoryName"
         keysToDisplay={[
           'type',
           'personName',
-          'accessoryName',
+          'accessoryList',
           'perPiecePrice',
           'quantity',
           'personTakingCredit',
@@ -465,6 +585,42 @@ const TodaySales = () => {
               >
                 {row.personStatus === 'Payable' ? 'Credit' : 'Paid'}
               </div>
+            ),
+          },
+          {
+            index: 2, // Product column
+            component: (accessoryList) => (
+              <span
+                style={{
+                  fontWeight: 500,
+                  color: '#1976D2',
+                }}
+              >
+                <select
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: '#fff',
+                    color: '#1976D2',
+                    fontWeight: 500,
+                    fontSize: '0.95em',
+                    outline: 'none',
+                    minWidth: '100px',
+                  }}
+                >
+                  {Array.isArray(accessoryList) && accessoryList.length > 0 ? (
+                    accessoryList.map((item) => (
+                      <option key={item._id} value={item._id}>
+                        {item.name} quantity ({item.quantity}) price (
+                        {item?.perPiecePrice})
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No products</option>
+                  )}
+                </select>
+              </span>
             ),
           },
           {
@@ -568,10 +724,234 @@ const TodaySales = () => {
                   ? `Loss of Rs. ${Math.abs(obj.profit)}`
                   : `Profit of Rs. ${obj.profit}`}
               </span>
+              <Button
+                onClick={() => {
+                  // Prepare payload in the exact format used in setTimeout
+                  const payload = {
+                    sales: Array.isArray(obj.accessoriesList)
+                      ? obj.accessoriesList.map((accessory) => ({
+                          accessoryId:
+                            accessory.name ||
+                            accessory.accessoryName ||
+                            accessory._id ||
+                            accessory.accessoryId,
+                          quantity: Number(accessory.quantity),
+                          perPiecePrice: Number(accessory.perPiecePrice),
+                          name: accessory.name || accessory.accessoryName,
+                        }))
+                      : [],
+                    getPayment: {
+                      // Include payment details if available in obj
+                      amountFromBank: obj.amountFromBank || 0,
+                      amountFromPocket: obj.amountFromPocket || 0,
+                      bankAccountUsed: obj.bankAccountUsed || null,
+                    },
+                    purchasePaymentType: obj.type || 'sale',
+                    creditPaymentData: {
+                      payableAmountNow: obj.payableAmountNow || 0,
+                      payableAmountLater: obj.personGivingCredit || 0,
+                      dateOfPayment: obj.dateOfPayment || null,
+                    },
+                    entityData: {
+                      _id: obj.personId,
+                      name: obj.personName,
+                      number: obj.personNumber,
+                      // Include other person fields if needed
+                    },
+                    // Include all additional transaction details
+                    transactionDetails: {
+                      _id: obj._id,
+                      createdAt: obj.createdAt,
+                      updatedAt: obj.updatedAt,
+                      profit: obj.profit,
+                      totalPrice: obj.totalPrice,
+                      status: obj.personStatus,
+                      reference: obj.personReference,
+                    },
+                  };
+
+                  navigate('/invoice/accessory', {
+                    state: {
+                      data: {
+                        ...payload,
+                        // Include the original object for backward compatibility
+                        originalData: {
+                          accessoryId: obj.accessoryId,
+                          accessoryName: obj.accessoryName,
+                          personGivingCredit: obj.personGivingCredit,
+                          personTakingCredit: obj.personTakingCredit,
+                          // Include all other original fields
+                        },
+                      },
+                      type: 'accessory',
+                    },
+                  });
+                }}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <FaPrint style={{ marginRight: '8px' }} />
+                Get Invoice
+              </Button>
             </div>
           ),
         ]}
       />
+      <Modal
+        toggleModal={() => setShowUpdateReturnModal(false)}
+        show={showUpdateReturnModal}
+        size="sm"
+      >
+        <div
+          style={{
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+        >
+          <h3
+            style={{
+              margin: '0 0 10px 0',
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#333',
+            }}
+          >
+            Return Phone Details
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#555',
+              }}
+            >
+              New Buying Price
+            </label>
+            <input
+              onChange={(e) =>
+                setReturningPhoneDetail({
+                  ...returningPhoneDetail,
+                  newBuyingPrice: e.target.value,
+                })
+              }
+              type="text"
+              name="newBuyingPrice"
+              value={returningPhoneDetail.newBuyingPrice}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#555',
+              }}
+            >
+              Remaining Warranty (Optional)
+            </label>
+            <input
+              onChange={(e) =>
+                setReturningPhoneDetail({
+                  ...returningPhoneDetail,
+                  remainingWarranty: e.target.value,
+                })
+              }
+              name="remainingWarranty"
+              type="text"
+              value={returningPhoneDetail.remainingWarranty}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              marginTop: '10px',
+              padding: '12px',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '4px',
+            }}
+          >
+            <p
+              style={{
+                margin: '0 0 8px 0',
+                fontSize: '13px',
+                color: '#666',
+              }}
+            >
+              Original Sale Price
+            </p>
+            <div
+              style={{
+                fontSize: '15px',
+                fontWeight: '500',
+                color: '#333',
+              }}
+            >
+              {returningPhoneDetail.soldPhoneBuyingPrice}
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              marginTop: '10px',
+            }}
+          >
+            <button
+              onClick={() => setShowUpdateReturnModal(false)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#f0f0f0',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmReturnSinglePhone}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#1890ff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Confirm Return
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'components/Modal/Modal';
-import { api } from '../../../api/api';
+import { api, editAccessory, reduceAccessoryStock } from '../../../api/api';
 import { toast } from 'react-toastify';
 import { useGetAccessories } from 'hooks/accessory';
 import { Button, Form, Toast } from 'react-bootstrap';
 import WalletTransactionModal from 'components/WalletTransaction/WalletTransactionModal';
 import { useNavigate } from 'react-router-dom';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaEdit } from 'react-icons/fa';
 import CustomSelect from 'components/CustomSelect';
 
 const AddAccessory = () => {
@@ -24,12 +24,40 @@ const AddAccessory = () => {
   const [showPayForPurchaseModel, setShowPayForPurchaseModel] = useState(false);
   const [showGetFromSaleModel, setShowGetFromSaleModel] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
   const [hideAccessories, setHideAccessories] = useState(true);
   const [hideStockValue, setHideStockValue] = useState(true);
   const [addStockForm, setAddStockForm] = useState({
     accessoryId: '',
     quantity: 1,
     purchasePrice: 0,
+  });
+  const [returnForm, setReturnForm] = useState({
+    accessoryId: '',
+    quantity: 1,
+  });
+  const [showNewEntityFormForStock, setShowNewEntityFormForStock] =
+    useState(false);
+  const [showPayForStockModal, setShowPayForStockModal] = useState(false);
+  const [addStockEntityData, setAddStockEntityData] = useState({
+    name: '',
+    number: '',
+    _id: '',
+  });
+  const [newEntityForStock, setNewEntityForStock] = useState({
+    name: '',
+    number: '',
+  });
+  const [addStockPaymentData, setAddStockPaymentData] = useState({
+    paymentType: '',
+    payableAmountNow: '',
+    payableAmountLater: '',
+    dateOfPayment: '',
+  });
+  const [givePaymentForStock, setGivePaymentForStock] = useState({
+    amountFromBank: Number(''),
+    amountFromPocket: Number(''),
+    bankAccountUsed: Number(''),
   });
   const [getPayment, setGetPayment] = useState({
     amountFromBank: Number(''),
@@ -47,6 +75,14 @@ const AddAccessory = () => {
     _id: '',
   });
   const [showAccessoryModal, setShowAccessoryModal] = useState(false);
+  const [showPrintDemandModal, setShowPrintDemandModal] = useState(false);
+  const [demandList, setDemandList] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAccessory, setEditingAccessory] = useState(null);
+  const [editForm, setEditForm] = useState({
+    accessoryName: '',
+    perPiecePrice: '',
+  });
   const { data } = useGetAccessories();
   const [filteredData, setFilteredData] = useState(data?.data || []);
 
@@ -74,16 +110,101 @@ const AddAccessory = () => {
     console.log(addStockForm);
 
     try {
-      await api.post(`/api/accessory/${addStockForm.accessoryId}`, {
+      const payload = {
         quantity: addStockForm.quantity,
         perPiecePrice: addStockForm.purchasePrice,
-      });
+        givePayment: givePaymentForStock,
+        purchasePaymentType: addStockPaymentData.paymentType,
+        creditPaymentData: {
+          payableAmountNow: addStockPaymentData.payableAmountNow,
+          payableAmountLater: addStockPaymentData.payableAmountLater,
+          dateOfPayment: addStockPaymentData.dateOfPayment,
+        },
+        entityData: showNewEntityFormForStock
+          ? newEntityForStock
+          : addStockEntityData,
+      };
+
+      await api.post(`/api/accessory/${addStockForm.accessoryId}`, payload);
       toast.success('Stock added successfully');
       setShowAddStockModal(false);
+      // Reset form
+      setAddStockForm({
+        accessoryId: '',
+        quantity: 1,
+        purchasePrice: 0,
+      });
+      setAddStockPaymentData({
+        paymentType: '',
+        payableAmountNow: '',
+        payableAmountLater: '',
+        dateOfPayment: '',
+      });
+      setAddStockEntityData({
+        name: '',
+        number: '',
+        _id: '',
+      });
+      setNewEntityForStock({
+        name: '',
+        number: '',
+      });
+      setGivePaymentForStock({
+        amountFromBank: Number(''),
+        amountFromPocket: Number(''),
+        bankAccountUsed: Number(''),
+      });
+      setShowNewEntityFormForStock(false);
     } catch (error) {
       console.error('Error adding stock', error);
-      toast.console.error();
-      ('error adding stock');
+      toast.error('Error adding stock');
+    }
+  };
+
+  const handleReturnAccessory = async () => {
+    if (!returnForm.accessoryId) {
+      toast.error('Please select an accessory');
+      return;
+    }
+
+    if (!returnForm.quantity || returnForm.quantity <= 0) {
+      toast.error('Please enter a valid quantity');
+      return;
+    }
+
+    try {
+      const response = await reduceAccessoryStock(
+        returnForm.accessoryId,
+        returnForm.quantity
+      );
+      toast.success(response.data.message || 'Stock reduced successfully');
+      setShowReturnModal(false);
+      // Reset form
+      setReturnForm({
+        accessoryId: '',
+        quantity: 1,
+      });
+      // Refresh accessories data
+      if (data?.refetch) {
+        await data.refetch();
+      }
+      // Also update filtered data if available
+      if (response.data?.accessory) {
+        setFilteredData((prev) =>
+          prev.map((acc) =>
+            acc._id === response.data.accessory._id
+              ? { ...acc, ...response.data.accessory }
+              : acc
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error reducing stock', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to reduce accessory stock';
+      toast.error(errorMessage);
     }
   };
   const fetchAccessories = async () => {
@@ -244,6 +365,7 @@ const AddAccessory = () => {
           accessoryId: accessory.accessoryId,
           quantity: Number(accessory.quantity),
           perPiecePrice: Number(accessory.perPiecePrice),
+          name: accessory.accessoryName,
         })),
         getPayment: getPayment,
         purchasePaymentType: accessoryData.paymentType,
@@ -313,6 +435,70 @@ const AddAccessory = () => {
       deleteAccessory(id);
     }
   };
+
+  const handleEditAccessory = (accessory) => {
+    setEditingAccessory(accessory);
+    setEditForm({
+      accessoryName: accessory.accessoryName || '',
+      perPiecePrice: accessory.perPiecePrice || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateAccessory = async () => {
+    if (!editingAccessory?._id) {
+      toast.error('Accessory ID is required');
+      return;
+    }
+
+    // Validate that at least one field is provided
+    if (!editForm.accessoryName.trim() && !editForm.perPiecePrice) {
+      toast.error('At least one field (name or price) is required to update');
+      return;
+    }
+
+    // Validate price if provided
+    if (editForm.perPiecePrice && Number(editForm.perPiecePrice) <= 0) {
+      toast.error('Price must be a positive number');
+      return;
+    }
+
+    try {
+      const updateData = {};
+      if (editForm.accessoryName.trim()) {
+        updateData.accessoryName = editForm.accessoryName.trim();
+      }
+      if (editForm.perPiecePrice) {
+        updateData.perPiecePrice = Number(editForm.perPiecePrice);
+      }
+
+      const response = await editAccessory(editingAccessory._id, updateData);
+      toast.success(response.data.message || 'Accessory updated successfully');
+
+      // Refresh the accessory list
+      if (data?.refetch) {
+        data.refetch();
+      }
+
+      // Update local state
+      setFilteredData((prev) =>
+        prev.map((acc) =>
+          acc._id === editingAccessory._id
+            ? { ...acc, ...response.data.accessory }
+            : acc
+        )
+      );
+
+      setShowEditModal(false);
+      setEditingAccessory(null);
+      setEditForm({ accessoryName: '', perPiecePrice: '' });
+    } catch (error) {
+      console.error('Error updating accessory:', error);
+      toast.error(
+        error?.response?.data?.message || 'Failed to update accessory'
+      );
+    }
+  };
   const handleAddAccessory = () => {
     setAccessories([
       ...accessories,
@@ -349,6 +535,236 @@ const AddAccessory = () => {
       [field]: value,
     };
     setAccessories(updated);
+  };
+
+  // Print Demand functionality
+  const handlePrintDemand = () => {
+    const lowStockAccessories =
+      data?.data
+        ?.filter((accessory) => accessory.stock < 10)
+        .map((item) => ({
+          ...item,
+          demandQuantity: 0,
+        })) || [];
+    setDemandList(lowStockAccessories);
+    setShowPrintDemandModal(true);
+  };
+
+  const handleRemoveFromDemand = (index) => {
+    const updated = [...demandList];
+    updated.splice(index, 1);
+    setDemandList(updated);
+  };
+
+  const handleAddToDemand = () => {
+    const newAccessory = {
+      accessoryName: '',
+      demandQuantity: 1,
+      _id: `temp_${Date.now()}`,
+      isCustom: true,
+    };
+    setDemandList([...demandList, newAccessory]);
+  };
+
+  const handleDemandItemChange = (index, field, value) => {
+    const updated = [...demandList];
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+    setDemandList(updated);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPDF = () => {
+    const ensureHtml2Pdf = () =>
+      new Promise((resolve, reject) => {
+        if (window.html2pdf) return resolve();
+        const script = document.createElement('script');
+        script.src =
+          'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load html2pdf.js'));
+        document.body.appendChild(script);
+      });
+
+    ensureHtml2Pdf()
+      .then(() => {
+        const container = document.createElement('div');
+        container.style.fontFamily = 'Arial, sans-serif';
+        container.style.margin = '20px';
+        container.innerHTML = `
+          <div style="text-align:center; margin-bottom:16px;">
+            <h2 style="margin:0;">Accessory Demand List</h2>
+          </div>
+          <div style="text-align:right; margin-bottom:8px; font-size:12px;">
+            Date: ${new Date().toLocaleDateString()}
+          </div>
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left; background:#f2f2f2;">Accessory Name</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left; background:#f2f2f2;">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${demandList
+                .map(
+                  (item) => `
+                <tr>
+                  <td style="border:1px solid #ddd; padding:8px;">${item.accessoryName}</td>
+                  <td style="border:1px solid #ddd; padding:8px;">${Number(item.demandQuantity) || 0}</td>
+                </tr>`
+                )
+                .join('')}
+            </tbody>
+          </table>`;
+
+        document.body.appendChild(container);
+        const opt = {
+          margin: 10,
+          filename: `Accessory_Demand_${new Date().toISOString().slice(0, 10)}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        };
+        // Give the browser a tick to render the container before converting
+        setTimeout(() => {
+          try {
+            window
+              .html2pdf()
+              .set(opt)
+              .from(container)
+              .save()
+              .then(() => {
+                document.body.removeChild(container);
+              })
+              .catch(async () => {
+                document.body.removeChild(container);
+                // Fallback to jsPDF minimal text PDF
+                await (async () => {
+                  const loadJsPDF = () =>
+                    new Promise((resolve, reject) => {
+                      if (window.jspdf && window.jspdf.jsPDF) return resolve();
+                      const s = document.createElement('script');
+                      s.src =
+                        'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                      s.onload = () => resolve();
+                      s.onerror = () =>
+                        reject(new Error('Failed to load jsPDF'));
+                      document.body.appendChild(s);
+                    });
+                  try {
+                    await loadJsPDF();
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                      orientation: 'portrait',
+                      unit: 'mm',
+                      format: 'a4',
+                    });
+                    let y = 15;
+                    doc.setFontSize(14);
+                    doc.text('Accessory Demand List', 105, y, {
+                      align: 'center',
+                    });
+                    y += 8;
+                    doc.setFontSize(10);
+                    doc.text(
+                      `Date: ${new Date().toLocaleDateString()}`,
+                      195,
+                      y,
+                      { align: 'right' }
+                    );
+                    y += 8;
+                    doc.setFontSize(11);
+                    doc.text('Accessory Name', 10, y);
+                    doc.text('Quantity', 170, y);
+                    y += 6;
+                    doc.setLineWidth(0.2);
+                    doc.line(10, y, 200, y);
+                    y += 6;
+                    const lineHeight = 6;
+                    demandList.forEach((item) => {
+                      const name = String(item.accessoryName || '');
+                      const qty = String(Number(item.demandQuantity) || 0);
+                      const maxWidth = 150;
+                      const nameLines = doc.splitTextToSize(name, maxWidth);
+                      nameLines.forEach((line, idx) => {
+                        if (y > 280) {
+                          doc.addPage();
+                          y = 15;
+                        }
+                        doc.text(line, 10, y + idx * lineHeight);
+                      });
+                      doc.text(qty, 170, y);
+                      y += Math.max(lineHeight, nameLines.length * lineHeight);
+                    });
+                    doc.save(
+                      `Accessory_Demand_${new Date().toISOString().slice(0, 10)}.pdf`
+                    );
+                  } catch (e) {
+                    // As last resort, open printable view
+                    const w = window.open('', '_blank');
+                    if (w) {
+                      w.document.write(`
+                        <html><head><title>Accessory Demand List</title>
+                        <style>
+                          body { font-family: Arial, sans-serif; margin: 20px; }
+                          table { width: 100%; border-collapse: collapse; }
+                          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                          th { background-color: #f2f2f2; }
+                        </style></head><body>
+                        <h2>Accessory Demand List</h2>
+                        <table><thead><tr><th>Accessory Name</th><th>Quantity</th></tr></thead><tbody>
+                        ${demandList
+                          .map(
+                            (item) =>
+                              `<tr><td>${item.accessoryName}</td><td>${Number(item.demandQuantity) || 0}</td></tr>`
+                          )
+                          .join('')}
+                        </tbody></table></body></html>`);
+                      w.document.close();
+                      w.focus();
+                      w.print();
+                    }
+                  }
+                })();
+              });
+          } catch (err) {
+            if (document.body.contains(container)) {
+              document.body.removeChild(container);
+            }
+          }
+        }, 0);
+      })
+      .catch(() => {
+        // Fallback: open printable view
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.write(`
+          <html><head><title>Accessory Demand List</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style></head><body>
+          <h2>Accessory Demand List</h2>
+          <table><thead><tr><th>Accessory Name</th><th>Quantity</th></tr></thead><tbody>
+          ${demandList
+            .map(
+              (item) => `
+            <tr><td>${item.accessoryName}</td><td>${Number(item.demandQuantity) || 0}</td></tr>`
+            )
+            .join('')}
+          </tbody></table></body></html>`);
+        w.document.close();
+        w.focus();
+        w.print();
+      });
   };
 
   return (
@@ -572,81 +988,129 @@ const AddAccessory = () => {
       <div
         style={{
           display: 'flex',
-          // justifyContent: 'space-between',
+          justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '20px',
           gap: '20px',
         }}
       >
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            padding: '14px 28px',
-            background: 'linear-gradient(to right, #4f46e5, #4f46e5)',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: '600',
-            border: '2px solid #4f46e5',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-            marginBottom: '30px',
-            transition: 'all 0.3s ease',
-            marginRight: '10px',
-            ':hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(16, 185, 129, 0.4)',
-            },
-          }}
-        >
-          + Purchase Accessory
-        </button>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #4f46e5, #4f46e5)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #4f46e5',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              marginRight: '10px',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(16, 185, 129, 0.4)',
+              },
+            }}
+          >
+            + Purchase Accessory
+          </button>
+
+          <button
+            onClick={() => handleSaleAccessory(data)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #ef4444, #f87171)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #dc2626',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              marginRight: '10px',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
+              },
+            }}
+          >
+            - Sale Accessory
+          </button>
+
+          <button
+            onClick={() => setShowAddStockModal(true)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #f59e0b, #fbbf24)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #d97706',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(245, 158, 11, 0.4)',
+              },
+            }}
+          >
+            + Add Stock
+          </button>
+
+          <button
+            onClick={() => setShowReturnModal(true)}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(to right, #dc2626, #ef4444)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: '2px solid #b91c1c',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+              marginBottom: '30px',
+              transition: 'all 0.3s ease',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(220, 38, 38, 0.4)',
+              },
+            }}
+          >
+            ↻ Return Accessory
+          </button>
+        </div>
 
         <button
-          onClick={() => handleSaleAccessory(data)}
+          onClick={handlePrintDemand}
           style={{
             padding: '14px 28px',
-            background: 'linear-gradient(to right, #ef4444, #f87171)',
+            background: 'linear-gradient(to right, #8b5cf6, #a78bfa)',
             color: 'white',
             fontSize: '16px',
             fontWeight: '600',
-            border: '2px solid #dc2626',
+            border: '2px solid #7c3aed',
             borderRadius: '10px',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-            marginBottom: '30px',
-            transition: 'all 0.3s ease',
-            marginRight: '10px',
-            ':hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
-            },
-          }}
-        >
-          - Sale Accessory
-        </button>
-
-        <button
-          onClick={() => setShowAddStockModal(true)}
-          style={{
-            padding: '14px 28px',
-            background: 'linear-gradient(to right, #f59e0b, #fbbf24)',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: '600',
-            border: '2px solid #d97706',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
             marginBottom: '30px',
             transition: 'all 0.3s ease',
             ':hover': {
               transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(245, 158, 11, 0.4)',
+              boxShadow: '0 6px 16px rgba(139, 92, 246, 0.4)',
             },
           }}
         >
-          + Add Stock
+          📄 Print Demand
         </button>
       </div>
 
@@ -1815,14 +2279,32 @@ const AddAccessory = () => {
                       >
                         {accessory.accessoryName}
                       </h4>
-                      <FaTrash
-                        onClick={() => confirmDelete(accessory._id)}
+                      <div
                         style={{
-                          color: '#e53935',
-                          cursor: 'pointer',
-                          fontSize: '1rem',
+                          display: 'flex',
+                          gap: '8px',
+                          alignItems: 'center',
                         }}
-                      />
+                      >
+                        <FaEdit
+                          onClick={() => handleEditAccessory(accessory)}
+                          style={{
+                            color: '#3b82f6',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                          title="Edit accessory"
+                        />
+                        <FaTrash
+                          onClick={() => confirmDelete(accessory._id)}
+                          style={{
+                            color: '#e53935',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                          }}
+                          title="Delete accessory"
+                        />
+                      </div>
                     </div>
                     <div
                       style={{
@@ -2016,6 +2498,298 @@ const AddAccessory = () => {
                 />
               </Form.Group>
 
+              {/* Entity Selection - Moved before Payment Type to match purchase mobile flow */}
+              <div style={{ marginBottom: '24px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px',
+                  }}
+                >
+                  <label style={{ fontWeight: '600', fontSize: '16px' }}>
+                    Entity *
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewEntityFormForStock(false)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        background: !showNewEntityFormForStock
+                          ? '#e5e7eb'
+                          : 'transparent',
+                        border: '1px solid #d1d5db',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Select Existing
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewEntityFormForStock(true)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        background: showNewEntityFormForStock
+                          ? '#e5e7eb'
+                          : 'transparent',
+                        border: '1px solid #d1d5db',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Create New
+                    </button>
+                  </div>
+                </div>
+
+                {showNewEntityFormForStock ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '12px',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                          color: '#4b5563',
+                        }}
+                      >
+                        Entity Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={newEntityForStock.name}
+                        onChange={(e) =>
+                          setNewEntityForStock({
+                            ...newEntityForStock,
+                            name: e.target.value,
+                          })
+                        }
+                        placeholder="Enter entity name"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          border: '2px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                          color: '#4b5563',
+                        }}
+                      >
+                        Entity Number *
+                      </label>
+                      <input
+                        type="text"
+                        value={newEntityForStock.number}
+                        onChange={(e) =>
+                          setNewEntityForStock({
+                            ...newEntityForStock,
+                            number: e.target.value,
+                          })
+                        }
+                        placeholder="Enter entity number"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          border: '2px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '16px' }}>
+                    <CustomSelect
+                      value={addStockEntityData._id}
+                      onChange={(selectedOption) => {
+                        const selectedEntity = getAllEntities.find(
+                          (entity) => entity._id === selectedOption?.value
+                        );
+                        setAddStockEntityData(
+                          selectedEntity || { name: '', number: '', _id: '' }
+                        );
+                      }}
+                      options={getAllEntities.map((entity) => ({
+                        value: entity._id,
+                        label: `${entity.name} || ${entity.number}`,
+                      }))}
+                      placeholder="Select Entity"
+                      noOptionsMessage="No entities found"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Payment Type Selection */}
+              <div style={{ marginBottom: '24px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontWeight: '600',
+                    fontSize: '16px',
+                  }}
+                >
+                  Payment Type *
+                </label>
+                <select
+                  value={addStockPaymentData.paymentType}
+                  onChange={(e) =>
+                    setAddStockPaymentData({
+                      ...addStockPaymentData,
+                      paymentType: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                  required
+                >
+                  <option value="">Select Payment Type</option>
+                  <option value="full-payment">Full Payment</option>
+                  <option value="credit">Credit</option>
+                </select>
+              </div>
+
+              {/* Credit Payment Fields */}
+              {addStockPaymentData.paymentType === 'credit' && (
+                <div style={{ marginBottom: '24px' }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '16px',
+                    }}
+                  >
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Payable Now
+                      </label>
+                      <input
+                        type="number"
+                        value={addStockPaymentData.payableAmountNow}
+                        onChange={(e) =>
+                          setAddStockPaymentData({
+                            ...addStockPaymentData,
+                            payableAmountNow: e.target.value,
+                          })
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Payable Later
+                      </label>
+                      <input
+                        type="number"
+                        value={addStockPaymentData.payableAmountLater}
+                        onChange={(e) =>
+                          setAddStockPaymentData({
+                            ...addStockPaymentData,
+                            payableAmountLater: e.target.value,
+                          })
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Due Date
+                    </label>
+                    <input
+                      type="date"
+                      value={addStockPaymentData.dateOfPayment}
+                      onChange={(e) =>
+                        setAddStockPaymentData({
+                          ...addStockPaymentData,
+                          dateOfPayment: e.target.value,
+                        })
+                      }
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Proceed To Give Payment Button - Matches purchase mobile flow */}
+              {addStockPaymentData.paymentType && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowPayForStockModal(!showPayForStockModal)}
+                  style={{ marginTop: '20px', marginBottom: '10px' }}
+                >
+                  Proceed To Give Payment
+                </Button>
+              )}
+
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                 <Button variant="primary" onClick={handleAddStock}>
                   Add Stock
@@ -2023,6 +2797,84 @@ const AddAccessory = () => {
                 <Button
                   variant="secondary"
                   onClick={() => setShowAddStockModal(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </Form>
+          </div>
+        </Modal>
+
+        {/* Return Accessory Modal */}
+        <Modal
+          size="sm"
+          show={showReturnModal}
+          toggleModal={() => setShowReturnModal(!showReturnModal)}
+        >
+          <div
+            style={{
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+            }}
+          >
+            <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>
+              Return Accessory
+            </h2>
+
+            <Form
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              {/* Select Accessory */}
+              <Form.Group className="mb-3">
+                <Form.Label>Select Accessory</Form.Label>
+                <CustomSelect
+                  value={returnForm.accessoryId}
+                  onChange={(selectedOption) =>
+                    setReturnForm({
+                      ...returnForm,
+                      accessoryId: selectedOption?.value || '',
+                    })
+                  }
+                  options={data?.data?.map((item) => ({
+                    value: item._id,
+                    label: `${item.accessoryName} | Price: $${item.perPiecePrice} | Stock: ${item.stock}`,
+                  }))}
+                  placeholder="Select Accessory"
+                  noOptionsMessage="No accessories found"
+                />
+              </Form.Group>
+
+              {/* Quantity to Return */}
+              <Form.Group controlId="returnQuantity">
+                <Form.Label>Quantity to Return</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={returnForm.quantity}
+                  onChange={(e) =>
+                    setReturnForm({
+                      ...returnForm,
+                      quantity: Number(e.target.value),
+                    })
+                  }
+                  placeholder="Enter quantity to return"
+                  required
+                  min="1"
+                />
+              </Form.Group>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <Button variant="primary" onClick={handleReturnAccessory}>
+                  Return Accessory
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowReturnModal(false)}
                 >
                   Cancel
                 </Button>
@@ -2200,34 +3052,25 @@ const AddAccessory = () => {
                   </div>
                 </div>
               ) : (
-                <select
-                  value={entityData._id}
-                  onChange={(e) => {
-                    const selectedEntity = getAllEntities.find(
-                      (entity) => entity._id === e.target.value
-                    );
-                    setEntityData(
-                      selectedEntity || { name: '', number: '', _id: '' }
-                    );
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '2px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    marginBottom: '16px',
-                  }}
-                >
-                  <option value="">Select Entity</option>
-                  {getAllEntities.map((entity) => (
-                    <option key={entity._id} value={entity._id}>
-                      {`                    ${entity.name} || ${entity.number} 
-                      `}
-                    </option>
-                  ))}
-                </select>
+                <div style={{ marginBottom: '16px' }}>
+                  <CustomSelect
+                    value={entityData._id}
+                    onChange={(selectedOption) => {
+                      const selectedEntity = getAllEntities.find(
+                        (entity) => entity._id === selectedOption?.value
+                      );
+                      setEntityData(
+                        selectedEntity || { name: '', number: '', _id: '' }
+                      );
+                    }}
+                    options={getAllEntities.map((entity) => ({
+                      value: entity._id,
+                      label: `${entity.name} || ${entity.number}`,
+                    }))}
+                    placeholder="Select Entity"
+                    noOptionsMessage="No entities found"
+                  />
+                </div>
               )}
             </div>
           )}
@@ -2572,6 +3415,513 @@ const AddAccessory = () => {
         singleTransaction={getPayment}
         setSingleTransaction={setGetPayment}
       />
+      <WalletTransactionModal
+        show={showPayForStockModal}
+        toggleModal={() => setShowPayForStockModal(!showPayForStockModal)}
+        singleTransaction={givePaymentForStock}
+        setSingleTransaction={setGivePaymentForStock}
+        type="purchase"
+      />
+
+      {/* Print Demand Modal */}
+      <Modal
+        size="lg"
+        show={showPrintDemandModal}
+        toggleModal={() => setShowPrintDemandModal(!showPrintDemandModal)}
+      >
+        <div id="print-content" style={{ padding: '20px' }}>
+          <style>
+            {`@media print { .no-print { display: none !important; } }`}
+          </style>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+              borderBottom: '2px solid #e2e8f0',
+              paddingBottom: '15px',
+            }}
+          >
+            <h2
+              style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#111827',
+                margin: 0,
+              }}
+            >
+              📄 Accessory Demand List
+            </h2>
+            <div />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+              Items with stock below 10 units
+            </p>
+          </div>
+
+          {demandList.length > 0 ? (
+            <div style={{ marginBottom: '20px' }}>
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                }}
+              >
+                <thead>
+                  <tr style={{ backgroundColor: '#f8fafc' }}>
+                    <th
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Accessory Name
+                    </th>
+                    <th
+                      className="no-print"
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Current Quantity
+                    </th>
+                    <th
+                      className="no-print"
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Per Piece Price
+                    </th>
+                    <th
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Quantity to Demand
+                    </th>
+                    <th
+                      style={{
+                        padding: '12px',
+                        textAlign: 'center',
+                        fontWeight: '600',
+                        color: '#374151',
+                        borderBottom: '1px solid #e2e8f0',
+                      }}
+                    >
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {demandList.map((item, index) => (
+                    <tr
+                      key={index}
+                      style={{ borderBottom: '1px solid #f1f5f9' }}
+                    >
+                      <td style={{ padding: '12px' }}>
+                        {item.isCustom ? (
+                          <input
+                            type="text"
+                            value={item.accessoryName}
+                            onChange={(e) =>
+                              handleDemandItemChange(
+                                index,
+                                'accessoryName',
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter accessory name"
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '4px',
+                              fontSize: '14px',
+                            }}
+                          />
+                        ) : (
+                          <span style={{ fontWeight: '500' }}>
+                            {item.accessoryName}
+                          </span>
+                        )}
+                      </td>
+                      <td className="no-print" style={{ padding: '12px' }}>
+                        <span
+                          style={{
+                            color:
+                              !item.isCustom && Number(item.stock) < 10
+                                ? '#f59e0b'
+                                : '#374151',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {item.isCustom ? '-' : Number(item.stock) || 0}
+                        </span>
+                      </td>
+                      <td className="no-print" style={{ padding: '12px' }}>
+                        {item.isCustom ? (
+                          <input
+                            type="number"
+                            value={Number(item.perPiecePrice) || 0}
+                            onChange={(e) =>
+                              handleDemandItemChange(
+                                index,
+                                'perPiecePrice',
+                                Number(e.target.value)
+                              )
+                            }
+                            placeholder="Price"
+                            min="0"
+                            step="0.01"
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '4px',
+                              fontSize: '14px',
+                            }}
+                          />
+                        ) : (
+                          <span>
+                            {Number(item.perPiecePrice || 0).toFixed(2)} PKR
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <input
+                          type="number"
+                          value={Number(item.demandQuantity) || 0}
+                          onChange={(e) =>
+                            handleDemandItemChange(
+                              index,
+                              'demandQuantity',
+                              Number(e.target.value)
+                            )
+                          }
+                          placeholder="Quantity"
+                          min="0"
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <button
+                          onClick={() => handleRemoveFromDemand(index)}
+                          style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '40px',
+                color: '#64748b',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>📦</div>
+              <p style={{ fontSize: '16px', margin: 0 }}>
+                No accessories with low stock found.
+              </p>
+            </div>
+          )}
+
+          {/* Add Custom and Print/Download buttons */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginTop: '20px',
+              paddingTop: '20px',
+              borderTop: '1px solid #e2e8f0',
+            }}
+          >
+            <button
+              onClick={handleAddToDemand}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '8px',
+                background: '#10b981',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              + Add Custom Item
+            </button>
+            <button
+              onClick={() => setShowPrintDemandModal(false)}
+              style={{
+                padding: '10px 20px',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                background: 'white',
+                color: '#374151',
+                fontWeight: '500',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handlePrint}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '8px',
+                background: '#3b82f6',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              🖨️ Print
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '8px',
+                background: '#10b981',
+                color: 'white',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              📄 Download PDF
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Accessory Modal */}
+      {showEditModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setShowEditModal(false);
+            setEditingAccessory(null);
+            setEditForm({ accessoryName: '', perPiecePrice: '' });
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: 8,
+              width: '90vw',
+              maxWidth: 500,
+              padding: 24,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 20,
+                paddingBottom: 12,
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
+                Edit Accessory
+              </h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingAccessory(null);
+                  setEditForm({ accessoryName: '', perPiecePrice: '' });
+                }}
+                style={{
+                  background: '#6b7280',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 6,
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#374151',
+                  marginBottom: 8,
+                }}
+              >
+                Accessory Name
+              </label>
+              <input
+                type="text"
+                value={editForm.accessoryName}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, accessoryName: e.target.value })
+                }
+                placeholder="Enter accessory name"
+                style={{
+                  width: '100%',
+                  padding: 10,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 6,
+                  fontSize: 14,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#374151',
+                  marginBottom: 8,
+                }}
+              >
+                Per Piece Price
+              </label>
+              <input
+                type="number"
+                value={editForm.perPiecePrice}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, perPiecePrice: e.target.value })
+                }
+                placeholder="Enter price (must be > 0)"
+                min="0"
+                step="0.01"
+                style={{
+                  width: '100%',
+                  padding: 10,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 6,
+                  fontSize: 14,
+                }}
+              />
+              <p
+                style={{
+                  fontSize: 12,
+                  color: '#6b7280',
+                  marginTop: 4,
+                  marginBottom: 0,
+                }}
+              >
+                At least one field (name or price) must be provided
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 12,
+              }}
+            >
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingAccessory(null);
+                  setEditForm({ accessoryName: '', perPiecePrice: '' });
+                }}
+                style={{
+                  padding: '10px 20px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: 6,
+                  background: 'white',
+                  color: '#374151',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateAccessory}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: 6,
+                  background: '#3b82f6',
+                  color: 'white',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                Update Accessory
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

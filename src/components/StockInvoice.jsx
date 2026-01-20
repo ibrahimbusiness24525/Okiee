@@ -1,3 +1,5 @@
+import  {api}  from '../../api/api';
+
 // src/templates/stocklist.js
 export const StockListComponent = ({ stockData }) => {
     // Static stock data
@@ -44,10 +46,19 @@ export const StockListComponent = ({ stockData }) => {
             }
         ]
     };
-
-    const handlePrintStockList = () => {
+    const handlePrintStockList = async () => {
         // Use stockData if provided, otherwise fallback to staticStockData
         const data = stockData || staticStockData;
+
+        // Try to fetch logo (small, rounded)
+        let logoUrl = '';
+        try {
+           
+            const { BASE_URL } = await import('config/constant');
+            const res = await api.get('/api/shop/logo');
+            const path = String(res?.data?.logo || '');
+            if (path) logoUrl = `${BASE_URL}${path.startsWith('/') ? path.slice(1) : path}`;
+        } catch (_) {}
 
         const stockHtml = `<!DOCTYPE html>
         <html lang="en">
@@ -140,6 +151,9 @@ export const StockListComponent = ({ stockData }) => {
         </head>
         <body>
             <div class="invoice">
+                ${logoUrl ? `<div style="display:flex;align-items:center;justify-content:center;margin-bottom:4px">
+                  <img src="${logoUrl}" alt="logo" style="width:26px;height:26px;border-radius:50%;object-fit:cover"/>
+                </div>` : ''}
                 ${data.sections.map(section => `
                     <h2>${section.title}</h2>
                     <table>

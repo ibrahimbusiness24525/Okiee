@@ -659,6 +659,7 @@ import CustomSelect from 'components/CustomSelect';
 const BulkPurchaseModal = ({
   handleBulkPhoneModalclose,
   handleSubmit,
+  loading,
   showBulkModal,
   modal,
   type = 'purchase',
@@ -779,24 +780,23 @@ const BulkPurchaseModal = ({
       <Modal.Body>
         <Form>
           {/* Party Name and Date */}
-          <Row>
+          <Form.Group controlId="bulkPayment">
+            <Form.Label>Payment Type</Form.Label>
+            <Form.Select
+              value={bulkData.paymentType}
+              onChange={(e) =>
+                setBulkData({ ...bulkData, paymentType: e.target.value })
+              }
+              required
+            >
+              <option value="">Select Payment Type</option>
+              <option value="full-payment">Full Payment</option>
+              <option value="credit">Credit</option>
+            </Form.Select>
+          </Form.Group>
+          <Row style={{ marginTop: '10px', marginBottom: '10px' }}>
             <Col>
-              <Form.Group controlId="bulkPayment">
-                <Form.Label>Payment Type</Form.Label>
-                <Form.Select
-                  value={bulkData.paymentType}
-                  onChange={(e) =>
-                    setBulkData({ ...bulkData, paymentType: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">Select Payment Type</option>
-                  <option value="full-payment">Full Payment</option>
-                  <option value="credit">Credit</option>
-                </Form.Select>
-              </Form.Group>
-
-              {bulkData.paymentType === 'credit' && (
+              {bulkData.paymentType !== '' && (
                 <div>
                   <div
                     style={{
@@ -938,29 +938,12 @@ const BulkPurchaseModal = ({
                   )}
                 </div>
               )}
-              {/* <Form.Group controlId="bulkPartyName">
-                <Form.Label>Party Name</Form.Label>
-                <Form.Select
-                  as="select"
-                  value={bulkData.partyName}
-                  onChange={(e) =>
-                    setBulkData({ ...bulkData, partyName: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">Select Party Name</option>
-                  {partyNames.map((name, index) => (
-                    <option key={index} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group> */}
             </Col>
             <Col>
               <Form.Group controlId="bulkDate">
                 <Form.Label>Date</Form.Label>
                 <Form.Control
+                  style={{ marginTop: '20px' }}
                   type="date"
                   value={bulkData.date}
                   onChange={(e) =>
@@ -1268,6 +1251,7 @@ const BulkPurchaseModal = ({
                                   ),
                                 }));
                               }}
+                              disabled={loading}
                             >
                               Remove
                             </Button>
@@ -1295,6 +1279,7 @@ const BulkPurchaseModal = ({
                         ),
                       }));
                     }}
+                    disabled={loading}
                   >
                     Add Row
                   </Button>
@@ -1328,6 +1313,7 @@ const BulkPurchaseModal = ({
                   <Button
                     variant="danger"
                     onClick={() => handleRemoveTextBox(idx)}
+                    disabled={loading}
                   >
                     Remove This Entry
                   </Button>
@@ -1340,6 +1326,7 @@ const BulkPurchaseModal = ({
             variant="secondary"
             className="mt-3"
             onClick={handleShowTextBox}
+            disabled={loading}
           >
             Add Another Quantity
           </Button>
@@ -1511,10 +1498,18 @@ const BulkPurchaseModal = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleBulkPhoneModalclose}>
+        <Button
+          variant="secondary"
+          onClick={handleBulkPhoneModalclose}
+          disabled={loading}
+        >
           Close
         </Button>
-        <Button variant="primary" onClick={handleFinalSubmit}>
+        <Button
+          variant="primary"
+          onClick={handleFinalSubmit}
+          disabled={loading}
+        >
           {/* <Button variant="primary" onClick={handleSubmit}> */}
           Save
         </Button>
