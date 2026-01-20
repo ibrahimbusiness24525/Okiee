@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 import Loader from './components/Loader/Loader';
 import AdminLayout from './layouts/AdminLayout';
-
 import { BASE_URL } from './config/constant';
 import AuthGuard from './components/PrivateRoute/AuthGuard';
 // Function to render routes with lazy loading
