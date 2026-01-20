@@ -6,7 +6,6 @@ import AdminLayout from './layouts/AdminLayout';
 
 import { BASE_URL } from './config/constant';
 import AuthGuard from './components/PrivateRoute/AuthGuard';
-
 // Function to render routes with lazy loading
 export const renderRoutes = (routes = []) => (
   <Suspense fallback={<Loader />}>
