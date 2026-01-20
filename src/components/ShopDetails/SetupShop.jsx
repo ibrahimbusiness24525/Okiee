@@ -5,7 +5,7 @@ import axios from 'axios';
 import { BASE_URL } from 'config/constant';
 import { api } from '../../../api/api';
 // Import sample images so bundler provides correct URLs
-import googlePixelLogo from '../../assets/images/Google_Pixel_Logo.jpg';
+import googlePixelLogo from '../../assets/images/Google_Pixel_logo.jpg';
 import appleLogo from '../../assets/images/applelogo1.jpg';
 import samsungLogo from '../../assets/images/samsungimage1.jpg';
 
