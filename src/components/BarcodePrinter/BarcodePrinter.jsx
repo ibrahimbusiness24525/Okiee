@@ -445,7 +445,10 @@ const BarcodePrinter = ({ obj, type }) => {
       format: 'CODE128',
       displayValue: true,
       width: 2,
-      height: 30,
+      height: 40,
+      textAlign: 'left',
+      textPosition: 'bottom',
+      textMargin: 0,
     });
     let canvas2;
     if (imei2) {
@@ -454,7 +457,10 @@ const BarcodePrinter = ({ obj, type }) => {
         format: 'CODE128',
         displayValue: true,
         width: 2,
-        height: 30,
+        height: 40,
+        textAlign: 'left',
+        textPosition: 'bottom',
+        textMargin: 0,
       });
     }
 
@@ -566,18 +572,70 @@ const BarcodePrinter = ({ obj, type }) => {
         body { 
             margin: 0;
         }
-        }
         .battery-health {
         writing-mode: vertical-rl;
+        transform: translateY(-50%) rotate(180deg);
+        font-size: 10px;
+        font-weight: bold;
+        text-align: center;
+        white-space: nowrap;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        }
+        .shop-name-vertical {
+        writing-mode: vertical-rl;
         transform: rotate(180deg);
-        font-size: 18px;
+        font-size: 10px;
         font-weight: bold;
         text-align: left;
         white-space: nowrap;
-        margin-right: 40mm;
         position: absolute;
-        top: 16px;
-        left: 150px;
+        bottom: 0;
+        left: 0;
+        padding: 2px;
+        max-width: 60px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        }
+        .after-text {
+        padding-left: 0;
+        width: 160px;
+        margin-left: auto;
+        margin-right: auto;
+        }
+        }
+        .battery-health {
+        writing-mode: vertical-rl;
+        transform: translateY(-50%) rotate(180deg);
+        font-size: 10px;
+        font-weight: bold;
+        text-align: center;
+        white-space: nowrap;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        }
+        .shop-name-vertical {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        font-size: 10px;
+        font-weight: bold;
+        text-align: left;
+        white-space: nowrap;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding: 2px;
+        max-width: 60px;
+        overflow: hidden;
+        text-overflow: ellipsis;
         }
         .barcode{
         padding-left: 0px;
@@ -587,6 +645,7 @@ const BarcodePrinter = ({ obj, type }) => {
         font-weight: 500;
         text-align: center;
         margin: 0 auto;
+        position: relative;
         }
         .barcode .img-holder{
         position:relative;
@@ -595,15 +654,30 @@ const BarcodePrinter = ({ obj, type }) => {
         }
         .barcode .img-holder img{
         width:160px;
-        height:30px;
+        height:40px;
         display:block;
         margin:0px auto;
+        }
+        .barcode .img-holder canvas,
+        .barcode .img-holder img {
+        text-align: left;
+        }
+        .barcode .img-holder svg {
+        margin: 0 auto;
+        display: block;
+        }
+        .barcode .img-holder svg text {
+        text-anchor: start !important;
         }
         .after-text{
         margin: 1px 0px 0px 0px;
         line-height: 10px;
         font-size: 11px;
-        text-align: center;
+        text-align: left;
+        padding-left: 16px;
+        width: 160px;
+        margin-left: auto;
+        margin-right: auto;
         }
         </style>
     </head>
@@ -619,7 +693,7 @@ const BarcodePrinter = ({ obj, type }) => {
           }</p>`
           : ''
         }
-        ${shopName ? `<p class="after-text">${shopName}</p>` : ''}
+        ${shopName ? `<div class="shop-name-vertical">${shopName.length > 20 ? shopName.substring(0, 20) + '...' : shopName}</div>` : ''}
         ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ''}
         ${batteryHealth ? `<div class="battery-health"><p>${batteryHealth}</p></div>` : ''}
         </div>
@@ -691,6 +765,9 @@ const BarcodePrinter = ({ obj, type }) => {
     const modelName = data?.modelName || 'Unknown Model';
     const companyName = data?.companyName || 'Unknown Model';
     const ramMemory = data?.ramMemory || 'Unknown Ram';
+    const batteryHealth = data?.batteryHealth
+      ? data.batteryHealth.toString()
+      : null;
     const shop = JSON.parse(localStorage.getItem('shop') || '{}'); // Ensure it's an object
     const { shopName } = shop;
 
@@ -700,7 +777,10 @@ const BarcodePrinter = ({ obj, type }) => {
       format: 'CODE128',
       displayValue: true,
       width: 2,
-      height: 30,
+      height: 40,
+      textAlign: 'left',
+      textPosition: 'bottom',
+      textMargin: 0,
     });
 
     let canvas2;
@@ -710,7 +790,10 @@ const BarcodePrinter = ({ obj, type }) => {
         format: 'CODE128',
         displayValue: true,
         width: 2,
-        height: 30,
+        height: 40,
+        textAlign: 'left',
+        textPosition: 'bottom',
+        textMargin: 0,
       });
     }
 
@@ -744,6 +827,45 @@ body {
     margin: 0;
 }
 
+.battery-health {
+        writing-mode: vertical-rl;
+    transform: translateY(-50%) rotate(180deg);
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.shop-name-vertical {
+     writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 10px;
+    font-weight: bold;
+    text-align: left;
+    white-space: nowrap;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 2px;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+p {
+    padding-left: 0;
+    width: 160px;
+    margin-left: auto;
+    margin-right: auto;
+}
+        }
+
 .container {
      padding-left: 0px;
             max-width: 192px;
@@ -751,41 +873,46 @@ body {
             border-radius: 3px;
             font-weight: 500;
             text-align: center;
-            margin: 0 auto;    padding-left: 0px;
-            max-width: 192px;
-            max-height: 96px;
-            border-radius: 3px;
-            font-weight: 500;
-            text-align: center;
             margin: 0 auto;
+            position: relative;
+}
 
 .company-name {
       margin: 1px 0px 0px 0px;
     line-height: 10px;
     font-size: 11px;
-    text-align: center;
+    text-align: left;
 }
 
 .battery-health {
         writing-mode: vertical-rl;
+    transform: translateY(-50%) rotate(180deg);
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.shop-name-vertical {
+     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 18px;
+    font-size: 10px;
     font-weight: bold;
     text-align: left;
     white-space: nowrap;
-    margin-right: 40mm;
     position: absolute;
-    top: 16px;
-    left: 150px;
-
-}
-
-.shop-name {
-
-     margin: 1px 0px 0px 0px;
-    line-height: 10px;
-    font-size: 11px;
-    text-align: center;
+    bottom: 0;
+    left: 0;
+    padding: 2px;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .barcode-section {
@@ -796,19 +923,39 @@ body {
             font-weight: 500;
             text-align: center;
             margin: 0 auto;
+            position: relative;
 }
 
 .barcode-img { 
           width:160px;
-            height:30px;
+            height:40px;
             display:block;
             margin:0px auto;
 }
 
+.barcode-section canvas,
+.barcode-section img {
+    text-align: left;
+}
+
+.barcode-section svg {
+    margin: 0 auto;
+    display: block;
+}
+
+.barcode-section svg text {
+    text-anchor: start !important;
+}
+
 p {
     margin: 2px 0;
-    font-size: 12px;  /* Bigger text */
+    font-size: 12px;
     font-weight: bold;
+    text-align: left;
+    padding-left: 0;
+    width: 160px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
       </style>
@@ -818,8 +965,9 @@ p {
                 <div class="barcode-section">
                     <img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />
                      <p> ${modelName && modelName} ${ramMemory && ramMemory}GB</p>
-                   ${shopName ? `<p class="shop-name">${shopName}</p>` : ''}
+                   ${shopName ? `<div class="shop-name-vertical">${shopName.length > 20 ? shopName.substring(0, 20) + '...' : shopName}</div>` : ''}
                     ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ''}
+                    ${batteryHealth ? `<div class="battery-health"><p>${batteryHealth}</p></div>` : ''}
                 </div>
             </div>
             <script>

@@ -111,3 +111,7 @@ export const returnSaleInvoice = (id, data) =>
 // Create new sale invoice endpoint: POST /api/sale-invoice
 export const createSaleInvoice = (data) =>
   api.post('/api/sale-invoice', data);
+
+// Delete sale invoice endpoint: DELETE /api/sale-invoice/:id
+export const deleteSaleInvoice = (id) =>
+  api.delete(`/api/sale-invoice/${id}`);

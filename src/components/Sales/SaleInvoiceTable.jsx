@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, returnSaleInvoice } from '../../../api/api';
+import { api, returnSaleInvoice, deleteSaleInvoice } from '../../../api/api';
 import { toast } from 'react-toastify';
 import { dateFormatter } from 'utils/dateFormatter';
 import Modal from 'components/Modal/Modal';
@@ -47,6 +47,9 @@ const SaleInvoiceTable = ({ mode = 'all' }) => {
   const [showCurrentInvoiceDropdown, setShowCurrentInvoiceDropdown] =
     useState(false);
   const [showRelatedDropdown, setShowRelatedDropdown] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedInvoiceForDelete, setSelectedInvoiceForDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchInvoices = async (page = 1, overrideFilters) => {
     setLoading(true);
@@ -600,6 +603,116 @@ const SaleInvoiceTable = ({ mode = 'all' }) => {
     });
   };
 
+  const handleDeleteClick = (invoice) => {
+    if (!invoice?._id) {
+      toast.error('Invoice ID not found');
+      return;
+    }
+
+    // Check if invoice is already returned
+    if (invoice?.returnStatus === 'full-return') {
+      toast.warning(
+        'Cannot delete a returned invoice. Please process the return reversal first.'
+      );
+      return;
+    }
+
+    setSelectedInvoiceForDelete(invoice);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedInvoiceForDelete?._id) {
+      toast.error('Invoice ID not found');
+      return;
+    }
+
+    setDeleteLoading(true);
+    try {
+      const response = await deleteSaleInvoice(selectedInvoiceForDelete._id);
+
+      if (response?.data?.success) {
+        const responseData = response.data.data;
+        let successMessage =
+          response?.data?.message || 'Invoice deleted successfully';
+
+        // Show detailed success message with what was restored
+        if (responseData) {
+          const restoredItems = [];
+          if (responseData.restoredItems?.phones) {
+            restoredItems.push('phones');
+          }
+          if (responseData.restoredItems?.accessories) {
+            restoredItems.push(
+              `${responseData.restoredItems.accessories} accessory(ies)`
+            );
+          }
+
+          const reversedTransactions = [];
+          if (responseData.reversedTransactions?.bank) {
+            reversedTransactions.push('bank payments');
+          }
+          if (responseData.reversedTransactions?.pocketCash) {
+            reversedTransactions.push('pocket cash');
+          }
+          if (responseData.reversedTransactions?.credit) {
+            reversedTransactions.push('credit');
+          }
+
+          if (restoredItems.length > 0 || reversedTransactions.length > 0) {
+            successMessage += '. ';
+            if (restoredItems.length > 0) {
+              successMessage += `Restored: ${restoredItems.join(', ')}. `;
+            }
+            if (reversedTransactions.length > 0) {
+              successMessage += `Reversed: ${reversedTransactions.join(', ')}.`;
+            }
+          }
+        }
+
+        toast.success(successMessage);
+
+        // Close modal and reset state
+        setShowDeleteModal(false);
+        setSelectedInvoiceForDelete(null);
+
+        // Refresh invoice list
+        await fetchInvoices(pagination.currentPage);
+      } else {
+        toast.error(response?.data?.message || 'Failed to delete invoice');
+      }
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to delete invoice';
+
+      // Handle specific error cases
+      if (error?.response?.status === 400) {
+        toast.warning(
+          errorMessage ||
+            'Cannot delete a returned invoice. Please process the return reversal first.'
+        );
+      } else if (error?.response?.status === 404) {
+        toast.error('Invoice not found');
+        // Refresh invoice list in case it was already deleted
+        await fetchInvoices(pagination.currentPage);
+      } else if (error?.response?.status === 500) {
+        toast.error('Internal server error. Please try again later.');
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setSelectedInvoiceForDelete(null);
+  };
+
   const filteredInvoices = invoices.filter((inv) => {
     if (!searchInvoice.trim()) return true;
     const query = searchInvoice.toLowerCase().trim();
@@ -925,6 +1038,41 @@ const SaleInvoiceTable = ({ mode = 'all' }) => {
                           }}
                         >
                           Add Sale Another Phone
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClick(inv);
+                          }}
+                          disabled={
+                            inv?.returnStatus === 'full-return' || deleteLoading
+                          }
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ef4444',
+                            background:
+                              inv?.returnStatus === 'full-return'
+                                ? '#9ca3af'
+                                : '#ef4444',
+                            color: '#fff',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor:
+                              inv?.returnStatus === 'full-return'
+                                ? 'not-allowed'
+                                : 'pointer',
+                            whiteSpace: 'nowrap',
+                            opacity:
+                              inv?.returnStatus === 'full-return' ? 0.6 : 1,
+                          }}
+                          title={
+                            inv?.returnStatus === 'full-return'
+                              ? 'Cannot delete a returned invoice'
+                              : 'Delete invoice (this action cannot be undone)'
+                          }
+                        >
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -2003,6 +2151,202 @@ const SaleInvoiceTable = ({ mode = 'all' }) => {
               </div>
             );
           })()}
+      </Modal>
+
+      {/* Delete Invoice Confirmation Modal */}
+      <Modal
+        show={showDeleteModal}
+        toggleModal={handleCancelDelete}
+        size="md"
+      >
+        {selectedInvoiceForDelete && (
+          <div style={{ padding: '24px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '20px',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  backgroundColor: '#fee2e2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  color: '#dc2626',
+                }}
+              >
+                ⚠️
+              </div>
+              <div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    color: '#1f2937',
+                  }}
+                >
+                  Delete Invoice
+                </h3>
+                <p
+                  style={{
+                    margin: '4px 0 0 0',
+                    fontSize: '14px',
+                    color: '#6b7280',
+                  }}
+                >
+                  This action cannot be undone
+                </p>
+              </div>
+            </div>
+
+            <div
+              style={{
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '20px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#991b1b',
+                  marginBottom: '8px',
+                }}
+              >
+                Invoice Details:
+              </div>
+              <div style={{ fontSize: '13px', color: '#7f1d1d' }}>
+                <div>
+                  <strong>Invoice #:</strong> {selectedInvoiceForDelete.invoiceNumber || 'N/A'}
+                </div>
+                <div>
+                  <strong>Customer:</strong>{' '}
+                  {selectedInvoiceForDelete.customerName || 'N/A'}
+                </div>
+                <div>
+                  <strong>Date:</strong>{' '}
+                  {selectedInvoiceForDelete.saleDate
+                    ? dateFormatter(selectedInvoiceForDelete.saleDate)
+                    : 'N/A'}
+                </div>
+                <div>
+                  <strong>Total:</strong> Rs.{' '}
+                  {selectedInvoiceForDelete.pricing?.totalInvoice != null
+                    ? Number(
+                        selectedInvoiceForDelete.pricing.totalInvoice
+                      ).toLocaleString()
+                    : selectedInvoiceForDelete.pricing?.finalPrice != null
+                      ? Number(
+                          selectedInvoiceForDelete.pricing.finalPrice
+                        ).toLocaleString()
+                      : 'N/A'}
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                backgroundColor: '#fffbeb',
+                border: '1px solid #fde68a',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '20px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#92400e',
+                  marginBottom: '8px',
+                }}
+              >
+                What will happen:
+              </div>
+              <ul
+                style={{
+                  fontSize: '13px',
+                  color: '#78350f',
+                  margin: 0,
+                  paddingLeft: '20px',
+                }}
+              >
+                <li>Phone stock will be restored (marked as Available)</li>
+                <li>Accessories stock will be restored</li>
+                <li>Bank payments will be reversed</li>
+                <li>Pocket cash payments will be reversed</li>
+                <li>Credit transactions will be reversed</li>
+                <li>Invoice and related records will be permanently deleted</li>
+              </ul>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '12px',
+                marginTop: '24px',
+              }}
+            >
+              <button
+                onClick={handleCancelDelete}
+                disabled={deleteLoading}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleteLoading}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: deleteLoading ? '#9ca3af' : '#dc2626',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                {deleteLoading ? (
+                  <>
+                    <i className="fa fa-spinner fa-spin"></i>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <i className="fa fa-trash"></i>
+                    Delete Invoice
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
