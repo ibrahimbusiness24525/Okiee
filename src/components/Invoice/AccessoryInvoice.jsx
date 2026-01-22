@@ -20,8 +20,8 @@ const AccessoryInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
   const [logoUrl, setLogoUrl] = useState(null);
   const [displayHalfP4, setDisplayHalfP4] = useState(false);
-  const [showSmallInvoice, setShowSmallInvoice] = useState(false);
-  const [originalInvoice, setOriginalInvoice] = useState(true);
+  const [showSmallInvoice, setShowSmallInvoice] = useState(true);
+  const [originalInvoice, setOriginalInvoice] = useState(false);
 
   // Color options
   const colorOptions = [
@@ -82,21 +82,21 @@ const AccessoryInvoice = () => {
 
   // Toggle between three invoice views
   const handleChangePreview = () => {
-    if (originalInvoice) {
-      // Switch from original → half preview (InvoiceComponent)
-      setOriginalInvoice(false);
-      setDisplayHalfP4(true);
+    if (showSmallInvoice) {
+      // Switch from small invoice → medium invoice
       setShowSmallInvoice(false);
+      setDisplayHalfP4(true);
+      setOriginalInvoice(false);
     } else if (displayHalfP4) {
-      // Switch from half preview → small invoice
+      // Switch from medium invoice → big invoice
+      setDisplayHalfP4(false);
+      setShowSmallInvoice(false);
+      setOriginalInvoice(true);
+    } else if (originalInvoice) {
+      // Switch from big invoice → small invoice (cycle back)
       setOriginalInvoice(false);
       setDisplayHalfP4(false);
       setShowSmallInvoice(true);
-    } else if (showSmallInvoice) {
-      // Switch from small invoice → original
-      setOriginalInvoice(true);
-      setDisplayHalfP4(false);
-      setShowSmallInvoice(false);
     }
   };
   const [shop, setShop] = useState({});
@@ -586,6 +586,10 @@ const AccessoryInvoice = () => {
       {displayHalfP4 && (
         <InvoiceComponent
           accessoriesData={invoiceData}
+          shopName={shop?.shopName ?? ''}
+          number={shop?.contactNumber?.[0] ?? ''}
+          ownerName={shop?.name ?? ''}
+          address={shop?.address ?? ''}
           termsAndConditions={shop?.termsCondition}
         />
       )}

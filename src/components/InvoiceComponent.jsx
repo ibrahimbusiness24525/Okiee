@@ -17,6 +17,7 @@ export const InvoiceComponent = ({
   simOption = '',
   address = '',
   number = '',
+  ownerName = '',
   batteryHealth = '',
   type = '',
   ramMemory = '',
@@ -804,6 +805,18 @@ export const InvoiceComponent = ({
             >
               {shopName || 'Mobile Shop'}
             </h1>
+            {ownerName && (
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 'normal',
+                  color: '#333',
+                  margin: '2px 0',
+                }}
+              >
+                {ownerName}
+              </div>
+            )}
             <div
               style={{
                 fontSize: '14px',

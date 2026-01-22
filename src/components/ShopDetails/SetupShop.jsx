@@ -858,9 +858,6 @@ const SetupShop = () => {
 
         <Form.Group className="mb-3">
           <Form.Label>Contact Numbers</Form.Label>
-          {formData?.contactNumbers?.map((_, index) =>
-            renderField('contactNumbers', index, 'Contact')
-          )}
           {isEditing || !hasShop ? (
             <>
               {formData?.contactNumbers?.map((_, index) =>

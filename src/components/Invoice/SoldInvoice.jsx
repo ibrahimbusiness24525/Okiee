@@ -13,8 +13,8 @@ const SoldInvoice = () => {
   const [selectedColor, setSelectedColor] = useState('#004B87');
   const [logoUrl, setLogoUrl] = useState(null);
   const [displayHalfP4, setDisplayHalfP4] = useState(false);
-  const [showSmallInvoice, setShowSmallInvoice] = useState(false);
-  const [originalInvoice, setOriginalInvoice] = useState(true);
+  const [showSmallInvoice, setShowSmallInvoice] = useState(true);
+  const [originalInvoice, setOriginalInvoice] = useState(false);
   const colorOptions = [
     { name: 'Dark Blue', code: '#004B87' },
     { name: 'Sky Blue', code: '#87CEEB' },
@@ -1125,21 +1125,21 @@ const SoldInvoice = () => {
   //   qr: 'qr-code.png',
   // };
   const handleChangePreview = () => {
-    if (originalInvoice) {
-      // Switch from original → half preview
-      setOriginalInvoice(false);
-      setDisplayHalfP4(true);
+    if (showSmallInvoice) {
+      // Switch from small invoice → medium invoice
       setShowSmallInvoice(false);
+      setDisplayHalfP4(true);
+      setOriginalInvoice(false);
     } else if (displayHalfP4) {
-      // Switch from half preview → small invoice
+      // Switch from medium invoice → big invoice
+      setDisplayHalfP4(false);
+      setShowSmallInvoice(false);
+      setOriginalInvoice(true);
+    } else if (originalInvoice) {
+      // Switch from big invoice → small invoice (cycle back)
       setOriginalInvoice(false);
       setDisplayHalfP4(false);
       setShowSmallInvoice(true);
-    } else if (showSmallInvoice) {
-      // Switch from small invoice → original
-      setOriginalInvoice(true);
-      setDisplayHalfP4(false);
-      setShowSmallInvoice(false);
     }
   };
 
@@ -1321,6 +1321,7 @@ const SoldInvoice = () => {
                   )}
                   <div>
                     <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                    {shop?.name && <p style={{ margin: '4px 0', fontSize: '14px' }}>{shop.name}</p>}
                     <p>
                       {shop?.contactNumber?.join(' | ') ??
                         'Contact number not available'}
@@ -1876,6 +1877,7 @@ const SoldInvoice = () => {
                   )}
                   <div>
                     <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                    {shop?.name && <p style={{ margin: '4px 0', fontSize: '14px' }}>{shop.name}</p>}
                     <p>
                       {shop?.contactNumber?.join(' | ') ??
                         'Contact number not available'}
@@ -2410,6 +2412,7 @@ const SoldInvoice = () => {
                 )}
                 <div>
                   <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
+                  {shop?.name && <p style={{ margin: '4px 0', fontSize: '14px' }}>{shop.name}</p>}
                   <p>
                     {shop?.contactNumber?.join(' | ') ??
                       'Contact number not available'}
@@ -2700,6 +2703,7 @@ const SoldInvoice = () => {
           }}
           shopName={shop?.shopName ?? ''}
           number={shop?.contactNumber?.[0] ?? ''}
+          ownerName={shop?.name ?? ''}
           address={shop?.address ?? 'Address not available'}
           termsAndConditions={shop?.termsCondition}
         />

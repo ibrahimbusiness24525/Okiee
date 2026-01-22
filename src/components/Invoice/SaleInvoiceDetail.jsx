@@ -484,14 +484,28 @@ const SaleInvoiceDetail = () => {
             >
               {shop?.shopName || 'Shop'}
             </div>
+            {shop?.name && (
+              <div style={{ fontSize: 12, color: '#6b7280', marginTop: '2px' }}>
+                {shop.name}
+              </div>
+            )}
+            {shop?.shopName && (
+              <div style={{ fontSize: 12, color: '#6b7280', marginTop: '2px' }}>
+                {Array.isArray(shop?.contactNumber)
+                  ? shop.contactNumber.join(' | ')
+                  : shop?.contactNumber || '—'}
+              </div>
+            )}
             <div style={{ fontSize: 12, color: '#6b7280' }}>
               {shop?.address || '—'}
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>
-              {Array.isArray(shop?.contactNumber)
-                ? shop.contactNumber.join(' | ')
-                : shop?.contactNumber || '—'}
-            </div>
+            {!shop?.shopName && (
+              <div style={{ fontSize: 12, color: '#6b7280' }}>
+                {Array.isArray(shop?.contactNumber)
+                  ? shop.contactNumber.join(' | ')
+                  : shop?.contactNumber || '—'}
+              </div>
+            )}
           </div>
         </div>
 

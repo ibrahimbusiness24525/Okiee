@@ -235,7 +235,7 @@ console.log('mobiles', mobiles);
     );
   });
   const updatedFilteredMobiles = useMemo(() => {
-    return filteredMobiles.filter((record) => (includeSold ? true : record.dispatch === false));
+    return filteredMobiles.filter((record) => (includeSold ? true : record.dispatch === false)).reverse();
   }, [filteredMobiles, includeSold]);
   useEffect(() => {
     if (!updatedFilteredMobiles || updatedFilteredMobiles.length === 0) return;

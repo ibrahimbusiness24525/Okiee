@@ -562,7 +562,8 @@ const BarcodePrinter = ({ obj, type }) => {
         <style>
         @page { 
         size: 3in 1in;
-        margin: 0; 
+        margin: 0;
+        padding: 0;
         }
         @media print {
         html, body {
@@ -644,8 +645,10 @@ const BarcodePrinter = ({ obj, type }) => {
         border-radius: 3px;
         font-weight: 500;
         text-align: center;
-        margin: 0 auto;
+        margin: 0;
         position: relative;
+        page-break-after: avoid;
+        page-break-inside: avoid;
         }
         .barcode .img-holder{
         position:relative;
@@ -815,7 +818,8 @@ const BarcodePrinter = ({ obj, type }) => {
 
      @page { 
             size: 3in 1in;
-            margin: 0; 
+            margin: 0;
+            padding: 0;
         }
             @media print {
               html, body {
@@ -873,8 +877,10 @@ p {
             border-radius: 3px;
             font-weight: 500;
             text-align: center;
-            margin: 0 auto;
+            margin: 0;
             position: relative;
+            page-break-after: avoid;
+            page-break-inside: avoid;
 }
 
 .company-name {

@@ -1180,6 +1180,18 @@ export const SmallInvoiceComponent = ({
                       {ownerName}
                     </div>
                   )}
+                  {shopName && (
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        marginBottom: '2px',
+                        fontSize: '16px',
+                        color: '#000',
+                      }}
+                    >
+                      {shopName}
+                    </div>
+                  )}
                   {shopPhone && (
                     <div
                       style={{
