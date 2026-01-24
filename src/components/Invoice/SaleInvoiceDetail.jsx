@@ -484,28 +484,23 @@ const SaleInvoiceDetail = () => {
             >
               {shop?.shopName || 'Shop'}
             </div>
-            {shop?.name && (
-              <div style={{ fontSize: 12, color: '#6b7280', marginTop: '2px' }}>
-                {shop.name}
-              </div>
-            )}
-            {shop?.shopName && (
-              <div style={{ fontSize: 12, color: '#6b7280', marginTop: '2px' }}>
-                {Array.isArray(shop?.contactNumber)
-                  ? shop.contactNumber.join(' | ')
-                  : shop?.contactNumber || '—'}
-              </div>
-            )}
+            {shop?.contacts && shop.contacts.length > 0 && shop.contacts.map((contact, index) => (
+              <React.Fragment key={index}>
+                {contact.name && (
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: '2px' }}>
+                    {contact.name}
+                  </div>
+                )}
+                {contact.contactNumber && (
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: '2px' }}>
+                    {contact.contactNumber}
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
             <div style={{ fontSize: 12, color: '#6b7280' }}>
               {shop?.address || '—'}
             </div>
-            {!shop?.shopName && (
-              <div style={{ fontSize: 12, color: '#6b7280' }}>
-                {Array.isArray(shop?.contactNumber)
-                  ? shop.contactNumber.join(' | ')
-                  : shop?.contactNumber || '—'}
-              </div>
-            )}
           </div>
         </div>
 
@@ -710,9 +705,9 @@ const SaleInvoiceDetail = () => {
 
       <footer style={styles.footer}>
         {shop?.shopName || 'Shop'} | {shop?.address || '—'} |{' '}
-        {Array.isArray(shop?.contactNumber)
-          ? shop.contactNumber.join(' | ')
-          : shop?.contactNumber || '—'}
+        {shop?.contacts && shop.contacts.length > 0
+          ? shop.contacts.map(c => c.contactNumber).filter(Boolean).join(' | ') || '—'
+          : '—'}
       </footer>
     </div>
   );

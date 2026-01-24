@@ -100,50 +100,10 @@ export const SmallInvoiceComponent = ({
   // Use shop data from props if available, otherwise fallback to static data
   const shopName =
     shopData?.shopName || shopData?.name || data.shopInfo || 'Mobile Shop';
-  const shopNumber = shopData?.contactNumber?.[0] || 'Phone Number';
   const shopAddress = shopData?.address || data.shopInfo || 'Shop Address';
-
-  // Collect all shop phone numbers from various possible fields
-  const getAllShopPhones = () => {
-    const phoneNumbers = [];
-
-    // Check contactNumber (array or single value)
-    if (Array.isArray(shopData?.contactNumber)) {
-      phoneNumbers.push(...shopData.contactNumber.filter(Boolean));
-    } else if (shopData?.contactNumber) {
-      phoneNumbers.push(shopData.contactNumber);
-    }
-
-    // Check phone field
-    if (shopData?.phone) {
-      if (Array.isArray(shopData.phone)) {
-        phoneNumbers.push(...shopData.phone.filter(Boolean));
-      } else {
-        phoneNumbers.push(shopData.phone);
-      }
-    }
-
-    // Check phone2 field
-    if (shopData?.phone2) {
-      phoneNumbers.push(shopData.phone2);
-    }
-
-    // Check phoneNumber field
-    if (shopData?.phoneNumber) {
-      if (Array.isArray(shopData.phoneNumber)) {
-        phoneNumbers.push(...shopData.phoneNumber.filter(Boolean));
-      } else {
-        phoneNumbers.push(shopData.phoneNumber);
-      }
-    }
-
-    // Remove duplicates and return
-    const uniquePhones = [...new Set(phoneNumbers)];
-    return uniquePhones.length > 0 ? uniquePhones.join(' / ') : 'Phone Number';
-  };
-
-  const shopPhone = getAllShopPhones();
-  const ownerName = shopData?.name || '';
+  
+  // Get contacts array from shopData
+  const contacts = shopData?.contacts || [];
 
   // Format date and time for display - always show current date/time if not found
   const formatDateTime = () => {
@@ -904,10 +864,10 @@ export const SmallInvoiceComponent = ({
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <div>
                     <div style="font-weight: 600; margin-bottom: 4px; font-size: 12px; color: #000;">${dateTimeDisplay}</div>
-                    ${ownerName ? `<div style="font-weight: 800; margin-bottom: 4px; font-size: 16px; color: #000;">${ownerName}</div>` : ''}
-                    <div style="font-weight: 800; margin-bottom: 2px; font-size: 16px; color: #000;">
-                      ${shopPhone ? `Cell No: ${shopPhone}` : ''}
-                    </div>
+                    ${contacts.map(contact => 
+                      (contact.name ? `<div style="font-weight: 800; margin-bottom: 4px; font-size: 16px; color: #000;">${contact.name}</div>` : '') +
+                      (contact.contactNumber ? `<div style="font-weight: 800; margin-bottom: 2px; font-size: 16px; color: #000;">Cell No: ${contact.contactNumber}</div>` : '')
+                    ).join('')}
                     ${shopAddress ? `<div style="font-weight: 600; margin-bottom: 4px; font-size: 12px; color: #000; max-width: 220px;">${shopAddress}</div>` : ''}
                   </div>
                 </div>
@@ -1168,42 +1128,34 @@ export const SmallInvoiceComponent = ({
                   >
                     {dateTimeDisplay}
                   </div>
-                  {ownerName && (
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        marginBottom: '4px',
-                        fontSize: '16px',
-                        color: '#000',
-                      }}
-                    >
-                      {ownerName}
-                    </div>
-                  )}
-                  {shopName && (
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        marginBottom: '2px',
-                        fontSize: '16px',
-                        color: '#000',
-                      }}
-                    >
-                      {shopName}
-                    </div>
-                  )}
-                  {shopPhone && (
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        marginBottom: '2px',
-                        fontSize: '16px',
-                        color: '#000',
-                      }}
-                    >
-                      {`Cell No: ${shopPhone}`}
-                    </div>
-                  )}
+                  {contacts.length > 0 && contacts.map((contact, index) => (
+                    <React.Fragment key={index}>
+                      {contact.name && (
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            marginBottom: '4px',
+                            fontSize: '16px',
+                            color: '#000',
+                          }}
+                        >
+                          {contact.name}
+                        </div>
+                      )}
+                      {contact.contactNumber && (
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            marginBottom: '2px',
+                            fontSize: '16px',
+                            color: '#000',
+                          }}
+                        >
+                          {`Cell No: ${contact.contactNumber}`}
+                        </div>
+                      )}
+                    </React.Fragment>
+                  ))}
                   {shopAddress && (
                     <div
                       style={{

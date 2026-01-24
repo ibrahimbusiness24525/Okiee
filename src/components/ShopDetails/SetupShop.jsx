@@ -13,8 +13,7 @@ const SetupShop = () => {
   const [formData, setFormData] = useState({
     shopName: '',
     address: '',
-    ownerName: '',
-    contactNumbers: [''],
+    contacts: [{ name: '', contactNumber: '' }],
     terms: [],
     shopId: null, // Track shop ID for update calls
   });
@@ -48,8 +47,9 @@ const SetupShop = () => {
             setFormData({
               shopName: shop.shopName || '',
               address: shop.address || '',
-              ownerName: shop.name || '',
-              contactNumbers: shop.contactNumber || [''],
+              contacts: shop.contacts && shop.contacts.length > 0 
+                ? shop.contacts 
+                : [{ name: '', contactNumber: '' }],
               terms: shop.termsCondition || [],
               shopId: shop._id || null,
             });
@@ -162,11 +162,10 @@ const SetupShop = () => {
     }
 
     const payload = {
-      name: formData.ownerName,
       shopName: formData.shopName,
       termsCondition: formData.terms,
       address: formData.address,
-      contactNumber: formData.contactNumbers,
+      contacts: formData.contacts.filter(contact => contact.name && contact.contactNumber),
       shopId: user._id,
     };
 
@@ -192,15 +191,24 @@ const SetupShop = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, id } = e.target;
+    const { name, value, type, id, dataset } = e.target;
 
     setFormData((prevData) => {
       let updatedData = { ...prevData };
 
-      if (name === 'terms' || name === 'contactNumbers') {
+      if (name === 'terms') {
         const index = parseInt(id, 10);
         updatedData[name][index] =
           type === 'number' ? value.replace(/\D/g, '') : value;
+      } else if (name === 'contactName' || name === 'contactNumber') {
+        const index = parseInt(dataset.index, 10);
+        updatedData.contacts[index] = {
+          ...updatedData.contacts[index],
+          [name === 'contactName' ? 'name' : 'contactNumber']: 
+            name === 'contactNumber' && type === 'text' 
+              ? value.replace(/\D/g, '') 
+              : value
+        };
       } else {
         updatedData[name] = value;
       }
@@ -210,10 +218,18 @@ const SetupShop = () => {
   };
 
   const addField = (field) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]: [...prevData[field], ''],
-    }));
+    setFormData((prevData) => {
+      if (field === 'contacts') {
+        return {
+          ...prevData,
+          contacts: [...prevData.contacts, { name: '', contactNumber: '' }],
+        };
+      }
+      return {
+        ...prevData,
+        [field]: [...prevData[field], ''],
+      };
+    });
   };
 
   const removeField = (field, index) => {
@@ -658,6 +674,44 @@ const SetupShop = () => {
     </div>
   );
 
+  const renderContactField = (contact, index) => (
+    <div key={index} style={styles.contactGroup}>
+      <div style={styles.inputGroup}>
+        <Form.Control
+          type="text"
+          data-index={index}
+          name="contactName"
+          value={contact.name || ''}
+          onChange={handleChange}
+          placeholder={`Name ${index + 1}`}
+          disabled={!isEditing && hasShop}
+          className="mb-2"
+        />
+      </div>
+      <div style={styles.inputGroup}>
+        <Form.Control
+          type="text"
+          data-index={index}
+          name="contactNumber"
+          value={contact.contactNumber || ''}
+          onChange={handleChange}
+          placeholder={`Contact Number ${index + 1}`}
+          disabled={!isEditing && hasShop}
+          className="mb-2"
+        />
+        {isEditing && formData.contacts?.length > 1 && (
+          <Button
+            variant="danger"
+            onClick={() => removeField('contacts', index)}
+            style={styles.removeButton}
+          >
+            🗑️
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Setup Your Shop</h2>
@@ -845,36 +899,26 @@ const SetupShop = () => {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>Owner Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="ownerName"
-            value={formData.ownerName || ''}
-            onChange={handleChange}
-            disabled={!isEditing && hasShop} // Apply the condition here
-            required
-          />
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-          <Form.Label>Contact Numbers</Form.Label>
+          <Form.Label>Contacts (Name & Contact Number)</Form.Label>
           {isEditing || !hasShop ? (
             <>
-              {formData?.contactNumbers?.map((_, index) =>
-                renderField('contactNumbers', index, 'Contact')
+              {formData?.contacts?.map((contact, index) =>
+                renderContactField(contact, index)
               )}
               <Button
-                style={{ display: 'block' }}
+                style={{ display: 'block', marginTop: '10px' }}
                 variant="secondary"
-                onClick={() => addField('contactNumbers')}
+                onClick={() => addField('contacts')}
               >
-                + Add Contact
+                + Add Another
               </Button>
             </>
           ) : (
             <ul>
-              {formData?.contactNumbers?.map((contactNumbers, index) => (
-                <li key={index}>{contactNumbers}</li>
+              {formData?.contacts?.map((contact, index) => (
+                <li key={index}>
+                  {contact.name}: {contact.contactNumber}
+                </li>
               ))}
             </ul>
           )}
@@ -959,6 +1003,12 @@ const styles = {
     alignItems: 'center',
     gap: '10px',
     marginBottom: '10px',
+  },
+  contactGroup: {
+    display: 'flex',
+    gap: '10px',
+    marginBottom: '10px',
+    alignItems: 'flex-start',
   },
   removeButton: {
     padding: '0 8px',

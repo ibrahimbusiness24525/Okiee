@@ -426,7 +426,7 @@ const BarcodePrinter = ({ obj, type }) => {
     if (!obj) return;
     const imei1 = obj?.imei1 ? obj.imei1.toString() : null;
     const imei2 = obj?.imei2 ? obj.imei2.toString() : null;
-    const batteryHealth = obj?.batteryHealth
+    const batteryHealth = obj?.batteryHealth && obj.batteryHealth !== 'N/A' && obj.batteryHealth !== 'n/a'
       ? obj?.batteryHealth.toString()
       : null;
     const specifications = obj?.specifications
@@ -595,12 +595,16 @@ const BarcodePrinter = ({ obj, type }) => {
         text-align: left;
         white-space: nowrap;
         position: absolute;
-        bottom: 0;
+        top: 0;
         left: 0;
         padding: 2px;
         max-width: 60px;
+        max-height: 96px;
         overflow: hidden;
         text-overflow: ellipsis;
+        word-break: break-word;
+        display: flex;
+        align-items: flex-start;
         }
         .after-text {
         padding-left: 0;
@@ -631,12 +635,16 @@ const BarcodePrinter = ({ obj, type }) => {
         text-align: left;
         white-space: nowrap;
         position: absolute;
-        bottom: 0;
+        top: 0;
         left: 0;
         padding: 2px;
         max-width: 60px;
+        max-height: 96px;
         overflow: hidden;
         text-overflow: ellipsis;
+        word-break: break-word;
+        display: flex;
+        align-items: flex-start;
         }
         .barcode{
         padding-left: 0px;
@@ -688,9 +696,8 @@ const BarcodePrinter = ({ obj, type }) => {
         <div class="barcode">
         <div class="img-holder">
         ${imei1 ? `<img class="barcode-img" src="${canvas1.toDataURL()}" alt="IMEI 1 Barcode" />` : ''}
-        ${(companyName || modelName || ramMemory || specifications)
-          ? `<p class="after-text">${companyName ? companyName : ''
-          } ${modelName ? modelName : ''
+        ${(modelName || ramMemory || specifications)
+          ? `<p class="after-text">${modelName ? modelName : ''
           } ${ramMemory ? ramMemory : ''
           } ${specifications ? specifications : ''
           }</p>`
@@ -698,7 +705,7 @@ const BarcodePrinter = ({ obj, type }) => {
         }
         ${shopName ? `<div class="shop-name-vertical">${shopName.length > 20 ? shopName.substring(0, 20) + '...' : shopName}</div>` : ''}
         ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ''}
-        ${batteryHealth ? `<div class="battery-health"><p>${batteryHealth}</p></div>` : ''}
+        ${batteryHealth && batteryHealth !== 'N/A' && batteryHealth !== 'n/a' ? `<div class="battery-health"><p>${batteryHealth}</p></div>` : ''}
         </div>
         </div>
     </body>
@@ -768,7 +775,7 @@ const BarcodePrinter = ({ obj, type }) => {
     const modelName = data?.modelName || 'Unknown Model';
     const companyName = data?.companyName || 'Unknown Model';
     const ramMemory = data?.ramMemory || 'Unknown Ram';
-    const batteryHealth = data?.batteryHealth
+    const batteryHealth = data?.batteryHealth && data.batteryHealth !== 'N/A' && data.batteryHealth !== 'n/a'
       ? data.batteryHealth.toString()
       : null;
     const shop = JSON.parse(localStorage.getItem('shop') || '{}'); // Ensure it's an object
@@ -854,12 +861,16 @@ body {
     text-align: left;
     white-space: nowrap;
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
     padding: 2px;
     max-width: 60px;
+    max-height: 96px;
     overflow: hidden;
     text-overflow: ellipsis;
+    word-break: break-word;
+    display: flex;
+    align-items: flex-start;
 }
 
 p {
@@ -913,12 +924,16 @@ p {
     text-align: left;
     white-space: nowrap;
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
     padding: 2px;
     max-width: 60px;
+    max-height: 96px;
     overflow: hidden;
     text-overflow: ellipsis;
+    word-break: break-word;
+    display: flex;
+    align-items: flex-start;
 }
 
 .barcode-section {
@@ -973,7 +988,7 @@ p {
                      <p> ${modelName && modelName} ${ramMemory && ramMemory}GB</p>
                    ${shopName ? `<div class="shop-name-vertical">${shopName.length > 20 ? shopName.substring(0, 20) + '...' : shopName}</div>` : ''}
                     ${imei2 ? `<img class="barcode-img" src="${canvas2.toDataURL()}" alt="IMEI 2 Barcode" />` : ''}
-                    ${batteryHealth ? `<div class="battery-health"><p>${batteryHealth}</p></div>` : ''}
+                    ${batteryHealth && batteryHealth !== 'N/A' && batteryHealth !== 'n/a' ? `<div class="battery-health"><p>${batteryHealth}</p></div>` : ''}
                 </div>
             </div>
             <script>

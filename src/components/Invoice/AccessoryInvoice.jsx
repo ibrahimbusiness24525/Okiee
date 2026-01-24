@@ -442,9 +442,11 @@ const AccessoryInvoice = () => {
                 />
               )}
               <div>
-                <h2 style={styles.logo}>{shop?.name || 'Accessory Shop'}</h2>
+                <h2 style={styles.logo}>{shop?.shopName || 'Accessory Shop'}</h2>
                 <p>
-                  Contact: {shop?.contactNumber?.join(', ') || 'Not Provided'}
+                  Contact: {shop?.contacts && shop.contacts.length > 0 
+                    ? shop.contacts.map(c => c.contactNumber).join(', ') 
+                    : 'Not Provided'}
                 </p>
               </div>
             </div>
@@ -587,10 +589,9 @@ const AccessoryInvoice = () => {
         <InvoiceComponent
           accessoriesData={invoiceData}
           shopName={shop?.shopName ?? ''}
-          number={shop?.contactNumber?.[0] ?? ''}
-          ownerName={shop?.name ?? ''}
           address={shop?.address ?? ''}
           termsAndConditions={shop?.termsCondition}
+          shopData={shop}
         />
       )}
 

@@ -1244,12 +1244,12 @@ const SoldInvoice = () => {
               // const phone = customerNumber.replace(/\D/g, '');
               const phone = whatsAppPhoneFormatter(customerNumber);
               const message = encodeURIComponent(
-                `Invoice Details:\n\nShop Name: ${shop?.shopName ?? 'Shop Name'}\nContact: ${shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}\nInvoice No: ${invoiceData.invoiceNumber}\nDate: ${dataReceived?.saleDate}\nCustomer Name: ${dataReceived?.customerName}\nCustomer Number: ${customerNumber}\nTotal Amount: ${totalInvoice}Rs\n\nThank you!`
+                `Invoice Details:\n\nShop Name: ${shop?.shopName ?? 'Shop Name'}\nContact: ${shop?.contacts && shop.contacts.length > 0 ? shop.contacts.map(c => c.contactNumber).filter(Boolean).join(' | ') ?? 'Contact number not available' : 'Contact number not available'}\nInvoice No: ${invoiceData.invoiceNumber}\nDate: ${dataReceived?.saleDate}\nCustomer Name: ${dataReceived?.customerName}\nCustomer Number: ${customerNumber}\nTotal Amount: ${totalInvoice}Rs\n\nThank you!`
               );
               window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
             } else {
               window.open(
-                `https://api.whatsapp.com/send?text=Invoice%20Details:%0A%0AShop%20Name:%20${shop?.shopName ?? 'Shop Name'}%0AContact:%20${shop?.contactNumber?.join(' | ') ?? 'Contact number not available'}%0AInvoice%20No:%20${invoiceData.invoiceNumber}%0ADate:%20${dataReceived?.saleDate}%0ACustomer%20Name:%20${dataReceived?.customerName}%0ACustomer%20Number:%20${dataReceived?.customerNumber}%0ATotal%20Amount:%20${totalInvoice}Rs%0A%0AThank%20you!`,
+                `https://api.whatsapp.com/send?text=Invoice%20Details:%0A%0AShop%20Name:%20${shop?.shopName ?? 'Shop Name'}%0AContact:%20${shop?.contacts && shop.contacts.length > 0 ? encodeURIComponent(shop.contacts.map(c => c.contactNumber).filter(Boolean).join(' | ')) ?? 'Contact number not available' : 'Contact number not available'}%0AInvoice%20No:%20${invoiceData.invoiceNumber}%0ADate:%20${dataReceived?.saleDate}%0ACustomer%20Name:%20${dataReceived?.customerName}%0ACustomer%20Number:%20${dataReceived?.customerNumber}%0ATotal%20Amount:%20${totalInvoice}Rs%0A%0AThank%20you!`,
                 '_blank'
               );
             }
@@ -1321,11 +1321,20 @@ const SoldInvoice = () => {
                   )}
                   <div>
                     <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                    {shop?.name && <p style={{ margin: '4px 0', fontSize: '14px' }}>{shop.name}</p>}
-                    <p>
-                      {shop?.contactNumber?.join(' | ') ??
-                        'Contact number not available'}
-                    </p>
+                    {shop?.contacts && shop.contacts.length > 0 && shop.contacts.map((contact, index) => (
+                      <React.Fragment key={index}>
+                        {contact.name && (
+                          <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                            {contact.name}
+                          </p>
+                        )}
+                        {contact.contactNumber && (
+                          <p>
+                            {contact.contactNumber}
+                          </p>
+                        )}
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
                 <div>
@@ -1877,11 +1886,20 @@ const SoldInvoice = () => {
                   )}
                   <div>
                     <h2 style={styles.logo}>{shop?.shopName ?? 'Shop Name'}</h2>
-                    {shop?.name && <p style={{ margin: '4px 0', fontSize: '14px' }}>{shop.name}</p>}
-                    <p>
-                      {shop?.contactNumber?.join(' | ') ??
-                        'Contact number not available'}
-                    </p>
+                    {shop?.contacts && shop.contacts.length > 0 && shop.contacts.map((contact, index) => (
+                      <React.Fragment key={index}>
+                        {contact.name && (
+                          <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                            {contact.name}
+                          </p>
+                        )}
+                        {contact.contactNumber && (
+                          <p>
+                            {contact.contactNumber}
+                          </p>
+                        )}
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
                 <div>
@@ -2702,10 +2720,9 @@ const SoldInvoice = () => {
                 : undefined),
           }}
           shopName={shop?.shopName ?? ''}
-          number={shop?.contactNumber?.[0] ?? ''}
-          ownerName={shop?.name ?? ''}
           address={shop?.address ?? 'Address not available'}
           termsAndConditions={shop?.termsCondition}
+          shopData={shop}
         />
       </div>
       {dataReceived?.editing && (

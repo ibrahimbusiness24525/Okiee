@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'https://okiee-backend-production-a1b3.up.railway.app/',
-  // baseURL: 'http://localhost:8000',
+  // baseURL: 'https://okiee-backend-production-a1b3.up.railway.app/',
+  baseURL: 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },

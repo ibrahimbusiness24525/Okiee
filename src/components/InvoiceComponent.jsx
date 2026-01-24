@@ -24,10 +24,15 @@ export const InvoiceComponent = ({
   invoiceNumber = '',
   termsAndConditions = [],
   dataReceived = {},
+  shopData = null,
 }) => {
   const invoiceRef = useRef();
   const [logoUrl, setLogoUrl] = useState(null);
   console.log('imeiPrices', imeiPrices);
+
+  // Get shop data from localStorage if not provided
+  const shop = shopData || JSON.parse(localStorage.getItem('shop') || '{}');
+  const contacts = shop?.contacts || [];
   useEffect(() => {
     let isMounted = true;
     const fetchLogo = async () => {
@@ -803,30 +808,36 @@ export const InvoiceComponent = ({
                 color: '#000',
               }}
             >
-              {shopName || 'Mobile Shop'}
+              {shopName || shop?.shopName || 'Mobile Shop'}
             </h1>
-            {ownerName && (
-              <div
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 'normal',
-                  color: '#333',
-                  margin: '2px 0',
-                }}
-              >
-                {ownerName}
-              </div>
-            )}
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 'normal',
-                color: '#333',
-                margin: '2px 0',
-              }}
-            >
-              {number || 'Mobile Shop number'}
-            </div>
+            {contacts.length > 0 && contacts.map((contact, index) => (
+              <React.Fragment key={index}>
+                {contact.name && (
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 'normal',
+                      color: '#333',
+                      margin: '2px 0',
+                    }}
+                  >
+                    {contact.name}
+                  </div>
+                )}
+                {contact.contactNumber && (
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 'normal',
+                      color: '#333',
+                      margin: '2px 0',
+                    }}
+                  >
+                    {contact.contactNumber}
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
             <div
               style={{
                 fontSize: '12px',
@@ -838,7 +849,7 @@ export const InvoiceComponent = ({
                 lineHeight: '1.2',
               }}
             >
-              {address || 'Mobile Shop address'}
+              {address || shop?.address || 'Mobile Shop address'}
             </div>
           </div>
         </div>
